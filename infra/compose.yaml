@@ -1,0 +1,33 @@
+name: unichat
+
+services:
+  postgres:
+    image: postgres:18.4
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks: [private]
+
+  chroma:
+    image: chromadb/chroma:0.6.3@sha256:e0e78dc7609a599b63c99753442c7d01b1d3d369ce0e3bf3e0540536fec4fa7a
+    volumes:
+      - chroma-data:/data
+    networks: [private]
+
+networks:
+  private:
+    internal: true
+
+volumes:
+  postgres-data:
+  chroma-data:

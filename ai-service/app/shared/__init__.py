@@ -1,0 +1,1 @@
+"""Shared errors and boundary utilities."""

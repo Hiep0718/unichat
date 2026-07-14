@@ -1,0 +1,64 @@
+[project]
+name = "unichat-ai-service"
+version = "0.1.0"
+description = "Private extraction, retrieval and generation service for UniChat"
+requires-python = "==3.13.14"
+dependencies = [
+  "chromadb==1.5.9",
+  "defusedxml==0.7.1",
+  "fastapi==0.139.0",
+  "google-genai==2.11.0",
+  "httpx==0.28.1",
+  "prometheus-client==0.25.0",
+  "pydantic==2.13.4",
+  "pydantic-settings==2.14.2",
+  "pypdf==6.14.2",
+  "python-docx==1.2.0",
+  "python-multipart==0.0.32",
+  "PyYAML==6.0.3",
+  "sentence-transformers==5.6.0",
+  "structlog==26.1.0",
+  "tenacity==9.1.4",
+  "uvicorn==0.51.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "mypy==2.3.0",
+  "pytest==9.1.1",
+  "pytest-asyncio==1.4.0",
+  "pytest-cov==7.1.0",
+  "pytest-mock==3.15.1",
+  "respx==0.23.1",
+  "ruff==0.15.21",
+]
+
+
+[tool.pytest.ini_options]
+testpaths = ["app/tests"]
+pythonpath = ["."]
+addopts = "--strict-config --strict-markers"
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["ANN", "B", "E", "F", "I", "S", "UP"]
+ignore = ["ANN401"]
+
+[tool.ruff.lint.per-file-ignores]
+"app/tests/**/*.py" = ["S101"]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+plugins = ["pydantic.mypy"]
+
+[tool.coverage.run]
+branch = true
+source = ["app"]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true

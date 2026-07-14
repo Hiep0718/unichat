@@ -1,0 +1,156 @@
+erDiagram
+    USERS ||--o{ REFRESH_TOKENS : owns
+    USERS ||--o{ WORKSPACES : owns
+    USERS ||--o{ WORKSPACE_MEMBERS : joins
+    WORKSPACES ||--o{ WORKSPACE_MEMBERS : contains
+    WORKSPACES ||--o{ DOCUMENTS : stores
+    DOCUMENTS ||--o{ RESOURCE_JOBS : schedules
+    WORKSPACES ||--o{ CONVERSATIONS : scopes
+    USERS ||--o{ CONVERSATIONS : starts
+    CONVERSATIONS ||--o{ MESSAGES : contains
+    MESSAGES ||--o{ CITATION_HISTORY : cites
+    DOCUMENTS ||--o{ CITATION_HISTORY : referenced_by
+    MESSAGES ||--o| RETRIEVAL_TRACES : produces
+    RETRIEVAL_TRACES ||--o{ RETRIEVAL_TRACE_ITEMS : ranks
+    DOCUMENTS ||--o{ RETRIEVAL_TRACE_ITEMS : retrieves
+    EVALUATION_RUNS ||--o{ EVALUATION_RESULTS : contains
+    EVALUATION_CASES ||--o{ EVALUATION_RESULTS : evaluates
+
+    USERS {
+        uuid id PK
+        string email UK
+        string password_hash
+        string system_role
+        string status
+    }
+    REFRESH_TOKENS {
+        uuid id PK
+        uuid user_id FK
+        uuid family_id
+        string token_hash UK
+        datetime expires_at
+        datetime revoked_at
+    }
+    WORKSPACES {
+        uuid id PK
+        uuid owner_id FK
+        string name
+        string visibility
+        boolean cloud_allowed
+        bigint permission_version
+    }
+    WORKSPACE_MEMBERS {
+        uuid workspace_id PK,FK
+        uuid user_id PK,FK
+        string role
+        string status
+    }
+    DOCUMENTS {
+        uuid id PK
+        uuid workspace_id FK
+        string storage_key UK
+        string original_name
+        string sha256
+        string status
+        bigint version
+    }
+    RESOURCE_JOBS {
+        uuid id PK
+        uuid document_id FK
+        string job_type
+        string status
+        string idempotency_key
+        datetime lease_expires_at
+    }
+    CONVERSATIONS {
+        uuid id PK
+        uuid workspace_id FK
+        uuid user_id FK
+        string title
+        string status
+    }
+    MESSAGES {
+        uuid id PK
+        uuid conversation_id FK
+        string role
+        text content
+        string intent
+        string refusal_code
+    }
+    CITATION_HISTORY {
+        uuid id PK
+        uuid message_id FK
+        uuid document_id FK
+        string chunk_id
+        string locator_type
+        string locator_value
+        string content_hash
+        int ordinal
+    }
+    RETRIEVAL_TRACES {
+        uuid id PK
+        uuid message_id FK
+        string request_id UK
+        string strategy_version
+        string intent
+        decimal evidence_score
+        string decision
+        string config_hash
+    }
+    RETRIEVAL_TRACE_ITEMS {
+        uuid id PK
+        uuid trace_id FK
+        uuid document_id FK
+        string chunk_id
+        int rank
+        decimal similarity
+    }
+    EVALUATION_CASES {
+        uuid id PK
+        string dataset_version
+        string split
+        string intent
+        text question
+        string topic_group
+    }
+    EVALUATION_RUNS {
+        uuid id PK
+        string dataset_version
+        string branch
+        string provider_model
+        string embedding_revision
+        string config_hash
+        string status
+    }
+    EVALUATION_RESULTS {
+        uuid id PK
+        uuid run_id FK
+        uuid case_id FK
+        boolean citation_correct
+        decimal claim_support
+        int latency_ms
+    }
+    IDEMPOTENCY_RECORDS {
+        string actor_id PK
+        string route_key PK
+        string idempotency_key PK
+        string request_hash
+        int response_status
+        datetime expires_at
+    }
+    RATE_LIMIT_BUCKETS {
+        string subject_key PK
+        string action_key PK
+        datetime window_start PK
+        int request_count
+        datetime expires_at
+    }
+    AUDIT_EVENTS {
+        uuid id PK
+        datetime occurred_at
+        string request_id
+        uuid actor_id
+        string action
+        uuid workspace_id
+        string outcome
+    }

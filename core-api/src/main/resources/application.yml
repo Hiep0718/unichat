@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: unichat-core-api
+  datasource:
+    url: ${POSTGRES_URL:jdbc:postgresql://localhost:5432/unichat}
+    username: ${POSTGRES_USER:unichat}
+    password: ${POSTGRES_PASSWORD}
+  flyway:
+    enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          public-key-location: ${JWT_PUBLIC_KEY_LOCATION}
+
+server:
+  port: ${CORE_API_PORT:8080}
+  shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+logging:
+  level:
+    root: ${LOG_LEVEL:INFO}

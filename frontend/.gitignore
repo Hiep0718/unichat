@@ -1,0 +1,35 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dist-ssr/
+*.tsbuildinfo
+
+# Editor & IDE
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# Testing
+coverage/
+test-results/
+playwright-report/
+blob-report/
+
+# Environment
+*.local
+.env
+.env.*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Decisions log
+.decisions/

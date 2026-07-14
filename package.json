@@ -1,0 +1,21 @@
+{
+  "name": "unichat",
+  "version": "0.1.0",
+  "private": true,
+  "description": "UniChat AI Knowledge Platform monorepo",
+  "engines": {
+    "node": "24.18.0",
+    "npm": "11.16.0"
+  },
+  "workspaces": [
+    "frontend"
+  ],
+  "scripts": {
+    "build": "npm run build --workspace frontend",
+    "e2e": "npm run e2e --workspace frontend",
+    "lint": "npm run lint --workspace frontend",
+    "test": "npm run test --workspace frontend",
+    "test:coverage": "npm run test:coverage --workspace frontend",
+    "typecheck": "npm run typecheck --workspace frontend"
+  }
+}
