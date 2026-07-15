@@ -7,7 +7,7 @@
 | Phase | design-architecture |
 | Task | TASK-007 |
 | Version | 1.0 |
-| Trạng thái | Ready for install approval |
+| Trạng thái | Approved — installed baseline; readiness evidence pending |
 | Repository | Monorepo |
 | Chính sách | Pin direct dependency; commit lockfile; không dùng latest/caret/tilde |
 
@@ -25,7 +25,8 @@
 | Python | 3.13.14 | Maintenance release |
 | FastAPI | 0.139.0 | Stable release |
 | PostgreSQL | 18.4 | Major được hỗ trợ |
-| ChromaDB | 1.5.9 | Python package và container cùng tag |
+| Chroma Python client | 1.5.9 | Exact pin hiện có; Critical advisory thuộc `SEC-DEBT-001` |
+| Chroma server | 0.6.3 + digest | Compatibility với client 1.5.9 chưa được chứng minh |
 | Ollama | 0.31.2 | Local fallback |
 | Gemini | gemini-3.5-flash | Stable model |
 | Embedding | intfloat/multilingual-e5-base | 768 chiều, cosine |
@@ -38,14 +39,14 @@
 - ai-service: FastAPI, chỉ private network.
 - infra: Docker Compose, reverse proxy, observability và script.
 - docs: ADR, API, runbook, evidence và thesis mapping.
-- evaluation: dataset manifest, config và script tái tạo kết quả.
-- .pipeline: artifacts/gates của AI SDLC.
+- evaluation: target future path cho dataset/config/script; chưa tồn tại trong baseline hiện tại.
+- .pipeline: state AI SDLC local, Git-ignored và không phải public source of truth.
 
 Chỉ frontend và core-api được expose. PostgreSQL, ChromaDB, ai-service và Ollama ở private Docker network.
 
-## 3. Template bắt buộc
+## 3. Template đã dùng khi scaffold
 
-Đã kiểm tra thư viện template cục bộ:
+Phần này là historical scaffold record; repository foundation đã được tạo:
 
 - react-vite-ts phù hợp làm nền nhưng đang ở React 18/Vite 6/TypeScript 5; phải thay toàn bộ version range bằng exact pin và bỏ boilerplate state không dùng.
 - spring-boot-java phù hợp cấu trúc tối thiểu nhưng đang ở Spring Boot 3.3, có H2/Lombok và thiếu Maven Wrapper; phải nâng 4.1.0, bỏ H2/Lombok, thêm wrapper.
@@ -106,7 +107,7 @@ Dev/test pin:
 - pytest 9.1.1; pytest-asyncio 1.4.0; pytest-cov 7.1.0; pytest-mock 3.15.1; respx 0.23.1.
 - ruff 0.15.21; mypy 2.3.0.
 
-PyTorch và dependency transitive được khóa bằng lockfile sinh trên Python 3.13.14; không thêm trực tiếp nếu mã không import trực tiếp.
+PyTorch và dependency transitive nằm trong resolved exact-pin inventory sinh trên Python 3.13.14. Inventory hiện không có hashes; không thêm direct dependency nếu mã không import trực tiếp.
 
 ## 7. Không đưa vào P0
 
@@ -118,14 +119,14 @@ PostgreSQL resource_jobs thay broker; local storage nằm sau interface để m�
 
 | Công cụ | Hiện tại | Yêu cầu | Kết luận |
 |---|---|---|---|
-| Node | 22.12.0 | 24.18.0 | Cần nâng patch/runtime sau approval |
-| npm | 10.9.0 | Theo Node đã khóa | Xác minh lại sau nâng Node |
-| Java | 17.0.18 LTS | 21 LTS | Cần cài JDK 21 sau approval |
-| Maven | Không có global | Wrapper 3.9.16 | Tạo wrapper; không cần Maven global lâu dài |
-| Python | 3.13.1 | 3.13.14 | Cần nâng patch sau approval |
+| Node | Portable 24.18.0 | 24.18.0 | Đạt trên máy hiện tại; cần evidence máy collaborator |
+| npm | Portable 11.16.0 | 11.16.0 | Đạt trên máy hiện tại; cần evidence máy collaborator |
+| Java | System 17; portable Temurin 21.0.11 | 21 LTS | Dùng portable JDK 21; cần baseline evidence |
+| Maven | Wrapper 3.9.16 | Wrapper 3.9.16 | Windows null-safety hardening cần pass trước merge |
+| Python | AI venv 3.13.14 | 3.13.14 | Đạt trên máy hiện tại; cần evidence máy collaborator |
 | Docker | 29.1.3 | Có | Đạt |
 | Docker Compose | 5.0.1 | Có | Đạt |
-| Git | 2.49.0 | Có | Đạt; repository chưa được init |
+| Git | 2.49.0 | Có | Đạt; repository đã hoạt động trên GitHub |
 
 ## 9. Cổng cài đặt
 
@@ -133,9 +134,9 @@ Trước khi cài hoặc tải:
 
 1. Người dùng phê duyệt danh sách dependency và ba runtime cần nâng.
 2. Copy ba template vào thư mục đích, loại bỏ manifest cũ/range cũ.
-3. Tạo package-lock, Python lock và Maven Wrapper; ghi checksum.
+3. Cài dependencies từ manifest và/hoặc lockfile tương ứng của từng ecosystem đã được review.
 4. Pin Docker image bằng tag và digest sau pull.
 5. Chạy audit, build, lint và test khói không gọi network thật.
 6. Ghi mọi chênh lệch version vào decisions log.
 
-Không cài dependency, không init Git và không deploy trước approval riêng.
+Không cài dependency mới, commit, push, thay đổi GitHub hoặc deploy trước approval riêng.

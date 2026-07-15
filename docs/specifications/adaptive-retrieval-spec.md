@@ -7,7 +7,7 @@
 | Phase | design-architecture |
 | Task | TASK-004 |
 | Version | 1.0 |
-| Trạng thái | Ready for design approval |
+| Trạng thái | Approved — source of truth; Chroma-backed implementation not ready |
 | Owner | Hoàng Phi Hùng |
 | Reviewer | Nguyễn Thanh Hiệp |
 

@@ -7,7 +7,7 @@
 | Phase | design-architecture |
 | Task | TASK-006 |
 | Version | 1.0 |
-| Trạng thái | Ready for design approval |
+| Trạng thái | Approved — source of truth; implementation remains work-item gated |
 | Database | PostgreSQL 18.4 |
 
 ## 1. Quy ước

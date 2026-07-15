@@ -7,7 +7,7 @@
 | Phase | design-architecture |
 | Task | TASK-005 |
 | Version | 1.0 |
-| Trạng thái | Ready for design approval |
+| Trạng thái | Approved — source of truth; implementation remains work-item gated |
 | Authorization owner | Core API |
 
 ## 1. Vai trò và chế độ Workspace

@@ -7,7 +7,7 @@
 | Phase | design-architecture |
 | Task | TASK-008 |
 | Version | 1.0 |
-| Trạng thái | Ready for design approval |
+| Trạng thái | Approved — source of truth; implementation remains work-item gated |
 | Owner | Hoàng Phi Hùng |
 
 ## 1. Design system

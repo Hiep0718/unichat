@@ -5,6 +5,7 @@
 .local-archive/
 .pipeline/
 .repository-reorganization/
+.audit/
 
 # Environment and secrets
 .env

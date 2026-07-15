@@ -7,19 +7,23 @@
 | Phase | design-architecture |
 | Task | TASK-012 |
 | Version | 2.0 |
-| Trạng thái | Ready for user design approval |
+| Trạng thái | Approved — target P0 plan; implementation remains work-item gated |
 | Repository | Monorepo |
 | Quy tắc | Feature-based; file ≤300 dòng; public API có documentation |
 
-## 1. Ownership
+## 1. Ownership và review
 
-| Phạm vi | Owner | Reviewer |
-|---|---|---|
-| Core API, PostgreSQL, Docker, docs/evidence | Nguyễn Thanh Hiệp | Hoàng Phi Hùng |
-| Frontend, AI Service, ChromaDB, AI integration | Hoàng Phi Hùng | Nguyễn Thanh Hiệp |
-| OpenAPI, security boundary, evaluation contract | Shared | Cả hai |
+- Mỗi work item có một Issue Assignee/Main Owner.
+- Reviewer được xác định theo implementer của từng PR; PR author không tự approve.
+- PR của `Hiep0718` do `phihungdeptraino2` review chính và ngược lại.
+- Shared-architecture work vẫn phải có Main Owner và independent reviewer.
+- CORE-001 có Main Owner `Hiep0718`; planned reviewer là `phihungdeptraino2`.
 
 ## 2. Top-level
+
+Các path dưới đây mô tả target P0. Path chưa tồn tại chỉ được tạo khi work item
+tương ứng được phê duyệt. `evaluation/` là target future path; `.pipeline` là
+local ignored state và không phải public source of truth.
 
 | Action | Path | Mục đích |
 |---|---|---|
@@ -43,7 +47,7 @@
 | Path | Trách nhiệm |
 |---|---|
 | frontend/package.json | Exact dependencies/scripts |
-| frontend/package-lock.json | Lock transitive dependency |
+| package-lock.json | Root workspace lock cho frontend transitive dependency |
 | frontend/vite.config.ts | Build/test config |
 | frontend/tsconfig.json | strict TypeScript |
 | frontend/eslint.config.js | Lint zero warning |
@@ -171,6 +175,9 @@ Mỗi package có __init__.py barrel công khai và test co-located trong packag
 | infra/scripts/reconcile.ps1 | Delete/job reconciliation |
 
 ## 11. Documentation và evaluation
+
+`evaluation/` trong mục này là target future path, chưa phải cấu trúc repository
+hiện hành.
 
 | Path | Trách nhiệm |
 |---|---|

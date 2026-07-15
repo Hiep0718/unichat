@@ -7,7 +7,7 @@
 | Phase | design-architecture |
 | Task | TASK-009 |
 | Version | 1.0 |
-| Trạng thái | Ready for design approval |
+| Trạng thái | Approved — source of truth; implementation remains work-item gated |
 | Framework | Vitest, JUnit 5, pytest, Playwright |
 | Network policy | Không gọi dịch vụ ngoài trong test |
 

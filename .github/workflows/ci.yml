@@ -4,6 +4,7 @@ on:
   pull_request:
   push:
     branches: [main, develop]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -54,3 +55,62 @@ jobs:
       - run: ruff check app
       - run: mypy app
       - run: pytest --cov=app --cov-report=term-missing --cov-fail-under=80
+
+  dependency-audit-policy:
+    name: dependency-audit-policy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.13.14
+      - name: Capture changed files
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          mkdir -p .audit
+          if [[ -n "$BASE_SHA" && "$BASE_SHA" != "0000000000000000000000000000000000000000" ]]; then
+            git diff --name-only "$BASE_SHA" "$HEAD_SHA" > .audit/changed-files.txt
+          else
+            git show --pretty="" --name-only "$HEAD_SHA" > .audit/changed-files.txt
+          fi
+      - name: Capture npm audit report
+        shell: bash
+        run: |
+          set +e
+          npm audit --package-lock-only --audit-level=high --json > .audit/npm-audit.json
+          audit_exit=$?
+          set -e
+          test -s .audit/npm-audit.json
+          echo "npm audit exit code: $audit_exit; repository policy evaluation follows"
+      - name: Capture resolved Maven inventory
+        working-directory: core-api
+        run: ./mvnw -B -DskipTests dependency:tree -DoutputFile=../.audit/maven-dependencies.txt
+      - name: Test dependency audit evaluator
+        run: python .github/scripts/test_dependency_audit_policy.py
+      - name: Enforce dependency audit policy
+        env:
+          EXECUTION_SCOPE: ${{ github.event_name == 'workflow_dispatch' && 'release' || 'change' }}
+        run: >-
+          python .github/scripts/dependency_audit_policy.py
+          --npm-audit .audit/npm-audit.json
+          --package-lock package-lock.json
+          --python-lock ai-service/requirements.lock.txt
+          --maven-tree .audit/maven-dependencies.txt
+          --exceptions .github/dependency-audit-exceptions.json
+          --changed-files .audit/changed-files.txt
+          --execution-scope "$EXECUTION_SCOPE"
+          --output .audit/dependency-audit-policy.json

@@ -4,11 +4,11 @@ UniChat là nền tảng tri thức AI cho giáo dục đại học. Phạm vi P
 
 ## Trạng thái
 
-Repository đã được tổ chức lại để chuẩn bị đưa lên GitHub. Checkpoint `IMP-002` đã dừng; các source hiện có được giữ nguyên trong đợt tổ chức lại này.
+**Canonical status: `NOT READY`.** Repository đang trong giai đoạn readiness hardening. Không tạo branch triển khai CORE-001 cho đến khi readiness changes và evidence từ cả hai máy đã được review, merge vào `main`.
 
 Core API đã có health endpoint, request ID an toàn, typed application errors, global RFC 7807 error boundary và structured JSON logging foundation.
 
-Không commit, push hoặc deploy nếu chưa có phê duyệt riêng. SEC-DEBT-001 phải được xử lý trước feature dùng ChromaDB hoặc mọi deployment.
+Không commit, push, thay đổi GitHub, merge hoặc deploy nếu chưa có phê duyệt riêng. `SEC-DEBT-001` là scoped exception cho non-Chroma work item; Chroma-backed retrieval và deployment phụ thuộc Chroma vẫn `NOT READY`.
 
 ## Kiến trúc
 
@@ -36,7 +36,7 @@ Runtime portable nằm trong `.tools` và không được commit.
 ## Thiết lập
 
 1. Sao chép `.env.example` thành `.env` và điền secret local.
-2. Chỉ cài dependency sau khi danh sách package được phê duyệt.
+2. Cài dependencies từ manifest và/hoặc lockfile tương ứng của từng ecosystem đã được review.
 3. Dùng `core-api/mvnw.cmd` trên Windows hoặc `core-api/mvnw` trên Unix.
 4. Bảo đảm `JAVA_HOME` trỏ đến JDK 21 trước khi chạy Core API.
 5. Không dùng secret mẫu ở môi trường thật.
@@ -60,4 +60,4 @@ Tài liệu luận văn nằm trong `docs/thesis`; security debt cần theo dõi
 
 ## Quy tắc đóng góp
 
-Đọc `AGENTS.md` trước khi thay đổi. Dùng Conventional Commits nhưng luôn xin phê duyệt con người trước commit, push hoặc deploy.
+Đọc `AGENTS.md` và `CONTRIBUTING.md` trước khi thay đổi. Dùng Conventional Commits và cross-review, đồng thời luôn xin phê duyệt trước commit, push, GitHub mutation, merge hoặc deploy. Dự án được cấp phép theo `LICENSE`.

@@ -1,132 +1,192 @@
-# Checklist trước khi bắt đầu phát triển UniChat
+# Checklist readiness trước CORE-001 — UniChat
 
 ## Thông tin kiểm tra
 
 | Thuộc tính | Giá trị |
 |---|---|
-| Ngày lập | 2026-07-14 |
+| Ngày cập nhật | 2026-07-15 |
 | Repository | `https://github.com/Hiep0718/unichat` |
-| Visibility | Public |
 | Default branch | `main` |
-| CI gần nhất | Pass — frontend, Core API và AI Service |
-| Phạm vi sản phẩm | P0 — Adaptive Knowledge Retrieval & Reasoning |
-| Trạng thái | Chưa sẵn sàng cho phát triển nhóm cho đến khi các mục P0 bên dưới hoàn tất |
+| Readiness branch | `feature/readiness-hardening` |
+| Work item kế tiếp | `CORE-001 — Core Auth & DB Foundation` |
+| Canonical status | `NOT READY` |
 
-## Quy ước
+`NOT READY` phải được giữ trong readiness hardening và kiểm thử máy hiện tại.
+Không chuyển trạng thái chỉ vì một máy pass hoặc readiness changes đã merge.
 
-- `[ ] P0`: bắt buộc hoàn tất trước khi hai người bắt đầu code chung.
-- `[ ] P0-CONDITIONAL`: bắt buộc trước khi code phần retrieval, ChromaDB hoặc deploy.
-- `[ ] P1`: nên hoàn tất sớm nhưng không chặn work item độc lập với phạm vi liên quan.
-- Mỗi mục chỉ được đánh dấu hoàn tất khi có evidence hoặc liên kết xác minh.
-- Không tự động tiếp tục checkpoint `IMP-002`; mọi công việc mới phải có issue/task mới và phạm vi được phê duyệt.
+## Trình tự chuyển trạng thái
 
-## 1. Quản trị GitHub và cộng tác — P0
+1. Merge readiness hardening vào `main`; trạng thái vẫn `NOT READY`.
+2. Collaborator fresh-clone `main` vào thư mục mới.
+3. Cả hai máy hoàn thành mandatory baseline/evidence.
+4. Xác minh không còn mandatory blocker.
+5. Tạo evidence PR cập nhật trạng thái.
+6. Chỉ sau khi evidence PR merge, canonical status mới là
+   `READY — CORE-001`.
+7. Khi đó mới tạo `feature/core-001-core-auth-db-foundation` từ `main` mới nhất.
 
-- [ ] **P0 — Thêm collaborator:** thêm GitHub username của thành viên thứ hai với quyền phù hợp và xác minh họ clone/pull được repository.
-  - Owner: Repository owner
-  - Evidence: Username xuất hiện trong danh sách collaborators.
-- [ ] **P0 — Bảo vệ `main`:** bật branch protection, cấm force push/xóa branch, yêu cầu pull request và yêu cầu CI pass trước merge.
-  - Recommended default: ít nhất 1 approval và dismiss stale approvals khi có commit mới.
-  - Evidence: Branch protection ruleset hoặc branch rule đang active.
-- [ ] **P0 — Chốt giấy phép:** chọn license phù hợp trước khi nhận contribution vào public repository.
-  - Quyết định cần người dùng: MIT, Apache-2.0 hoặc license khác.
-  - Evidence: `LICENSE` được review và commit.
-- [ ] **P0 — Chốt quy trình đóng góp:** tạo `CONTRIBUTING.md` với cách setup, branch naming, Conventional Commits, PR flow, test gates và quy tắc approval.
-  - Evidence: Thành viên mới có thể tạo branch và PR mà không cần hỏi lại quy trình cơ bản.
-- [ ] **P1 — Thêm collaboration templates:** pull-request template, bug/feature issue templates và `CODEOWNERS`.
+## 1. Governance và ownership
 
-## 2. Đồng bộ nguồn sự thật — P0
+- [x] `phihungdeptraino2` có quyền collaborator `WRITE`.
+- [ ] MIT License đã được review và merge với copyright:
+  `Copyright (c) 2026 Nguyễn Thanh Hiệp and Hoàng Phi Hùng`.
+- [ ] `CONTRIBUTING.md` đã được review và merge.
+- [ ] Branch protection cho `main` đã active và được đọc lại từ GitHub.
+- [ ] Milestone `P0 — Core Foundation` đã được tạo.
+- [ ] Issue CORE-001 đã được tạo với scope, non-scope, DoD và evidence gates.
 
-- [ ] **P0 — Cập nhật trạng thái ADR:** metadata hiện vẫn ghi “Ready for user design approval”; đổi sang trạng thái phản ánh phê duyệt thực tế trước khi dùng làm nguồn triển khai.
-  - Source: `docs/specifications/architecture-decision.md`.
-- [ ] **P0 — Đồng bộ cấu trúc repository trong stack spec:** loại bỏ hoặc giải thích các đường dẫn cũ như `evaluation` và `.pipeline`; xác nhận source-of-truth công khai nằm trong `docs/specifications`.
-  - Source: `docs/specifications/stack-and-dependencies.md`.
-- [ ] **P0 — Đồng bộ trạng thái runtime:** cập nhật bảng runtime cũ để phản ánh Node 24.18.0, Java 21, Python 3.13.14 và công cụ portable đã được dùng để verify.
-- [ ] **P0 — Chốt Chroma version contract:** hiện Python client là `chromadb==1.5.9`, Docker server là `0.6.3`; phải ghi rõ compatibility contract hoặc chọn lại phiên bản trước integration.
-  - Sources: `ai-service/pyproject.toml`, `infra/compose.yaml`, `docs/security/deferred-security-remediation.md`.
-- [ ] **P0 — Xác nhận provider contract:** kiểm tra model Gemini đã chọn còn khả dụng cho account/quota dự kiến; nếu thay đổi model hoặc fallback semantics thì cập nhật ADR trước code.
-- [ ] **P0 — Chọn work item kế tiếp:** tạo issue mới theo implementation order; không khôi phục ngầm `IMP-002`.
-  - Recommended next area: Core authentication/database migration foundation, vì repository foundation và CI đã hoàn tất.
-- [ ] **P0 — Viết Definition of Done cho issue:** nêu rõ scope, non-scope, affected components, API/data contract, security checks, test plan và acceptance criteria.
+### Cross-review model
 
-## 3. Thiết lập máy của từng thành viên — P0
+- PR author/implementer không tự approve.
+- PR của `Hiep0718`: `phihungdeptraino2` review chính.
+- PR của `phihungdeptraino2`: `Hiep0718` review chính.
+- Mỗi work item có một Issue Assignee/Main Owner.
+- Shared-architecture work vẫn phải có Main Owner và independent reviewer.
+- Nếu cả hai cùng đóng góp code đáng kể vào một PR, tách PR hoặc dùng reviewer
+  độc lập đã được phê duyệt.
 
-- [ ] **P0 — Clone sạch:** thành viên thứ hai clone repository vào thư mục mới và xác nhận checkout `main` không có file local-only.
-- [ ] **P0 — Runtime đúng phiên bản:** xác nhận Node 24.18.0, Java 21, Python 3.13.14, Docker 29+ và Docker Compose 5+.
-- [ ] **P0 — Environment local:** sao chép `.env.example` thành `.env`; thay toàn bộ placeholder bằng secret local và xác nhận `.env` bị Git-ignore.
-- [ ] **P0 — JWT/service keys local:** sinh access/service RSA key pairs riêng cho development; không dùng chung private key và không commit key.
-- [ ] **P0 — Dependency reproducibility:** cài đúng dependency từ `package-lock.json`, Maven Wrapper và `ai-service/requirements.lock.txt`.
-  - AI/automation chỉ được install khi có phê duyệt package riêng; con người cần review lockfile trước khi cài.
-- [ ] **P0 — Docker boundary:** xác nhận PostgreSQL, ChromaDB, AI Service và Ollama không mở public port ngoài thiết kế được duyệt.
-- [ ] **P0 — Startup smoke test:** khởi động theo thứ tự PostgreSQL/ChromaDB → AI Service → Core API → frontend và kiểm tra health endpoint.
-- [ ] **P0 — Provider-safe local mode:** test tự động phải dùng fake/mock provider; không gọi Gemini hoặc network ngoài hệ thống.
+CORE-001:
 
-## 4. Baseline chất lượng trước branch feature đầu tiên — P0
+- Issue assignee / Main Owner: `Hiep0718`.
+- Planned PR reviewer for CORE-001: `phihungdeptraino2`.
 
-- [ ] **P0 — Frontend:** lint, strict typecheck, unit test và production build đều pass.
-- [ ] **P0 — Core API:** Maven Wrapper `verify` pass và không bỏ qua test.
-- [ ] **P0 — AI Service:** Ruff, mypy, pytest và coverage tối thiểu 80% đều pass.
-- [ ] **P0 — Infrastructure:** Docker Compose config validation pass với environment mẫu.
-- [ ] **P0 — E2E:** Playwright happy path hiện có pass bằng browser đã cài.
-- [ ] **P0 — Fresh-clone verification:** ít nhất một thành viên chạy các gate trên từ clone mới, không phụ thuộc cache cục bộ của máy hiện tại.
-- [ ] **P0 — Ghi baseline vào issue:** đính kèm command/result hoặc liên kết GitHub Actions run trước khi feature code bắt đầu.
+Đây là phân công riêng của CORE-001, không phải reviewer policy cố định.
 
-## 5. Security và dữ liệu — P0
+## 2. Dependency và environment contract
 
-- [ ] **P0 — Đọc threat/permission contract:** cả hai thành viên xác nhận Core API là authorization owner và AI Service chỉ nhận `allowedDocumentIds`.
-  - Sources: `docs/specifications/threat-model.md`, `docs/specifications/permission-matrix.md`.
-- [ ] **P0 — Public-repository hygiene:** không đưa prompt, document content, token, private key, `.env`, raw evaluation data hoặc dữ liệu người dùng thật vào issue/log/fixture.
-- [ ] **P0 — Test data:** chỉ dùng fixture tổng hợp hoặc dữ liệu đã được cho phép; ghi nguồn và license cho dataset nghiên cứu.
-- [ ] **P0 — Logging policy:** không log token, prompt, chunk, toàn văn tài liệu hoặc secret; luôn giữ request ID và operation context.
-- [ ] **P0 — Dependency audit plan:** thống nhất thời điểm chạy npm audit, Maven dependency audit và Python OSV/pip checks cho từng PR/release.
+Cài dependencies từ manifest và/hoặc lockfile tương ứng của từng ecosystem đã được review.
 
-## 6. Gate bắt buộc trước retrieval, ChromaDB hoặc deploy — P0-CONDITIONAL
+| Ecosystem | Source được review | Quy tắc |
+|---|---|---|
+| Frontend | root `package.json`, `frontend/package.json`, root `package-lock.json` | Chạy `npm ci` tại root; không giả định lockfile riêng trong `frontend` |
+| Core API | `core-api/pom.xml`, Maven Wrapper | Không giả định Maven lockfile |
+| AI Service | `pyproject.toml`, requirements manifests, `requirements.lock.txt` | Exact-pin inventory hiện có; không mô tả là hash-locked |
 
-- [ ] **P0-CONDITIONAL — Đóng SEC-DEBT-001:** không bắt đầu Chroma-backed feature khi advisory Critical còn unresolved.
-- [ ] **P0-CONDITIONAL — Phê duyệt hướng remediation:** ưu tiên đánh giá official thin client `chromadb-client==0.6.3`; hướng toolchain/build tools cần approval riêng.
-- [ ] **P0-CONDITIONAL — Compatibility integration test:** chứng minh client kết nối, tạo collection, upsert, query và delete với server version đã khóa.
-- [ ] **P0-CONDITIONAL — Security regression:** chạy pip check, Ruff, mypy, pytest, Compose validation và OSV audit sau remediation.
-- [ ] **P0-CONDITIONAL — Network isolation:** chứng minh Chroma không mở host/Internet port và chỉ nằm trên private internal network.
-- [ ] **P0-CONDITIONAL — Evaluation plan:** chuẩn bị dataset manifest, development/holdout split và raw-result policy trước khi calibration threshold.
-- [ ] **P0-CONDITIONAL — Deployment approval:** mọi deploy cần phê duyệt riêng sau khi không còn Critical/High unresolved finding.
+- [ ] Mỗi developer xác nhận manifest/lockfile đã review trước khi cài.
+- [ ] `.env` local được tạo, bị Git-ignore và không xuất hiện trong evidence.
+- [ ] Không có private key, API key, raw token hoặc secret trong repository/log.
+- [ ] Documentation/evidence không chứa absolute local path hoặc local-file URI.
 
-## 7. CI/CD và repository hardening — P1
+### JWT key contract đã xác minh
 
-- [ ] **P1 — Chạy E2E trong CI:** thêm Playwright job hoặc stage cho critical happy path.
-- [ ] **P1 — Validate Compose trong CI:** thêm `docker compose config` để phát hiện drift sớm.
-- [ ] **P1 — Xử lý Actions deprecation:** nâng các GitHub Actions đang phát cảnh báo Node.js 20 compatibility lên phiên bản được duy trì.
-- [ ] **P1 — Dependency automation:** cân nhắc Dependabot/Renovate với PR nhỏ, pin version và bắt buộc review.
-- [ ] **P1 — Security scanning:** bật secret scanning, dependency review và code scanning phù hợp với public repository.
-- [ ] **P1 — Issue organization:** tạo labels/milestone cho P0, security debt, documentation, frontend, Core API, AI Service và infrastructure.
+- Core API hiện đọc `JWT_PUBLIC_KEY_LOCATION` để verify access JWT.
+- Core API hiện chưa đọc private key và chưa có signer.
+- Readiness `.env.example` chỉ phản ánh public-key implementation hiện tại.
+- CORE-001 sẽ bổ sung `JWT_PRIVATE_KEY_LOCATION` để ký access JWT.
+- Mỗi developer dùng một RSA access-token key pair 2048-bit riêng.
+- Service JWT key pair được hoãn tới service-authentication work item.
+- Không ghi raw key vào evidence; chỉ ghi public fingerprint/key length và
+  kiểm tra quyền file phù hợp.
 
-## 8. Definition of Ready — được phép bắt đầu code
+### Refresh-token hashing guardrail
 
-Chỉ đánh dấu `READY` khi tất cả điều kiện sau đúng:
+`REFRESH_TOKEN_PEPPER` không phải active readiness contract. Trước hashing
+subtask của CORE-001 phải chốt hashing strategy, pepper usage, configuration
+contract, hash versioning và rotation implications.
 
-- [ ] Tất cả mục **P0** liên quan work item đã hoàn tất hoặc có risk acceptance rõ ràng.
-- [ ] Work item có GitHub issue, owner, branch name, scope/non-scope và acceptance criteria.
-- [ ] Durable specifications không còn mâu thuẫn với code/config hiện tại trong phạm vi work item.
-- [ ] Cả hai thành viên có môi trường local tái lập và baseline pass.
-- [ ] `main` được bảo vệ và feature work chỉ merge qua pull request.
-- [ ] Không có Critical/High security finding unresolved trong dependency hoặc phạm vi sắp code.
-- [ ] Test plan bao gồm unit, integration và E2E/evidence tương ứng với thay đổi.
-- [ ] Mọi package/tool/service trả phí hoặc external provider mới đã có phê duyệt riêng.
+Gate này không block việc bắt đầu CORE-001 hoặc các subtask độc lập. Tuy nhiên,
+CORE-001 không được đánh dấu Done hoặc merge hoàn tất nếu decision chưa được
+phê duyệt và hashing subtask chưa đạt DoD.
 
-**Trạng thái Definition of Ready:** `NOT READY` — chờ hoàn tất P0 checklist.
+## 3. Readiness gate classification
 
-## 9. Handoff cho work item đầu tiên
+| Nhóm | Evidence | Blocking behavior |
+|---|---|---|
+| Mandatory blocker for `READY — CORE-001` | Hardening merge; protection active; required checks; issue/milestone; evidence hai máy; collaborator fresh-clone; PostgreSQL/Core health; Maven Wrapper; JWT environment | Failure giữ `NOT READY` |
+| Repository regression evidence | Frontend lint/typecheck/unit/build; Playwright; AI Ruff/mypy/pytest/coverage và non-Chroma health; Compose validation; repository CI | Failure block readiness/merge nhưng không phải CORE feature DoD |
+| Deferred/scoped `SEC-DEBT-001` | Chroma startup, compatibility, CRUD/retrieval integration, remediation và Chroma-dependent deployment | Không block non-Chroma CORE-001 trừ khi làm hỏng shared mandatory infrastructure |
 
-| Trường | Giá trị cần điền |
-|---|---|
-| Collaborator GitHub username |  |
-| GitHub issue |  |
-| Work item/task ID mới |  |
-| Owner |  |
-| Reviewer |  |
-| Feature branch |  |
-| Target milestone |  |
-| Affected components |  |
-| Required design documents |  |
-| Security gate |  |
-| Baseline evidence |  |
-| Approval reference |  |
+### Mandatory evidence trên mỗi máy
+
+- [ ] Node 24.18.0 và npm 11.16.0.
+- [ ] Java 21 và Maven Wrapper 3.9.16.
+- [ ] Python 3.13.14 cho AI Service.
+- [ ] Docker 29+ và Docker Compose 5+.
+- [ ] Dependency installation từ reviewed ecosystem sources.
+- [ ] PostgreSQL startup và `pg_isready` pass.
+- [ ] Core API startup và health pass.
+- [ ] `mvnw.cmd verify` pass trên Windows hoặc `./mvnw -B verify` pass trên Unix.
+- [ ] Frontend lint, strict typecheck, unit test và production build pass.
+- [ ] AI Ruff, mypy, pytest và coverage tối thiểu 80% pass.
+- [ ] `docker compose -f infra/compose.yaml config` pass.
+- [ ] Baseline Playwright pass.
+- [ ] Automated tests không gọi Gemini/Ollama hoặc external provider thật.
+
+Collaborator phải chạy evidence từ fresh clone của `main` trong thư mục mới.
+Evidence không được phụ thuộc cache của máy hiện tại.
+
+### Startup smoke
+
+- PostgreSQL và Core API là mandatory cho CORE-001 readiness.
+- AI `/internal/v1/health` là non-Chroma repository baseline.
+- Frontend được xác minh qua build và Playwright.
+- Chroma container running không chứng minh client/server compatibility.
+- Chroma-only compatibility/retrieval failure gắn với `SEC-DEBT-001`.
+- Chỉ block CORE-001 nếu Chroma làm shared mandatory infrastructure không chạy;
+  evidence phải nêu chính xác shared gate bị ảnh hưởng.
+
+## 4. Dependency audit gate
+
+- [ ] Required check `dependency-audit-policy` xuất hiện và pass trên PR.
+- [ ] Frontend npm audit, Maven resolved inventory và Python resolved inventory
+  đều được kiểm tra.
+- [ ] Warning/evidence của `SEC-DEBT-001` không bị che giấu.
+- [ ] `PASS_WITH_SCOPED_EXCEPTION` chỉ áp dụng cho exact finding và non-Chroma
+  change scope.
+- [ ] High/Critical mới, exception drift hoặc audit unavailable làm check fail.
+- [ ] Release audit fail khi `SEC-DEBT-001` còn open.
+
+Chi tiết exception nằm tại `.github/dependency-audit-exceptions.json` và
+`docs/security/deferred-security-remediation.md`.
+
+## 5. Branch protection bootstrap
+
+1. Implement check trên readiness branch.
+2. Sau approval, push branch và tạo PR qua approval riêng.
+3. Xác minh các check thực sự xuất hiện và pass:
+   `frontend`, `core-api`, `ai-service`, `dependency-audit-policy`.
+4. Chỉ sau đó cấu hình protection yêu cầu exact contexts, một approval, dismiss
+   stale approvals, áp dụng cho administrators và cấm force push/delete.
+5. Đọc lại active rule và required checks trước review/merge.
+
+Nếu GitHub chỉ nhận check đã chạy trên default branch:
+
+1. Dùng temporary protection với ba check hiện có và đầy đủ review rules.
+2. Merge readiness workflow sau approval.
+3. Chờ `dependency-audit-policy` chạy thành công trên `main`.
+4. Bổ sung check này vào protection và xác minh lại.
+5. Giữ `NOT READY` cho tới khi evidence hai máy hoàn tất.
+
+## 6. CORE-001 scope và Definition of Done
+
+Scope: Flyway migrations cho `users`/`refresh_tokens`, repositories, Argon2id,
+access JWT RS256 signer/verifier, refresh-token generation/hash/family
+primitives và tests. Non-scope: auth endpoints/UI, service JWT, AI/Chroma và
+deployment.
+
+- [ ] Flyway migration pass trên PostgreSQL sạch.
+- [ ] Schema, constraints và indexes của `users`/`refresh_tokens` được xác minh.
+- [ ] Repository integration tests pass.
+- [ ] Argon2id unit tests pass.
+- [ ] JWT RS256 signer/verifier unit tests pass.
+- [ ] Refresh-token generation, hashing và family primitive unit tests pass.
+- [ ] Hashing/pepper/configuration/rotation design decision đã được phê duyệt.
+- [ ] Không lưu plaintext password.
+- [ ] Không lưu plaintext refresh token.
+- [ ] Không log secret, private key, raw token hoặc sensitive credential.
+- [ ] Logic mới đạt tối thiểu 80% line/branch coverage.
+- [ ] Maven Wrapper pass trên Windows và Linux CI.
+- [ ] Feature E2E ghi `N/A` vì chưa có user-facing flow.
+- [ ] Baseline Playwright vẫn pass.
+
+CORE-001 không được đánh dấu Done, final approve hoặc merge hoàn tất trước khi
+toàn bộ DoD, bao gồm refresh-token hashing subtask, đạt.
+
+## 7. P1 không block CORE-001
+
+- PR/issue templates và `CODEOWNERS`.
+- Playwright/Compose validation trong CI.
+- Actions maintenance, dependency automation, secret/code scanning mở rộng.
+- Labels và organization automation.
+
+**Canonical status: `NOT READY`.**

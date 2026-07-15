@@ -7,7 +7,7 @@
 | Phase | design-architecture |
 | Task | TASK-005 |
 | Version | 1.0 |
-| Trạng thái | Ready for design approval |
+| Trạng thái | Approved — source of truth; implementation remains work-item gated |
 | Phương pháp | STRIDE + 8-layer defense |
 
 ## 1. Tài sản cần bảo vệ
