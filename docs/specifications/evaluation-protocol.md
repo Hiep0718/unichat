@@ -11,7 +11,7 @@
 | Fallback Reason | Không áp dụng cho artifact này |
 | Tool Discovery Method | Collaboration tools và nguồn nghiên cứu sơ cấp |
 | Version | 1.0 |
-| Trạng thái | Ready for design approval |
+| Trạng thái | Approved — source of truth; implementation remains work-item gated |
 
 ## 1. Câu hỏi nghiên cứu
 
@@ -117,4 +117,3 @@ Metric chính để kết luận H1 là source hit@K và citation source accurac
 - [Self-RAG — ICLR 2024](https://openreview.net/attachment?id=hSyW5go0v8&name=pdf) cho thấy lợi ích của quyết định retrieval/critique; UniChat chỉ áp dụng evidence decision đơn giản, không huấn luyện reflection token.
 - [Corrective Retrieval Augmented Generation](https://arxiv.org/abs/2401.15884) nhấn mạnh đánh giá chất lượng tài liệu truy hồi trước sinh; UniChat dùng Evidence Gate trong corpus được ủy quyền và không web-search.
 - [RAGAS — EACL 2024](https://aclanthology.org/2024.eacl-demo.16/) tách đánh giá retrieval, faithfulness và generation; UniChat ưu tiên nhãn thủ công có expected source, RAGAS là mở rộng.
-

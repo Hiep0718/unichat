@@ -7,7 +7,7 @@
 | Phase | design-architecture |
 | Task | TASK-012 |
 | Version | 2.0 |
-| Trạng thái | Ready for user design approval |
+| Trạng thái | Approved — source of truth; implementation remains work-item gated |
 | Product | AI Knowledge Platform for higher education |
 | P0 slice | Adaptive Knowledge Retrieval & Reasoning |
 
@@ -37,7 +37,7 @@ Reason: vector database không phải nguồn sự thật về quyền; reauthor
 
 ## ADR-005 — Authentication
 
-Decision: access JWT RS256 15 phút; refresh token opaque 256 bit 7 ngày, hash trong DB, rotation/family reuse revocation; cookie HttpOnly/Secure/SameSite Strict; access token trong memory; CSRF double-submit + Origin.
+Decision: access JWT RS256 15 phút; refresh token opaque 256 bit 7 ngày, hash trong DB, rotation/family reuse revocation; cookie HttpOnly/Secure/SameSite Strict; access token trong memory; CSRF double-submit + Origin. Hashing strategy, pepper usage, configuration contract và rotation implications phải được phê duyệt riêng trước refresh-token hashing implementation.
 
 Reason: không lưu access token lâu dài ở browser và phát hiện refresh token bị đánh cắp.
 
@@ -55,7 +55,7 @@ Reason: đủ độ tin cậy cho P0 mà không thêm Redis/RabbitMQ/Kafka.
 
 ## ADR-008 — Storage
 
-Decision: PostgreSQL 18.4 cho nghiệp vụ, ChromaDB 1.5.9 collection unichat_chunks_v1 cosine cho vector, local file storage sau StoragePort.
+Decision: PostgreSQL 18.4 cho nghiệp vụ, Chroma collection mục tiêu `unichat_chunks_v1` cosine cho vector, local file storage sau StoragePort. Python client hiện là `chromadb==1.5.9`, server hiện là `0.6.3`; compatibility contract chưa được chứng minh và chịu gate `SEC-DEBT-001`.
 
 Reason: relational constraints và vector retrieval rõ ràng; interface cho phép thay local storage bằng MinIO trong tương lai.
 
@@ -109,7 +109,7 @@ Reason: debug được mà không tạo kênh rò rỉ dữ liệu.
 
 ## ADR-017 — Version strategy
 
-Decision: direct dependency exact pin, lockfile/checksum được commit, Docker tag + digest, không caret/tilde/latest. TypeScript giữ 6.0.3 thay vì nhảy major 7 vừa phát hành.
+Decision: direct dependency exact pin; cài từ manifest và/hoặc lockfile tương ứng của từng ecosystem đã được review; không giả định ecosystem có lockfile khi repository không sử dụng. Docker image dùng tag + digest; không caret/tilde/latest. TypeScript giữ 6.0.3 thay vì nhảy major 7 vừa phát hành.
 
 Reason: reproducibility quan trọng hơn chạy theo major mới.
 
@@ -121,12 +121,12 @@ Reason: tách kiểm thử phần mềm khỏi đánh giá nghiên cứu và ng�
 
 ## Consequences
 
-- Cần nâng Node, JDK và Python trước scaffold/build.
+- Runtime đã được cung cấp theo version đã khóa; mỗi máy vẫn phải cung cấp evidence độc lập trước `READY — CORE-001`.
 - Ba service tăng cấu hình nhưng ranh giới ownership và bảo mật rõ.
 - Không có broker/object storage production-grade trong P0; interface và job schema giữ đường mở rộng.
 - Threshold ban đầu là giả thuyết, chỉ được thay qua calibration có version/hash.
 - Mọi thay đổi ADR ảnh hưởng contract phải tạo ADR mới hoặc version mới, không sửa ngầm.
 
-## Design approval gate
+## Implementation gate
 
-Chỉ chuyển implement-feature khi người dùng phê duyệt ADR, file plan, dependency/runtime list và cho phép riêng việc scaffold/init Git/cài dependency.
+Design đã được phê duyệt. Mỗi implementation work item vẫn phải qua readiness, scope, review, test và delivery approval gates tương ứng.

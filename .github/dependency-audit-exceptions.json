@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "exceptions": [
+    {
+      "id": "SEC-DEBT-001",
+      "status": "open",
+      "ecosystem": "PyPI",
+      "package": "chromadb",
+      "version": "1.5.9",
+      "advisoryIds": [
+        "CVE-2026-45829",
+        "GHSA-f4j7-r4q5-qw2c",
+        "PYSEC-2026-311"
+      ],
+      "severity": "CRITICAL",
+      "allowedOutcome": "PASS_WITH_SCOPED_EXCEPTION",
+      "allowedScope": "non-chroma-only",
+      "blocks": [
+        "Chroma-backed retrieval",
+        "Chroma client/server compatibility acceptance",
+        "Deployment with a Chroma-dependent execution path"
+      ],
+      "closureCriteria": [
+        "The advisory is absent from the resolved inventory",
+        "Client/server compatibility integration tests pass",
+        "Security regression checks pass"
+      ]
+    }
+  ]
+}

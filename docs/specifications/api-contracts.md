@@ -7,7 +7,7 @@
 | Phase | design-architecture |
 | Task | TASK-006 |
 | Version | 1.0 |
-| Trạng thái | Ready for design approval |
+| Trạng thái | Approved — source of truth; implementation remains work-item gated |
 | Public prefix | /api/v1 |
 | Internal prefix | /internal/v1 |
 
