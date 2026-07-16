@@ -21,9 +21,8 @@ export function LoginForm() {
 
   const loginMutation = useMutation({
     mutationFn: authApi.login,
-    onSuccess: (data) => {
+    onSuccess: () => {
       // In a real app, store the accessToken in memory or AuthContext
-      console.log('Login successful, token:', data.accessToken);
       navigate('/workspaces');
     },
     onError: (error: ApiError) => {

@@ -6,9 +6,9 @@ const API_BASE = '/api/v1';
 
 export class ApiError extends Error {
   public status: number;
-  public data: any;
+  public data: unknown;
 
-  constructor(status: number, message: string, data?: any) {
+  constructor(status: number, message: string, data?: unknown) {
     super(message);
     this.name = 'ApiError';
     this.status = status;
@@ -45,7 +45,8 @@ export async function fetchJson<T>(
     
     // Extract first validation error if present (RFC 7807 Problem Detail format)
     if (data?.fieldErrors && typeof data.fieldErrors === 'object') {
-      const fieldMessages = Object.values(data.fieldErrors).flat();
+      const fieldErrorsObj = data.fieldErrors as Record<string, unknown>;
+      const fieldMessages = Object.values(fieldErrorsObj).flat();
       if (fieldMessages.length > 0) {
         message = fieldMessages[0] as string;
       }
