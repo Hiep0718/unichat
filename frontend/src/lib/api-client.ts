@@ -41,7 +41,16 @@ export async function fetchJson<T>(
   }
 
   if (!response.ok) {
-    const message = data?.message || data?.title || 'Đã xảy ra lỗi hệ thống';
+    let message = data?.title || data?.message || 'Đã xảy ra lỗi hệ thống';
+    
+    // Extract first validation error if present (RFC 7807 Problem Detail format)
+    if (data?.fieldErrors && typeof data.fieldErrors === 'object') {
+      const fieldMessages = Object.values(data.fieldErrors).flat();
+      if (fieldMessages.length > 0) {
+        message = fieldMessages[0] as string;
+      }
+    }
+
     throw new ApiError(response.status, message, data);
   }
 
