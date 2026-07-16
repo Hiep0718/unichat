@@ -1,0 +1,112 @@
+/* Login Page */
+
+.login-page {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-background);
+  overflow: hidden;
+}
+
+.login-page__bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.4;
+}
+
+.login-page__blob {
+  position: absolute;
+  border-radius: var(--radius-full);
+  mix-blend-mode: multiply;
+}
+
+.login-page__blob--1 {
+  top: -10%;
+  left: -10%;
+  width: 50%;
+  height: 50%;
+  background: var(--color-primary-container);
+  filter: blur(120px);
+}
+
+.login-page__blob--2 {
+  bottom: -10%;
+  right: -10%;
+  width: 60%;
+  height: 60%;
+  background: var(--color-surface-container-high);
+  filter: blur(140px);
+}
+
+.login-page__blob--3 {
+  top: 20%;
+  right: 10%;
+  width: 30%;
+  height: 30%;
+  background: var(--color-secondary-container);
+  filter: blur(100px);
+  opacity: 0.5;
+}
+
+.login-page__main {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 448px;
+  padding: var(--margin-mobile);
+}
+
+.login-page__logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--stack-sm);
+  margin-bottom: var(--stack-lg);
+}
+
+.login-page__logo-icon {
+  width: 40px;
+  height: 40px;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  border-radius: var(--radius-xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.login-page__logo-text {
+  font: var(--font-headline-xl);
+  color: var(--color-primary);
+}
+
+.login-page__badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--stack-sm);
+  width: max-content;
+  margin: var(--stack-lg) auto 0;
+  padding: 8px 16px;
+  background: rgba(240, 243, 255, 0.5);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(197, 197, 211, 0.3);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-sm);
+  font: var(--font-label-sm);
+  color: var(--color-on-surface-variant);
+}
+
+.login-page__badge-icon {
+  color: var(--color-secondary);
+}
+
+@media (min-width: 768px) {
+  .login-page__main {
+    padding: var(--gutter);
+  }
+}

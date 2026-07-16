@@ -19,6 +19,7 @@
     "e2e:install": "playwright install chromium"
   },
   "dependencies": {
+    "@fontsource-variable/inter": "^5.2.8",
     "@fontsource/be-vietnam-pro": "5.2.8",
     "@tanstack/react-query": "5.101.2",
     "react": "19.2.7",

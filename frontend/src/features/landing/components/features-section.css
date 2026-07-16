@@ -1,0 +1,118 @@
+/* Features Section */
+
+.features {
+  padding: 96px 0;
+  background: var(--color-surface-container-lowest);
+}
+
+.features__inner {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+.features__header {
+  text-align: center;
+  max-width: 672px;
+  margin: 0 auto 64px;
+}
+
+.features__title {
+  font: var(--font-headline-lg);
+  font-weight: 700;
+  color: var(--color-on-surface);
+  margin-bottom: var(--stack-md);
+}
+
+.features__subtitle {
+  font: var(--font-body-lg);
+  color: var(--color-on-surface-variant);
+}
+
+.features__grid {
+  display: grid;
+  gap: var(--gutter);
+}
+
+.features__card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 32px;
+  min-height: 280px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-2xl);
+  overflow: hidden;
+  transition: border-color var(--transition-normal);
+}
+
+.features__card:hover {
+  border-color: var(--color-primary-container);
+}
+
+.features__card--dark {
+  background: var(--color-inverse-surface);
+}
+
+.features__card--dark .features__card-title {
+  color: var(--color-surface);
+}
+
+.features__card--dark .features__card-desc {
+  color: var(--color-surface-variant);
+}
+
+.features__card-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-xl);
+  margin-bottom: var(--stack-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.features__card--primary .features__card-icon {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.features__card--secondary .features__card-icon {
+  background: var(--color-secondary-container);
+  color: var(--color-on-secondary-container);
+}
+
+.features__card--tertiary .features__card-icon {
+  background: var(--color-tertiary-container);
+  color: var(--color-on-tertiary);
+}
+
+.features__card--dark .features__card-icon {
+  background: var(--color-surface-container-highest);
+  color: var(--color-on-surface);
+}
+
+.features__card-title {
+  font: var(--font-headline-md);
+  font-weight: 700;
+  color: var(--color-on-surface);
+  margin-bottom: var(--stack-sm);
+}
+
+.features__card-desc {
+  font: var(--font-body-md);
+  color: var(--color-on-surface-variant);
+  max-width: 480px;
+}
+
+@media (min-width: 768px) {
+  .features__grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .features__card--span2 {
+    grid-column: span 2;
+  }
+}
