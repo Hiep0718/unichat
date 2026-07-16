@@ -2,7 +2,7 @@ spring:
   application:
     name: unichat-core-api
   datasource:
-    url: ${POSTGRES_URL:jdbc:postgresql://localhost:5432/unichat}
+    url: ${POSTGRES_URL:jdbc:postgresql://127.0.0.1:5432/unichat?options=-c%20TimeZone=Asia/Ho_Chi_Minh}
     username: ${POSTGRES_USER:unichat}
     password: ${POSTGRES_PASSWORD}
   flyway:
@@ -18,7 +18,7 @@ spring:
           public-key-location: ${JWT_PUBLIC_KEY_LOCATION}
 
 server:
-  port: ${CORE_API_PORT:8080}
+  port: ${CORE_API_PORT:8082}
   shutdown: graceful
 
 management:
