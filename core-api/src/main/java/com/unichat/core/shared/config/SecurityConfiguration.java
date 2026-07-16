@@ -2,10 +2,22 @@ package com.unichat.core.shared.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+
+import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
+import com.nimbusds.jose.jwk.source.JWKSource;
+import com.nimbusds.jose.proc.SecurityContext;
 
 /**
  * Defines the stateless Core API security boundary.
@@ -14,7 +26,35 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfiguration {
 
     /**
-     * Allows health probes and requires a valid bearer token elsewhere.
+     * BCrypt password encoder for securing user passwords.
+     */
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    /**
+     * Configures the JWT Decoder with the public key.
+     */
+    @Bean
+    public JwtDecoder jwtDecoder(JwtKeyProvider keyProvider) {
+        return NimbusJwtDecoder.withPublicKey(keyProvider.getPublicKey()).build();
+    }
+
+    /**
+     * Configures the JWT Encoder with both public and private keys for token generation.
+     */
+    @Bean
+    public JwtEncoder jwtEncoder(JwtKeyProvider keyProvider) {
+        JWK jwk = new RSAKey.Builder(keyProvider.getPublicKey())
+                .privateKey(keyProvider.getPrivateKey())
+                .build();
+        JWKSource<SecurityContext> jwks = new ImmutableJWKSet<>(new JWKSet(jwk));
+        return new NimbusJwtEncoder(jwks);
+    }
+
+    /**
+     * Allows health probes and auth endpoints, and requires a valid bearer token elsewhere.
      *
      * @param http Spring Security HTTP builder
      * @return configured filter chain
@@ -23,13 +63,15 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http) throws Exception {
         http
+            .csrf(csrf -> csrf.disable())
             .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers("/api/v1/health", "/actuator/health").permitAll()
+                .requestMatchers("/api/v1/health", "/actuator/health", "/api/v1/auth/**").permitAll()
+                .requestMatchers("/api/v1/admin/**").hasAuthority("SCOPE_ADMIN")
                 .anyRequest().authenticated())
             .oauth2ResourceServer(resourceServer ->
-                resourceServer.jwt(Customizer.withDefaults()));
+                resourceServer.jwt(jwt -> {}));
         return http.build();
     }
 }
