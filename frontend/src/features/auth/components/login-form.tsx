@@ -3,9 +3,12 @@
  */
 
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useMutation } from '@tanstack/react-query';
 
 import { Icon } from '../../../components/icon';
+import { authApi } from '../api/auth-api';
+import type { ApiError } from '../../../lib/api-client';
 import './login-form.css';
 
 /**
@@ -13,10 +16,29 @@ import './login-form.css';
  */
 export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const navigate = useNavigate();
+
+  const loginMutation = useMutation({
+    mutationFn: authApi.login,
+    onSuccess: (data) => {
+      // In a real app, store the accessToken in memory or AuthContext
+      console.log('Login successful, token:', data.accessToken);
+      navigate('/workspaces');
+    },
+    onError: (error: ApiError) => {
+      setErrorMsg(error.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
+    },
+  });
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // TODO: wire to auth API
+    setErrorMsg(null);
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+    
+    loginMutation.mutate({ email, password });
   };
 
   return (
@@ -27,6 +49,13 @@ export function LoginForm() {
           Truy cập không gian làm việc RAG của bạn
         </p>
       </div>
+
+      {errorMsg && (
+        <div className="login-form__error">
+          <Icon name="error" size={18} />
+          {errorMsg}
+        </div>
+      )}
 
       <form className="login-form" onSubmit={handleSubmit}>
         <div className="login-form__field">
@@ -79,9 +108,13 @@ export function LoginForm() {
           </label>
         </div>
 
-        <button className="login-form__submit" type="submit">
-          Đăng nhập
-          <Icon name="arrow_forward" size={18} />
+        <button 
+          className="login-form__submit" 
+          type="submit"
+          disabled={loginMutation.isPending}
+        >
+          {loginMutation.isPending ? 'Đang xử lý...' : 'Đăng nhập'}
+          {!loginMutation.isPending && <Icon name="arrow_forward" size={18} />}
         </button>
       </form>
 

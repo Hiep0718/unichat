@@ -6,6 +6,17 @@
   gap: 20px;
 }
 
+.register-form__error {
+  display: flex;
+  align-items: center;
+  gap: var(--stack-sm);
+  padding: 12px;
+  background: var(--color-error-container);
+  color: var(--color-on-error-container);
+  border-radius: var(--radius-lg);
+  font: var(--font-label-sm);
+}
+
 .register-form__field {
   display: flex;
   flex-direction: column;
@@ -83,11 +94,16 @@
   border: none;
   border-radius: var(--radius-lg);
   cursor: pointer;
-  transition: background var(--transition-fast);
+  transition: background var(--transition-fast), opacity var(--transition-fast);
 }
 
-.register-form__submit:hover {
+.register-form__submit:hover:not(:disabled) {
   background: var(--color-on-primary-fixed-variant);
+}
+
+.register-form__submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 .register-form__footer {

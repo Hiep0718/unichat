@@ -26,6 +26,18 @@
   color: var(--color-on-surface-variant);
 }
 
+.login-form__error {
+  display: flex;
+  align-items: center;
+  gap: var(--stack-sm);
+  padding: 12px;
+  margin-bottom: var(--stack-md);
+  background: var(--color-error-container);
+  color: var(--color-on-error-container);
+  border-radius: var(--radius-lg);
+  font: var(--font-label-sm);
+}
+
 .login-form {
   display: flex;
   flex-direction: column;
@@ -152,11 +164,16 @@
   border-radius: var(--radius-xl);
   cursor: pointer;
   box-shadow: var(--shadow-sm);
-  transition: background var(--transition-fast);
+  transition: background var(--transition-fast), opacity var(--transition-fast);
 }
 
-.login-form__submit:hover {
+.login-form__submit:hover:not(:disabled) {
   background: var(--color-on-primary-fixed-variant);
+}
+
+.login-form__submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 .login-card__footer {
