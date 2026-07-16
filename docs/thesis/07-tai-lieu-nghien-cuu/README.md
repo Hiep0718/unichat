@@ -1,6 +1,6 @@
 # Tài liệu nghiên cứu đề tài UniChat
 
-Thư mục này tổng hợp các tài liệu nền phù hợp với đề tài **UniChat - Trợ lý hỏi đáp tài liệu học tập ứng dụng công nghệ RAG**. Danh mục ưu tiên nguồn chính thức, paper open-access và trang sách hợp pháp. Không lưu bản sao sách/PDF có bản quyền khi không có quyền phân phối.
+Thư mục này tổng hợp các tài liệu nền phù hợp với đề tài **UNICHAT - NỀN TẢNG QUẢN TRỊ VÀ KHAI THÁC TRI THỨC HỌC TẬP ỨNG DỤNG AI**. Danh mục ưu tiên nguồn chính thức, paper open-access và trang sách hợp pháp. Không lưu bản sao sách/PDF có bản quyền khi không có quyền phân phối.
 
 ## Cách dùng cho báo cáo khóa luận
 
