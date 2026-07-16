@@ -21,8 +21,8 @@ export function LoginForm() {
 
   const loginMutation = useMutation({
     mutationFn: authApi.login,
-    onSuccess: () => {
-      // In a real app, store the accessToken in memory or AuthContext
+    onSuccess: (data) => {
+      localStorage.setItem('accessToken', data.accessToken);
       navigate('/workspaces');
     },
     onError: (error: ApiError) => {
@@ -76,7 +76,7 @@ export function LoginForm() {
         <div className="login-form__field">
           <div className="login-form__label-row">
             <label className="login-form__label" htmlFor="login-password">Mật khẩu</label>
-            <a href="#" className="login-form__forgot">Quên mật khẩu?</a>
+            <Link to="/forgot-password" className="login-form__forgot">Quên mật khẩu?</Link>
           </div>
           <div className="login-form__input-wrap">
             <Icon name="lock" size={20} className="login-form__icon" />

@@ -23,10 +23,12 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final Clock clock;
+    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, Clock clock) {
+    public UserService(UserRepository userRepository, Clock clock, org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.clock = clock;
+        this.passwordEncoder = passwordEncoder;
     }
 
     /**
@@ -67,6 +69,23 @@ public class UserService {
 
         userRepository.save(user);
         return UserResponse.from(user);
+    }
+
+    /**
+     * Changes the user's password.
+     */
+    @Transactional
+    public void changePassword(UUID userId, com.unichat.core.user.api.ChangePasswordRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundError("Người dùng không tồn tại"));
+
+        if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
+            throw new com.unichat.core.common.error.ValidationError("Mật khẩu hiện tại không chính xác");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
+        user.setUpdatedAt(Instant.now(clock));
+        userRepository.save(user);
     }
 
     private static class ChronoUnit {

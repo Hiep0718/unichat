@@ -16,6 +16,17 @@ spring:
       resourceserver:
         jwt:
           public-key-location: ${JWT_PUBLIC_KEY_LOCATION}
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
 server:
   port: ${CORE_API_PORT:8082}

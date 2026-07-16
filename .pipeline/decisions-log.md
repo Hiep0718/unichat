@@ -290,3 +290,32 @@
   Rationale: The Academic Precision design system specification in `DESIGN.md` explicitly defines `Inter` as the standard font family for the application.
 
 
+## 2026-07-16 - Password Change Feature Backend and Frontend Integration
+
+- Decision: Add `changePassword` endpoint in backend `UserController` and `UserService` using `@PatchMapping("/users/me/password")`.
+  Rationale: Password update is a user profile mutation rather than authentication state management, fitting into user service operations.
+
+- Decision: Implement custom `ChangePasswordRequest` DTO and enforce strict password length validation (12-128 characters) on both backend and frontend.
+  Rationale: Keeping validation symmetrical between client and server prevents unexpected API rejections and guarantees credential security.
+
+- Decision: Store `accessToken` in `localStorage` upon successful login, and update frontend `fetchJson` to automatically append the Bearer header and handle token rotation on 401 response status.
+  Rationale: This abstracts token attachment and rotation, ensuring all future features automatically get authenticated requests without duplicate logic.
+
+- Decision: Prioritize the `detail` property over `title` in frontend API response parsing within `fetchJson`.
+  Rationale: Backend errors conforming to RFC 7807 put specific failure details (e.g., "Mật khẩu hiện tại không chính xác") in the `detail` property, while the generic error type name goes into `title` ("Lỗi hệ thống", "Dữ liệu không hợp lệ"). Prioritizing `detail` ensures specific error reasons are clearly rendered to the end user.
+
+- Decision: Use the white version logo (`logo-white.png`) inside `SideNavBar` instead of the blue version.
+  Rationale: Using the white variant logo matches the overall system UI style design requirements in DESIGN.md.
+
+- Decision: Add a logout button to the settings sidebar linked to the `/auth/logout` API.
+  Rationale: Providing a direct, accessible way to terminate the active session and revoke the token conforms to user security requirements and session life cycle design.
+
+- Decision: Create an OTP-based password reset feature with `/auth/forgot-password` and `/auth/reset-password` endpoints, storing the temporary OTPs in a dedicated PostgreSQL table `password_reset_otps`.
+  Rationale: Keeping the OTP state in PostgreSQL allows our services to stay stateless and configuration-driven while ensuring correct OTP expiration and clean lifecycle management without adding high-complexity brokers like Redis for P0.
+
+- Decision: Integrate `spring-boot-starter-mail` and configure JavaMailSender to send actual emails via Gmail SMTP, with username and password parameters loaded dynamically from `.env` environment variables. Include a robust try-catch fallback to console logging so mail transmission failures do not break the API lifecycle flow.
+  Rationale: This provides a production-ready real email sending mechanism while maintaining a dev-friendly fallback when SMTP configuration is missing or incorrect.
+
+
+
+

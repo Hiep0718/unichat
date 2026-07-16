@@ -22,8 +22,10 @@ export interface AuthResponse {
 export interface UserResponse {
   id: string;
   email: string;
-  role: string;
+  systemRole: 'USER' | 'ADMIN';
+  status: 'ACTIVE' | 'LOCKED';
   createdAt: string;
+  updatedAt: string;
 }
 
 export const authApi = {
@@ -42,6 +44,44 @@ export const authApi = {
    */
   register: (data: RegisterRequest): Promise<UserResponse> => {
     return fetchJson('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  /**
+   * Get the current authenticated user's profile.
+   */
+  getMe: (): Promise<UserResponse> => {
+    return fetchJson('/users/me', {
+      method: 'GET',
+    });
+  },
+
+  /**
+   * Log out the current user session.
+   */
+  logout: (): Promise<void> => {
+    return fetchJson('/auth/logout', {
+      method: 'POST',
+    });
+  },
+
+  /**
+   * Initiate forgot password flow by requesting an OTP.
+   */
+  forgotPassword: (data: { email: string }): Promise<void> => {
+    return fetchJson('/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  /**
+   * Complete password reset using email, OTP, and new password.
+   */
+  resetPassword: (data: { email: string; otp: string; newPassword: string }): Promise<void> => {
+    return fetchJson('/auth/reset-password', {
       method: 'POST',
       body: JSON.stringify(data),
     });

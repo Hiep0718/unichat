@@ -3,36 +3,38 @@
  * Displays logo, upload CTA, navigation items, and admin link.
  */
 
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 import { Icon } from './icon';
+import logoWhite from '../assets/logo-white.png';
 import './side-nav-bar.css';
 
 interface NavItem {
   readonly icon: string;
   readonly label: string;
   readonly href: string;
-  readonly active?: boolean;
 }
 
 const NAV_ITEMS: readonly NavItem[] = [
-  { icon: 'dashboard', label: 'Tổng quan', href: '#' },
-  { icon: 'workspaces', label: 'Không gian làm việc', href: '/workspaces', active: true },
-  { icon: 'description', label: 'Tài liệu', href: '#' },
-  { icon: 'chat', label: 'Trò chuyện', href: '#' },
-  { icon: 'history', label: 'Lịch sử', href: '#' },
-  { icon: 'settings', label: 'Cài đặt', href: '#' },
+  { icon: 'dashboard', label: 'Tổng quan', href: '/' },
+  { icon: 'workspaces', label: 'Không gian làm việc', href: '/workspaces' },
+  { icon: 'description', label: 'Tài liệu', href: '/documents' },
+  { icon: 'chat', label: 'Trò chuyện', href: '/chat' },
+  { icon: 'history', label: 'Lịch sử', href: '/history' },
+  { icon: 'settings', label: 'Cài đặt', href: '/settings' },
 ];
 
 /**
  * Renders the fixed left sidebar navigation used on authenticated pages.
  */
 export function SideNavBar() {
+  const location = useLocation();
+
   return (
     <nav className="side-nav" aria-label="Thanh điều hướng chính">
       <div className="side-nav__header">
         <div className="side-nav__avatar">
-          <Icon name="school" filled size={20} />
+          <img src={logoWhite} alt="UniChat Logo" width="32" height="32" style={{ objectFit: 'contain' }} />
         </div>
         <div>
           <h1 className="side-nav__title">UniChat</h1>
@@ -50,7 +52,7 @@ export function SideNavBar() {
           <Link
             key={item.icon}
             to={item.href}
-            className={`side-nav__item ${item.active ? 'side-nav__item--active' : ''}`}
+            className={`side-nav__item ${location.pathname === item.href ? 'side-nav__item--active' : ''}`}
           >
             <Icon name={item.icon} size={20} />
             {item.label}
