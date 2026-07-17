@@ -69,7 +69,7 @@ flowchart LR
 
 | Khía cạnh | RAG Chatbot ban đầu | AI Knowledge Platform | Ý nghĩa đối với UniChat |
 |---|---|---|---|
-| Định vị | Trợ lý hỏi đáp tài liệu học tập | Nền tảng quản trị và khai thác tri thức bằng AI | Tên đề tài và phần giới thiệu phải nhấn mạnh tri thức, không chỉ chat |
+| Định vị | Trợ lý hỏi đáp tài liệu học tập | UNICHAT - NỀN TẢNG QUẢN TRỊ VÀ KHAI THÁC TRI THỨC HỌC TẬP ỨNG DỤNG AI | Tên đề tài và phần giới thiệu phải nhấn mạnh tri thức, không chỉ chat |
 | Vấn đề trung tâm | Khó tìm câu trả lời trong nhiều tài liệu | Tri thức phân tán, trùng lặp, khó tổ chức, truy xuất và kiểm chứng | Bài toán rộng hơn và có giá trị sản phẩm dài hạn hơn |
 | Đơn vị cốt lõi | Conversation và tài liệu upload | Knowledge Space, tài liệu, metadata và lịch sử khai thác | Workspace được giữ lại nhưng được giải thích như Knowledge Space |
 | Vai trò của chat | Trải nghiệm chính của sản phẩm | Một giao diện truy cập nền tảng | UI vẫn có chat nhưng kiến trúc không phụ thuộc hoàn toàn vào chat |
