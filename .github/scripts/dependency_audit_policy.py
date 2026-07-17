@@ -27,7 +27,6 @@ CHROMA_MANIFEST_PATHS = frozenset(
         "ai-service/requirements.txt",
         "ai-service/requirements-dev.txt",
         "ai-service/requirements.lock.txt",
-        "infra/compose.yaml",
     }
 )
 

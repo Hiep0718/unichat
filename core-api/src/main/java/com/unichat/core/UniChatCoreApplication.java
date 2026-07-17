@@ -9,6 +9,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class UniChatCoreApplication {
 
+    static {
+        java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
+    }
+
+
     /**
      * Starts Spring Boot with environment-driven configuration.
      *
