@@ -1,0 +1,109 @@
+/* Side Navigation Bar (authenticated layout) */
+
+.side-nav {
+  display: none;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: var(--sidebar-width);
+  height: 100%;
+  flex-direction: column;
+  padding: var(--stack-md);
+  gap: var(--stack-sm);
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-outline-variant);
+  overflow-y: auto;
+  z-index: 40;
+}
+
+.side-nav__header {
+  display: flex;
+  align-items: center;
+  gap: var(--stack-sm);
+  padding: 12px 16px;
+  margin-bottom: var(--stack-lg);
+}
+
+.side-nav__avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.side-nav__title {
+  font: var(--font-headline-md);
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.side-nav__subtitle {
+  font: var(--font-label-sm);
+  color: var(--color-on-surface-variant);
+}
+
+.side-nav__upload-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--stack-sm);
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  border: none;
+  border-radius: var(--radius-xl);
+  font: var(--font-label-md);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 16px;
+  transition: opacity var(--transition-fast);
+}
+
+.side-nav__upload-btn:hover {
+  opacity: 0.9;
+}
+
+.side-nav__items {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.side-nav__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: var(--radius-xl);
+  color: var(--color-on-surface-variant);
+  font: var(--font-body-md);
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.side-nav__item:hover {
+  background: var(--color-surface-container-high);
+}
+
+.side-nav__item--active {
+  background: var(--color-primary-container);
+  color: var(--color-on-primary-container);
+  font-weight: 700;
+}
+
+.side-nav__footer {
+  margin-top: auto;
+  padding-top: var(--stack-md);
+  border-top: 1px solid var(--color-outline-variant);
+}
+
+@media (min-width: 768px) {
+  .side-nav {
+    display: flex;
+  }
+}

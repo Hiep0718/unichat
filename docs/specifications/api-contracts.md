@@ -30,9 +30,16 @@
 | POST | /auth/login | Trả access token; đặt refresh cookie | Không |
 | POST | /auth/refresh | Xoay refresh token, trả access token mới | Không |
 | POST | /auth/logout | Thu hồi token family hiện tại | Có |
+| POST | /auth/forgot-password | Gửi OTP 6 chữ số qua email để khôi phục mật khẩu | Không |
+| POST | /auth/reset-password | Xác minh OTP và cập nhật mật khẩu mới | Không |
 | GET | /users/me | Hồ sơ người dùng hiện tại | Không |
+| PATCH | /users/me/password | Đổi mật khẩu người dùng đang đăng nhập | Không |
 
 Register/login validation: email hợp lệ tối đa 254 ký tự; password 12–128 ký tự. Client không nhận password policy internals hoặc lý do tài khoản tồn tại trong flow nhạy cảm.
+
+Forgot-password gửi OTP 6 chữ số qua email, hết hạn sau 5 phút. Reset-password yêu cầu email, OTP và mật khẩu mới (12–128 ký tự). OTP bị xóa sau khi sử dụng thành công. Endpoint trả response đồng nhất bất kể email có tồn tại hay không để ngăn enumeration.
+
+Change-password yêu cầu mật khẩu hiện tại và mật khẩu mới (12–128 ký tự); trả 204 khi thành công, VALIDATION_ERROR khi mật khẩu hiện tại sai.
 
 ## 3. Workspace và thành viên
 

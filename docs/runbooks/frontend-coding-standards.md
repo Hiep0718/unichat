@@ -144,3 +144,29 @@ Trước khi commit và push code lên GitHub, hãy đảm bảo chạy các l�
   * `style: ...` (định dạng code, css, không đổi logic)
   * `refactor: ...` (tái cấu trúc code)
   * `test: ...` (thêm hoặc sửa test)
+
+---
+
+## 9. Bài Học Kinh Nghiệm & Khắc Phục Lỗi CI Thường Gặp (CI Troubleshooting)
+
+Dưới đây là tổng hợp các nguyên nhân phổ biến khiến hệ thống CI (GitHub Actions) thất bại khi tạo Pull Request và cách phòng tránh:
+
+### 9.1. Lỗi `npm ci` fail vì `package-lock.json` không đồng bộ
+* **Nguyên nhân**: Khi cài đặt thêm thư viện mới (ví dụ `npm install <package> --workspace frontend`), file `frontend/package.json` được cập nhật nhưng lập trình viên **quên commit** file `package-lock.json` ở thư mục gốc (root workspace). Lệnh `npm ci` trên CI rất khắt khe, nếu phát hiện sự bất đồng bộ giữa `package.json` và `package-lock.json`, nó sẽ báo lỗi và dừng tiến trình ngay lập tức.
+* **Cách khắc phục**: Luôn chạy `git status` ở thư mục gốc và đảm bảo đã `git add package-lock.json` mỗi khi có thay đổi về dependencies.
+
+### 9.2. Lỗi Typecheck (TypeScript) khi import CSS từ node_modules
+* **Nguyên nhân**: Import một package thuần CSS bằng cú pháp `import '@fontsource-variable/inter';` có thể hoạt động tốt trên Vite (do Vite tự resolve), nhưng `tsc` (TypeScript compiler) sẽ báo lỗi `Cannot find module or type declarations` vì không tìm thấy file `.d.ts`.
+* **Cách khắc phục**: Khai báo rõ đuôi `.css` trong lệnh import (ví dụ: `import '@fontsource-variable/inter/index.css';`). TypeScript sẽ áp dụng module wildcard `declare module '*.css'` có sẵn để bỏ qua cảnh báo.
+
+### 9.3. Lỗi Unit Test (RTL / Vitest) do Lazy Loading và Suspense
+* **Nguyên nhân**: Khi tái cấu trúc ứng dụng sang React Router với `React.lazy()` và `<Suspense>`, component sẽ mất một khoảng thời gian nhỏ (bất đồng bộ) để tải chunk JavaScript. Nếu Unit test sử dụng các lệnh truy vấn đồng bộ như `screen.getByRole()` hay `screen.getByText()`, nó sẽ bị thất bại do lúc đó DOM chỉ đang hiển thị Fallback (ví dụ: chữ "Đang tải...").
+* **Cách khắc phục**: Chuyển sang sử dụng các truy vấn bất đồng bộ `await screen.findByRole()` hoặc `await waitFor(...)` để chờ đến khi giao diện thực sự được render xong.
+
+### 9.4. Lỗi ESLint (Lint)
+* **Nguyên nhân**: Bỏ quên các lệnh `console.log(...)` dùng để debug, hoặc sử dụng kiểu dữ liệu `any` trong TypeScript.
+* **Cách khắc phục**: Luôn luôn chạy lệnh `npm run lint` ở máy local trước khi commit. Đổi `any` thành `unknown` hoặc một Generic type cụ thể. Xóa bỏ hoàn toàn `console.log` trước khi push code.
+
+### 9.5. Lỗi fail dây chuyền từ Dependency Audit Policy
+* **Nguyên nhân**: Nhánh tính năng (feature branch) được tách ra từ nhánh `main` ở một thời điểm cũ (trước khi các bản vá lỗi CI/CD được merge). Điều này khiến nhánh tính năng vẫn sử dụng kịch bản CI cũ gây ra lỗi "False positive" (báo lỗi sai).
+* **Cách khắc phục**: Thường xuyên đồng bộ (`git rebase main` hoặc `git merge main`) vào nhánh tính năng của bạn để cập nhật những thay đổi mới nhất về cấu trúc hạ tầng và kịch bản CI/CD.

@@ -137,6 +137,17 @@ public class TokenService {
         });
     }
 
+    /**
+     * Revokes all active tokens for a specific user.
+     */
+    @Transactional
+    public void revokeAllTokensByUser(UUID userId) {
+        Instant now = Instant.now(clock);
+        refreshTokenRepository.findByUserIdAndRevokedAtIsNull(userId).forEach(t -> {
+            t.setRevokedAt(now);
+        });
+    }
+
     public UUID getUserIdFromRefreshToken(String rawToken) {
         String hash = hashToken(rawToken);
         return refreshTokenRepository.findByTokenHash(hash)

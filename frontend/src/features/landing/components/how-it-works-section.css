@@ -1,0 +1,110 @@
+/* How It Works Section */
+
+.how-it-works {
+  padding: 96px 0;
+  background: var(--color-surface);
+}
+
+.how-it-works__inner {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+.how-it-works__title {
+  font: var(--font-headline-lg);
+  font-weight: 700;
+  color: var(--color-on-surface);
+  text-align: center;
+  margin-bottom: 64px;
+}
+
+.how-it-works__steps {
+  display: grid;
+  gap: 32px;
+  position: relative;
+}
+
+.step-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.step-card__icon-box {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  background: var(--color-surface-container-lowest);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--stack-lg);
+  transition: border-color var(--transition-normal);
+}
+
+.step-card:hover .step-card__icon-box {
+  border-color: var(--color-primary);
+}
+
+.step-card:hover .step-card__icon {
+  transform: scale(1.1);
+}
+
+.step-card__icon {
+  transition: transform var(--transition-normal);
+}
+
+.step-card__number {
+  position: absolute;
+  top: -12px;
+  left: -12px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  color: white;
+  font: var(--font-label-md);
+}
+
+.step-card__title {
+  font: var(--font-headline-md);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-on-surface);
+  margin-bottom: var(--stack-sm);
+}
+
+.step-card__desc {
+  font: var(--font-body-md);
+  color: var(--color-on-surface-variant);
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  .how-it-works__steps {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  /* Connecting line behind the step icons */
+  .how-it-works__steps::before {
+    content: '';
+    position: absolute;
+    top: 48px;
+    left: 10%;
+    right: 10%;
+    height: 2px;
+    background: var(--color-outline-variant);
+    z-index: 0;
+  }
+
+  .step-card__icon-box {
+    z-index: 1;
+  }
+}

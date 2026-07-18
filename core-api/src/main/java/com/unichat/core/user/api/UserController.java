@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.unichat.core.user.api.ChangePasswordRequest;
 import com.unichat.core.user.service.UserService;
 
 /**
@@ -64,5 +65,17 @@ public class UserController {
             @PathVariable("userId") UUID userId,
             @Valid @RequestBody UpdateUserStatusRequest request) {
         return ResponseEntity.ok(userService.updateStatus(userId, request.status()));
+    }
+
+    /**
+     * Changes the password of the authenticated user.
+     */
+    @PatchMapping("/users/me/password")
+    public ResponseEntity<Void> changePassword(
+            @AuthenticationPrincipal org.springframework.security.oauth2.jwt.Jwt jwt,
+            @Valid @RequestBody ChangePasswordRequest request) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        userService.changePassword(userId, request);
+        return ResponseEntity.noContent().build();
     }
 }

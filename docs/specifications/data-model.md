@@ -41,6 +41,7 @@
 | idempotency_records | actorId, routeKey, idempotencyKey, requestHash, responseStatus, responseBody, expiresAt | PK(actorId,routeKey,idempotencyKey); body khác trả 409 |
 | rate_limit_buckets | subjectKey, actionKey, windowStart, requestCount, expiresAt | PK(subjectKey,actionKey,windowStart) |
 | audit_events | id, occurredAt, requestId, actorId, action, targetType, targetId, workspaceId, outcome, metadata | append-only; metadata không chứa secret/nội dung tài liệu |
+| password_reset_otps | email, otpCode, expiresAt, createdAt | PK(email); OTP 6 chữ số, hết hạn 5 phút; xóa sau khi sử dụng thành công |
 
 ## 3. Quan hệ
 
@@ -97,4 +98,5 @@ Embedding model: intfloat/multilingual-e5-base revision d128750597153bb5987e10b1
 - rate_limit_buckets: hết cửa sổ cộng buffer.
 - citation excerpt: redact khi tài liệu xóa; giữ locator tối thiểu cho audit.
 - audit_events: giữ tối thiểu suốt thời gian khóa luận, không chứa nội dung nguồn.
+- password_reset_otps: xóa ngay sau khi xác minh thành công; record hết hạn bị dọn theo policy 24 giờ.
 - evaluation data: version hóa, chỉ giữ dữ liệu được phép dùng cho nghiên cứu.
