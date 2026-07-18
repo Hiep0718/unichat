@@ -45,3 +45,9 @@ management:
 logging:
   level:
     root: ${LOG_LEVEL:INFO}
+
+unichat:
+  jwt:
+    access-token-ttl-seconds: 900
+  refresh-token:
+    ttl-days: 7

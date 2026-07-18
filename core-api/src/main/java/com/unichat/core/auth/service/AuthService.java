@@ -22,7 +22,6 @@ import com.unichat.core.auth.api.RegisterRequest;
 import com.unichat.core.auth.api.ResetPasswordRequest;
 import com.unichat.core.auth.domain.PasswordResetOtp;
 import com.unichat.core.auth.domain.PasswordResetOtpRepository;
-import com.unichat.core.common.error.ConflictError;
 import com.unichat.core.common.error.NotFoundError;
 import com.unichat.core.common.error.UnauthenticatedError;
 import com.unichat.core.common.error.ValidationError;
@@ -70,7 +69,8 @@ public class AuthService {
     @Transactional
     public UserResponse register(RegisterRequest request) {
         if (userRepository.existsByEmailIgnoreCase(request.email())) {
-            throw new ConflictError("Email đã được sử dụng trên hệ thống.");
+            LOGGER.warn("register_duplicate_email");
+            throw new ValidationError("Không thể hoàn tất đăng ký. Vui lòng thử lại hoặc liên hệ hỗ trợ.");
         }
 
         Instant now = Instant.now(clock);
@@ -159,13 +159,17 @@ public class AuthService {
     }
 
     /**
-     * Generates a 6-digit OTP for resetting password, saves it and logs it.
+     * Generates a 6-digit OTP for resetting password and sends it via email.
+     * Returns uniform response regardless of email existence to prevent enumeration.
      */
     @Transactional
     public void requestPasswordReset(ForgotPasswordRequest request) {
         String email = request.email();
+
+        // Silent return — prevent user enumeration (API Contract §2)
         if (!userRepository.existsByEmailIgnoreCase(email)) {
-            throw new NotFoundError("Email không tồn tại trên hệ thống");
+            LOGGER.info("password_reset_requested email_exists=false");
+            return;
         }
 
         // Generate 6-digit OTP code
@@ -182,7 +186,7 @@ public class AuthService {
 
         passwordResetOtpRepository.save(otp);
 
-        LOGGER.info("[OTP] Mã OTP khôi phục mật khẩu của email {} là: {}", email, otpCode);
+        LOGGER.info("password_reset_requested email_exists=true");
         sendOtpEmail(email, otpCode);
     }
 
@@ -194,9 +198,9 @@ public class AuthService {
             message.setText("Chào bạn,\n\nMã OTP khôi phục mật khẩu UniChat của bạn là: " + otpCode + 
                            "\n\nMã OTP này có hiệu lực trong vòng 5 phút. Vui lòng không chia sẻ mã này cho bất kỳ ai.\n\nTrân trọng,\nUniChat Team");
             mailSender.send(message);
-            LOGGER.info("[Email] Đã gửi email chứa mã OTP khôi phục mật khẩu thành công đến: {}", email);
+            LOGGER.info("otp_email_sent status=success");
         } catch (Exception e) {
-            LOGGER.error("[Email] Không thể gửi email thật đến {} do lỗi: {}.", email, e.getMessage());
+            LOGGER.error("otp_email_sent status=failed error={}", e.getClass().getSimpleName());
         }
     }
 

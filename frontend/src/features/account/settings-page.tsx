@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 
-import { SideNavBar } from '../../components/side-nav-bar';
+
 import { Icon } from '../../components/icon';
 import { authApi } from '../auth/api/auth-api';
+import { useAuth } from '../auth/auth-context';
 import { settingsApi } from './settings-api';
 import type { ApiError } from '../../lib/api-client';
 import './settings-page.css';
@@ -14,6 +15,7 @@ import './settings-page.css';
  */
 function SettingsPage() {
   const navigate = useNavigate();
+  const { clearToken } = useAuth();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -27,7 +29,7 @@ function SettingsPage() {
     } catch {
       // Ignore network errors on logout to guarantee client-side logout
     } finally {
-      localStorage.removeItem('accessToken');
+      clearToken();
       navigate('/login');
     }
   };
@@ -84,10 +86,7 @@ function SettingsPage() {
   };
 
   return (
-    <div className="settings-layout">
-      <SideNavBar />
-
-      <main className="settings-main">
+    <main className="settings-main">
         <header className="settings-header">
           <h2 className="settings-header__title">Cài đặt tài khoản</h2>
           <p className="settings-header__subtitle">
@@ -267,8 +266,7 @@ function SettingsPage() {
             
           </div>
         </div>
-      </main>
-    </div>
+    </main>
   );
 }
 

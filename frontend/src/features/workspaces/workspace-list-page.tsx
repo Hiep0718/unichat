@@ -3,7 +3,7 @@
  * Shows the sidebar and a grid of workspaces.
  */
 
-import { SideNavBar } from '../../components/side-nav-bar';
+
 import { Icon } from '../../components/icon';
 import { WorkspaceCard } from './components/workspace-card';
 import './workspace-list-page.css';
@@ -44,10 +44,7 @@ const MOCK_WORKSPACES = [
  */
 function WorkspaceListPage() {
   return (
-    <div className="workspace-layout">
-      <SideNavBar />
-
-      <main className="workspace-main">
+    <main className="workspace-main">
         <header className="workspace-header">
           <div className="workspace-header__top">
             <h2 className="workspace-header__title">Workspace của tôi</h2>
@@ -83,8 +80,7 @@ function WorkspaceListPage() {
             ))}
           </div>
         </div>
-      </main>
-    </div>
+    </main>
   );
 }
 

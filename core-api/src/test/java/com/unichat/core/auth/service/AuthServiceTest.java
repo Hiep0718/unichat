@@ -77,13 +77,13 @@ class AuthServiceTest {
     }
 
     @Test
-    void shouldThrowConflictErrorWhenRegisteringDuplicateEmail() {
+    void shouldThrowValidationErrorWhenRegisteringDuplicateEmail() {
         // Arrange
         var request = new RegisterRequest("test@unichat.com", "password12345");
         when(userRepository.existsByEmailIgnoreCase(request.email())).thenReturn(true);
 
         // Act & Assert
-        assertThrows(ConflictError.class, () -> authService.register(request));
+        assertThrows(ValidationError.class, () -> authService.register(request));
         verify(userRepository, never()).save(any(User.class));
     }
 
@@ -138,13 +138,15 @@ class AuthServiceTest {
     }
 
     @Test
-    void shouldThrowNotFoundErrorOnResetRequestWhenUserDoesNotExist() {
+    void shouldSilentlyReturnOnResetRequestWhenUserDoesNotExist() {
         // Arrange
         var request = new ForgotPasswordRequest("nonexistent@unichat.com");
         when(userRepository.existsByEmailIgnoreCase(request.email())).thenReturn(false);
 
-        // Act & Assert
-        assertThrows(NotFoundError.class, () -> authService.requestPasswordReset(request));
+        // Act
+        authService.requestPasswordReset(request);
+
+        // Assert
         verify(passwordResetOtpRepository, never()).save(any(PasswordResetOtp.class));
     }
 

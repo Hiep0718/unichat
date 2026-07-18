@@ -1,32 +1,32 @@
 /**
  * Application-level providers wrapper.
- * Wraps children with QueryClientProvider and future AuthProvider.
+ * Wraps children with QueryClientProvider and AuthProvider.
  */
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 
 import type { ReactNode } from 'react';
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000,
-      retry: 1,
-    },
-  },
-});
+import { AuthProvider } from '../features/auth/auth-context';
+import { queryClient } from '../lib/query-client';
 
 interface AppProvidersProps {
   readonly children: ReactNode;
 }
+
+import { ErrorBoundary } from '../features/errors/error-boundary';
 
 /**
  * Wraps the application tree with all required context providers.
  */
 export function AppProviders({ children }: AppProvidersProps) {
   return (
-    <QueryClientProvider client={queryClient}>
-      {children}
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }

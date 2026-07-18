@@ -26,13 +26,10 @@ public class UserService {
     private final UserRepository userRepository;
     private final Clock clock;
     private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
-    private final TokenService tokenService;
-
-    public UserService(UserRepository userRepository, Clock clock, org.springframework.security.crypto.password.PasswordEncoder passwordEncoder, TokenService tokenService) {
+    public UserService(UserRepository userRepository, Clock clock, org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.clock = clock;
         this.passwordEncoder = passwordEncoder;
-        this.tokenService = tokenService;
     }
 
     /**
@@ -45,36 +42,6 @@ public class UserService {
         return UserResponse.from(user);
     }
 
-    /**
-     * Searches users (Admin action).
-     */
-    @Transactional(readOnly = true)
-    public Page<UserResponse> searchUsers(String query, Pageable pageable) {
-        return userRepository.searchUsers(query, pageable)
-                .map(UserResponse::from);
-    }
-
-    /**
-     * Updates account status (Admin action).
-     */
-    @Transactional
-    public UserResponse updateStatus(UUID userId, UserStatus status) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundError("Người dùng không tồn tại"));
-
-        user.setStatus(status);
-        if (UserStatus.ACTIVE.equals(status)) {
-            user.setFailedLoginCount(0);
-            user.setLockedUntil(null);
-        } else {
-            user.setLockedUntil(Instant.now(clock).plus(36500, ChronoUnit.DAYS)); // Indefinite lock
-            tokenService.revokeAllTokensByUser(userId);
-        }
-        user.setUpdatedAt(Instant.now(clock));
-
-        userRepository.save(user);
-        return UserResponse.from(user);
-    }
 
     /**
      * Changes the user's password.

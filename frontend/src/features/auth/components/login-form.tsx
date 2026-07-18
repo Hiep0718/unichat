@@ -1,13 +1,10 @@
-/**
- * Login form component with email/password fields.
- */
-
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 
 import { Icon } from '../../../components/icon';
 import { authApi } from '../api/auth-api';
+import { useAuth } from '../auth-context';
 import type { ApiError } from '../../../lib/api-client';
 import './login-form.css';
 
@@ -18,11 +15,12 @@ export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { setToken } = useAuth();
 
   const loginMutation = useMutation({
     mutationFn: authApi.login,
     onSuccess: (data) => {
-      localStorage.setItem('accessToken', data.accessToken);
+      setToken(data.accessToken);
       navigate('/workspaces');
     },
     onError: (error: ApiError) => {

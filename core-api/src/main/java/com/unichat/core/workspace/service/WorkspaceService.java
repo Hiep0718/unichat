@@ -130,6 +130,7 @@ public class WorkspaceService {
                 throw new AuthorizationError("Chỉ chủ sở hữu mới có quyền đổi chế độ hiển thị");
             }
             workspace.setVisibility(request.visibility());
+            workspace.incrementPermissionVersion();
         }
         if (request.cloudAllowed() != null) {
             if (!WorkspaceRole.OWNER.equals(member.getRole())) {
@@ -157,7 +158,10 @@ public class WorkspaceService {
             throw new AuthorizationError("Chỉ chủ sở hữu mới có quyền xóa workspace");
         }
 
-        workspaceRepository.delete(workspace);
+        workspace.setStatus(com.unichat.core.workspace.domain.WorkspaceStatus.DELETING);
+        workspace.setUpdatedAt(Instant.now(clock));
+        workspaceRepository.save(workspace);
+        // TODO: Full delete saga when document/chat features are implemented
     }
 
     private WorkspaceMember checkAccess(UUID userId, UUID workspaceId) {

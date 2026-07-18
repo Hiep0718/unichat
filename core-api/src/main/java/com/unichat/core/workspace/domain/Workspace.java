@@ -35,6 +35,10 @@ public class Workspace {
     @Column(name = "visibility", nullable = false)
     private WorkspaceVisibility visibility;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private WorkspaceStatus status;
+
     @Column(name = "cloud_allowed", nullable = false)
     private boolean cloudAllowed;
 
@@ -62,6 +66,7 @@ public class Workspace {
         this.name = name;
         this.description = description;
         this.visibility = visibility;
+        this.status = WorkspaceStatus.ACTIVE;
         this.cloudAllowed = cloudAllowed;
         this.permissionVersion = 0;
         this.version = 0;
@@ -103,6 +108,14 @@ public class Workspace {
 
     public void setVisibility(WorkspaceVisibility visibility) {
         this.visibility = visibility;
+    }
+
+    public WorkspaceStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(WorkspaceStatus status) {
+        this.status = status;
     }
 
     public boolean isCloudAllowed() {

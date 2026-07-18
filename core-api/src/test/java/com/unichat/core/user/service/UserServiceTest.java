@@ -22,14 +22,12 @@ import com.unichat.core.user.domain.SystemRole;
 import com.unichat.core.user.domain.User;
 import com.unichat.core.user.domain.UserRepository;
 import com.unichat.core.user.domain.UserStatus;
-import com.unichat.core.auth.service.TokenService;
 
 class UserServiceTest {
 
     private UserRepository userRepository;
     private Clock clock;
     private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
-    private TokenService tokenService;
     private UserService userService;
 
     @BeforeEach
@@ -37,8 +35,7 @@ class UserServiceTest {
         userRepository = mock(UserRepository.class);
         clock = Clock.fixed(Instant.parse("2026-07-16T00:00:00Z"), ZoneOffset.UTC);
         passwordEncoder = mock(org.springframework.security.crypto.password.PasswordEncoder.class);
-        tokenService = mock(TokenService.class);
-        userService = new UserService(userRepository, clock, passwordEncoder, tokenService);
+        userService = new UserService(userRepository, clock, passwordEncoder);
     }
 
     @Test
@@ -67,44 +64,6 @@ class UserServiceTest {
         assertThrows(NotFoundError.class, () -> userService.getUserById(userId));
     }
 
-    @Test
-    void shouldUpdateUserStatusAndResetFailedAttemptsWhenActivating() {
-        // Arrange
-        var userId = UUID.randomUUID();
-        var user = new User(userId, "test@unichat.com", "hash", SystemRole.USER, UserStatus.LOCKED, Instant.now(clock));
-        user.setFailedLoginCount(5);
-        user.setLockedUntil(Instant.now(clock).plusSeconds(900));
-
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-
-        // Act
-        var response = userService.updateStatus(userId, UserStatus.ACTIVE);
-
-        // Assert
-        assertNotNull(response);
-        assertEquals(UserStatus.ACTIVE, response.status());
-        assertEquals(0, user.getFailedLoginCount());
-        assertNull(user.getLockedUntil());
-        verify(userRepository).save(user);
-    }
-
-    @Test
-    void shouldRevokeTokensWhenUserStatusIsLocked() {
-        // Arrange
-        var userId = UUID.randomUUID();
-        var user = new User(userId, "test@unichat.com", "hash", SystemRole.USER, UserStatus.ACTIVE, Instant.now(clock));
-
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-
-        // Act
-        var response = userService.updateStatus(userId, UserStatus.LOCKED);
-
-        // Assert
-        assertEquals(UserStatus.LOCKED, response.status());
-        assertNotNull(user.getLockedUntil());
-        verify(tokenService).revokeAllTokensByUser(userId);
-        verify(userRepository).save(user);
-    }
 
     @Test
     void shouldChangePasswordWhenCurrentPasswordMatches() {
