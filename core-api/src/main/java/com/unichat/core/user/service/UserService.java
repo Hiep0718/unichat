@@ -2,6 +2,7 @@ package com.unichat.core.user.service;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -14,6 +15,7 @@ import com.unichat.core.user.api.UserResponse;
 import com.unichat.core.user.domain.User;
 import com.unichat.core.user.domain.UserRepository;
 import com.unichat.core.user.domain.UserStatus;
+import com.unichat.core.auth.service.TokenService;
 
 /**
  * Handles profile retrievals and admin user status updates.
@@ -24,11 +26,13 @@ public class UserService {
     private final UserRepository userRepository;
     private final Clock clock;
     private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+    private final TokenService tokenService;
 
-    public UserService(UserRepository userRepository, Clock clock, org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, Clock clock, org.springframework.security.crypto.password.PasswordEncoder passwordEncoder, TokenService tokenService) {
         this.userRepository = userRepository;
         this.clock = clock;
         this.passwordEncoder = passwordEncoder;
+        this.tokenService = tokenService;
     }
 
     /**
@@ -63,7 +67,8 @@ public class UserService {
             user.setFailedLoginCount(0);
             user.setLockedUntil(null);
         } else {
-            user.setLockedUntil(Instant.now(clock).plus(100, ChronoUnit.YEARS)); // Indefinite lock
+            user.setLockedUntil(Instant.now(clock).plus(36500, ChronoUnit.DAYS)); // Indefinite lock
+            tokenService.revokeAllTokensByUser(userId);
         }
         user.setUpdatedAt(Instant.now(clock));
 
@@ -86,9 +91,5 @@ public class UserService {
         user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
         user.setUpdatedAt(Instant.now(clock));
         userRepository.save(user);
-    }
-
-    private static class ChronoUnit {
-        private static final java.time.temporal.ChronoUnit YEARS = java.time.temporal.ChronoUnit.YEARS;
     }
 }

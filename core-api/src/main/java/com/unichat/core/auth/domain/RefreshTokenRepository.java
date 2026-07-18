@@ -21,6 +21,14 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, UUID
     Optional<RefreshToken> findByTokenHash(String tokenHash);
 
     /**
+     * Finds all unrevoked refresh tokens belonging to a user.
+     *
+     * @param userId the user ID
+     * @return list of active tokens
+     */
+    List<RefreshToken> findByUserIdAndRevokedAtIsNull(UUID userId);
+
+    /**
      * Finds all refresh tokens belonging to a rotation family.
      *
      * @param familyId token family ID

@@ -126,9 +126,15 @@ public class WorkspaceService {
             workspace.setDescription(request.description());
         }
         if (request.visibility() != null) {
+            if (!WorkspaceRole.OWNER.equals(member.getRole())) {
+                throw new AuthorizationError("Chỉ chủ sở hữu mới có quyền đổi chế độ hiển thị");
+            }
             workspace.setVisibility(request.visibility());
         }
         if (request.cloudAllowed() != null) {
+            if (!WorkspaceRole.OWNER.equals(member.getRole())) {
+                throw new AuthorizationError("Chỉ chủ sở hữu mới có quyền đổi cấu hình cloud");
+            }
             workspace.setCloudAllowed(request.cloudAllowed());
         }
         workspace.setUpdatedAt(Instant.now(clock));

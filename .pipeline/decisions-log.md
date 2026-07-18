@@ -316,6 +316,10 @@
 - Decision: Integrate `spring-boot-starter-mail` and configure JavaMailSender to send actual emails via Gmail SMTP, with username and password parameters loaded dynamically from `.env` environment variables. Include a robust try-catch fallback to console logging so mail transmission failures do not break the API lifecycle flow.
   Rationale: This provides a production-ready real email sending mechanism while maintaining a dev-friendly fallback when SMTP configuration is missing or incorrect.
 
+## 2026-07-18 - Specification synchronization for implemented auth features
 
+- Decision: Add `POST /auth/forgot-password`, `POST /auth/reset-password` and `PATCH /users/me/password` endpoints to `api-contracts.md` Section 2.
+  Rationale: These three endpoints were already implemented and deployed in `AuthController.java` and `UserController.java` but were missing from the API contract specification, creating drift between code and source-of-truth documentation.
 
-
+- Decision: Add `password_reset_otps` table definition to `data-model.md` Section 2 and its retention policy to Section 8.
+  Rationale: The table was created in Flyway migration `V2__password_reset_otps.sql` and used by `PasswordResetOtp.java` entity but was absent from the data model specification.

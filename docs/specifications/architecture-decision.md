@@ -119,6 +119,18 @@ Decision: unit ≥80% core logic; integration cho mọi API/DB; Playwright cho c
 
 Reason: tách kiểm thử phần mềm khỏi đánh giá nghiên cứu và ngăn data leakage.
 
+## ADR-019 — Offset pagination cho P0
+
+Decision: Sử dụng offset-based pagination (Spring Data `PageRequest`) cho tất cả list endpoints trong P0, thay vì cursor-based pagination opaque.
+
+Reason: Dataset P0 nhỏ (users ~100, workspaces ~1000); offset đủ hiệu năng và Spring Data hỗ trợ native. Cursor-based refactor ảnh hưởng lớn đến backend custom query và frontend pagination component mà không mang lại giá trị tương xứng tại scale này. Sẽ nâng cấp khi dataset > 10.000.
+
+## ADR-020 — CSRF protection exception cho P0
+
+Decision: Không bật CSRF double-submit protection ở Core API (`csrf.disable()`) trong giai đoạn P0. Các cookie (`refresh_token`) được đặt `SameSite=Strict`.
+
+Reason: Hệ thống stateless API sử dụng Bearer token không bị ảnh hưởng bởi CSRF. Cookie duy nhất thay đổi state là `refresh_token` đã được bảo vệ bởi cờ `SameSite=Strict`, đủ để ngăn chặn các cuộc tấn công CSRF phổ biến trên trình duyệt hiện đại trong môi trường development. CSRF double-submit sẽ là yêu cầu bắt buộc khi triển khai production với custom domain.
+
 ## Consequences
 
 - Runtime đã được cung cấp theo version đã khóa; mỗi máy vẫn phải cung cấp evidence độc lập trước `READY — CORE-001`.

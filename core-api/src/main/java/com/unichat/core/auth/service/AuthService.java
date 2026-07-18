@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -122,6 +123,14 @@ public class AuthService {
         // Success - reset counters
         user.setFailedLoginCount(0);
         user.setLockedUntil(null);
+        
+        // Re-hash to Argon2id if legacy BCrypt hash
+        if (passwordEncoder instanceof DelegatingPasswordEncoder delegate) {
+            if (!user.getPasswordHash().startsWith("{argon2}")) {
+                user.setPasswordHash(passwordEncoder.encode(request.password()));
+            }
+        }
+        
         userRepository.save(user);
 
         String accessToken = tokenService.generateAccessToken(user);

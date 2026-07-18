@@ -4,8 +4,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import java.util.Map;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
@@ -26,11 +29,21 @@ import com.nimbusds.jose.proc.SecurityContext;
 public class SecurityConfiguration {
 
     /**
-     * BCrypt password encoder for securing user passwords.
+     * Delegating password encoder configured for Argon2id (default) and BCrypt (legacy).
      */
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        var argon2 = Argon2PasswordEncoder.defaultsForSpringSecurity_v5_8();
+        var bcrypt = new BCryptPasswordEncoder();
+        
+        Map<String, PasswordEncoder> encoders = Map.of(
+            "argon2", argon2,
+            "bcrypt", bcrypt
+        );
+        
+        var delegating = new DelegatingPasswordEncoder("argon2", encoders);
+        delegating.setDefaultPasswordEncoderForMatches(bcrypt); // Legacy hashes don't have a prefix
+        return delegating;
     }
 
     /**
