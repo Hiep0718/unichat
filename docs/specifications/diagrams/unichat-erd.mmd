@@ -1,5 +1,6 @@
 erDiagram
     USERS ||--o{ REFRESH_TOKENS : owns
+    USERS ||--o{ PASSWORD_RESET_OTPS : owns
     USERS ||--o{ WORKSPACES : owns
     USERS ||--o{ WORKSPACE_MEMBERS : joins
     WORKSPACES ||--o{ WORKSPACE_MEMBERS : contains
@@ -38,6 +39,7 @@ erDiagram
         string visibility
         boolean cloud_allowed
         bigint permission_version
+        string status
     }
     WORKSPACE_MEMBERS {
         uuid workspace_id PK,FK
@@ -137,6 +139,13 @@ erDiagram
         string request_hash
         int response_status
         datetime expires_at
+    }
+    PASSWORD_RESET_OTPS {
+        uuid id PK
+        uuid user_id FK
+        string otp_hash
+        datetime expires_at
+        datetime created_at
     }
     RATE_LIMIT_BUCKETS {
         string subject_key PK
