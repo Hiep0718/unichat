@@ -3,10 +3,13 @@ package com.unichat.core;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
+
 /**
  * Starts the UniChat Core API process.
  */
 @SpringBootApplication
+@ConfigurationPropertiesScan
 public class UniChatCoreApplication {
 
     static {

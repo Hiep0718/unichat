@@ -14,15 +14,19 @@ interface AppProvidersProps {
   readonly children: ReactNode;
 }
 
+import { ErrorBoundary } from '../features/errors/error-boundary';
+
 /**
  * Wraps the application tree with all required context providers.
  */
 export function AppProviders({ children }: AppProvidersProps) {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        {children}
-      </AuthProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }

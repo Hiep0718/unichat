@@ -54,7 +54,7 @@ public class User {
      *
      * @param id user ID
      * @param email unique email address
-     * @param passwordHash BCrypt hash of user password
+     * @param passwordHash encoded password hash (Argon2id default, BCrypt legacy)
      * @param systemRole role (USER, ADMIN)
      * @param status account status (ACTIVE, LOCKED)
      * @param now creation and update timestamp

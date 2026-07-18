@@ -33,20 +33,24 @@ import com.unichat.core.common.error.UnauthenticatedError;
 import com.unichat.core.user.domain.SystemRole;
 import com.unichat.core.user.domain.User;
 import com.unichat.core.user.domain.UserStatus;
+import com.unichat.core.auth.config.JwtProperties;
 
 class TokenServiceTest {
 
     private JwtEncoder jwtEncoder;
     private RefreshTokenRepository refreshTokenRepository;
     private Clock clock;
+    private JwtProperties jwtProperties;
     private TokenService tokenService;
 
     @BeforeEach
     void setUp() {
         jwtEncoder = mock(JwtEncoder.class);
         refreshTokenRepository = mock(RefreshTokenRepository.class);
+        jwtProperties = mock(JwtProperties.class);
+        when(jwtProperties.accessTokenTtlSeconds()).thenReturn(900);
         clock = Clock.fixed(Instant.parse("2026-07-16T00:00:00Z"), ZoneOffset.UTC);
-        tokenService = new TokenService(jwtEncoder, refreshTokenRepository, clock);
+        tokenService = new TokenService(jwtEncoder, refreshTokenRepository, clock, jwtProperties);
     }
 
     @Test

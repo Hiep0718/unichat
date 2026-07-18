@@ -340,3 +340,29 @@
 
 - Decision: Increment `permissionVersion` when workspace visibility is updated in `WorkspaceService.java`.
   Rationale: Align with data-model §7 requirement that any permission-affecting change increments the permission version to trigger ACL re-evaluation on in-flight requests.
+
+## 2026-07-18 - Structure Alignment and Code Quality
+
+- Decision: Retain `com.unichat.core` as the base package for Core API and formalize it via ADR-0005.
+  Rationale: Avoids a massive, low-value refactoring effort (affecting 55+ files) while preventing potential conflicts with future shared or AI modules. Nesting limit adjusted to 5 levels.
+
+- Decision: Extract `AdminController` and `AdminService` from the `User` module.
+  Rationale: Aligns with file-plan §7 and separates admin-only operations (e.g., getting all users, locking users) into their own domain boundary.
+
+- Decision: Rename frontend `/settings` route and folder to `/account` and update SideNavBar navigation.
+  Rationale: UI Spec §7 designates "Settings" for workspace configurations, not user account settings.
+
+- Decision: Create a unified `AppShell` layout component for authenticated frontend routes.
+  Rationale: Removes the need to manually include `<SideNavBar />` in every authenticated page, adhering to DRY principles.
+
+- Decision: Implement `ErrorBoundary` and dedicated 403/404 error pages in the frontend.
+  Rationale: Improves application resilience and user experience during unhandled exceptions or invalid navigations.
+
+- Decision: Standardize a `Result<T, E>` type in the frontend (`lib/result.ts`).
+  Rationale: Provides a robust way to handle expected service failures without relying on throw/catch patterns, matching file-plan L62.
+
+- Decision: Convert Workspace deletion from hard delete to soft delete using a `status` field.
+  Rationale: Prevents cascade-delete issues and allows for a future background saga to asynchronously prune documents and chats (ADR-013).
+
+- Decision: Externalize JWT TTL configuration into `application.yml` via `JwtProperties`.
+  Rationale: Avoids hardcoded expiration times in code, enabling easier environment-specific adjustments and token lifecycle management.

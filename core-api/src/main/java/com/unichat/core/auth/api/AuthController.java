@@ -19,6 +19,7 @@ import com.unichat.core.auth.service.AuthService;
 import com.unichat.core.auth.service.AuthService.TokenPair;
 import com.unichat.core.shared.idempotency.IdempotencyService;
 import com.unichat.core.user.api.UserResponse;
+import com.unichat.core.auth.config.JwtProperties;
 
 /**
  * Controller exposing OAuth2 session management endpoints.
@@ -29,10 +30,12 @@ public class AuthController {
 
     private final AuthService authService;
     private final IdempotencyService idempotencyService;
+    private final JwtProperties jwtProperties;
 
-    public AuthController(AuthService authService, IdempotencyService idempotencyService) {
+    public AuthController(AuthService authService, IdempotencyService idempotencyService, JwtProperties jwtProperties) {
         this.authService = authService;
         this.idempotencyService = idempotencyService;
+        this.jwtProperties = jwtProperties;
     }
 
     /**
@@ -83,7 +86,7 @@ public class AuthController {
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                .body(new LoginResponse(pair.accessToken(), "Bearer", 900));
+                .body(new LoginResponse(pair.accessToken(), "Bearer", jwtProperties.accessTokenTtlSeconds()));
     }
 
     /**
@@ -108,7 +111,7 @@ public class AuthController {
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                .body(new LoginResponse(pair.accessToken(), "Bearer", 900));
+                .body(new LoginResponse(pair.accessToken(), "Bearer", jwtProperties.accessTokenTtlSeconds()));
     }
 
     /**

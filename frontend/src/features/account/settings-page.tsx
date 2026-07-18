@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 
-import { SideNavBar } from '../../components/side-nav-bar';
+
 import { Icon } from '../../components/icon';
 import { authApi } from '../auth/api/auth-api';
 import { useAuth } from '../auth/auth-context';
@@ -86,10 +86,7 @@ function SettingsPage() {
   };
 
   return (
-    <div className="settings-layout">
-      <SideNavBar />
-
-      <main className="settings-main">
+    <main className="settings-main">
         <header className="settings-header">
           <h2 className="settings-header__title">Cài đặt tài khoản</h2>
           <p className="settings-header__subtitle">
@@ -269,8 +266,7 @@ function SettingsPage() {
             
           </div>
         </div>
-      </main>
-    </div>
+    </main>
   );
 }
 

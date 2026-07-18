@@ -43,29 +43,7 @@ public class UserController {
         return ResponseEntity.ok(userService.getUserById(userId));
     }
 
-    /**
-     * Searches and paginates users (Admin only).
-     */
-    @GetMapping("/admin/users")
-    public ResponseEntity<Page<UserResponse>> getUsers(
-            @RequestParam(value = "query", required = false) String query,
-            @RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "size", defaultValue = "20") int size) {
-        
-        int pageSize = Math.min(size, 100); // Enforce max page size of 100
-        Pageable pageable = PageRequest.of(page, pageSize);
-        return ResponseEntity.ok(userService.searchUsers(query, pageable));
-    }
 
-    /**
-     * Updates account status (Admin only).
-     */
-    @PatchMapping("/admin/users/{userId}/status")
-    public ResponseEntity<UserResponse> updateStatus(
-            @PathVariable("userId") UUID userId,
-            @Valid @RequestBody UpdateUserStatusRequest request) {
-        return ResponseEntity.ok(userService.updateStatus(userId, request.status()));
-    }
 
     /**
      * Changes the password of the authenticated user.

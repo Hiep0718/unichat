@@ -21,6 +21,7 @@ import com.unichat.core.common.error.ConflictError;
 import com.unichat.core.common.error.UnauthenticatedError;
 import com.unichat.core.user.domain.User;
 import com.unichat.core.shared.util.UuidGenerator;
+import com.unichat.core.auth.config.JwtProperties;
 
 /**
  * Manages JWT generation and opaque refresh token lifecycle.
@@ -31,15 +32,18 @@ public class TokenService {
     private final JwtEncoder jwtEncoder;
     private final RefreshTokenRepository refreshTokenRepository;
     private final Clock clock;
+    private final JwtProperties jwtProperties;
     private final SecureRandom secureRandom = new SecureRandom();
 
     public TokenService(
             JwtEncoder jwtEncoder,
             RefreshTokenRepository refreshTokenRepository,
-            Clock clock) {
+            Clock clock,
+            JwtProperties jwtProperties) {
         this.jwtEncoder = jwtEncoder;
         this.refreshTokenRepository = refreshTokenRepository;
         this.clock = clock;
+        this.jwtProperties = jwtProperties;
     }
 
     /**
@@ -50,7 +54,7 @@ public class TokenService {
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer("unichat-core-api")
                 .issuedAt(now)
-                .expiresAt(now.plus(15, ChronoUnit.MINUTES))
+                .expiresAt(now.plus(jwtProperties.accessTokenTtlSeconds(), ChronoUnit.SECONDS))
                 .subject(user.getId().toString())
                 .claim("email", user.getEmail())
                 .claim("scope", user.getSystemRole().name())

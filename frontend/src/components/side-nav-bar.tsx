@@ -21,7 +21,7 @@ const NAV_ITEMS: readonly NavItem[] = [
   { icon: 'description', label: 'Tài liệu', href: '/documents' },
   { icon: 'chat', label: 'Trò chuyện', href: '/chat' },
   { icon: 'history', label: 'Lịch sử', href: '/history' },
-  { icon: 'settings', label: 'Cài đặt', href: '/settings' },
+  { icon: 'person', label: 'Tài khoản', href: '/account' },
 ];
 
 /**
