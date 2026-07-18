@@ -1,8 +1,36 @@
 /**
  * Generic API client and types for UniChat.
+ * Token storage is managed externally via registerTokenAccessor (ADR-005).
  */
 
 const API_BASE = '/api/v1';
+
+/** Registered accessor — getter for current in-memory token. */
+let getToken: () => string | null = () => null;
+
+/** Registered accessor — setter when refresh succeeds. */
+let setToken: (token: string) => void = () => {};
+
+/** Registered accessor — clearer on auth failure. */
+let clearToken: () => void = () => {};
+
+/**
+ * Registers callbacks so the api-client can read/write the access token
+ * without depending on React context directly.
+ *
+ * @param getter returns current access token from memory
+ * @param setter stores a refreshed access token back into memory
+ * @param clearer removes the access token (triggers logout)
+ */
+export function registerTokenAccessor(
+  getter: () => string | null,
+  setter: (token: string) => void,
+  clearer: () => void,
+): void {
+  getToken = getter;
+  setToken = setter;
+  clearToken = clearer;
+}
 
 export class ApiError extends Error {
   public status: number;
@@ -25,7 +53,7 @@ export async function fetchJson<T>(
     headers.set('Content-Type', 'application/json');
   }
 
-  const token = localStorage.getItem('accessToken');
+  const token = getToken();
   if (token) {
     headers.set('Authorization', `Bearer ${token}`);
   }
@@ -49,7 +77,7 @@ export async function fetchJson<T>(
       if (refreshResponse.ok) {
         const refreshData = await refreshResponse.json();
         const newToken = refreshData.accessToken;
-        localStorage.setItem('accessToken', newToken);
+        setToken(newToken);
 
         // Retry the original request with the new token
         headers.set('Authorization', `Bearer ${newToken}`);
@@ -61,12 +89,12 @@ export async function fetchJson<T>(
         return handleResponse<T>(retryResponse);
       } else {
         // Refresh token expired or invalid, log out
-        localStorage.removeItem('accessToken');
+        clearToken();
         window.location.href = '/login';
         throw new ApiError(response.status, 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
       }
     } catch (refreshError) {
-      localStorage.removeItem('accessToken');
+      clearToken();
       window.location.href = '/login';
       throw refreshError;
     }

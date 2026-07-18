@@ -17,12 +17,13 @@ public interface WorkspaceRepository extends JpaRepository<Workspace, UUID> {
     /**
      * Finds workspaces visible to a user (owned, member of, or public).
      *
-     * @param userId user requesting list
+     * @param userId   user requesting list
      * @param pageable pagination parameters
      * @return page of accessible workspaces
      */
     @Query("SELECT w FROM Workspace w WHERE w.ownerId = :userId " +
-           "OR EXISTS (SELECT 1 FROM WorkspaceMember wm WHERE wm.workspaceId = w.id AND wm.userId = :userId AND wm.status = com.unichat.core.workspace.domain.WorkspaceMemberStatus.ACTIVE) " +
-           "OR w.visibility = com.unichat.core.workspace.domain.WorkspaceVisibility.PUBLIC")
+            "OR EXISTS (SELECT 1 FROM WorkspaceMember wm WHERE wm.workspaceId = w.id AND wm.userId = :userId AND wm.status = com.unichat.core.workspace.domain.WorkspaceMemberStatus.ACTIVE) "
+            +
+            "OR w.visibility = com.unichat.core.workspace.domain.WorkspaceVisibility.PUBLIC")
     Page<Workspace> findAllVisibleToUser(@Param("userId") UUID userId, Pageable pageable);
 }

@@ -323,3 +323,20 @@
 
 - Decision: Add `password_reset_otps` table definition to `data-model.md` Section 2 and its retention policy to Section 8.
   Rationale: The table was created in Flyway migration `V2__password_reset_otps.sql` and used by `PasswordResetOtp.java` entity but was absent from the data model specification.
+
+## 2026-07-18 - Security Hotfixes and Auth Foundation
+
+- Decision: Migrate access token storage from `localStorage` to memory using React Context and token accessors in `api-client.ts`.
+  Rationale: Adhere strictly to ADR-005 to mitigate XSS risks and ensure access tokens are not persisted to disk.
+
+- Decision: Enforce generic error responses (`422 ValidationError`) for `POST /auth/register` and silent success returns for `POST /auth/forgot-password`.
+  Rationale: Prevent user enumeration attacks by standardizing responses regardless of whether the email exists in the database.
+
+- Decision: Remove OTP codes from application logs in `AuthService.java`.
+  Rationale: Adhere to ADR-016 which strictly forbids logging sensitive secrets, ensuring production logs remain clean and secure.
+
+- Decision: Implement `AuthGuard` and `GuestGuard` React components to wrap application routes.
+  Rationale: Ensure that unauthenticated users cannot access protected routes and authenticated users cannot access login/register pages.
+
+- Decision: Increment `permissionVersion` when workspace visibility is updated in `WorkspaceService.java`.
+  Rationale: Align with data-model §7 requirement that any permission-affecting change increments the permission version to trigger ACL re-evaluation on in-flight requests.

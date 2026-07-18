@@ -1,10 +1,12 @@
 /**
  * Application router configuration.
- * Defines routes with lazy-loaded page components.
+ * Defines routes with lazy-loaded page components and route guards.
  */
 
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
+
+import { AuthGuard, GuestGuard } from '../features/auth/route-guard';
 
 const LandingPage = lazy(() => import('../features/landing/landing-page'));
 const LoginPage = lazy(() => import('../features/auth/login-page'));
@@ -14,7 +16,7 @@ const WorkspaceListPage = lazy(() => import('../features/workspaces/workspace-li
 const SettingsPage = lazy(() => import('../features/settings/settings-page'));
 
 /**
- * Top-level router with lazy-loaded routes for all 4 screens.
+ * Top-level router with lazy-loaded routes and authentication guards.
  */
 export function AppRouter() {
   return (
@@ -22,11 +24,11 @@ export function AppRouter() {
       <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/login" element={<GuestGuard><LoginPage /></GuestGuard>} />
+          <Route path="/register" element={<GuestGuard><RegisterPage /></GuestGuard>} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/workspaces" element={<WorkspaceListPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/workspaces" element={<AuthGuard><WorkspaceListPage /></AuthGuard>} />
+          <Route path="/settings" element={<AuthGuard><SettingsPage /></AuthGuard>} />
         </Routes>
       </Suspense>
     </BrowserRouter>
