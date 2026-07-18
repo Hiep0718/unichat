@@ -366,3 +366,11 @@
 
 - Decision: Externalize JWT TTL configuration into `application.yml` via `JwtProperties`.
   Rationale: Avoids hardcoded expiration times in code, enabling easier environment-specific adjustments and token lifecycle management.
+
+## 2026-07-18 - Cloud Database Synchronization via Supabase
+
+- Decision: Migrate local PostgreSQL development database to Supabase Cloud using Supavisor Connection Pooler (Port 6543).
+  Rationale: Ensures all team members share a unified database schema and data state without requiring local Docker PostgreSQL setup, accelerating team collaboration.
+
+- Decision: Enforce `prepareThreshold=0` on PostgreSQL JDBC URL for Core API connections.
+  Rationale: Required to prevent `prepared statement already exists` exceptions when routing Java JDBC traffic through Supabase's Transaction-mode pooler.
