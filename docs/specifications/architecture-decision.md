@@ -47,11 +47,11 @@ Decision: Core ký service JWT RS256 exp tối đa 60 giây, gắn method/path/b
 
 Reason: network private không thay thế authentication và integrity.
 
-## ADR-007 — Async ingestion không có broker P0
+## ADR-007 — Thay thế hàng đợi PostgreSQL bằng RabbitMQ cho Async Ingestion
 
-Decision: dùng resource_jobs trong PostgreSQL, claim bằng FOR UPDATE SKIP LOCKED, lease, retry/backoff và trạng thái lỗi; Core worker gọi AI ingestion idempotent.
+Decision: Sử dụng RabbitMQ làm Message Broker chính cho hệ thống. Core API sẽ đóng vai trò Producer đẩy thông điệp vào queue, và AI Service sẽ làm Consumer để xử lý ingestion bất đồng bộ (idempotent, có retry và dead-letter queue). Loại bỏ thiết kế dùng PostgreSQL `resource_jobs` cũ.
 
-Reason: đủ độ tin cậy cho P0 mà không thêm Redis/RabbitMQ/Kafka.
+Reason: Hệ thống đã đạt trạng thái READY. RabbitMQ cung cấp khả năng xử lý hàng đợi chuyên nghiệp, tin cậy, điều phối tốt giữa các microservices và dễ dàng mở rộng (scale) Consumer khi lượng tài liệu tăng cao.
 
 ## ADR-008 — Storage
 
@@ -135,7 +135,7 @@ Reason: Hệ thống stateless API sử dụng Bearer token không bị ảnh h�
 
 - Runtime đã được cung cấp theo version đã khóa; mỗi máy vẫn phải cung cấp evidence độc lập trước `READY — CORE-001`.
 - Ba service tăng cấu hình nhưng ranh giới ownership và bảo mật rõ.
-- Không có broker/object storage production-grade trong P0; interface và job schema giữ đường mở rộng.
+- Hệ thống đã tích hợp Message Broker (RabbitMQ) cho production-grade messaging; interface và schema được cập nhật tương ứng.
 - Threshold ban đầu là giả thuyết, chỉ được thay qua calibration có version/hash.
 - Mọi thay đổi ADR ảnh hưởng contract phải tạo ADR mới hoặc version mới, không sửa ngầm.
 
