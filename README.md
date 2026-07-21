@@ -4,11 +4,11 @@ UniChat là nền tảng tri thức AI cho giáo dục đại học. Phạm vi P
 
 ## Trạng thái
 
-**Canonical status: `NOT READY`.** Repository đang trong giai đoạn readiness hardening. Không tạo branch triển khai CORE-001 cho đến khi readiness changes và evidence từ cả hai máy đã được review, merge vào `main`.
+**Canonical status: `READY`.** Dự án đang trong giai đoạn phát triển tích cực (Active Development). Core API, Frontend và Database đã hoạt động cơ bản.
 
-Core API đã có health endpoint, request ID an toàn, typed application errors, global RFC 7807 error boundary và structured JSON logging foundation.
+Core API đã có health endpoint, request ID an toàn, typed application errors, global RFC 7807 error boundary và structured JSON logging foundation. AI Service và RabbitMQ đã được thiết lập để xử lý tác vụ bất đồng bộ.
 
-Không commit, push, thay đổi GitHub, merge hoặc deploy nếu chưa có phê duyệt riêng. `SEC-DEBT-001` là scoped exception cho non-Chroma work item; Chroma-backed retrieval và deployment phụ thuộc Chroma vẫn `NOT READY`.
+Không commit, push, thay đổi GitHub, merge hoặc deploy nếu chưa có phê duyệt riêng.
 
 ## Kiến trúc
 
@@ -22,14 +22,14 @@ Không commit, push, thay đổi GitHub, merge hoặc deploy nếu chưa có ph�
 - `.pipeline`: checkpoint AI SDLC cục bộ, giữ nguyên trạng và không đưa vào Git.
 - `.local-archive`: backup, archive, output trung gian và tệp AI tạm; chỉ lưu cục bộ và không đưa vào Git.
 
-Chỉ frontend và Core API được expose. AI Service, PostgreSQL, ChromaDB và Ollama nằm trên private network.
+Chỉ frontend và Core API được expose. AI Service, PostgreSQL, ChromaDB, RabbitMQ và Ollama nằm trên private network.
 
 ## Runtime mục tiêu
 
 - Node.js 24.18.0 LTS và npm đi kèm.
 - Java 21 LTS; Maven 3.9.16 qua wrapper.
 - Python 3.13.14.
-- Docker 29+ và Docker Compose 5+.
+- Docker 29+ và Docker Compose 5+ (bao gồm RabbitMQ).
 
 Runtime portable nằm trong `.tools` và không được commit.
 

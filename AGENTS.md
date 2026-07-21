@@ -58,8 +58,8 @@ These rules are mandatory for every human and AI contributor.
 - Profile before memoization or caching.
 - Keep processes stateless and configuration environment-driven.
 - Use routes/controllers, services and repositories with focused interfaces.
-- Keep AI Service, PostgreSQL, ChromaDB and Ollama private.
-- PostgreSQL resource jobs replace a broker in P0.
+- Keep AI Service, PostgreSQL, ChromaDB, RabbitMQ and Ollama private.
+- Use RabbitMQ as the message broker for asynchronous tasks and document ingestion.
 
 ## Files and encoding
 
