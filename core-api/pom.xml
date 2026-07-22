@@ -19,6 +19,7 @@
 
     <properties>
         <java.version>17</java.version>
+        <postgresql.version>42.7.13</postgresql.version>
         <logback.version>1.5.35</logback.version>
         <archunit.version>1.4.2</archunit.version>
         <bouncycastle.version>1.85</bouncycastle.version>
