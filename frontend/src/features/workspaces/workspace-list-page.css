@@ -156,3 +156,47 @@
     grid-template-columns: repeat(3, 1fr);
   }
 }
+
+/* Empty / Error State */
+
+.workspace-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 64px var(--gutter);
+  color: var(--color-on-surface-variant);
+}
+
+.workspace-empty__title {
+  font: var(--font-headline-md);
+  color: var(--color-on-surface);
+  margin-top: var(--stack-md);
+  margin-bottom: var(--stack-sm);
+}
+
+.workspace-empty__desc {
+  font: var(--font-body-md);
+  max-width: 360px;
+  margin-bottom: var(--stack-lg);
+}
+
+.workspace-empty__action {
+  display: flex;
+  align-items: center;
+  gap: var(--stack-sm);
+  padding: 10px 20px;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font: var(--font-label-md);
+  border: none;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: opacity var(--transition-fast);
+}
+
+.workspace-empty__action:hover {
+  opacity: 0.9;
+}
+

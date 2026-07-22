@@ -29,4 +29,13 @@ public interface WorkspaceMemberRepository extends JpaRepository<WorkspaceMember
      * Finds active membership for authorization checks.
      */
     Optional<WorkspaceMember> findByWorkspaceIdAndUserIdAndStatus(UUID workspaceId, UUID userId, WorkspaceMemberStatus status);
+
+    /**
+     * Counts members of a workspace by status.
+     *
+     * @param workspaceId workspace ID
+     * @param status membership status to filter
+     * @return count of matching members
+     */
+    long countByWorkspaceIdAndStatus(UUID workspaceId, WorkspaceMemberStatus status);
 }

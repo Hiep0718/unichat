@@ -2,30 +2,36 @@
  * Workspace card component displaying workspace info, badge, and stats.
  */
 
+import { Link } from 'react-router-dom';
+
 import { Icon } from '../../../components/icon';
+import { formatRelativeTime } from '../../../lib/format-time';
+
+import type { WorkspaceVisibility } from '../workspace-schema';
+
 import './workspace-card.css';
 
-type Visibility = 'PUBLIC' | 'PRIVATE' | 'SHARED';
-
 interface WorkspaceCardProps {
+  readonly id: string;
   readonly name: string;
   readonly description: string;
-  readonly visibility: Visibility;
+  readonly visibility: WorkspaceVisibility;
   readonly documentCount: number;
   readonly memberCount: number;
   readonly updatedAt: string;
 }
 
-const BADGE_CONFIG: Record<Visibility, { icon: string; label: string; className: string }> = {
+const BADGE_CONFIG: Record<WorkspaceVisibility, { icon: string; label: string; className: string }> = {
   PUBLIC: { icon: 'public', label: 'Công khai', className: 'workspace-card__badge--public' },
   PRIVATE: { icon: 'lock', label: 'Riêng tư', className: 'workspace-card__badge--private' },
   SHARED: { icon: 'group_add', label: 'Được chia sẻ', className: 'workspace-card__badge--shared' },
 };
 
 /**
- * Renders a single workspace card with visibility badge and metadata.
+ * Renders a single workspace card with visibility badge, metadata, and link.
  */
 export function WorkspaceCard({
+  id,
   name,
   description,
   visibility,
@@ -36,7 +42,7 @@ export function WorkspaceCard({
   const badge = BADGE_CONFIG[visibility];
 
   return (
-    <div className="workspace-card">
+    <Link to={`/workspaces/${id}`} className="workspace-card">
       <div className="workspace-card__header">
         <span className={`workspace-card__badge ${badge.className}`}>
           <Icon name={badge.icon} size={14} />
@@ -46,6 +52,7 @@ export function WorkspaceCard({
           className="workspace-card__menu"
           type="button"
           aria-label="Thêm tùy chọn"
+          onClick={(e) => e.preventDefault()}
         >
           <Icon name="more_vert" size={20} />
         </button>
@@ -68,9 +75,9 @@ export function WorkspaceCard({
           </span>
         </div>
         <div className="workspace-card__updated">
-          Cập nhật: {updatedAt}
+          Cập nhật: {formatRelativeTime(updatedAt)}
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
