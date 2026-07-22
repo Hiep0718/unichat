@@ -29,7 +29,6 @@
 | workspaces | id, ownerId, name, description, visibility, cloudAllowed, permissionVersion, version | name 3–100; PRIVATE/SHARED/PUBLIC; owner luôn có membership OWNER |
 | workspace_members | workspaceId, userId, role, status, invitedById | PK(workspaceId,userId); role OWNER/EDITOR/VIEWER; status ACTIVE/REVOKED |
 | documents | id, workspaceId, storageKey, originalName, mediaType, byteSize, sha256, status, ingestionVersion, pageOrBlockCount, version | storageKey unique; status PENDING/PROCESSING/PROCESSED/FAILED/DELETING |
-| resource_jobs | id, documentId, jobType, status, attemptCount, availableAt, leaseOwner, leaseExpiresAt, idempotencyKey, lastErrorCode | jobType INGEST/DELETE; lease idempotent; không lưu stack trace vào client field |
 | conversations | id, workspaceId, userId, title, status | user chỉ truy cập conversation của mình và Workspace còn quyền |
 | messages | id, conversationId, role, content, intent, refusalCode, providerModel, promptVersion, createdAt | role USER/ASSISTANT; content giữ Unicode; assistant có trace |
 | citation_history | id, messageId, documentId, chunkId, fileName, locatorType, locatorValue, excerpt, contentHash, ordinal, redactedAt | unique(messageId,ordinal); excerpt được redact khi xóa tài liệu |
@@ -47,7 +46,7 @@
 
 - users 1–N workspaces qua ownerId; users N–N workspaces qua workspace_members.
 - workspaces 1–N documents, conversations, evaluation_cases và audit_events.
-- documents 1–N resource_jobs; trạng thái document chỉ đổi qua service transaction.
+- documents: trạng thái document chỉ đổi qua service transaction. Ingestion/deletion bất đồng bộ qua RabbitMQ (ADR-007).
 - conversations 1–N messages; assistant message 1–1 retrieval_trace và 1–N citation_history.
 - retrieval_traces 1–N retrieval_trace_items.
 - evaluation_runs N–N evaluation_cases qua evaluation_results.
@@ -59,7 +58,6 @@
 | users(lower(email)) unique | Login và chống trùng email |
 | workspace_members(userId,status,workspaceId) | Liệt kê Workspace được chia sẻ |
 | documents(workspaceId,status,createdAt desc) | Danh sách và allowlist retrieval |
-| resource_jobs(status,availableAt,leaseExpiresAt) | Worker FOR UPDATE SKIP LOCKED |
 | conversations(userId,workspaceId,updatedAt desc) | Lịch sử người dùng |
 | messages(conversationId,createdAt,id) | Cursor pagination ổn định |
 | retrieval_traces(strategyVersion,intent,createdAt) | Phân tích Adaptive Retrieval |
