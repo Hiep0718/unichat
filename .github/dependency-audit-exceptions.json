@@ -25,6 +25,28 @@
         "Client/server compatibility integration tests pass",
         "Security regression checks pass"
       ]
+    },
+    {
+      "id": "SEC-DEBT-002",
+      "status": "open",
+      "ecosystem": "Maven",
+      "package": "org.postgresql:postgresql",
+      "version": "42.7.11",
+      "advisoryIds": [
+        "BIT-postgresql-jdbc-driver-2026-54291",
+        "CVE-2026-54291",
+        "GHSA-j92g-9f8w-j867"
+      ],
+      "severity": "HIGH",
+      "allowedOutcome": "PASS_WITH_SCOPED_EXCEPTION",
+      "allowedScope": "non-chroma-only",
+      "blocks": [
+        "Production deployment without driver audit"
+      ],
+      "closureCriteria": [
+        "The advisory is absent from the resolved inventory",
+        "PostgreSQL JDBC driver version upgrade verified"
+      ]
     }
   ]
 }

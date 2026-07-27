@@ -374,3 +374,23 @@
 
 - Decision: Enforce `prepareThreshold=0` on PostgreSQL JDBC URL for Core API connections.
   Rationale: Required to prevent `prepared statement already exists` exceptions when routing Java JDBC traffic through Supabase's Transaction-mode pooler.
+
+## 2026-07-22 - RLS Remediation Plan Rewrite
+
+- Decision: Rewrite RLS remediation plan from Supabase client-direct model to defense-in-depth model matching UniChat's actual architecture (Core API → JDBC → Supabase-hosted PostgreSQL).
+  Rationale: Original plan assumed Supabase Auth (`auth.uid()`) and PostgREST client-direct access. UniChat's Core API owns authorization (ADR-004) and connects via JDBC as superuser. RLS serves as defense-in-depth safety net, not primary authorization.
+
+- Decision: Use deny_all (`USING(false)`) RLS policy on all tables instead of ownership-based policies (`auth.uid() = user_id`).
+  Rationale: Core API role has BYPASSRLS/superuser and handles authorization in application code. Complex per-table policies would add maintenance burden without security benefit.
+
+- Decision: Revoke ALL privileges from `anon`, `authenticated`, and `service_role` Supabase roles on schema `public`.
+  Rationale: User confirmed Supabase Dashboard/API is not used for direct data queries. Revoking all PostgREST roles eliminates the attack surface from leaked API keys.
+
+- Decision: Include `flyway_schema_history` in RLS scope (enable RLS + deny_all).
+  Rationale: User requested inclusion. Core API DB role (superuser) bypasses RLS, so Flyway migrations are unaffected. This prevents PostgREST from exposing migration metadata.
+
+- Decision: Drop `resource_jobs` table via V5 migration instead of applying RLS.
+  Rationale: ADR-007 replaced PostgreSQL-based job queue with RabbitMQ. No Java/Python/TS code references `resource_jobs`. Table exists only in V1 DDL. User approved removal.
+
+- Decision: Update `data-model.md`, `master-data.md`, and `stack-and-dependencies.md` to remove `resource_jobs` references.
+  Rationale: Keeping deprecated table references in specification documents creates inconsistency with ADR-007 and the new V5 migration.
