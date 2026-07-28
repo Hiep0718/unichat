@@ -49,6 +49,22 @@
       ]
     },
     {
+      "id": "SEC-DEBT-003",
+      "status": "open",
+      "ecosystem": "Maven",
+      "package": "io.netty:netty-codec-compression",
+      "version": "4.2.15.Final",
+      "advisoryIds": [
+        "CVE-2026-59901",
+        "GHSA-558v-64gr-wgg4"
+      ],
+      "severity": "HIGH",
+      "allowedOutcome": "PASS_WITH_SCOPED_EXCEPTION",
+      "allowedScope": "non-chroma-only",
+      "blocks": ["Production deployment without netty update"],
+      "closureCriteria": ["Netty dependency update verified"]
+    },
+    {
       "id": "SEC-DEBT-004",
       "status": "open",
       "ecosystem": "npm",
