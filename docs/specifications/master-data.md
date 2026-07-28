@@ -52,7 +52,6 @@ migration, API contract và test liên quan.
 | Workspace member role | `OWNER`, `EDITOR`, `VIEWER` | `workspace_members.role`; OWNER quản lý thành viên/visibility/ownership. |
 | Workspace member status | `ACTIVE`, `REVOKED` | `workspace_members.status`; chỉ membership ACTIVE cấp quyền. |
 | Document status | `PENDING`, `PROCESSING`, `PROCESSED`, `FAILED`, `DELETING` | `documents.status`; PENDING, FAILED và DELETING bị loại khỏi retrieval. |
-| Resource job type | `INGEST`, `DELETE` | `resource_jobs.jobType`; dùng cho ingestion và deletion saga. |
 | Message role | `USER`, `ASSISTANT` | `messages.role`; phân biệt message đầu vào và câu trả lời. |
 | Retrieval decision | `ANSWER`, `CLARIFY`, `REFUSE` | `retrieval_traces.decision` và response question API. |
 | Evaluation split | `DEVELOPMENT`, `HOLDOUT` | `evaluation_cases.split`; case không sửa sau freeze. |
@@ -94,7 +93,6 @@ Các bảng sau là transaction, operational state, telemetry hoặc audit; chú
 không được dùng làm danh mục master:
 
 - `refresh_tokens`, `idempotency_records`, `rate_limit_buckets`;
-- `resource_jobs` và state/lease theo từng lần thực thi;
 - `conversations`, `messages`, `citation_history`;
 - `retrieval_traces`, `retrieval_trace_items`;
 - `evaluation_runs`, `evaluation_results`;
