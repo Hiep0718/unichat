@@ -49,7 +49,7 @@ public class WorkspaceService {
     @Transactional(readOnly = true)
     public Page<WorkspaceResponse> getWorkspaces(UUID userId, Pageable pageable) {
         return workspaceRepository.findAllVisibleToUser(userId, pageable)
-                .map(WorkspaceResponse::from);
+                .map(this::toResponse);
     }
 
     /**
@@ -82,7 +82,7 @@ public class WorkspaceService {
         workspaceRepository.save(workspace);
         workspaceMemberRepository.save(ownerMember);
 
-        return WorkspaceResponse.from(workspace);
+        return WorkspaceResponse.from(workspace, 0, 1);
     }
 
     /**
@@ -97,7 +97,7 @@ public class WorkspaceService {
             checkAccess(userId, workspaceId);
         }
 
-        return WorkspaceResponse.from(workspace);
+        return toResponse(workspace);
     }
 
     /**
@@ -141,7 +141,7 @@ public class WorkspaceService {
         workspace.setUpdatedAt(Instant.now(clock));
 
         workspaceRepository.save(workspace);
-        return WorkspaceResponse.from(workspace);
+        return toResponse(workspace);
     }
 
     /**
@@ -167,5 +167,15 @@ public class WorkspaceService {
     private WorkspaceMember checkAccess(UUID userId, UUID workspaceId) {
         return workspaceMemberRepository.findByWorkspaceIdAndUserIdAndStatus(workspaceId, userId, WorkspaceMemberStatus.ACTIVE)
                 .orElseThrow(() -> new NotFoundError("Workspace không tồn tại"));
+    }
+
+    /**
+     * Converts a Workspace entity to response with aggregated counts.
+     * Document count is 0 until the document feature is implemented.
+     */
+    private WorkspaceResponse toResponse(Workspace workspace) {
+        long memberCount = workspaceMemberRepository
+                .countByWorkspaceIdAndStatus(workspace.getId(), WorkspaceMemberStatus.ACTIVE);
+        return WorkspaceResponse.from(workspace, 0, memberCount);
     }
 }

@@ -1,6 +1,6 @@
 /* Workspace Card */
 
-.workspace-card {
+a.workspace-card {
   display: flex;
   flex-direction: column;
   padding: var(--stack-md);
@@ -8,6 +8,8 @@
   border: 1px solid var(--color-outline-variant);
   border-radius: var(--radius-xl);
   transition: box-shadow var(--transition-normal);
+  text-decoration: none;
+  color: inherit;
 }
 
 .workspace-card:hover {

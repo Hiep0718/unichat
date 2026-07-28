@@ -375,6 +375,23 @@
 - Decision: Enforce `prepareThreshold=0` on PostgreSQL JDBC URL for Core API connections.
   Rationale: Required to prevent `prepared statement already exists` exceptions when routing Java JDBC traffic through Supabase's Transaction-mode pooler.
 
+## 2026-07-22 - Workspace List API Integration
+
+- Decision: Add `documentCount` and `memberCount` fields to `WorkspaceResponse` DTO with a `toResponse` helper in `WorkspaceService`.
+  Rationale: Frontend needs aggregate stats per workspace card. Member count is computed from `WorkspaceMemberRepository.countByWorkspaceIdAndStatus()`; document count is hardcoded to 0 because the Document entity does not exist yet.
+
+- Decision: Use client-side search and filter instead of server-side query parameters.
+  Rationale: Workspace count per user is typically small (< 100); client-side filtering avoids adding search API complexity to backend for P0.
+
+- Decision: Generate a random UUID as `Idempotency-Key` on each create workspace call.
+  Rationale: Prevents duplicate workspace creation on accidental double-click or network retry, per API contracts §1.
+
+- Decision: Use Zod v4 `z.object` schema for client-side form validation before API submission.
+  Rationale: Zod is already an approved dependency; validates name length (3-100) and description length (≤1000) matching backend Jakarta constraints.
+
+- Decision: Use `formatRelativeTime` pure function without external date library.
+  Rationale: Avoids adding a dependency (date-fns/dayjs) for a simple relative time display; function handles Vietnamese output natively.
+
 ## 2026-07-22 - RLS Remediation Plan Rewrite
 
 - Decision: Rewrite RLS remediation plan from Supabase client-direct model to defense-in-depth model matching UniChat's actual architecture (Core API → JDBC → Supabase-hosted PostgreSQL).
