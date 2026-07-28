@@ -2,12 +2,14 @@
  * Workspace card component displaying workspace info, badge, and stats.
  */
 
+import { Link } from 'react-router-dom';
 import { Icon } from '../../../components/icon';
 import './workspace-card.css';
 
 type Visibility = 'PUBLIC' | 'PRIVATE' | 'SHARED';
 
 interface WorkspaceCardProps {
+  readonly id: string;
   readonly name: string;
   readonly description: string;
   readonly visibility: Visibility;
@@ -26,6 +28,7 @@ const BADGE_CONFIG: Record<Visibility, { icon: string; label: string; className:
  * Renders a single workspace card with visibility badge and metadata.
  */
 export function WorkspaceCard({
+  id,
   name,
   description,
   visibility,
@@ -36,24 +39,17 @@ export function WorkspaceCard({
   const badge = BADGE_CONFIG[visibility];
 
   return (
-    <div className="workspace-card">
+    <Link to={`/workspaces/${id}`} className="workspace-card" style={{ textDecoration: 'none', color: 'inherit' }}>
       <div className="workspace-card__header">
         <span className={`workspace-card__badge ${badge.className}`}>
           <Icon name={badge.icon} size={14} />
           {badge.label}
         </span>
-        <button
-          className="workspace-card__menu"
-          type="button"
-          aria-label="Thêm tùy chọn"
-        >
-          <Icon name="more_vert" size={20} />
-        </button>
       </div>
 
       <div className="workspace-card__body">
         <h3 className="workspace-card__name">{name}</h3>
-        <p className="workspace-card__desc">{description}</p>
+        <p className="workspace-card__desc">{description || 'Không có mô tả'}</p>
       </div>
 
       <div className="workspace-card__footer">
@@ -67,10 +63,12 @@ export function WorkspaceCard({
             {memberCount} Thành viên
           </span>
         </div>
-        <div className="workspace-card__updated">
-          Cập nhật: {updatedAt}
-        </div>
+        {updatedAt && (
+          <div className="workspace-card__updated">
+            Cập nhật: {updatedAt}
+          </div>
+        )}
       </div>
-    </div>
+    </Link>
   );
 }

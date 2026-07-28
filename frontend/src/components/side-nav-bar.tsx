@@ -1,10 +1,10 @@
 /**
- * Side navigation bar for authenticated pages.
- * Displays logo, upload CTA, navigation items, and admin link.
+ * Side navigation bar supporting both global and workspace-scoped routes (UI Spec §3).
  */
 
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 
+import { useAuth } from '../features/auth/auth-context';
 import { Icon } from './icon';
 import logoWhite from '../assets/logo-white.png';
 import './side-nav-bar.css';
@@ -13,58 +13,95 @@ interface NavItem {
   readonly icon: string;
   readonly label: string;
   readonly href: string;
+  readonly ownerOrEditorOnly?: boolean;
 }
 
-const NAV_ITEMS: readonly NavItem[] = [
-  { icon: 'dashboard', label: 'Tổng quan', href: '/' },
-  { icon: 'workspaces', label: 'Không gian làm việc', href: '/workspaces' },
-  { icon: 'description', label: 'Tài liệu', href: '/documents' },
-  { icon: 'chat', label: 'Trò chuyện', href: '/chat' },
-  { icon: 'history', label: 'Lịch sử', href: '/history' },
-  { icon: 'person', label: 'Tài khoản', href: '/account' },
-];
-
 /**
- * Renders the fixed left sidebar navigation used on authenticated pages.
+ * Renders the fixed left sidebar navigation.
  */
 export function SideNavBar() {
   const location = useLocation();
+  const { workspaceId } = useParams<{ workspaceId?: string }>();
+  const { user } = useAuth();
+
+  const isAdmin = user?.systemRole === 'ADMIN';
+  const isWorkspaceContext = Boolean(workspaceId);
+
+  const workspaceNavItems: readonly NavItem[] = workspaceId
+    ? [
+        { icon: 'dashboard', label: 'Tổng quan', href: `/workspaces/${workspaceId}` },
+        { icon: 'description', label: 'Tài liệu', href: `/workspaces/${workspaceId}/documents` },
+        { icon: 'chat', label: 'Trò chuyện', href: `/workspaces/${workspaceId}/chat` },
+        { icon: 'history', label: 'Lịch sử', href: `/workspaces/${workspaceId}/conversations` },
+        { icon: 'analytics', label: 'Đánh giá', href: `/workspaces/${workspaceId}/evaluation`, ownerOrEditorOnly: true },
+        { icon: 'settings', label: 'Cài đặt', href: `/workspaces/${workspaceId}/settings`, ownerOrEditorOnly: true },
+      ]
+    : [];
+
+  const globalNavItems: readonly NavItem[] = [
+    { icon: 'workspaces', label: 'Knowledge Spaces', href: '/workspaces' },
+    { icon: 'person', label: 'Tài khoản', href: '/account' },
+  ];
+
+  const itemsToRender = isWorkspaceContext ? workspaceNavItems : globalNavItems;
 
   return (
     <nav className="side-nav" aria-label="Thanh điều hướng chính">
       <div className="side-nav__header">
-        <div className="side-nav__avatar">
-          <img src={logoWhite} alt="UniChat Logo" width="32" height="32" style={{ objectFit: 'contain' }} />
-        </div>
-        <div>
-          <h1 className="side-nav__title">UniChat</h1>
-          <p className="side-nav__subtitle">Hệ thống RAG thông minh</p>
-        </div>
+        <Link to="/workspaces" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', textDecoration: 'none', color: 'inherit' }}>
+          <div className="side-nav__avatar">
+            <img src={logoWhite} alt="UniChat Logo" width="32" height="32" style={{ objectFit: 'contain' }} />
+          </div>
+          <div>
+            <h1 className="side-nav__title">UniChat</h1>
+            <p className="side-nav__subtitle">{isWorkspaceContext ? 'Workspace' : 'AI Platform'}</p>
+          </div>
+        </Link>
       </div>
 
-      <button className="side-nav__upload-btn" type="button">
-        <Icon name="add" size={20} />
-        Tải tài liệu mới
-      </button>
+      {isWorkspaceContext && (
+        <Link
+          to={`/workspaces/${workspaceId}/documents`}
+          className="side-nav__upload-btn"
+          style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        >
+          <Icon name="add" size={20} />
+          Tải tài liệu mới
+        </Link>
+      )}
 
       <div className="side-nav__items">
-        {NAV_ITEMS.map((item) => (
-          <Link
-            key={item.icon}
-            to={item.href}
-            className={`side-nav__item ${location.pathname === item.href ? 'side-nav__item--active' : ''}`}
-          >
-            <Icon name={item.icon} size={20} />
-            {item.label}
-          </Link>
-        ))}
+        {itemsToRender.map((item) => {
+          const isActive = location.pathname === item.href;
+          return (
+            <Link
+              key={item.href}
+              to={item.href}
+              className={`side-nav__item ${isActive ? 'side-nav__item--active' : ''}`}
+            >
+              <Icon name={item.icon} size={20} />
+              {item.label}
+            </Link>
+          );
+        })}
       </div>
 
       <div className="side-nav__footer">
-        <Link to="#" className="side-nav__item">
-          <Icon name="admin_panel_settings" size={20} />
-          Quản trị viên
-        </Link>
+        {isWorkspaceContext && (
+          <Link to="/workspaces" className="side-nav__item">
+            <Icon name="arrow_back" size={20} />
+            Đổi Workspace
+          </Link>
+        )}
+        {isAdmin && (
+          <Link
+            to="/admin/users"
+            className={`side-nav__item ${location.pathname.startsWith('/admin') ? 'side-nav__item--active' : ''}`}
+          >
+            <Icon name="admin_panel_settings" size={20} />
+            Quản trị viên
+          </Link>
+        )}
       </div>
     </nav>
   );

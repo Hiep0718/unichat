@@ -1,0 +1,62 @@
+/* Citation Panel & Refusal Card Styling */
+
+.citation-panel {
+  margin-top: 12px;
+  padding: 12px 16px;
+  background: var(--color-surface-container-low);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+}
+
+.citation-panel__header {
+  font: var(--font-label-md);
+  font-weight: 600;
+  color: var(--color-on-surface-variant);
+  margin-bottom: 8px;
+}
+
+.citation-panel__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.citation-card {
+  padding: 8px 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-sm);
+  font: var(--font-body-sm);
+}
+
+.citation-card__title {
+  font-weight: 600;
+  color: var(--color-primary);
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.citation-card__excerpt {
+  color: var(--color-on-surface);
+  font-style: italic;
+}
+
+.refusal-card {
+  margin-top: 12px;
+  padding: 16px;
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  border-radius: var(--radius-md);
+  color: #991b1b;
+}
+
+.refusal-card__title {
+  font: var(--font-title-sm);
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.refusal-card__reason {
+  font: var(--font-body-md);
+}

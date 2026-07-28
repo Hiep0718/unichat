@@ -4,6 +4,7 @@
 
 import { Outlet } from 'react-router-dom';
 import { SideNavBar } from '../components/side-nav-bar';
+import './app-shell.css';
 
 /**
  * Layout wrapper for authenticated pages.
@@ -11,9 +12,9 @@ import { SideNavBar } from '../components/side-nav-bar';
  */
 export function AppShell() {
   return (
-    <div className="app-shell" style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+    <div className="app-shell">
       <SideNavBar />
-      <main className="app-shell__main" style={{ flex: 1, overflowY: 'auto' }}>
+      <main className="app-shell__main">
         <Outlet />
       </main>
     </div>
