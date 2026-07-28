@@ -1,0 +1,104 @@
+package com.unichat.core.document.api;
+
+import java.util.UUID;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.unichat.core.document.service.DocumentService;
+
+/**
+ * REST controller for document upload, ingestion tracking, and lifecycle operations.
+ */
+@RestController
+@RequestMapping("/api/v1/workspaces/{workspaceId}/documents")
+public class DocumentController {
+
+    private final DocumentService documentService;
+
+    public DocumentController(DocumentService documentService) {
+        this.documentService = documentService;
+    }
+
+    /**
+     * Lists documents in a workspace.
+     */
+    @GetMapping
+    public ResponseEntity<Page<DocumentResponse>> getDocuments(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable("workspaceId") UUID workspaceId,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "20") int size) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        Pageable pageable = PageRequest.of(page, Math.min(size, 100));
+        return ResponseEntity.ok(documentService.getDocuments(userId, workspaceId, pageable));
+    }
+
+    /**
+     * Uploads a document (PDF, DOCX, TXT) to workspace and triggers async ingestion via RabbitMQ.
+     */
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<IngestionJobResponse> uploadDocument(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable("workspaceId") UUID workspaceId,
+            @RequestPart("file") MultipartFile file,
+            @RequestHeader(value = "X-Request-Id", required = false, defaultValue = "") String requestId) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        IngestionJobResponse response = documentService.uploadDocument(userId, workspaceId, file, requestId);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+    }
+
+    /**
+     * Retrieves metadata for a specific document.
+     */
+    @GetMapping("/{documentId}")
+    public ResponseEntity<DocumentResponse> getDocument(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable("workspaceId") UUID workspaceId,
+            @PathVariable("documentId") UUID documentId) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        return ResponseEntity.ok(documentService.getDocument(userId, workspaceId, documentId));
+    }
+
+    /**
+     * Retrieves ingestion job status for a document.
+     */
+    @GetMapping("/{documentId}/jobs")
+    public ResponseEntity<IngestionJobResponse> getIngestionJob(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable("workspaceId") UUID workspaceId,
+            @PathVariable("documentId") UUID documentId) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        DocumentResponse doc = documentService.getDocument(userId, workspaceId, documentId);
+        return ResponseEntity.ok(new IngestionJobResponse(doc.id(), doc.id(), doc.status(), "Trạng thái bóc tách tài liệu hiện tại"));
+    }
+
+    /**
+     * Soft deletes a document (initiates Delete Saga).
+     */
+    @DeleteMapping("/{documentId}")
+    public ResponseEntity<Void> deleteDocument(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable("workspaceId") UUID workspaceId,
+            @PathVariable("documentId") UUID documentId) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        documentService.deleteDocument(userId, workspaceId, documentId);
+        return ResponseEntity.noContent().build();
+    }
+}
