@@ -3,13 +3,13 @@ from app.services.chunker import chunk_extracted_chunks
 from app.services.text_extractor import ExtractedChunk
 
 
-def test_intent_priority_comparison_over_definition():
+def test_intent_priority_comparison_over_definition() -> None:
     # Query contains both "định nghĩa" (Definition) and "so sánh" (Comparison)
     # Priority rule: COMPARISON must win over DEFINITION
     res = detect_intent("Định nghĩa và so sánh giữa thuật toán A và B")
     assert res.intent == IntentEnum.COMPARISON
 
-def test_chunker_vietnamese_unicode_sliding_window():
+def test_chunker_vietnamese_unicode_sliding_window() -> None:
     vietnamese_text = "Hệ thống UniChat hỗ trợ tri thức đại học. " * 30
     extracted = [
         ExtractedChunk(vietnamese_text, "TXT_LINE_RANGE", "lines:1-30", "hash123")
@@ -25,6 +25,6 @@ def test_chunker_vietnamese_unicode_sliding_window():
         assert c.content_hash == "hash123"
         assert len(c.text) <= 200
 
-def test_chunker_empty_input():
+def test_chunker_empty_input() -> None:
     chunks = chunk_extracted_chunks([])
     assert len(chunks) == 0

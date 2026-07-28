@@ -1,5 +1,6 @@
 import logging
 import os
+from typing import Any
 
 from app.services.chunker import chunk_extracted_chunks
 from app.services.text_extractor import extract_document
@@ -7,11 +8,11 @@ from app.services.vector_store import store_document_chunks
 
 logger = logging.getLogger(__name__)
 
-def process_ingestion_message(payload: dict) -> bool:
-    document_id = payload.get("documentId")
-    workspace_id = payload.get("workspaceId")
-    storage_key = payload.get("storageKey")
-    media_type = payload.get("mediaType")
+def process_ingestion_message(payload: dict[str, Any]) -> bool:
+    document_id = str(payload.get("documentId") or "")
+    workspace_id = str(payload.get("workspaceId") or "")
+    storage_key = str(payload.get("storageKey") or "")
+    media_type = str(payload.get("mediaType") or "")
 
     logger.info(f"Received ingestion task for document: {document_id}, workspace: {workspace_id}")
 
@@ -35,8 +36,8 @@ def process_ingestion_message(payload: dict) -> bool:
 
         # 3. Vector embedding & ChromaDB insertion
         stored_count = store_document_chunks(
-            workspace_id=str(workspace_id),
-            document_id=str(document_id),
+            workspace_id=workspace_id,
+            document_id=document_id,
             chunks=chunks,
         )
 

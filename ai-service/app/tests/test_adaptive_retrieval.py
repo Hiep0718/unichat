@@ -4,7 +4,7 @@ from app.core.rag.retrieval_engine import RetrievedChunkCandidate
 from app.core.rag.strategy_selector import get_strategy
 
 
-def test_intent_detection_rules():
+def test_intent_detection_rules() -> None:
     res_comp = detect_intent("So sánh giữa lập trình Java và Python trong dự án")
     assert res_comp.intent == IntentEnum.COMPARISON
 
@@ -20,13 +20,13 @@ def test_intent_detection_rules():
     res_fact = detect_intent("Ai là tác giả của khóa luận UniChat?")
     assert res_fact.intent == IntentEnum.FACT
 
-def test_evidence_gate_refusal_on_empty():
+def test_evidence_gate_refusal_on_empty() -> None:
     strategy = get_strategy(IntentEnum.FACT)
     gate_res = evaluate_evidence(IntentEnum.FACT, strategy, [])
     assert gate_res.decision == DecisionEnum.REFUSE
     assert "chưa đủ bằng chứng" in (gate_res.refusal_reason or "")
 
-def test_evidence_gate_answer_on_high_similarity():
+def test_evidence_gate_answer_on_high_similarity() -> None:
     strategy = get_strategy(IntentEnum.FACT)
     candidates = [
         RetrievedChunkCandidate("chunk1", "doc1", "Nội dung 1", 0.85, "PDF_PAGE", "page:1", "hash1")

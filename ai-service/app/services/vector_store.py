@@ -13,7 +13,7 @@ EMBEDDING_MODEL_NAME = "intfloat/multilingual-e5-base"
 COLLECTION_NAME = "unichat_chunks_v1"
 
 _model: SentenceTransformer | None = None
-_ephemeral_client: chromadb.ClientAPI | None = None
+_ephemeral_client: Any = None
 
 def get_embedding_model() -> SentenceTransformer:
     global _model
@@ -21,7 +21,7 @@ def get_embedding_model() -> SentenceTransformer:
         _model = SentenceTransformer(EMBEDDING_MODEL_NAME)
     return _model
 
-def get_chroma_client() -> chromadb.ClientAPI:
+def get_chroma_client() -> Any:
     global _ephemeral_client
     mode = os.getenv("CHROMA_MODE", "auto")
     if mode == "ephemeral":
@@ -47,7 +47,7 @@ def get_chroma_client() -> chromadb.ClientAPI:
             _ephemeral_client = chromadb.EphemeralClient()
         return _ephemeral_client
 
-def get_or_create_collection(client: chromadb.ClientAPI) -> Any:
+def get_or_create_collection(client: Any) -> Any:
     return client.get_or_create_collection(
         name=COLLECTION_NAME,
         metadata={"hnsw:space": "cosine"},
