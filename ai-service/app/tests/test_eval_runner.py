@@ -1,5 +1,6 @@
 from app.services.eval_runner import run_evaluation_suite
 
+
 def test_eval_runner_suite_execution():
     report = run_evaluation_suite("ws-123", ["doc-456"])
     assert report["suite"] == "unichat_p0_benchmark_v1"

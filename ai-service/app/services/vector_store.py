@@ -1,8 +1,10 @@
-import os
 import logging
-from typing import Any, Dict, List
+import os
+from typing import Any
+
 import chromadb
 from sentence_transformers import SentenceTransformer
+
 from app.services.chunker import ChunkResult
 
 logger = logging.getLogger(__name__)
@@ -35,12 +37,17 @@ def get_chroma_client() -> chromadb.ClientAPI:
         client.get_user_identity()
         return client
     except Exception as e:
-        logger.warning(f"Could not connect to Chroma server at {host}:{port} ({e}). Falling back to EphemeralClient.")
+        logger.warning(
+            "Could not connect to Chroma server at %s:%s (%s). Falling back to EphemeralClient.",
+            host,
+            port,
+            e,
+        )
         if _ephemeral_client is None:
             _ephemeral_client = chromadb.EphemeralClient()
         return _ephemeral_client
 
-def get_or_create_collection(client: chromadb.ClientAPI):
+def get_or_create_collection(client: chromadb.ClientAPI) -> Any:
     return client.get_or_create_collection(
         name=COLLECTION_NAME,
         metadata={"hnsw:space": "cosine"},
@@ -49,7 +56,7 @@ def get_or_create_collection(client: chromadb.ClientAPI):
 def store_document_chunks(
     workspace_id: str,
     document_id: str,
-    chunks: List[ChunkResult],
+    chunks: list[ChunkResult],
 ) -> int:
     if not chunks:
         return 0
@@ -58,10 +65,10 @@ def store_document_chunks(
     collection = get_or_create_collection(client)
     model = get_embedding_model()
 
-    ids: List[str] = []
-    documents: List[str] = []
-    embeddings: List[List[float]] = []
-    metadatas: List[Dict[str, Any]] = []
+    ids: list[str] = []
+    documents: list[str] = []
+    embeddings: list[list[float]] = []
+    metadatas: list[dict[str, Any]] = []
 
     for chunk in chunks:
         chunk_id = f"{document_id}_{chunk.chunk_index}"

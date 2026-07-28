@@ -1,21 +1,21 @@
-from typing import List, Optional
-from fastapi import APIRouter, HTTPException
+
+from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
+from app.core.rag.evidence_gate import DecisionEnum, evaluate_evidence
 from app.core.rag.intent_detector import detect_intent
-from app.core.rag.strategy_selector import get_strategy
-from app.core.rag.retrieval_engine import retrieve_chunks
-from app.core.rag.evidence_gate import evaluate_evidence, DecisionEnum
 from app.core.rag.llm_provider import generate_rag_answer
+from app.core.rag.retrieval_engine import retrieve_chunks
+from app.core.rag.strategy_selector import get_strategy
 
 router = APIRouter()
 
 class RetrievalAnswerRequest(BaseModel):
     workspaceId: str = Field(..., description="Target Workspace UUID")
-    allowedDocumentIds: List[str] = Field(..., description="Authorized document UUID list")
+    allowedDocumentIds: list[str] = Field(..., description="Authorized document UUID list")
     question: str = Field(..., min_length=3, max_length=2000, description="User question")
-    strategyVersion: Optional[str] = Field("v1.0", description="RAG strategy version")
-    requestId: Optional[str] = Field(None, description="Correlation request ID")
+    strategyVersion: str | None = Field("v1.0", description="RAG strategy version")
+    requestId: str | None = Field(None, description="Correlation request ID")
 
 class CitationItem(BaseModel):
     citationId: str
@@ -29,13 +29,13 @@ class RetrievalAnswerResponse(BaseModel):
     intent: str
     strategyVersion: str
     evidenceScore: float
-    answer: Optional[str] = None
-    citations: List[CitationItem] = []
-    refusalCode: Optional[str] = None
-    refusalReason: Optional[str] = None
+    answer: str | None = None
+    citations: list[CitationItem] = []
+    refusalCode: str | None = None
+    refusalReason: str | None = None
 
 @router.post("/retrieval/answers", response_model=RetrievalAnswerResponse)
-def get_retrieval_answer(request: RetrievalAnswerRequest):
+def get_retrieval_answer(request: RetrievalAnswerRequest) -> RetrievalAnswerResponse:
     if not request.allowedDocumentIds:
         return RetrievalAnswerResponse(
             decision=DecisionEnum.REFUSE.value,

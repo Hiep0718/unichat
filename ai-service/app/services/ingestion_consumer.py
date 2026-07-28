@@ -1,9 +1,8 @@
-import json
 import logging
 import os
-import httpx
-from app.services.text_extractor import extract_document
+
 from app.services.chunker import chunk_extracted_chunks
+from app.services.text_extractor import extract_document
 from app.services.vector_store import store_document_chunks
 
 logger = logging.getLogger(__name__)

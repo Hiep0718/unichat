@@ -1,8 +1,10 @@
-import pytest
 from unittest.mock import patch
+
 import httpx
+
 from app.core.rag.llm_provider import generate_rag_answer
 from app.core.rag.retrieval_engine import RetrievedChunkCandidate
+
 
 def test_generate_rag_answer_gemini_failure_fallback_to_ollama():
     candidates = [

@@ -1,8 +1,9 @@
-import os
-import json
 import logging
-from typing import Any, Dict, List
+import os
+from typing import Any
+
 import httpx
+
 from app.core.rag.retrieval_engine import RetrievedChunkCandidate
 
 logger = logging.getLogger(__name__)
@@ -12,13 +13,15 @@ OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 
 def generate_rag_answer(
     question: str,
-    candidates: List[RetrievedChunkCandidate],
-) -> Dict[str, Any]:
+    candidates: list[RetrievedChunkCandidate],
+) -> dict[str, Any]:
     context_blocks = []
     citations = []
 
     for idx, c in enumerate(candidates, start=1):
-        context_blocks.append(f"[{idx}] (Tài liệu: {c.document_id}, Vị trí: {c.locator_value}):\n{c.text}")
+        context_blocks.append(
+            f"[{idx}] (Tài liệu: {c.document_id}, Vị trí: {c.locator_value}):\n{c.text}"
+        )
         citations.append({
             "citationId": str(idx),
             "documentId": c.document_id,
@@ -29,8 +32,10 @@ def generate_rag_answer(
 
     context_str = "\n\n".join(context_blocks)
     system_prompt = (
-        "Bạn là trợ lý AI tri thức UniChat. Hãy trả lời câu hỏi dựa CHÍNH XÁC vào các trích dẫn tài liệu được cung cấp dưới đây.\n"
-        "Tuyệt đối không tự bịa thông tin ngoài tài liệu. Khi đưa ra thông tin factual, hãy chỉ rõ số thứ tự trích dẫn [1], [2].\n\n"
+        "Bạn là trợ lý AI tri thức UniChat. Hãy trả lời câu hỏi dựa CHÍNH XÁC vào "
+        "các trích dẫn tài liệu được cung cấp dưới đây.\n"
+        "Tuyệt đối không tự bịa thông tin ngoài tài liệu. Khi đưa ra thông tin factual, "
+        "hãy chỉ rõ số thứ tự trích dẫn [1], [2].\n\n"
         f"NGỮ CẢNH TÀI LIỆU:\n{context_str}"
     )
 
@@ -56,24 +61,28 @@ def generate_rag_answer(
         }
     except Exception as e:
         logger.error(f"Ollama fallback failed: {e}")
+        fallback_text = "\n".join([f"- {c.text}" for c in candidates[:3]])
         return {
-            "answer": "Dựa trên các tài liệu thu hồi:\n" + "\n".join([f"- {c.text}" for c in candidates[:3]]),
+            "answer": f"Dựa trên các tài liệu thu hồi:\n{fallback_text}",
             "citations": citations,
             "provider": "extractive-fallback",
         }
 
 def call_gemini_api(system_prompt: str, question: str) -> str:
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
+    endpoint = (
+        "https://generativelanguage.googleapis.com/v1beta/models/"
+        f"gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
+    )
     payload = {
         "contents": [
             {"role": "user", "parts": [{"text": f"{system_prompt}\n\nCÂU HỎI: {question}"}]}
         ]
     }
     with httpx.Client(timeout=15.0) as client:
-        res = client.post(url, json=payload)
+        res = client.post(endpoint, json=payload)
         res.raise_for_status()
         data = res.json()
-        return data["candidates"][0]["content"]["parts"][0]["text"]
+        return str(data["candidates"][0]["content"]["parts"][0]["text"])
 
 def call_ollama_fallback(system_prompt: str, question: str) -> str:
     url = f"{OLLAMA_HOST}/api/generate"
@@ -85,4 +94,4 @@ def call_ollama_fallback(system_prompt: str, question: str) -> str:
     with httpx.Client(timeout=30.0) as client:
         res = client.post(url, json=payload)
         res.raise_for_status()
-        return res.json().get("response", "")
+        return str(res.json().get("response", ""))

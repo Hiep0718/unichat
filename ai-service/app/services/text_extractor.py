@@ -1,16 +1,18 @@
 import hashlib
-from typing import Any, Dict, List
-from pypdf import PdfReader
+from typing import Any
+
 import docx
+from pypdf import PdfReader
+
 
 class ExtractedChunk:
-    def __init__(self, text: str, locator_type: str, locator_value: str, content_hash: str):
+    def __init__(self, text: str, locator_type: str, locator_value: str, content_hash: str) -> None:
         self.text = text
         self.locator_type = locator_type
         self.locator_value = locator_value
         self.content_hash = content_hash
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "text": self.text,
             "locator_type": self.locator_type,
@@ -21,10 +23,10 @@ class ExtractedChunk:
 def compute_hash(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
-def extract_pdf(file_bytes: bytes) -> List[ExtractedChunk]:
+def extract_pdf(file_bytes: bytes) -> list[ExtractedChunk]:
     import io
     reader = PdfReader(io.BytesIO(file_bytes))
-    chunks: List[ExtractedChunk] = []
+    chunks: list[ExtractedChunk] = []
 
     for i, page in enumerate(reader.pages, start=1):
         text = (page.extract_text() or "").strip()
@@ -38,10 +40,10 @@ def extract_pdf(file_bytes: bytes) -> List[ExtractedChunk]:
             ))
     return chunks
 
-def extract_docx(file_bytes: bytes) -> List[ExtractedChunk]:
+def extract_docx(file_bytes: bytes) -> list[ExtractedChunk]:
     import io
     doc = docx.Document(io.BytesIO(file_bytes))
-    chunks: List[ExtractedChunk] = []
+    chunks: list[ExtractedChunk] = []
 
     for idx, para in enumerate(doc.paragraphs, start=1):
         text = para.text.strip()
@@ -55,12 +57,12 @@ def extract_docx(file_bytes: bytes) -> List[ExtractedChunk]:
             ))
     return chunks
 
-def extract_txt(file_bytes: bytes) -> List[ExtractedChunk]:
+def extract_txt(file_bytes: bytes) -> list[ExtractedChunk]:
     text_content = file_bytes.decode("utf-8", errors="replace")
     lines = text_content.splitlines()
-    chunks: List[ExtractedChunk] = []
+    chunks: list[ExtractedChunk] = []
 
-    batch_lines: List[str] = []
+    batch_lines: list[str] = []
     start_line = 1
 
     for idx, line in enumerate(lines, start=1):
@@ -83,7 +85,7 @@ def extract_txt(file_bytes: bytes) -> List[ExtractedChunk]:
 
     return chunks
 
-def extract_document(file_bytes: bytes, media_type: str) -> List[ExtractedChunk]:
+def extract_document(file_bytes: bytes, media_type: str) -> list[ExtractedChunk]:
     if media_type == "application/pdf":
         return extract_pdf(file_bytes)
     elif media_type in (

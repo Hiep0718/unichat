@@ -1,5 +1,7 @@
-from typing import Any, Dict, List
+from typing import Any
+
 from app.services.text_extractor import ExtractedChunk
+
 
 class ChunkResult:
     def __init__(
@@ -9,14 +11,14 @@ class ChunkResult:
         locator_type: str,
         locator_value: str,
         content_hash: str,
-    ):
+    ) -> None:
         self.chunk_index = chunk_index
         self.text = text
         self.locator_type = locator_type
         self.locator_value = locator_value
         self.content_hash = content_hash
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "chunk_index": self.chunk_index,
             "text": self.text,
@@ -26,11 +28,11 @@ class ChunkResult:
         }
 
 def chunk_extracted_chunks(
-    extracted_chunks: List[ExtractedChunk],
+    extracted_chunks: list[ExtractedChunk],
     max_chunk_size: int = 500,
     overlap: int = 50,
-) -> List[ChunkResult]:
-    final_chunks: List[ChunkResult] = []
+) -> list[ChunkResult]:
+    final_chunks: list[ChunkResult] = []
     chunk_counter = 0
 
     for item in extracted_chunks:

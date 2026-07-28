@@ -1,8 +1,8 @@
-import pytest
-from app.core.rag.intent_detector import detect_intent, IntentEnum
-from app.core.rag.strategy_selector import get_strategy
-from app.core.rag.evidence_gate import evaluate_evidence, DecisionEnum, EvidenceGateResult
+from app.core.rag.evidence_gate import DecisionEnum, evaluate_evidence
+from app.core.rag.intent_detector import IntentEnum, detect_intent
 from app.core.rag.retrieval_engine import RetrievedChunkCandidate
+from app.core.rag.strategy_selector import get_strategy
+
 
 def test_intent_detection_rules():
     res_comp = detect_intent("So sánh giữa lập trình Java và Python trong dự án")

@@ -1,5 +1,7 @@
 import pytest
+
 from app.services.text_extractor import extract_document, extract_txt
+
 
 def test_extract_corrupted_pdf_throws_exception():
     corrupted_pdf_bytes = b"%PDF-1.4 malformed header and corrupted binary data $$$$"

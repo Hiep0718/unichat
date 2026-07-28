@@ -1,7 +1,7 @@
-import pytest
-from app.core.rag.intent_detector import detect_intent, IntentEnum
-from app.services.chunker import chunk_extracted_chunks, ChunkResult
+from app.core.rag.intent_detector import IntentEnum, detect_intent
+from app.services.chunker import chunk_extracted_chunks
 from app.services.text_extractor import ExtractedChunk
+
 
 def test_intent_priority_comparison_over_definition():
     # Query contains both "định nghĩa" (Definition) and "so sánh" (Comparison)

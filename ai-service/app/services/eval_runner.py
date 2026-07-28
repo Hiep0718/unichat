@@ -1,12 +1,12 @@
 import time
-from typing import Any, Dict, List
-from app.core.rag.intent_detector import detect_intent
-from app.core.rag.strategy_selector import get_strategy
-from app.core.rag.retrieval_engine import retrieve_chunks
-from app.core.rag.evidence_gate import evaluate_evidence
-from app.core.rag.llm_provider import generate_rag_answer
+from typing import Any
 
-GOLDEN_DATASET: List[Dict[str, Any]] = [
+from app.core.rag.evidence_gate import evaluate_evidence
+from app.core.rag.intent_detector import detect_intent
+from app.core.rag.retrieval_engine import retrieve_chunks
+from app.core.rag.strategy_selector import get_strategy
+
+GOLDEN_DATASET: list[dict[str, Any]] = [
     {
         "id": "eval_001",
         "question": "Khái niệm Vector Embedding trong UniChat RAG là gì?",
@@ -27,9 +27,9 @@ GOLDEN_DATASET: List[Dict[str, Any]] = [
     },
 ]
 
-def run_evaluation_suite(workspace_id: str, allowed_document_ids: List[str]) -> Dict[str, Any]:
+def run_evaluation_suite(workspace_id: str, allowed_document_ids: list[str]) -> dict[str, Any]:
     start_time = time.time()
-    results: List[Dict[str, Any]] = []
+    results: list[dict[str, Any]] = []
 
     total_samples = len(GOLDEN_DATASET)
     intent_acc_count = 0

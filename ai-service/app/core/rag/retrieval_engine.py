@@ -1,6 +1,8 @@
-from typing import Any, Dict, List
-from app.services.vector_store import get_chroma_client, get_embedding_model, COLLECTION_NAME
+from typing import Any
+
 from app.core.rag.strategy_selector import RetrievalStrategy
+from app.services.vector_store import COLLECTION_NAME, get_chroma_client, get_embedding_model
+
 
 class RetrievedChunkCandidate:
     def __init__(
@@ -12,7 +14,7 @@ class RetrievedChunkCandidate:
         locator_type: str,
         locator_value: str,
         content_hash: str,
-    ):
+    ) -> None:
         self.chunk_id = chunk_id
         self.document_id = document_id
         self.text = text
@@ -23,10 +25,10 @@ class RetrievedChunkCandidate:
 
 def retrieve_chunks(
     workspace_id: str,
-    allowed_document_ids: List[str],
+    allowed_document_ids: list[str],
     question: str,
     strategy: RetrievalStrategy,
-) -> List[RetrievedChunkCandidate]:
+) -> list[RetrievedChunkCandidate]:
     if not allowed_document_ids or strategy.top_k == 0:
         return []
 
@@ -53,7 +55,7 @@ def retrieve_chunks(
         },
     )
 
-    candidates: List[RetrievedChunkCandidate] = []
+    candidates: list[RetrievedChunkCandidate] = []
     if not results or not results.get("ids") or not results["ids"][0]:
         return candidates
 
@@ -68,7 +70,7 @@ def retrieve_chunks(
         similarity = 1.0 - dist if dist <= 1.0 else 0.0
 
         if similarity >= strategy.similarity_floor:
-            meta: Dict[str, Any] = metadatas[i] if i < len(metadatas) else {}
+            meta: dict[str, Any] = metadatas[i] if i < len(metadatas) else {}
             candidates.append(
                 RetrievedChunkCandidate(
                     chunk_id=ids[i],
