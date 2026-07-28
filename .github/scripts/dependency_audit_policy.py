@@ -23,7 +23,6 @@ from dependency_audit_sources import (
 
 CHROMA_MANIFEST_PATHS = frozenset(
     {
-        "ai-service/pyproject.toml",
         "ai-service/requirements.txt",
         "ai-service/requirements-dev.txt",
         "ai-service/requirements.lock.txt",
