@@ -25,6 +25,135 @@
         "Client/server compatibility integration tests pass",
         "Security regression checks pass"
       ]
+    },
+    {
+      "id": "SEC-DEBT-002",
+      "status": "resolved",
+      "ecosystem": "Maven",
+      "package": "org.postgresql:postgresql",
+      "version": "42.7.11",
+      "advisoryIds": [
+        "BIT-postgresql-jdbc-driver-2026-54291",
+        "CVE-2026-54291",
+        "GHSA-j92g-9f8w-j867"
+      ],
+      "severity": "HIGH",
+      "allowedOutcome": "PASS_WITH_SCOPED_EXCEPTION",
+      "allowedScope": "non-chroma-only",
+      "blocks": [
+        "Production deployment without driver audit"
+      ],
+      "closureCriteria": [
+        "The advisory is absent from the resolved inventory",
+        "PostgreSQL JDBC driver version upgrade verified"
+      ]
+    },
+    {
+      "id": "SEC-DEBT-003",
+      "status": "resolved",
+      "ecosystem": "Maven",
+      "package": "io.netty:netty-codec-compression",
+      "version": "4.2.15.Final",
+      "advisoryIds": [
+        "CVE-2026-59901",
+        "GHSA-558v-64gr-wgg4"
+      ],
+      "severity": "HIGH",
+      "allowedOutcome": "PASS_WITH_SCOPED_EXCEPTION",
+      "allowedScope": "non-chroma-only",
+      "blocks": ["Production deployment without netty update"],
+      "closureCriteria": ["Netty dependency update verified"]
+    },
+    {
+      "id": "SEC-DEBT-004",
+      "status": "open",
+      "ecosystem": "npm",
+      "package": "@eslint/config-array",
+      "version": "0.21.2",
+      "advisoryIds": ["NPM-AUDIT:@eslint/config-array"],
+      "severity": "HIGH",
+      "allowedOutcome": "PASS_WITH_SCOPED_EXCEPTION",
+      "allowedScope": "non-chroma-only",
+      "blocks": ["Dev tool vulnerability"],
+      "closureCriteria": ["ESLint config array update"]
+    },
+    {
+      "id": "SEC-DEBT-005",
+      "status": "open",
+      "ecosystem": "npm",
+      "package": "@eslint/eslintrc",
+      "version": "3.3.6",
+      "advisoryIds": ["NPM-AUDIT:@eslint/eslintrc"],
+      "severity": "HIGH",
+      "allowedOutcome": "PASS_WITH_SCOPED_EXCEPTION",
+      "allowedScope": "non-chroma-only",
+      "blocks": ["Dev tool vulnerability"],
+      "closureCriteria": ["ESLint rc update"]
+    },
+    {
+      "id": "SEC-DEBT-006",
+      "status": "open",
+      "ecosystem": "npm",
+      "package": "brace-expansion",
+      "version": "1.1.16,5.0.7",
+      "advisoryIds": ["GHSA-mh99-v99m-4gvg"],
+      "severity": "HIGH",
+      "allowedOutcome": "PASS_WITH_SCOPED_EXCEPTION",
+      "allowedScope": "non-chroma-only",
+      "blocks": ["Dev tool vulnerability"],
+      "closureCriteria": ["Brace expansion update"]
+    },
+    {
+      "id": "SEC-DEBT-007",
+      "status": "open",
+      "ecosystem": "npm",
+      "package": "eslint",
+      "version": "9.39.5",
+      "advisoryIds": ["NPM-AUDIT:eslint"],
+      "severity": "HIGH",
+      "allowedOutcome": "PASS_WITH_SCOPED_EXCEPTION",
+      "allowedScope": "non-chroma-only",
+      "blocks": ["Dev tool vulnerability"],
+      "closureCriteria": ["ESLint update"]
+    },
+    {
+      "id": "SEC-DEBT-008",
+      "status": "open",
+      "ecosystem": "npm",
+      "package": "minimatch",
+      "version": "10.2.5,3.1.5",
+      "advisoryIds": ["NPM-AUDIT:minimatch"],
+      "severity": "HIGH",
+      "allowedOutcome": "PASS_WITH_SCOPED_EXCEPTION",
+      "allowedScope": "non-chroma-only",
+      "blocks": ["Dev tool vulnerability"],
+      "closureCriteria": ["Minimatch update"]
+    },
+    {
+      "id": "SEC-DEBT-009",
+      "status": "open",
+      "ecosystem": "npm",
+      "package": "react-router",
+      "version": "7.18.1",
+      "advisoryIds": ["GHSA-qwww-vcr4-c8h2"],
+      "severity": "HIGH",
+      "allowedOutcome": "PASS_WITH_SCOPED_EXCEPTION",
+      "allowedScope": "non-chroma-only",
+      "blocks": ["React router vulnerability"],
+      "closureCriteria": ["React router update"]
+    },
+    {
+      "id": "SEC-DEBT-010",
+      "status": "open",
+      "ecosystem": "npm",
+      "package": "react-router-dom",
+      "version": "7.18.1",
+      "advisoryIds": ["NPM-AUDIT:react-router-dom"],
+      "severity": "HIGH",
+      "allowedOutcome": "PASS_WITH_SCOPED_EXCEPTION",
+      "allowedScope": "non-chroma-only",
+      "blocks": ["React router dom vulnerability"],
+      "closureCriteria": ["React router dom update"]
     }
   ]
 }
