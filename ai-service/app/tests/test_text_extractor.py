@@ -1,6 +1,6 @@
 import pytest
 
-from app.services.text_extractor import ExtractedChunk, extract_document, extract_txt
+from app.services.text_extractor import extract_document, extract_txt
 
 
 def test_extract_txt_line_ranges():
