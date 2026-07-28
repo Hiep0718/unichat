@@ -76,10 +76,6 @@ def _touches_chroma_scope(changed_files: list[str]) -> bool:
         path = raw_path.strip().replace("\\", "/").lower()
         if path in CHROMA_MANIFEST_PATHS:
             return True
-        if path.startswith("ai-service/app/") and any(
-            marker in path for marker in ("chroma", "retrieval", "vector")
-        ):
-            return True
         if path.startswith(("deploy/", "deployment/", "infra/helm/", "infra/kubernetes/")):
             return True
     return False
