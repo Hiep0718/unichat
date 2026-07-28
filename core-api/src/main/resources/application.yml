@@ -2,8 +2,8 @@ spring:
   application:
     name: unichat-core-api
   datasource:
-    url: ${POSTGRES_URL:jdbc:postgresql://127.0.0.1:5432/unichat?options=-c%20TimeZone=Asia/Ho_Chi_Minh}
-    username: ${POSTGRES_USER:unichat}
+    url: ${POSTGRES_URL}
+    username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
   flyway:
     enabled: true
