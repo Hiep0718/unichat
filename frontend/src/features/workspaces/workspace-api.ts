@@ -1,73 +1,49 @@
+/**
+ * Workspace API client functions.
+ * Communicates with Core API workspace endpoints via fetchJson.
+ */
 import { fetchJson } from '../../lib/api-client';
 
-export type WorkspaceVisibility = 'PRIVATE' | 'SHARED' | 'PUBLIC';
-export type WorkspaceRole = 'OWNER' | 'EDITOR' | 'VIEWER';
+import type {
+  CreateWorkspaceInput,
+  PagedResponse,
+  WorkspaceDto,
+} from './workspace-schema';
 
-export interface WorkspaceResponse {
-  id: string;
-  name: string;
-  description?: string;
-  visibility: WorkspaceVisibility;
-  ownerId: string;
-  userRole?: WorkspaceRole;
-  documentCount?: number;
-  memberCount?: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface PageResponse<T> {
-  content: T[];
-  totalElements: number;
-  totalPages: number;
-  number: number;
-  size: number;
-}
-
-export interface CreateWorkspacePayload {
-  name: string;
-  description?: string;
-  visibility: WorkspaceVisibility;
-}
-
-export interface UpdateWorkspacePayload {
-  name?: string;
-  description?: string;
-  visibility?: WorkspaceVisibility;
-}
-
-export async function fetchWorkspaces(
+/**
+ * Fetches paginated workspaces visible to the authenticated user.
+ *
+ * @param page zero-based page number
+ * @param size items per page (max 100)
+ */
+export function getWorkspaces(
   page = 0,
-  size = 20
-): Promise<PageResponse<WorkspaceResponse>> {
-  return fetchJson<PageResponse<WorkspaceResponse>>(`/workspaces?page=${page}&size=${size}`);
+  size = 20,
+): Promise<PagedResponse<WorkspaceDto>> {
+  return fetchJson(`/workspaces?page=${page}&size=${size}`);
 }
 
-export async function fetchWorkspace(workspaceId: string): Promise<WorkspaceResponse> {
-  return fetchJson<WorkspaceResponse>(`/workspaces/${workspaceId}`);
-}
+/**
+ * Creates a new workspace with the given data.
+ * Sends an Idempotency-Key header to prevent duplicate creation.
+ */
+export function createWorkspace(
+  data: CreateWorkspaceInput,
+): Promise<WorkspaceDto> {
+  const idempotencyKey = crypto.randomUUID();
 
-export async function createWorkspace(
-  payload: CreateWorkspacePayload
-): Promise<WorkspaceResponse> {
-  return fetchJson<WorkspaceResponse>('/workspaces', {
+  return fetchJson('/workspaces', {
     method: 'POST',
-    body: JSON.stringify(payload),
+    body: JSON.stringify(data),
+    headers: { 'Idempotency-Key': idempotencyKey },
   });
 }
 
-export async function updateWorkspace(
-  workspaceId: string,
-  payload: UpdateWorkspacePayload
-): Promise<WorkspaceResponse> {
-  return fetchJson<WorkspaceResponse>(`/workspaces/${workspaceId}`, {
-    method: 'PATCH',
-    body: JSON.stringify(payload),
-  });
-}
-
-export async function deleteWorkspace(workspaceId: string): Promise<void> {
-  return fetchJson<void>(`/workspaces/${workspaceId}`, {
+/**
+ * Deletes a workspace by ID. Only the owner can perform this action.
+ */
+export function deleteWorkspace(workspaceId: string): Promise<void> {
+  return fetchJson(`/workspaces/${workspaceId}`, {
     method: 'DELETE',
   });
 }

@@ -28,7 +28,7 @@
     },
     {
       "id": "SEC-DEBT-002",
-      "status": "open",
+      "status": "resolved",
       "ecosystem": "Maven",
       "package": "org.postgresql:postgresql",
       "version": "42.7.11",
@@ -50,7 +50,7 @@
     },
     {
       "id": "SEC-DEBT-003",
-      "status": "open",
+      "status": "resolved",
       "ecosystem": "Maven",
       "package": "io.netty:netty-codec-compression",
       "version": "4.2.15.Final",

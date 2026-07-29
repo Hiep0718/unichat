@@ -1,72 +1,71 @@
-import { useEffect, useState } from 'react';
+/**
+ * Workspace list page for authenticated users.
+ * Fetches workspaces from API, supports search and visibility filter.
+ */
+
+import { useCallback, useMemo, useState } from 'react';
+
 import { Icon } from '../../components/icon';
 import { WorkspaceCard } from './components/workspace-card';
-import { CreateWorkspaceModal } from './components/create-workspace-modal';
-import { fetchWorkspaces, WorkspaceResponse, WorkspaceVisibility } from './workspace-api';
+import { WorkspaceForm } from './components/workspace-form';
+import { SkeletonCard } from './components/skeleton-card';
+import { useWorkspaces } from './workspace-hooks';
+
+import type { WorkspaceVisibility } from './workspace-schema';
+
 import './workspace-list-page.css';
 
+type FilterOption = 'ALL' | WorkspaceVisibility;
+
+const FILTER_OPTIONS: readonly { value: FilterOption; label: string }[] = [
+  { value: 'ALL', label: 'Tất cả' },
+  { value: 'PRIVATE', label: 'Riêng tư' },
+  { value: 'SHARED', label: 'Được chia sẻ' },
+  { value: 'PUBLIC', label: 'Công khai' },
+];
+
+/** Number of skeleton cards to show during loading. */
+const SKELETON_COUNT = 3;
+
+/**
+ * Renders the workspace list page with search, filter, and create modal.
+ */
 function WorkspaceListPage() {
-  const [workspaces, setWorkspaces] = useState<WorkspaceResponse[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data, isLoading, error, refetch } = useWorkspaces();
+
   const [searchQuery, setSearchQuery] = useState('');
-  const [visibilityFilter, setVisibilityFilter] = useState<'ALL' | WorkspaceVisibility>('ALL');
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<FilterOption>('ALL');
+  const [isFormOpen, setIsFormOpen] = useState(false);
 
-  const refreshWorkspaces = () => {
-    fetchWorkspaces(0, 50)
-      .then((res) => {
-        setWorkspaces(res.content || []);
-        setError(null);
-      })
-      .catch((err: unknown) => {
-        setError(err instanceof Error ? err.message : 'Không thể tải danh sách Workspace');
-      });
-  };
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSearchQuery(e.target.value);
+    },
+    [],
+  );
 
-  useEffect(() => {
-    let mounted = true;
-    fetchWorkspaces(0, 50)
-      .then((res) => {
-        if (mounted) {
-          setWorkspaces(res.content || []);
-          setError(null);
-        }
-      })
-      .catch((err: unknown) => {
-        if (mounted) {
-          setError(err instanceof Error ? err.message : 'Không thể tải danh sách Workspace');
-        }
-      })
-      .finally(() => {
-        if (mounted) setLoading(false);
-      });
+  const filteredWorkspaces = useMemo(() => {
+    const workspaces = data?.content ?? [];
+    const query = searchQuery.toLowerCase().trim();
 
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  const filteredWorkspaces = workspaces.filter((ws) => {
-    const matchesSearch =
-      ws.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (ws.description && ws.description.toLowerCase().includes(searchQuery.toLowerCase()));
-
-    const matchesVisibility =
-      visibilityFilter === 'ALL' || ws.visibility === visibilityFilter;
-
-    return matchesSearch && matchesVisibility;
-  });
+    return workspaces.filter((ws) => {
+      const matchesFilter = activeFilter === 'ALL' || ws.visibility === activeFilter;
+      const matchesSearch = !query
+        || ws.name.toLowerCase().includes(query)
+        || ws.description?.toLowerCase().includes(query);
+      return matchesFilter && matchesSearch;
+    });
+  }, [data?.content, searchQuery, activeFilter]);
 
   return (
     <main className="workspace-main">
       <header className="workspace-header">
         <div className="workspace-header__top">
-          <h2 className="workspace-header__title">Knowledge Spaces của bạn</h2>
+          <h2 className="workspace-header__title">Workspace của tôi</h2>
           <button
             className="workspace-header__create-btn"
             type="button"
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => setIsFormOpen(true)}
           >
             <Icon name="add" size={18} />
             Tạo Workspace
@@ -81,100 +80,95 @@ function WorkspaceListPage() {
               type="text"
               placeholder="Tìm kiếm workspace..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={handleSearchChange}
             />
           </div>
 
           <div className="workspace-filters">
-            <button
-              type="button"
-              className={`workspace-filter ${visibilityFilter === 'ALL' ? 'workspace-filter--active' : ''}`}
-              onClick={() => setVisibilityFilter('ALL')}
-            >
-              Tất cả
-            </button>
-            <button
-              type="button"
-              className={`workspace-filter ${visibilityFilter === 'PRIVATE' ? 'workspace-filter--active' : ''}`}
-              onClick={() => setVisibilityFilter('PRIVATE')}
-            >
-              Riêng tư
-            </button>
-            <button
-              type="button"
-              className={`workspace-filter ${visibilityFilter === 'SHARED' ? 'workspace-filter--active' : ''}`}
-              onClick={() => setVisibilityFilter('SHARED')}
-            >
-              Được chia sẻ
-            </button>
-            <button
-              type="button"
-              className={`workspace-filter ${visibilityFilter === 'PUBLIC' ? 'workspace-filter--active' : ''}`}
-              onClick={() => setVisibilityFilter('PUBLIC')}
-            >
-              Công khai
-            </button>
+            {FILTER_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                className={`workspace-filter ${activeFilter === opt.value ? 'workspace-filter--active' : ''}`}
+                onClick={() => setActiveFilter(opt.value)}
+              >
+                {opt.label}
+              </button>
+            ))}
           </div>
         </div>
       </header>
 
       <div className="workspace-content">
-        {loading ? (
-          <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#64748b' }}>
-            Đang tải danh sách Workspace...
+        {isLoading && (
+          <div className="workspace-grid">
+            {Array.from({ length: SKELETON_COUNT }, (_, i) => (
+              <SkeletonCard key={i} />
+            ))}
           </div>
-        ) : error ? (
-          <div style={{ textAlign: 'center', padding: '3rem 1rem', color: '#e11d48' }}>
-            <p style={{ marginBottom: '1rem' }}>{error}</p>
+        )}
+
+        {error && (
+          <div className="workspace-empty">
+            <Icon name="error" size={48} />
+            <h3 className="workspace-empty__title">Không thể tải dữ liệu</h3>
+            <p className="workspace-empty__desc">
+              Đã xảy ra lỗi khi tải danh sách workspace. Vui lòng thử lại.
+            </p>
             <button
+              className="workspace-empty__action"
               type="button"
-              style={{ padding: '0.5rem 1rem', background: '#0284c7', color: '#fff', border: 'none', borderRadius: '0.375rem', cursor: 'pointer' }}
-              onClick={refreshWorkspaces}
+              onClick={() => refetch()}
             >
               Thử lại
             </button>
           </div>
-        ) : filteredWorkspaces.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '4rem 1rem', color: '#64748b' }}>
-            <Icon name="folder_open" size={48} style={{ color: '#cbd5e1', marginBottom: '1rem' }} />
-            <h3 style={{ fontSize: '1.125rem', color: '#334155', marginBottom: '0.5rem' }}>
-              Chưa có Workspace nào
+        )}
+
+        {!isLoading && !error && filteredWorkspaces.length === 0 && (
+          <div className="workspace-empty">
+            <Icon name="folder_open" size={48} />
+            <h3 className="workspace-empty__title">
+              {searchQuery || activeFilter !== 'ALL'
+                ? 'Không tìm thấy workspace'
+                : 'Chưa có workspace nào'}
             </h3>
-            <p style={{ marginBottom: '1.5rem' }}>
-              Tạo Workspace đầu tiên để bắt đầu lưu trữ tài liệu và truy xuất tri thức AI.
+            <p className="workspace-empty__desc">
+              {searchQuery || activeFilter !== 'ALL'
+                ? 'Thử thay đổi từ khóa hoặc bộ lọc.'
+                : 'Tạo workspace đầu tiên để bắt đầu tổ chức tài liệu của bạn.'}
             </p>
-            <button
-              type="button"
-              className="workspace-header__create-btn"
-              onClick={() => setIsModalOpen(true)}
-            >
-              <Icon name="add" size={18} />
-              Tạo Workspace ngay
-            </button>
+            {!searchQuery && activeFilter === 'ALL' && (
+              <button
+                className="workspace-empty__action"
+                type="button"
+                onClick={() => setIsFormOpen(true)}
+              >
+                <Icon name="add" size={18} />
+                Tạo Workspace
+              </button>
+            )}
           </div>
-        ) : (
+        )}
+
+        {!isLoading && !error && filteredWorkspaces.length > 0 && (
           <div className="workspace-grid">
             {filteredWorkspaces.map((ws) => (
               <WorkspaceCard
                 key={ws.id}
                 id={ws.id}
                 name={ws.name}
-                description={ws.description || ''}
+                description={ws.description ?? ''}
                 visibility={ws.visibility}
-                documentCount={ws.documentCount || 0}
-                memberCount={ws.memberCount || 1}
-                updatedAt={ws.updatedAt ? new Date(ws.updatedAt).toLocaleDateString('vi-VN') : ''}
+                documentCount={ws.documentCount}
+                memberCount={ws.memberCount}
+                updatedAt={ws.updatedAt}
               />
             ))}
           </div>
         )}
       </div>
 
-      <CreateWorkspaceModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSuccess={() => refreshWorkspaces()}
-      />
+      <WorkspaceForm open={isFormOpen} onClose={() => setIsFormOpen(false)} />
     </main>
   );
 }
