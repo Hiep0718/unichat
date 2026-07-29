@@ -411,3 +411,63 @@
 
 - Decision: Update `data-model.md`, `master-data.md`, and `stack-and-dependencies.md` to remove `resource_jobs` references.
   Rationale: Keeping deprecated table references in specification documents creates inconsistency with ADR-007 and the new V5 migration.
+
+## 2026-07-27 - Workspace Members Management Implementation
+
+- Decision: Implement `WorkspaceMemberController`, `WorkspaceMemberService`, and associated DTOs (`AddWorkspaceMemberRequest`, `UpdateWorkspaceMemberRequest`, `WorkspaceMemberResponse`) in Core API.
+  Rationale: Provides REST endpoints (`GET/POST/PATCH/DELETE /api/v1/workspaces/{workspaceId}/members`) for managing workspace members and access roles (OWNER, EDITOR, VIEWER) matching `api-contracts.md` and `permission-matrix.md`.
+
+- Decision: Automatically increment `permissionVersion` on the `Workspace` entity whenever members are added, updated, or removed.
+  Rationale: Satisfies data-model §7 requirement that any permission-affecting mutation increments `permissionVersion` to trigger ACL re-evaluation on in-flight requests.
+
+- Decision: Create `frontend/src/features/members/` with `member-api.ts`, `member-schema.ts`, `MemberTable` component, and public barrel `index.ts`.
+  Rationale: Provides self-contained frontend member management UI conforming to feature-based organization, Vanilla CSS BEM styling, Zod validation, and zero ESLint/TypeScript warnings.
+
+## 2026-07-27 - Document Management API & Async Ingestion Pipeline Implementation
+
+- Decision: Recommend CloudAMQP (84codes Lemur plan) for Cloud-managed RabbitMQ, fully compatible with Supabase PostgreSQL and local Docker Compose fallback via `SPRING_RABBITMQ_ADDRESSES` / `RABBITMQ_URL`.
+  Rationale: CloudAMQP provides standard managed AMQP/AMQPS protocol on cloud with 1,000,000 free messages/month, requiring zero code changes for cloud/local environment switching.
+
+- Decision: Implement `DocumentController`, `DocumentService`, `LocalStoragePort`, `DocumentIngestionProducer`, `RabbitMqConfig` (Exchange `unichat.ingestion.exchange`, Routing key `document.uploaded`, Dead-Letter Queue `unichat.dlq.queue`), and unit tests (`DocumentServiceTest`) in `core-api`.
+  Rationale: Fulfills `api-contracts.md §4` and `ADR-007` for 202 Accepted multipart upload (max 20 MiB, PDF/DOCX/TXT), SHA-256 integrity checksum, storage port isolation, and async RabbitMQ event publishing.
+
+- Decision: Implement `text_extractor.py`, `chunker.py`, `vector_store.py`, and `ingestion_consumer.py` in `ai-service`.
+  Rationale: Fulfills `ADR-012` source locator extraction (PDF page, DOCX block/paragraph, TXT line range), sliding window chunking with overlap, and ChromaDB `unichat_chunks_v1` insertion using `multilingual-e5-base` passage embeddings.
+
+- Decision: Create `frontend/src/features/documents/` with `document-api.ts`, `DocumentTable` component, drag-and-drop upload zone, and public barrel `index.ts`.
+  Rationale: Provides complete document management UI conforming to feature-based structure, Vanilla CSS BEM styling, and zero ESLint/TypeScript warnings.
+
+## 2026-07-27 - Adaptive Knowledge Retrieval & Reasoning Engine Implementation (Phase 2)
+
+- Decision: Implement `intent_detector.py` (6 Vietnamese intent rules: OUT_OF_SCOPE, COMPARISON, SUMMARY, DEFINITION, REASONING, FACT), `strategy_selector.py` (retrieval budget & similarity floor mapping), `retrieval_engine.py` (ChromaDB vector query with `allowedDocumentIds` filter and `query: ` E5 prefix), `evidence_gate.py` (calculating evidenceScore = 0.50*top + 0.30*meanTop3 + 0.20*coverage and ANSWER/CLARIFY/REFUSE decision), `llm_provider.py` (Gemini stable primary + Ollama local fallback), and internal REST endpoint `/internal/v1/retrieval/answers` in `ai-service`.
+  Rationale: Implements core P0 Adaptive Retrieval engine strictly matching `adaptive-retrieval-spec.md`, `ADR-010`, and `ADR-011`.
+
+- Decision: Implement `ChatController`, `ChatService`, `Conversation`, `Message`, `ConversationRepository`, `MessageRepository`, DTOs (`AskQuestionRequest`, `QuestionResponse`, `CitationResponse`), and unit tests (`ChatServiceTest`) in `core-api`.
+  Rationale: Fulfills `api-contracts.md §5` for authorized RAG question processing (`POST /api/v1/workspaces/{workspaceId}/questions`), conversation session tracking, and transaction persistence.
+
+- Decision: Create `frontend/src/features/chat/` with `chat-api.ts`, `ChatPage` component, `CitationPanel` (Citation Inspector), `RefusalCard`, and public barrel `index.ts`.
+  Rationale: Delivers complete frontend RAG chat experience with source citation inspector, refusal/clarification cards, Vanilla CSS BEM styling, and zero ESLint/TypeScript errors.
+
+## 2026-07-27 - Conversation History & Session Management Implementation (Phase 3)
+
+- Decision: Implement `ConversationController`, `ConversationService`, `ConversationResponse`, `MessageResponse`, `ConversationDetailResponse`, and `ConversationServiceTest` in `core-api`.
+  Rationale: Provides REST endpoints (`GET/POST /api/v1/workspaces/{workspaceId}/conversations`, `GET/DELETE /{conversationId}`) for managing chat sessions, listing active user conversations, fetching message histories, and archiving sessions.
+
+- Decision: Create `frontend/src/features/history/` with `conversation-api.ts`, `ConversationList` sidebar component, and public barrel `index.ts`.
+  Rationale: Delivers complete conversation history UI conforming to feature-based organization, Vanilla CSS BEM styling, and zero ESLint/TypeScript warnings.
+
+## 2026-07-27 - Admin Dashboard, Quality Evaluation & Deployment Implementation (Phase 4)
+
+- Decision: Implement `AdminUserController`, `AdminUserService`, `UpdateUserStatusRequest`, `UserResponse`, and `AdminUserServiceTest` in `core-api`.
+  Rationale: Fulfills administrative user management requirements (`GET /api/v1/admin/users`, `PATCH /api/v1/admin/users/{userId}/status`) with strictly enforced `ADMIN` systemRole security checks.
+
+- Decision: Implement `eval_runner.py` benchmark evaluation suite, `/internal/v1/eval/run` REST endpoint, and `test_eval_runner.py` in `ai-service`.
+  Rationale: Provides automated quality evaluation testing (Intent accuracy, Evidence Gate pass rate, sample latency) against benchmark golden dataset.
+
+- Decision: Create `frontend/src/features/admin/` with `admin-api.ts`, `UserManagementTable` component, search input, lock/unlock actions, and public barrel `index.ts`.
+  Rationale: Provides complete administrative dashboard UI conforming to feature-based organization, Vanilla CSS BEM styling, and zero ESLint/TypeScript errors.
+
+
+
+
+

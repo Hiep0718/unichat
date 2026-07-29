@@ -1,0 +1,95 @@
+/* Admin User Management Styling */
+
+.admin-management {
+  display: flex;
+  flex-direction: column;
+  gap: var(--stack-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+}
+
+.admin-management__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.admin-management__title {
+  font: var(--font-title-lg);
+  font-weight: 700;
+  color: var(--color-on-surface);
+}
+
+.admin-search-input {
+  padding: 10px 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  font: var(--font-body-md);
+  width: 300px;
+}
+
+.admin-table-container {
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font: var(--font-body-md);
+}
+
+.admin-table th {
+  padding: 12px 16px;
+  background: var(--color-surface-container-low);
+  color: var(--color-on-surface-variant);
+  font: var(--font-label-md);
+  border-bottom: 1px solid var(--color-outline-variant);
+}
+
+.admin-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--color-outline-variant);
+  color: var(--color-on-surface);
+}
+
+.admin-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: var(--radius-xl);
+  font: var(--font-label-sm);
+  font-weight: 600;
+}
+
+.admin-badge--active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.admin-badge--locked {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.admin-status-btn {
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font: var(--font-label-sm);
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.admin-status-btn--lock {
+  background: #fff1f2;
+  color: #e11d48;
+  border-color: #fecdd3;
+}
+
+.admin-status-btn--unlock {
+  background: #f0fdf4;
+  color: #16a34a;
+  border-color: #bbf7d0;
+}

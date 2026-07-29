@@ -18,13 +18,24 @@ import type { ReactNode } from 'react';
 
 import { registerTokenAccessor } from '../../lib/api-client';
 
+interface UserProfile {
+  readonly id: string;
+  readonly email: string;
+  readonly systemRole: 'USER' | 'ADMIN';
+  readonly status: 'ACTIVE' | 'LOCKED';
+}
+
 interface AuthState {
   /** Current access token held in memory. */
   readonly token: string | null;
+  /** Current authenticated user profile. */
+  readonly user: UserProfile | null;
   /** Whether the user has an active access token. */
   readonly isAuthenticated: boolean;
   /** Stores a new access token in memory. */
-  readonly setToken: (token: string) => void;
+  readonly setToken: (token: string, user?: UserProfile) => void;
+  /** Sets user profile manually. */
+  readonly setUser: (user: UserProfile | null) => void;
   /** Clears the access token from memory. */
   readonly clearToken: () => void;
 }
@@ -41,13 +52,22 @@ interface AuthProviderProps {
  */
 export function AuthProvider({ children }: AuthProviderProps) {
   const [token, setTokenState] = useState<string | null>(null);
+  const [user, setUserState] = useState<UserProfile | null>(null);
 
-  const setToken = useCallback((newToken: string) => {
+  const setToken = useCallback((newToken: string, newUser?: UserProfile) => {
     setTokenState(newToken);
+    if (newUser) {
+      setUserState(newUser);
+    }
+  }, []);
+
+  const setUser = useCallback((newUser: UserProfile | null) => {
+    setUserState(newUser);
   }, []);
 
   const clearToken = useCallback(() => {
     setTokenState(null);
+    setUserState(null);
   }, []);
 
   // Register accessor so api-client can read/write token without React coupling
@@ -55,18 +75,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
     registerTokenAccessor(
       () => token,
       (refreshed: string) => setTokenState(refreshed),
-      () => setTokenState(null),
+      () => {
+        setTokenState(null);
+        setUserState(null);
+      },
     );
   }, [token]);
 
   const value = useMemo<AuthState>(
     () => ({
       token,
+      user,
       isAuthenticated: token !== null,
       setToken,
+      setUser,
       clearToken,
     }),
-    [token, setToken, clearToken],
+    [token, user, setToken, setUser, clearToken],
   );
 
   return (
@@ -84,3 +109,4 @@ export function useAuth(): AuthState {
   }
   return context;
 }
+

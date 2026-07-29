@@ -39,3 +39,17 @@ export function GuestGuard({ children }: GuardProps) {
 
   return <>{children}</>;
 }
+
+/**
+ * Wraps admin-only routes. Redirects to /forbidden if user is not ADMIN.
+ */
+export function AdminGuard({ children }: GuardProps) {
+  const { user } = useAuth();
+
+  if (user && user.systemRole !== 'ADMIN') {
+    return <Navigate to="/forbidden" replace />;
+  }
+
+  return <>{children}</>;
+}
+
