@@ -52,7 +52,11 @@ export function SideNavBar() {
           <Link
             key={item.icon}
             to={item.href}
-            className={`side-nav__item ${location.pathname === item.href ? 'side-nav__item--active' : ''}`}
+            className={`side-nav__item ${
+              item.href === '/'
+                ? location.pathname === '/' ? 'side-nav__item--active' : ''
+                : location.pathname.startsWith(item.href) ? 'side-nav__item--active' : ''
+            }`}
           >
             <Icon name={item.icon} size={20} />
             {item.label}

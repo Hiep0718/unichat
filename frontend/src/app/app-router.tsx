@@ -14,6 +14,7 @@ const LoginPage = lazy(() => import('../features/auth/login-page'));
 const RegisterPage = lazy(() => import('../features/auth/register-page'));
 const ForgotPasswordPage = lazy(() => import('../features/auth/forgot-password-page'));
 const WorkspaceListPage = lazy(() => import('../features/workspaces/workspace-list-page'));
+const WorkspaceDetailPage = lazy(() => import('../features/workspaces/workspace-detail-page'));
 const AccountPage = lazy(() => import('../features/account/settings-page'));
 const NotFoundPage = lazy(() => import('../features/errors/not-found-page').then(m => ({ default: m.NotFoundPage })));
 
@@ -32,6 +33,7 @@ export function AppRouter() {
           
           <Route element={<AuthGuard><AppShell /></AuthGuard>}>
             <Route path="/workspaces" element={<WorkspaceListPage />} />
+            <Route path="/workspaces/:workspaceId" element={<WorkspaceDetailPage />} />
             <Route path="/account" element={<AccountPage />} />
           </Route>
           

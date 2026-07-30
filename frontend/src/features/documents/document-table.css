@@ -1,0 +1,315 @@
+/* Document Table — High-density table (DESIGN.md §Components) */
+
+.doc-table-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--stack-lg);
+}
+
+/* ── Toolbar (search + filters) ── */
+
+.doc-table__toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--stack-md);
+}
+
+.doc-table__search {
+  position: relative;
+  flex: 1;
+  max-width: 480px;
+}
+
+.doc-table__search-icon {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  transform: translateY(-50%);
+  color: var(--color-outline);
+  pointer-events: none;
+}
+
+.doc-table__search-input {
+  width: 100%;
+  padding: 10px 16px 10px 40px;
+  background: var(--color-surface-container-lowest);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-xl);
+  font: var(--font-body-md);
+  color: var(--color-on-surface);
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.doc-table__search-input:focus {
+  border-color: var(--color-secondary);
+  box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.15);
+}
+
+.doc-table__filters {
+  display: flex;
+  align-items: center;
+  gap: var(--stack-sm);
+}
+
+.doc-table__filter-label {
+  font: var(--font-body-md);
+  color: var(--color-on-surface-variant);
+  margin-right: 4px;
+}
+
+.doc-table__filter-btn {
+  padding: 6px 14px;
+  background: var(--color-surface-container-lowest);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-xl);
+  font: var(--font-label-sm);
+  color: var(--color-on-surface-variant);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.doc-table__filter-btn:hover {
+  background: var(--color-surface-container-low);
+  border-color: var(--color-primary-fixed-dim);
+}
+
+.doc-table__filter-btn--active {
+  background: var(--color-primary-container);
+  color: var(--color-on-primary-container);
+  border-color: var(--color-primary-container);
+  font-weight: 600;
+}
+
+/* ── Table ── */
+
+.doc-table__wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-container-lowest);
+}
+
+.doc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font: var(--font-body-md);
+}
+
+.doc-table__th {
+  padding: 12px 16px;
+  text-align: left;
+  font: var(--font-label-md);
+  color: var(--color-on-surface-variant);
+  background: var(--color-surface-container-low);
+  border-bottom: 1px solid var(--color-outline-variant);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.doc-table__th--actions {
+  text-align: center;
+  width: 120px;
+}
+
+.doc-table__row {
+  transition: background var(--transition-fast);
+}
+
+.doc-table__row:hover {
+  background: var(--color-surface-container-low);
+}
+
+.doc-table__td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--color-outline-variant);
+  color: var(--color-on-surface);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.doc-table__row:last-child .doc-table__td {
+  border-bottom: none;
+}
+
+.doc-table__td--name {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 240px;
+  max-width: 400px;
+}
+
+.doc-table__file-icon {
+  flex-shrink: 0;
+}
+
+.doc-table__file-icon--pdf {
+  color: #e53935;
+}
+
+.doc-table__file-icon--docx {
+  color: #1976d2;
+}
+
+.doc-table__file-icon--txt {
+  color: var(--color-on-surface-variant);
+}
+
+.doc-table__filename {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+/* ── Status badges ── */
+
+.doc-table__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font: var(--font-label-sm);
+  white-space: nowrap;
+}
+
+.doc-table__status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.doc-table__status--success {
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+.doc-table__status--success .doc-table__status-dot {
+  background: #10b981;
+}
+
+.doc-table__status--warning {
+  background: #fefce8;
+  color: #92400e;
+}
+
+.doc-table__status-text {
+  color: inherit;
+}
+
+.doc-table__status-progress {
+  font-weight: 700;
+  color: inherit;
+}
+
+.doc-table__status--pending {
+  background: var(--color-surface-container-high);
+  color: var(--color-on-surface-variant);
+}
+
+.doc-table__status--pending .doc-table__status-dot {
+  background: var(--color-outline);
+}
+
+.doc-table__status--error {
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.doc-table__status--error .doc-table__status-dot {
+  background: #ef4444;
+}
+
+/* ── Actions ── */
+
+.doc-table__td--actions {
+  text-align: center;
+  white-space: nowrap;
+}
+
+.doc-table__action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: var(--radius-lg);
+  background: transparent;
+  color: var(--color-on-surface-variant);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.doc-table__action-btn:hover {
+  background: var(--color-surface-container-high);
+  color: var(--color-on-surface);
+}
+
+.doc-table__action-btn--danger:hover {
+  background: var(--color-error-container);
+  color: var(--color-on-error-container);
+}
+
+/* ── Empty state ── */
+
+.doc-table__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px var(--gutter);
+  color: var(--color-on-surface-variant);
+  text-align: center;
+  gap: var(--stack-md);
+}
+
+.doc-table__empty p {
+  font: var(--font-body-md);
+  max-width: 320px;
+}
+
+/* ── Skeleton ── */
+
+.doc-table__skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.doc-table__skeleton-row {
+  display: flex;
+  gap: 16px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--color-outline-variant);
+}
+
+.doc-table__skeleton-cell {
+  height: 16px;
+  width: 80px;
+  background: var(--color-surface-container-high);
+  border-radius: var(--radius-default);
+  animation: doc-skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.doc-table__skeleton-cell--wide {
+  width: 200px;
+}
+
+@keyframes doc-skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ── Responsive ── */
+
+@media (min-width: 768px) {
+  .doc-table__toolbar {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
