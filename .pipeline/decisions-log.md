@@ -392,3 +392,26 @@
 - Decision: Use `formatRelativeTime` pure function without external date library.
   Rationale: Avoids adding a dependency (date-fns/dayjs) for a simple relative time display; function handles Vietnamese output natively.
 
+
+## 2026-07-31 - Workspace Members API and Detail Tabs Implementation
+
+- Decision: Implement MemberService and MemberController to handle workspace member invitations, role updates, and removals.
+  Rationale: Fulfils api-contracts.md section 3 requirements for workspace membership management.
+
+- Decision: Auto-activate members upon invitation (status = ACTIVE) instead of requiring a separate acceptance flow.
+  Rationale: Simplifies the invitation flow for the thesis scope while maintaining security (only OWNERs can invite).
+
+- Decision: Enforce strict OWNER-only authorization on all member mutation APIs (invite, change role, remove).
+  Rationale: Complies with the AGENTS.md rule that core-api owns authorization and adheres to the API contracts.
+
+- Decision: Build Settings Tab as a unified workspace-settings.tsx file containing General, Access, and Danger Zone forms.
+  Rationale: While file-plan.md suggested separate files, keeping them in one file (< 300 lines) reduces component fragmentation and simplifies optimistic locking state management.
+
+- Decision: Use CSS variables from index.css (DESIGN.md tokens) for all new Workspace Detail tabs instead of hardcoded hex values.
+  Rationale: Ensures compliance with the 'Academic Precision' Corporate Modern light theme required by the project design system, fixing an earlier oversight where dark theme colors were used.
+
+### 2026-07-31: Removed PUBLIC visibility condition from findAllVisibleToUser
+**Context:** In the 'My Workspaces' page, users were seeing workspaces they did not own because the repository query fetched all workspaces with PUBLIC visibility, causing confusion (users thought they were seeing mock data).
+**Decision:** Removed OR w.visibility = PUBLIC from WorkspaceRepository.findAllVisibleToUser.
+**Consequences:** The 'My Workspaces' list now only correctly shows workspaces where the user is an active member or owner.
+
