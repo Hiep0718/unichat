@@ -43,6 +43,25 @@ Runtime portable nằm trong `.tools` và không được commit.
 
 Test không được gọi network ngoài hệ thống.
 
+## Phát triển local
+
+Chạy toàn bộ stack dev bằng một lệnh duy nhất (yêu cầu Windows Terminal):
+
+```powershell
+.\dev.ps1
+```
+
+Script tự kiểm tra prerequisites và port, mở từng service trong tab Windows Terminal riêng có màu phân biệt, và hiển thị dashboard giám sát real-time.
+
+| Service | Port | Tab |
+|---|---|---|
+| ChromaDB | 8000 | 🟣 Tím |
+| AI Service | 8001 | 🔵 Xanh dương |
+| Core API | 8082 | 🟢 Xanh lá |
+| Frontend | 5173 | 🟡 Vàng |
+
+PostgreSQL, Document Storage và RabbitMQ sử dụng cloud (Supabase / CloudAMQP), không cần chạy local.
+
 ## Kiểm tra
 
 - Frontend: `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`.

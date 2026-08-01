@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import com.unichat.core.common.error.InternalError;
@@ -17,6 +18,7 @@ import com.unichat.core.common.error.NotFoundError;
  * Local filesystem implementation of StoragePort.
  */
 @Component
+@ConditionalOnProperty(name = "unichat.storage.provider", havingValue = "local", matchIfMissing = true)
 public class LocalStoragePort implements StoragePort {
 
     private final Path storageDir;

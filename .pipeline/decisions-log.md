@@ -187,6 +187,23 @@
 - Decision: Create `frontend/src/features/admin/` with `admin-api.ts`, `UserManagementTable` component, search input, lock/unlock actions, and public barrel `index.ts`.
   Rationale: Provides complete administrative dashboard UI conforming to feature-based organization, Vanilla CSS BEM styling, and zero ESLint/TypeScript errors.
 
+## 2026-07-29 - Cloud-Shared Dev Environment ($0 Budget)
+
+- Decision: Migrate RabbitMQ from local Docker to CloudAMQP Little Lemur free tier for shared async ingestion between developers.
+  Rationale: CloudAMQP free tier provides 1M messages/month and 20 concurrent connections, sufficient for 2-developer workflow. Eliminates local Docker dependency for message broker. Core API `spring.rabbitmq.addresses` and AI Service `RABBITMQ_URL` both support `amqps://` scheme for TLS.
+
+- Decision: Migrate document file storage from `LocalStoragePort` (local disk) to `SupabaseStoragePort` (Supabase Storage REST API) behind the existing `StoragePort` interface using `@ConditionalOnProperty`.
+  Rationale: Supabase free tier provides 1GB storage, sufficient for development. Using the existing interface pattern means zero changes to `DocumentService` or `DocumentController`. Both implementations coexist and are selected via `STORAGE_PROVIDER` environment variable (`local` or `supabase`).
+
+- Decision: Keep ChromaDB as local persistent storage (not cloud) for vector embeddings.
+  Rationale: No reliable free cloud-hosted ChromaDB service exists. Vector chunks are derived data that can be fully regenerated from source documents via re-ingestion. Two developers can maintain independent local ChromaDB instances without data corruption risk.
+
+- Decision: Add `pika==1.3.2` as a new direct dependency in AI Service for RabbitMQ consumer support.
+  Rationale: `pika` is the official Python AMQP client recommended by RabbitMQ. The consumer runs in a daemon thread alongside FastAPI, started via lifespan context manager. This replaces the previous design where AI Service had no queue consumer and relied on direct HTTP calls.
+
+- Decision: Fix `AI_SERVICE_BASE_URL`, `OLLAMA_BASE_URL`, and `CHROMA_BASE_URL` in `.env.example` from Docker internal hostnames (`ai-service:8000`, `ollama:11434`, `chroma:8000`) to localhost addresses.
+  Rationale: In the no-Docker local dev environment, all services run directly on the developer's machine. Docker internal DNS names are not resolvable outside containers.
+
 ## 2026-07-31 - Workspace Members API and Detail Tabs Implementation
 
 - Decision: Implement MemberService and MemberController to handle workspace member invitations, role updates, and removals.
