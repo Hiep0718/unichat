@@ -1,24 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-            <includeContext>false</includeContext>
-            <includeMdcKeyName>requestId</includeMdcKeyName>
-            <includeMdcKeyName>userId</includeMdcKeyName>
-            <includeMdcKeyName>operation</includeMdcKeyName>
-            <includeMdcKeyName>errorCode</includeMdcKeyName>
-            <includeMdcKeyName>status</includeMdcKeyName>
-            <customFields>{"service":"core-api"}</customFields>
-            <fieldNames>
-                <timestamp>timestamp</timestamp>
-                <message>message</message>
-                <logger>logger</logger>
-                <thread>thread</thread>
-                <level>level</level>
-            </fieldNames>
-        </encoder>
-    </appender>
-    <root level="${LOG_LEVEL:-INFO}">
-        <appender-ref ref="JSON"/>
-    </root>
+    <!-- Human-readable console logging for Local/Dev -->
+    <springProfile name="!prod &amp; !staging">
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+                <charset>UTF-8</charset>
+            </encoder>
+        </appender>
+        <root level="${LOG_LEVEL:-INFO}">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+
+    <!-- Structured JSON logging for Staging/Production -->
+    <springProfile name="prod | staging">
+        <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                <includeContext>false</includeContext>
+                <includeMdcKeyName>requestId</includeMdcKeyName>
+                <includeMdcKeyName>userId</includeMdcKeyName>
+                <includeMdcKeyName>operation</includeMdcKeyName>
+                <includeMdcKeyName>errorCode</includeMdcKeyName>
+                <includeMdcKeyName>status</includeMdcKeyName>
+                <customFields>{"service":"core-api"}</customFields>
+                <fieldNames>
+                    <timestamp>timestamp</timestamp>
+                    <message>message</message>
+                    <logger>logger</logger>
+                    <thread>thread</thread>
+                    <level>level</level>
+                </fieldNames>
+            </encoder>
+        </appender>
+        <root level="${LOG_LEVEL:-INFO}">
+            <appender-ref ref="JSON"/>
+        </root>
+    </springProfile>
 </configuration>
