@@ -1,0 +1,174 @@
+/* ==========================================================================
+   Overview Tab — Academic Precision Design System
+   Uses CSS variables from styles/index.css (DESIGN.md tokens)
+   ========================================================================== */
+
+.overview-tab {
+  display: flex;
+  flex-direction: column;
+  gap: var(--stack-lg);
+}
+
+/* ─── Stats Grid ─────────────────────────────────────────── */
+
+.overview-tab__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: var(--stack-md);
+}
+
+.overview-tab__stat-card {
+  display: flex;
+  align-items: center;
+  gap: var(--stack-md);
+  padding: 20px;
+  background: var(--color-surface-container-lowest);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  transition: box-shadow var(--transition-fast);
+}
+
+.overview-tab__stat-card:hover {
+  box-shadow: var(--shadow-sm);
+}
+
+.overview-tab__stat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-lg);
+  flex-shrink: 0;
+}
+
+.overview-tab__stat-icon--documents {
+  color: var(--color-primary);
+  background: var(--color-primary-fixed);
+}
+
+.overview-tab__stat-icon--members {
+  color: #065f46;
+  background: #ecfdf5;
+}
+
+.overview-tab__stat-icon--conversations {
+  color: var(--color-on-tertiary-container);
+  background: var(--color-tertiary-fixed);
+}
+
+.overview-tab__stat-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.overview-tab__stat-value {
+  font: var(--font-headline-lg);
+  color: var(--color-on-surface);
+  line-height: 1.2;
+}
+
+.overview-tab__stat-label {
+  font: var(--font-label-sm);
+  color: var(--color-on-surface-variant);
+}
+
+/* ─── Info Section ───────────────────────────────────────── */
+
+.overview-tab__info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--stack-md);
+  padding: 20px;
+  background: var(--color-surface-container-lowest);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+}
+
+.overview-tab__info-title {
+  font: var(--font-headline-md);
+  color: var(--color-on-surface);
+  margin: 0;
+}
+
+.overview-tab__info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: var(--stack-md);
+}
+
+.overview-tab__info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.overview-tab__info-label {
+  font: var(--font-label-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-on-surface-variant);
+}
+
+.overview-tab__info-value {
+  font: var(--font-body-md);
+  color: var(--color-on-surface);
+}
+
+/* ─── Description ────────────────────────────────────────── */
+
+.overview-tab__description {
+  padding: 20px;
+  background: var(--color-surface-container-lowest);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+}
+
+.overview-tab__description-title {
+  font: var(--font-headline-md);
+  color: var(--color-on-surface);
+  margin: 0 0 12px;
+}
+
+.overview-tab__description-text {
+  font: var(--font-body-md);
+  color: var(--color-on-surface-variant);
+  line-height: 1.6;
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.overview-tab__description-empty {
+  font-style: italic;
+  color: var(--color-outline);
+}
+
+/* ─── Visibility badge ───────────────────────────────────── */
+
+.overview-tab__visibility {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  font: var(--font-label-sm);
+  border-radius: var(--radius-full);
+}
+
+.overview-tab__visibility--private {
+  color: var(--color-on-surface-variant);
+  background: var(--color-surface-container-high);
+  border: 1px solid var(--color-outline-variant);
+}
+
+.overview-tab__visibility--shared {
+  color: #1e40af;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+}
+
+.overview-tab__visibility--public {
+  color: #065f46;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+}

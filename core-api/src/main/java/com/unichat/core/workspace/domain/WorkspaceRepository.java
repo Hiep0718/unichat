@@ -24,8 +24,6 @@ public interface WorkspaceRepository extends JpaRepository<Workspace, UUID> {
     @Query("SELECT w FROM Workspace w WHERE " +
             "w.status = com.unichat.core.workspace.domain.WorkspaceStatus.ACTIVE AND (" +
             "w.ownerId = :userId " +
-            "OR EXISTS (SELECT 1 FROM WorkspaceMember wm WHERE wm.workspaceId = w.id AND wm.userId = :userId AND wm.status = com.unichat.core.workspace.domain.WorkspaceMemberStatus.ACTIVE) "
-            +
-            "OR w.visibility = com.unichat.core.workspace.domain.WorkspaceVisibility.PUBLIC)")
+            "OR EXISTS (SELECT 1 FROM WorkspaceMember wm WHERE wm.workspaceId = w.id AND wm.userId = :userId AND wm.status = com.unichat.core.workspace.domain.WorkspaceMemberStatus.ACTIVE))")
     Page<Workspace> findAllVisibleToUser(@Param("userId") UUID userId, Pageable pageable);
 }

@@ -1,3 +1,10 @@
+/**
+ * Document API client functions.
+ * Integrates with Core API document endpoints via fetchJson.
+ *
+ * @see api-contracts.md §4 (Tài liệu)
+ */
+
 import { fetchJson } from '../../lib/api-client';
 
 export type DocumentStatus = 'PENDING' | 'PROCESSING' | 'PROCESSED' | 'FAILED' | 'DELETING';

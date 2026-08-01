@@ -1,0 +1,323 @@
+/* ==========================================================================
+   Settings Tab — Academic Precision Design System
+   Uses CSS variables from styles/index.css (DESIGN.md tokens)
+   ========================================================================== */
+
+.settings-tab {
+  display: flex;
+  flex-direction: column;
+  gap: var(--stack-lg);
+  max-width: 40rem;
+}
+
+/* ─── Settings Section ───────────────────────────────────── */
+
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--stack-md);
+  padding: 20px;
+  background: var(--color-surface-container-lowest);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+}
+
+.settings-section--danger {
+  border-color: var(--color-error-container);
+}
+
+.settings-section__title {
+  font: var(--font-headline-md);
+  color: var(--color-on-surface);
+  margin: 0;
+}
+
+.settings-section__title--danger {
+  color: var(--color-error);
+}
+
+.settings-section__description {
+  font: var(--font-body-md);
+  color: var(--color-on-surface-variant);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ─── Form Fields ────────────────────────────────────────── */
+
+.settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--stack-md);
+}
+
+.settings-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.settings-form__label {
+  font: var(--font-label-sm);
+  color: var(--color-on-surface-variant);
+}
+
+.settings-form__input {
+  padding: 10px 12px;
+  font: var(--font-body-md);
+  color: var(--color-on-surface);
+  background: var(--color-surface-container-lowest);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-default);
+  outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.settings-form__input:focus {
+  border-color: var(--color-secondary);
+  box-shadow: 0 0 0 2px rgba(0, 104, 122, 0.15);
+}
+
+.settings-form__textarea {
+  padding: 10px 12px;
+  font: var(--font-body-md);
+  font-family: var(--font-family);
+  color: var(--color-on-surface);
+  background: var(--color-surface-container-lowest);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-default);
+  outline: none;
+  resize: vertical;
+  min-height: 80px;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.settings-form__textarea:focus {
+  border-color: var(--color-secondary);
+  box-shadow: 0 0 0 2px rgba(0, 104, 122, 0.15);
+}
+
+.settings-form__error {
+  font: var(--font-label-sm);
+  color: var(--color-error);
+  margin: 0;
+}
+
+.settings-form__success {
+  font: var(--font-label-sm);
+  color: var(--color-success);
+  margin: 0;
+}
+
+/* ─── Radio Group ────────────────────────────────────────── */
+
+.settings-form__radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--stack-sm);
+}
+
+.settings-form__radio-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: transparent;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.settings-form__radio-label:hover {
+  background: var(--color-surface-container-low);
+}
+
+.settings-form__radio-label--selected {
+  border-color: var(--color-primary);
+  background: var(--color-primary-fixed);
+}
+
+.settings-form__radio-input {
+  accent-color: var(--color-primary);
+}
+
+.settings-form__radio-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.settings-form__radio-title {
+  font: var(--font-body-md);
+  font-weight: 500;
+  color: var(--color-on-surface);
+}
+
+.settings-form__radio-desc {
+  font: var(--font-label-sm);
+  color: var(--color-on-surface-variant);
+}
+
+/* ─── Buttons ────────────────────────────────────────────── */
+
+.settings-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--stack-sm);
+  margin-top: var(--stack-sm);
+}
+
+.settings-form__save-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 20px;
+  font: var(--font-label-md);
+  color: var(--color-on-primary);
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-default);
+  cursor: pointer;
+  transition: opacity var(--transition-fast);
+}
+
+.settings-form__save-btn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.settings-form__save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ─── Danger Zone ────────────────────────────────────────── */
+
+.danger-zone__delete-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 20px;
+  font: var(--font-label-md);
+  color: var(--color-on-error);
+  background: var(--color-error);
+  border: none;
+  border-radius: var(--radius-default);
+  cursor: pointer;
+  transition: opacity var(--transition-fast);
+  align-self: flex-start;
+}
+
+.danger-zone__delete-btn:hover {
+  opacity: 0.9;
+}
+
+/* ─── Confirm modal ──────────────────────────────────────── */
+
+.danger-zone__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+  animation: settings-fade-in var(--transition-normal) ease;
+}
+
+@keyframes settings-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.danger-zone__modal {
+  width: 100%;
+  max-width: 28rem;
+  padding: var(--gutter);
+  background: var(--color-surface-container-lowest);
+  border: 1px solid var(--color-error-container);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  animation: settings-slide-up var(--transition-normal) ease;
+}
+
+@keyframes settings-slide-up {
+  from { transform: translateY(8px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.danger-zone__modal-title {
+  font: var(--font-headline-md);
+  color: var(--color-error);
+  margin: 0 0 12px;
+}
+
+.danger-zone__modal-text {
+  font: var(--font-body-md);
+  color: var(--color-on-surface-variant);
+  line-height: 1.5;
+  margin: 0 0 var(--stack-md);
+}
+
+.danger-zone__modal-text strong {
+  color: var(--color-on-surface);
+}
+
+.danger-zone__confirm-input {
+  width: 100%;
+  padding: 10px 12px;
+  font: var(--font-body-md);
+  color: var(--color-on-surface);
+  background: var(--color-surface-container-lowest);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-default);
+  outline: none;
+  margin-bottom: var(--stack-md);
+  box-sizing: border-box;
+}
+
+.danger-zone__confirm-input:focus {
+  border-color: var(--color-error);
+  box-shadow: 0 0 0 2px rgba(186, 26, 26, 0.15);
+}
+
+.danger-zone__modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--stack-sm);
+}
+
+.danger-zone__cancel-btn {
+  padding: 8px 16px;
+  font: var(--font-label-md);
+  color: var(--color-on-surface);
+  background: var(--color-surface-container-lowest);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-default);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.danger-zone__cancel-btn:hover {
+  background: var(--color-surface-container-low);
+}
+
+.danger-zone__confirm-btn {
+  padding: 8px 20px;
+  font: var(--font-label-md);
+  color: var(--color-on-error);
+  background: var(--color-error);
+  border: none;
+  border-radius: var(--radius-default);
+  cursor: pointer;
+  transition: opacity var(--transition-fast);
+}
+
+.danger-zone__confirm-btn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.danger-zone__confirm-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

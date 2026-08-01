@@ -6,6 +6,7 @@ import { fetchJson } from '../../lib/api-client';
 
 import type {
   CreateWorkspaceInput,
+  UpdateWorkspaceInput,
   PagedResponse,
   WorkspaceDto,
 } from './workspace-schema';
@@ -36,6 +37,33 @@ export function createWorkspace(
     method: 'POST',
     body: JSON.stringify(data),
     headers: { 'Idempotency-Key': idempotencyKey },
+  });
+}
+
+/**
+ * Fetches a single workspace by ID.
+ * Public workspaces bypass ACL; private/shared require membership.
+ *
+ * @param workspaceId workspace identifier
+ */
+export function getWorkspace(workspaceId: string): Promise<WorkspaceDto> {
+  return fetchJson(`/workspaces/${workspaceId}`);
+}
+
+/**
+ * Updates workspace metadata.
+ * Sends expectedVersion for optimistic locking.
+ *
+ * @param workspaceId workspace identifier
+ * @param data partial update fields
+ */
+export function updateWorkspace(
+  workspaceId: string,
+  data: UpdateWorkspaceInput,
+): Promise<WorkspaceDto> {
+  return fetchJson(`/workspaces/${workspaceId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
   });
 }
 

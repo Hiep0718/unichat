@@ -16,7 +16,12 @@ const RegisterPage = lazy(() => import('../features/auth/register-page'));
 const ForgotPasswordPage = lazy(() => import('../features/auth/forgot-password-page'));
 
 const WorkspaceListPage = lazy(() => import('../features/workspaces/workspace-list-page'));
-const WorkspaceOverviewPage = lazy(() => import('../features/workspaces/workspace-overview-page').then((m) => ({ default: m.WorkspaceOverviewPage })));
+const WorkspaceDetailPage = lazy(() => import('../features/workspaces/workspace-detail-page'));
+const WorkspaceOverviewPage = lazy(() =>
+  import('../features/workspaces/workspace-overview-page').then((m) => ({
+    default: m.WorkspaceOverviewPage,
+  })),
+);
 
 const DocumentPage = lazy(() => import('../features/documents/document-page'));
 const ChatPage = lazy(() => import('../features/chat/chat-page'));
@@ -29,8 +34,12 @@ const AccountPage = lazy(() => import('../features/account/settings-page'));
 const AdminUserPage = lazy(() => import('../features/admin/admin-user-page'));
 const AdminMetricPage = lazy(() => import('../features/admin/admin-metric-page'));
 
-const ForbiddenPage = lazy(() => import('../features/errors/forbidden-page').then((m) => ({ default: m.ForbiddenPage })));
-const NotFoundPage = lazy(() => import('../features/errors/not-found-page').then((m) => ({ default: m.NotFoundPage })));
+const ForbiddenPage = lazy(() =>
+  import('../features/errors/forbidden-page').then((m) => ({ default: m.ForbiddenPage })),
+);
+const NotFoundPage = lazy(() =>
+  import('../features/errors/not-found-page').then((m) => ({ default: m.NotFoundPage })),
+);
 
 /**
  * Top-level router with lazy-loaded routes and authentication guards.
@@ -49,6 +58,7 @@ export function AppRouter() {
           {/* Global Authenticated Shell Routes */}
           <Route element={<AuthGuard><AppShell /></AuthGuard>}>
             <Route path="/workspaces" element={<WorkspaceListPage />} />
+            <Route path="/workspaces/:workspaceId/detail" element={<WorkspaceDetailPage />} />
             <Route path="/account" element={<AccountPage />} />
           </Route>
 

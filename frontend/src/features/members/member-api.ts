@@ -1,3 +1,10 @@
+/**
+ * Member API client functions.
+ * Communicates with Core API workspace member endpoints via fetchJson.
+ *
+ * @see api-contracts.md §3 (Workspace và thành viên)
+ */
+
 import { fetchJson } from '../../lib/api-client';
 
 export type WorkspaceRole = 'OWNER' | 'EDITOR' | 'VIEWER';

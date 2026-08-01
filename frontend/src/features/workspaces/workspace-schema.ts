@@ -47,3 +47,21 @@ export const createWorkspaceSchema = z.object({
 
 /** TypeScript type inferred from the Zod schema. */
 export type CreateWorkspaceInput = z.infer<typeof createWorkspaceSchema>;
+
+/** Zod schema for updating a workspace (all fields optional except version). */
+export const updateWorkspaceSchema = z.object({
+  name: z
+    .string()
+    .min(3, 'Tên workspace phải có ít nhất 3 ký tự')
+    .max(100, 'Tên workspace tối đa 100 ký tự')
+    .optional(),
+  description: z
+    .string()
+    .max(1000, 'Mô tả tối đa 1000 ký tự')
+    .optional(),
+  visibility: z.enum(['PRIVATE', 'SHARED', 'PUBLIC']).optional(),
+  expectedVersion: z.number(),
+});
+
+/** TypeScript type inferred from the Zod update schema. */
+export type UpdateWorkspaceInput = z.infer<typeof updateWorkspaceSchema>;

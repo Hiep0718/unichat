@@ -3,14 +3,21 @@
  */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { createWorkspace, deleteWorkspace, getWorkspaces } from './workspace-api';
+import {
+  createWorkspace,
+  deleteWorkspace,
+  getWorkspace,
+  getWorkspaces,
+  updateWorkspace,
+} from './workspace-api';
 
-import type { CreateWorkspaceInput } from './workspace-schema';
+import type { CreateWorkspaceInput, UpdateWorkspaceInput } from './workspace-schema';
 
 /** Query key factory for workspace queries. */
 const workspaceKeys = {
   all: ['workspaces'] as const,
   list: (page: number) => [...workspaceKeys.all, 'list', page] as const,
+  detail: (id: string) => [...workspaceKeys.all, 'detail', id] as const,
 };
 
 /**
@@ -47,6 +54,32 @@ export function useDeleteWorkspace() {
 
   return useMutation({
     mutationFn: (workspaceId: string) => deleteWorkspace(workspaceId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: workspaceKeys.all });
+    },
+  });
+}
+
+/**
+ * Fetches a single workspace by ID.
+ */
+export function useWorkspace(workspaceId: string) {
+  return useQuery({
+    queryKey: workspaceKeys.detail(workspaceId),
+    queryFn: () => getWorkspace(workspaceId),
+    enabled: !!workspaceId,
+  });
+}
+
+/**
+ * Mutation to update workspace metadata.
+ * Invalidates both list and detail caches on success.
+ */
+export function useUpdateWorkspace(workspaceId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: UpdateWorkspaceInput) => updateWorkspace(workspaceId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: workspaceKeys.all });
     },
