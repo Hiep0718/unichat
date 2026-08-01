@@ -82,3 +82,8 @@ export async function deleteWorkspaceDocument(workspaceId: string, documentId: s
     method: 'DELETE',
   });
 }
+
+export const getDocuments = (workspaceId: string, page = 0, size = 20): Promise<DocumentResponse[]> =>
+  fetchWorkspaceDocuments(workspaceId, page, size).then((res) => res.content);
+
+export const deleteDocument = deleteWorkspaceDocument;

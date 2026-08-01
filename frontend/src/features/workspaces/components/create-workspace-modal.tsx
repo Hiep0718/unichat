@@ -44,11 +44,9 @@ export function CreateWorkspaceModal({ isOpen, onClose, onSuccess }: CreateWorks
     try {
       const payload: CreateWorkspacePayload = {
         name: parsed.data.name,
+        description: parsed.data.description || '',
         visibility: parsed.data.visibility,
       };
-      if (parsed.data.description) {
-        payload.description = parsed.data.description;
-      }
 
       const created = await createWorkspace(payload);
       reset();

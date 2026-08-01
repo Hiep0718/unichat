@@ -47,6 +47,7 @@ export const createWorkspaceSchema = z.object({
 
 /** TypeScript type inferred from the Zod schema. */
 export type CreateWorkspaceInput = z.infer<typeof createWorkspaceSchema>;
+export type CreateWorkspaceFormValues = CreateWorkspaceInput;
 
 /** Zod schema for updating a workspace (all fields optional except version). */
 export const updateWorkspaceSchema = z.object({
@@ -60,7 +61,7 @@ export const updateWorkspaceSchema = z.object({
     .max(1000, 'Mô tả tối đa 1000 ký tự')
     .optional(),
   visibility: z.enum(['PRIVATE', 'SHARED', 'PUBLIC']).optional(),
-  expectedVersion: z.number(),
+  expectedVersion: z.number().optional(),
 });
 
 /** TypeScript type inferred from the Zod update schema. */

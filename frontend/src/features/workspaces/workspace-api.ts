@@ -67,6 +67,10 @@ export function updateWorkspace(
   });
 }
 
+export type WorkspaceResponse = WorkspaceDto & { userRole?: 'OWNER' | 'EDITOR' | 'VIEWER' };
+export type CreateWorkspacePayload = CreateWorkspaceInput;
+export const fetchWorkspace = getWorkspace;
+
 /**
  * Deletes a workspace by ID. Only the owner can perform this action.
  */

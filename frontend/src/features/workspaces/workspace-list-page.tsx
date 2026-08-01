@@ -3,7 +3,8 @@
  * Fetches workspaces from API, supports search and visibility filter.
  */
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { Icon } from '../../components/icon';
 import { WorkspaceCard } from './components/workspace-card';
@@ -32,6 +33,17 @@ const SKELETON_COUNT = 3;
  */
 function WorkspaceListPage() {
   const { data, isLoading, error, refetch } = useWorkspaces();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const isSelectMode = location.search.includes('select=true');
+
+  useEffect(() => {
+    const firstWs = data?.content?.[0];
+    if (!isSelectMode && firstWs) {
+      navigate(`/workspaces/${firstWs.id}`, { replace: true });
+    }
+  }, [data?.content, isSelectMode, navigate]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterOption>('ALL');

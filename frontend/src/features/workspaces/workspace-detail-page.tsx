@@ -9,19 +9,12 @@ import { useParams } from 'react-router-dom';
 import { Icon } from '../../components/icon';
 import { DocumentTable } from '../documents/document-table';
 import { useDocuments, useDeleteDocument } from '../documents/document-hooks';
-import {
-  MemberTable,
-  InviteForm,
-  useMembers,
-  useInviteMember,
-  useUpdateMemberRole,
-  useRemoveMember,
-} from '../members';
+import { MemberTable } from '../members';
 import { OverviewTab } from './components/overview-tab';
 import { WorkspaceSettings } from '../settings/workspace-settings';
-import { useWorkspace } from './workspace-hooks';
+import { useWorkspace as useWorkspaceQuery } from './workspace-hooks';
+import { useWorkspace as useWorkspaceContext } from './workspace-context';
 
-import type { InviteMemberInput, MemberRole } from '../members';
 import type { WorkspaceVisibility } from './workspace-schema';
 
 import './workspace-detail-page.css';
@@ -39,17 +32,17 @@ type TabId = (typeof TABS)[number]['id'];
 
 const VISIBILITY_LABELS: Record<WorkspaceVisibility, string> = {
   PRIVATE: 'Riêng tư',
-  SHARED: 'Chia sẻ',
+  SHARED: 'Được chia sẻ',
   PUBLIC: 'Công khai',
 };
 
 /**
- * Renders workspace detail page with header, tabs, and tab content.
+ * Main container for workspace detail view.
  */
 function WorkspaceDetailPage() {
   const { workspaceId = '' } = useParams<{ workspaceId: string }>();
   const [activeTab, setActiveTab] = useState<TabId>('overview');
-  const { data: workspace, isLoading: wsLoading } = useWorkspace(workspaceId);
+  const { data: workspace, isLoading: wsLoading } = useWorkspaceQuery(workspaceId);
 
   return (
     <main className="ws-detail">
@@ -203,7 +196,7 @@ function DocumentsTab({ workspaceId }: { readonly workspaceId: string }) {
 
   return (
     <DocumentTable
-      documents={documents}
+      documents={documents as any}
       isLoading={isLoading}
       onDelete={handleDelete}
     />
@@ -213,52 +206,8 @@ function DocumentsTab({ workspaceId }: { readonly workspaceId: string }) {
 /* ─── Members Tab ────────────────────────────────────────── */
 
 function MembersTab({ workspaceId }: { readonly workspaceId: string }) {
-  const { data: members = [], isLoading } = useMembers(workspaceId);
-  const inviteMutation = useInviteMember(workspaceId);
-  const updateRoleMutation = useUpdateMemberRole(workspaceId);
-  const removeMutation = useRemoveMember(workspaceId);
-
-  const [showInvite, setShowInvite] = useState(false);
-
-  const handleInvite = useCallback(
-    (data: InviteMemberInput) => {
-      inviteMutation.mutate(data, {
-        onSuccess: () => setShowInvite(false),
-      });
-    },
-    [inviteMutation],
-  );
-
-  const handleRoleChange = useCallback(
-    (userId: string, role: MemberRole) => {
-      updateRoleMutation.mutate({ userId, role });
-    },
-    [updateRoleMutation],
-  );
-
-  const handleRemove = useCallback(
-    (userId: string) => removeMutation.mutate(userId),
-    [removeMutation],
-  );
-
-  return (
-    <>
-      <MemberTable
-        members={members}
-        isLoading={isLoading}
-        onRoleChange={handleRoleChange}
-        onRemove={handleRemove}
-        onInviteClick={() => setShowInvite(true)}
-      />
-      <InviteForm
-        isOpen={showInvite}
-        isPending={inviteMutation.isPending}
-        serverError={inviteMutation.error?.message ?? null}
-        onSubmit={handleInvite}
-        onClose={() => setShowInvite(false)}
-      />
-    </>
-  );
+  const { isOwner } = useWorkspaceContext();
+  return <MemberTable workspaceId={workspaceId} isOwner={isOwner} />;
 }
 
 /* ─── Placeholder ────────────────────────────────────────── */

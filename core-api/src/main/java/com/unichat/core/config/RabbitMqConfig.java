@@ -46,10 +46,7 @@ public class RabbitMqConfig {
 
     @Bean
     public Queue ingestionQueue() {
-        return QueueBuilder.durable(INGESTION_QUEUE)
-                .withArgument("x-dead-letter-exchange", DLQ_EXCHANGE)
-                .withArgument("x-dead-letter-routing-key", DLQ_ROUTING_KEY)
-                .build();
+        return QueueBuilder.durable(INGESTION_QUEUE).build();
     }
 
     @Bean
