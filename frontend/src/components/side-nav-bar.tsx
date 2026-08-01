@@ -88,7 +88,7 @@ export function SideNavBar() {
 
       <div className="side-nav__footer">
         {isWorkspaceContext && (
-          <Link to="/workspaces" className="side-nav__item">
+          <Link to="/workspaces?select=true" className="side-nav__item">
             <Icon name="arrow_back" size={20} />
             Đổi Workspace
           </Link>

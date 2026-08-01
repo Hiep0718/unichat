@@ -58,3 +58,8 @@ export async function removeWorkspaceMember(workspaceId: string, userId: string)
     method: 'DELETE',
   });
 }
+
+export const getMembers = (workspaceId: string) => fetchWorkspaceMembers(workspaceId);
+export const inviteMember = (workspaceId: string, data: { email: string; role: WorkspaceRole }) => addWorkspaceMember(workspaceId, data);
+export const updateMemberRole = (workspaceId: string, userId: string, role: WorkspaceRole) => updateWorkspaceMemberRole(workspaceId, userId, { role });
+export const removeMember = (workspaceId: string, userId: string) => removeWorkspaceMember(workspaceId, userId);
