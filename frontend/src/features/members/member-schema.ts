@@ -2,15 +2,12 @@
  * Member data types for workspace membership management.
  * Maps to Core API MemberResponse and InviteMemberRequest DTOs.
  */
-import { z } from 'zod/v4';
 
-/** Workspace member roles matching backend enum. */
+import { z } from 'zod';
+
 export type MemberRole = 'OWNER' | 'EDITOR' | 'VIEWER';
-
-/** Workspace member status matching backend enum. */
 export type MemberStatus = 'ACTIVE' | 'REVOKED';
 
-/** Member data returned from the API. */
 export interface MemberDto {
   readonly userId: string;
   readonly email: string;
@@ -19,7 +16,6 @@ export interface MemberDto {
   readonly invitedById: string | null;
 }
 
-/** Zod schema for inviting a new member. */
 export const inviteMemberSchema = z.object({
   email: z
     .string()
@@ -29,10 +25,15 @@ export const inviteMemberSchema = z.object({
   role: z.enum(['EDITOR', 'VIEWER']),
 });
 
-/** TypeScript type inferred from the Zod invite schema. */
 export type InviteMemberInput = z.infer<typeof inviteMemberSchema>;
 
-/** Role display labels in Vietnamese. */
+export const addMemberSchema = z.object({
+  email: z.string().email('Email không đúng định dạng'),
+  role: z.enum(['OWNER', 'EDITOR', 'VIEWER']),
+});
+
+export type AddMemberFormValues = z.infer<typeof addMemberSchema>;
+
 export const ROLE_LABELS: Record<MemberRole, string> = {
   OWNER: 'Chủ sở hữu',
   EDITOR: 'Biên tập viên',

@@ -8,27 +8,22 @@ import com.unichat.core.user.domain.User;
 import com.unichat.core.user.domain.UserStatus;
 
 /**
- * Output representation of a user profile.
+ * Public response DTO for user profile and administrative management.
  */
 public record UserResponse(
-    UUID id,
-    String email,
-    SystemRole systemRole,
-    UserStatus status,
-    Instant createdAt,
-    Instant updatedAt
+        UUID id,
+        String email,
+        SystemRole systemRole,
+        UserStatus status,
+        Instant createdAt
 ) {
-    /**
-     * Maps a User entity to a UserResponse DTO.
-     */
-    public static UserResponse from(User user) {
+    public static UserResponse from(User u) {
         return new UserResponse(
-            user.getId(),
-            user.getEmail(),
-            user.getSystemRole(),
-            user.getStatus(),
-            user.getCreatedAt(),
-            user.getUpdatedAt()
+                u.getId(),
+                u.getEmail(),
+                u.getSystemRole(),
+                u.getStatus(),
+                u.getCreatedAt()
         );
     }
 }

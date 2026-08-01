@@ -113,7 +113,7 @@ PyTorch và dependency transitive nằm trong resolved exact-pin inventory sinh 
 
 LangChain, LlamaIndex, Redis, MongoDB, MinIO, Kafka/RabbitMQ, Knowledge Graph, OCR, PPTX/XLSX parser, native mobile và Redux/Zustand.
 
-PostgreSQL resource_jobs thay broker; local storage nằm sau interface để mở rộng MinIO về sau.
+RabbitMQ là message broker cho async ingestion (ADR-007); bảng `resource_jobs` đã bị xóa (V5 migration). Local storage nằm sau interface để mở rộng MinIO về sau.
 
 ## 8. Trạng thái máy hiện tại
 

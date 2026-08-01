@@ -95,7 +95,7 @@
         <mxCell id="ea4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=blockThin;endFill=1;" edge="1" parent="swim-core" source="a4" target="a5">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="ea5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=blockThin;endFill=1;" edge="1" parent="swim-core" source="a5" target="a6">
+        <mxCell id="ea5" value="← Nhận response" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=blockThin;endFill=1;strokeColor=#9673a6;dashed=1;labelBackgroundColor=#ffffff;" edge="1" parent="swim-core" source="a5" target="a6">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="ea6" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=blockThin;endFill=1;" edge="1" parent="swim-core" source="a6" target="a7">
@@ -276,6 +276,27 @@
         <mxCell id="lg5t" value="Error/Refuse" style="text;html=1;align=left;fontSize=11;" vertex="1" parent="legend"><mxGeometry x="500" y="33" width="90" height="18" as="geometry" /></mxCell>
         <mxCell id="lg6" value="" style="rounded=0;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="legend"><mxGeometry x="600" y="35" width="24" height="14" as="geometry" /></mxCell>
         <mxCell id="lg6t" value="Decision/Warning" style="text;html=1;align=left;fontSize=11;" vertex="1" parent="legend"><mxGeometry x="630" y="33" width="120" height="18" as="geometry" /></mxCell>
+
+        <!-- FIX: Thêm node kết thúc thành công trong AI Service -->
+        <mxCell id="ai_done" value="✅ Response&#xa;JSON" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="swim-ai">
+          <mxGeometry x="1600" y="280" width="140" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- FIX: ai8 (Citation Valid) → ai_done -->
+        <mxCell id="eai8_done" value="Valid" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=blockThin;endFill=1;strokeColor=#82b366;" edge="1" parent="swim-ai" source="ai8" target="ai_done">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- FIX: ai3b (Không mơ hồ) → ai4 -->
+        <mxCell id="eai3b_no" value="No" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=blockThin;endFill=1;" edge="1" parent="swim-ai" source="ai3b" target="ai4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- FIX: ai_retry → ai7 (Thử lại 1 lần) -->
+        <mxCell id="eai_retry_back" value="Thử lại" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=blockThin;endFill=1;strokeColor=#d6b656;dashed=1;" edge="1" parent="swim-ai" source="ai_retry" target="ai7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
       </root>
     </mxGraphModel>
   </diagram>
