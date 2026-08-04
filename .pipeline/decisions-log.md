@@ -257,3 +257,10 @@
 - Decision: Render public workspaces in the Explore tab using a dedicated `ExploreCard` component rather than reusing `WorkspaceCard`.
   Rationale: The interactions are fundamentally different. `WorkspaceCard` navigates into the workspace, while `ExploreCard` needs a primary "Join" action button. Reusing the component would require complex conditional rendering and prop-drilling.
 
+## 2026-08-04 - Workspace Dashboard UI Polish (Phase 3)
+
+- Decision: Add Sort Dropdown and View Mode Toggle (Grid/List) directly inside the workspace controls section.
+  Rationale: Improves usability by giving users control over how they want to view their workspaces.
+- Decision: Use CSS Grid template modifications (`grid-template-columns: 1fr !important`) combined with flex layout changes in the card components for List view mode.
+  Rationale: CSS-only layout changes are much more performant than conditional React rendering of entirely different DOM structures.
+

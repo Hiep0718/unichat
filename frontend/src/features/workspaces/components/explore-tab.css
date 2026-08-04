@@ -38,3 +38,7 @@
     grid-template-columns: repeat(3, 1fr);
   }
 }
+
+.explore-grid--list {
+  grid-template-columns: 1fr !important;
+}

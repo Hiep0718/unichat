@@ -17,6 +17,7 @@ const SKELETON_COUNT = 3;
 export function ExploreTab() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState<'GRID' | 'LIST'>('GRID');
   
   const { data, isLoading, error, refetch } = usePublicWorkspaces(searchQuery, 0);
   const joinMutation = useJoinWorkspace();
@@ -40,6 +41,7 @@ export function ExploreTab() {
   );
 
   const workspaces = useMemo(() => data?.content ?? [], [data?.content]);
+  const gridClass = viewMode === 'LIST' ? 'explore-grid explore-grid--list' : 'explore-grid';
 
   return (
     <section className="explore-tab" aria-label="Khám phá">
@@ -53,7 +55,7 @@ export function ExploreTab() {
         </p>
       </div>
 
-      <div className="workspace-controls">
+      <div className="workspace-controls" style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
         <div className="workspace-search">
           <Icon name="search" size={20} className="workspace-search__icon" />
           <input
@@ -63,6 +65,27 @@ export function ExploreTab() {
             value={searchQuery}
             onChange={handleSearchChange}
           />
+        </div>
+
+        <div className="workspace-actions-group">
+          <div className="workspace-view-toggle">
+            <button
+              className={`view-toggle-btn ${viewMode === 'GRID' ? 'view-toggle-btn--active' : ''}`}
+              type="button"
+              aria-label="Grid view"
+              onClick={() => setViewMode('GRID')}
+            >
+              <Icon name="grid_view" size={18} />
+            </button>
+            <button
+              className={`view-toggle-btn ${viewMode === 'LIST' ? 'view-toggle-btn--active' : ''}`}
+              type="button"
+              aria-label="List view"
+              onClick={() => setViewMode('LIST')}
+            >
+              <Icon name="view_list" size={18} />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -99,7 +122,7 @@ export function ExploreTab() {
         )}
 
         {!isLoading && !error && workspaces.length > 0 && (
-          <div className="explore-grid">
+          <div className={gridClass}>
             {workspaces.map((ws, i) => (
               <ExploreCard
                 key={ws.id}

@@ -19,6 +19,8 @@ import type { WorkspaceVisibility } from './workspace-schema';
 import './workspace-list-page.css';
 
 type FilterOption = 'ALL' | WorkspaceVisibility;
+type SortOption = 'UPDATED_DESC' | 'CREATED_DESC' | 'NAME_ASC';
+type ViewMode = 'GRID' | 'LIST';
 
 const FILTER_OPTIONS: readonly { value: FilterOption; label: string }[] = [
   { value: 'ALL', label: 'Tất cả' },
@@ -41,6 +43,8 @@ function WorkspaceListPage() {
   const [activeTab, setActiveTab] = useState<'MY_WORKSPACES' | 'EXPLORE'>('MY_WORKSPACES');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterOption>('ALL');
+  const [sortBy, setSortBy] = useState<SortOption>('UPDATED_DESC');
+  const [viewMode, setViewMode] = useState<ViewMode>('GRID');
   const [isFormOpen, setIsFormOpen] = useState(false);
 
   const handleSearchChange = useCallback(
@@ -60,14 +64,22 @@ function WorkspaceListPage() {
 
   const filteredWorkspaces = useMemo(() => {
     const query = searchQuery.toLowerCase().trim();
-    return allWorkspaces.filter((ws) => {
+    let result = allWorkspaces.filter((ws) => {
       const matchesFilter = activeFilter === 'ALL' || ws.visibility === activeFilter;
       const matchesSearch = !query
         || ws.name.toLowerCase().includes(query)
         || ws.description?.toLowerCase().includes(query);
       return matchesFilter && matchesSearch;
     });
-  }, [allWorkspaces, searchQuery, activeFilter]);
+
+    result = result.sort((a, b) => {
+      if (sortBy === 'NAME_ASC') return a.name.localeCompare(b.name);
+      if (sortBy === 'CREATED_DESC') return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+    });
+
+    return result;
+  }, [allWorkspaces, searchQuery, activeFilter, sortBy]);
 
   return (
     <main className="workspace-main">
@@ -108,9 +120,13 @@ function WorkspaceListPage() {
               error={error}
               searchQuery={searchQuery}
               activeFilter={activeFilter}
+              sortBy={sortBy}
+              viewMode={viewMode}
               filteredWorkspaces={filteredWorkspaces}
               onSearchChange={handleSearchChange}
               onFilterChange={setActiveFilter}
+              onSortChange={setSortBy}
+              onViewModeChange={setViewMode}
               onCreateClick={() => setIsFormOpen(true)}
               onRetry={() => refetch()}
             />
@@ -169,9 +185,13 @@ interface AllWorkspacesSectionProps {
   readonly error: Error | null;
   readonly searchQuery: string;
   readonly activeFilter: FilterOption;
+  readonly sortBy: SortOption;
+  readonly viewMode: ViewMode;
   readonly filteredWorkspaces: readonly WorkspaceDto[];
   readonly onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   readonly onFilterChange: (filter: FilterOption) => void;
+  readonly onSortChange: (sort: SortOption) => void;
+  readonly onViewModeChange: (mode: ViewMode) => void;
   readonly onCreateClick: () => void;
   readonly onRetry: () => void;
 }
@@ -184,12 +204,18 @@ function AllWorkspacesSection({
   error,
   searchQuery,
   activeFilter,
+  sortBy,
+  viewMode,
   filteredWorkspaces,
   onSearchChange,
   onFilterChange,
+  onSortChange,
+  onViewModeChange,
   onCreateClick,
   onRetry,
 }: AllWorkspacesSectionProps) {
+  const gridClass = viewMode === 'LIST' ? 'workspace-grid workspace-grid--list' : 'workspace-grid';
+
   return (
     <section className="all-workspaces-section">
       <div className="all-workspaces-section__header">
@@ -220,21 +246,58 @@ function AllWorkspacesSection({
         </div>
 
         <div className="workspace-filters">
-          {FILTER_OPTIONS.map((opt) => (
-            <button
-              key={opt.value}
-              className={`workspace-filter ${activeFilter === opt.value ? 'workspace-filter--active' : ''}`}
-              onClick={() => onFilterChange(opt.value)}
-            >
-              {opt.label}
-            </button>
-          ))}
+          <div className="workspace-filter-group">
+            {FILTER_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                className={`workspace-filter ${activeFilter === opt.value ? 'workspace-filter--active' : ''}`}
+                type="button"
+                onClick={() => onFilterChange(opt.value)}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="workspace-actions-group">
+            <div className="workspace-sort">
+              <Icon name="sort" size={18} />
+              <select 
+                className="workspace-sort__select" 
+                value={sortBy} 
+                onChange={(e) => onSortChange(e.target.value as SortOption)}
+              >
+                <option value="UPDATED_DESC">Mới cập nhật</option>
+                <option value="CREATED_DESC">Mới tạo</option>
+                <option value="NAME_ASC">Tên (A-Z)</option>
+              </select>
+            </div>
+
+            <div className="workspace-view-toggle">
+              <button
+                className={`view-toggle-btn ${viewMode === 'GRID' ? 'view-toggle-btn--active' : ''}`}
+                type="button"
+                aria-label="Grid view"
+                onClick={() => onViewModeChange('GRID')}
+              >
+                <Icon name="grid_view" size={18} />
+              </button>
+              <button
+                className={`view-toggle-btn ${viewMode === 'LIST' ? 'view-toggle-btn--active' : ''}`}
+                type="button"
+                aria-label="List view"
+                onClick={() => onViewModeChange('LIST')}
+              >
+                <Icon name="view_list" size={18} />
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
       <div className="workspace-content">
         {isLoading && (
-          <div className="workspace-grid">
+          <div className={gridClass}>
             {Array.from({ length: SKELETON_COUNT }, (_, i) => (
               <SkeletonCard key={i} />
             ))}
@@ -251,7 +314,7 @@ function AllWorkspacesSection({
         )}
 
         {!isLoading && !error && filteredWorkspaces.length > 0 && (
-          <div className="workspace-grid">
+          <div className={gridClass}>
             {filteredWorkspaces.map((ws, i) => (
               <WorkspaceCard
                 key={ws.id}
