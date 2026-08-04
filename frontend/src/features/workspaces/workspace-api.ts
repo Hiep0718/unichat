@@ -79,3 +79,32 @@ export function deleteWorkspace(workspaceId: string): Promise<void> {
     method: 'DELETE',
   });
 }
+
+/**
+ * Fetches public workspaces the user has not yet joined.
+ *
+ * @param page   zero-based page number
+ * @param size   items per page (max 100)
+ * @param search optional search term for name/description
+ */
+export function getPublicWorkspaces(
+  page = 0,
+  size = 20,
+  search?: string,
+): Promise<PagedResponse<WorkspaceDto>> {
+  const params = new URLSearchParams({ page: String(page), size: String(size) });
+  if (search?.trim()) {
+    params.set('search', search.trim());
+  }
+  return fetchJson(`/workspaces/explore?${params.toString()}`);
+}
+
+/**
+ * Joins a public workspace as VIEWER.
+ */
+export function joinWorkspace(workspaceId: string): Promise<WorkspaceDto> {
+  return fetchJson(`/workspaces/${workspaceId}/join`, {
+    method: 'POST',
+  });
+}
+

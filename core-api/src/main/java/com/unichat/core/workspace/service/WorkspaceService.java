@@ -164,6 +164,56 @@ public class WorkspaceService {
         // TODO: Full delete saga when document/chat features are implemented
     }
 
+    /**
+     * Finds public workspaces the user has not yet joined.
+     *
+     * @param userId   authenticated user
+     * @param search   optional search term (name/description)
+     * @param pageable pagination parameters
+     */
+    @Transactional(readOnly = true)
+    public Page<WorkspaceResponse> getPublicWorkspaces(UUID userId, String search, Pageable pageable) {
+        String searchTerm = (search == null || search.isBlank()) ? "%" : "%" + search.trim() + "%";
+        return workspaceRepository.findPublicWorkspacesExcludingMember(userId, searchTerm, pageable)
+                .map(this::toResponse);
+    }
+
+    /**
+     * Allows a user to self-join a PUBLIC workspace as VIEWER.
+     *
+     * @param userId      user joining
+     * @param workspaceId target workspace
+     */
+    @Transactional
+    public WorkspaceResponse joinPublicWorkspace(UUID userId, UUID workspaceId) {
+        Workspace workspace = workspaceRepository.findById(workspaceId)
+                .orElseThrow(() -> new NotFoundError("Workspace không tồn tại"));
+
+        if (!WorkspaceVisibility.PUBLIC.equals(workspace.getVisibility())) {
+            throw new AuthorizationError("Chỉ có thể tham gia workspace công khai");
+        }
+
+        boolean alreadyMember = workspaceMemberRepository
+                .findByWorkspaceIdAndUserIdAndStatus(workspaceId, userId, WorkspaceMemberStatus.ACTIVE)
+                .isPresent();
+        if (alreadyMember) {
+            throw new ConflictError("Bạn đã là thành viên của workspace này");
+        }
+
+        WorkspaceMember member = new WorkspaceMember(
+                workspaceId,
+                userId,
+                WorkspaceRole.VIEWER,
+                WorkspaceMemberStatus.ACTIVE,
+                userId
+        );
+        workspaceMemberRepository.save(member);
+        workspace.incrementPermissionVersion();
+        workspaceRepository.save(workspace);
+
+        return toResponse(workspace);
+    }
+
     private WorkspaceMember checkAccess(UUID userId, UUID workspaceId) {
         return workspaceMemberRepository.findByWorkspaceIdAndUserIdAndStatus(workspaceId, userId, WorkspaceMemberStatus.ACTIVE)
                 .orElseThrow(() -> new NotFoundError("Workspace không tồn tại"));

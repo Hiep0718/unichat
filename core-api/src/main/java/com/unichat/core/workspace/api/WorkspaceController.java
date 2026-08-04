@@ -123,4 +123,30 @@ public class WorkspaceController {
         workspaceService.deleteWorkspace(userId, workspaceId);
         return ResponseEntity.noContent().build();
     }
+
+    /**
+     * Lists public workspaces the user has not yet joined.
+     */
+    @GetMapping("/explore")
+    public ResponseEntity<Page<WorkspaceResponse>> exploreWorkspaces(
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "20") int size,
+            @RequestParam(value = "search", required = false) String search) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        int pageSize = Math.min(size, 100);
+        Pageable pageable = PageRequest.of(page, pageSize);
+        return ResponseEntity.ok(workspaceService.getPublicWorkspaces(userId, search, pageable));
+    }
+
+    /**
+     * Allows the authenticated user to join a PUBLIC workspace as VIEWER.
+     */
+    @PostMapping("/{workspaceId}/join")
+    public ResponseEntity<WorkspaceResponse> joinWorkspace(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable("workspaceId") UUID workspaceId) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        return ResponseEntity.ok(workspaceService.joinPublicWorkspace(userId, workspaceId));
+    }
 }

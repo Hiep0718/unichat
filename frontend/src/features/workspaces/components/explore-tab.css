@@ -1,0 +1,40 @@
+/* Explore Tab */
+
+.explore-tab {
+  display: flex;
+  flex-direction: column;
+  gap: var(--stack-md);
+}
+
+.explore-tab__header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--stack-sm);
+  margin-bottom: var(--stack-md);
+}
+
+.explore-tab__title {
+  display: flex;
+  align-items: center;
+  gap: var(--stack-sm);
+  font: var(--font-headline-md);
+  color: var(--color-on-surface);
+}
+
+.explore-grid {
+  display: grid;
+  gap: var(--stack-lg);
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 1024px) {
+  .explore-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1440px) {
+  .explore-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

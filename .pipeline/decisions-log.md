@@ -243,3 +243,17 @@
 - Decision: Extract sub-components (WelcomeBanner, QuickStats, RecentSection, AllWorkspacesSection, ErrorState, EmptyState) from the monolithic workspace-list-page.
   Rationale: The original 189-line page would have exceeded 300 lines with the new sections. Extracting keeps each component focused and within AGENTS.md limits (render ≤ 60 JSX lines, file ≤ 300 lines).
 
+## 2026-08-04 - Workspace Dashboard Explore Public Tab (Phase 2)
+
+- Decision: Add `findPublicWorkspacesExcludingMember` to `WorkspaceRepository` and expose it via `GET /api/v1/workspaces/explore`.
+  Rationale: The existing `findAllVisibleToUser` explicitly filters to only show workspaces where the user is an owner or member. The Explore tab needs to show the opposite: public workspaces the user hasn't joined yet.
+
+- Decision: Implement self-enrollment via `POST /api/v1/workspaces/{workspaceId}/join` granting the `VIEWER` role by default.
+  Rationale: Public workspaces are meant for community access. The user explicitly requested joining as a `VIEWER` by default to allow exploring content without accidentally modifying it.
+
+- Decision: Implement a "Segmented Control" (Tab) pattern on the Workspace Dashboard frontend to switch between "My Workspaces" and "Explore".
+  Rationale: Keeps the main dashboard uncluttered while providing a clear, top-level navigation paradigm for discovering new content.
+
+- Decision: Render public workspaces in the Explore tab using a dedicated `ExploreCard` component rather than reusing `WorkspaceCard`.
+  Rationale: The interactions are fundamentally different. `WorkspaceCard` navigates into the workspace, while `ExploreCard` needs a primary "Join" action button. Reusing the component would require complex conditional rendering and prop-drilling.
+

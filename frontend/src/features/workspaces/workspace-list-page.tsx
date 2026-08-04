@@ -11,6 +11,7 @@ import { QuickStats } from './components/quick-stats';
 import { WorkspaceCard } from './components/workspace-card';
 import { WorkspaceForm } from './components/workspace-form';
 import { SkeletonCard } from './components/skeleton-card';
+import { ExploreTab } from './components/explore-tab';
 import { useWorkspaces } from './workspace-hooks';
 
 import type { WorkspaceVisibility } from './workspace-schema';
@@ -37,6 +38,7 @@ const RECENT_COUNT = 3;
 function WorkspaceListPage() {
   const { data, isLoading, error, refetch } = useWorkspaces();
 
+  const [activeTab, setActiveTab] = useState<'MY_WORKSPACES' | 'EXPLORE'>('MY_WORKSPACES');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterOption>('ALL');
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -72,25 +74,50 @@ function WorkspaceListPage() {
       <div className="workspace-dashboard">
         <WelcomeBanner />
 
-        {!isLoading && !error && allWorkspaces.length > 0 && (
-          <QuickStats workspaces={allWorkspaces} />
-        )}
+        <div className="dashboard-tabs">
+          <button
+            className={`dashboard-tab ${activeTab === 'MY_WORKSPACES' ? 'dashboard-tab--active' : ''}`}
+            type="button"
+            onClick={() => setActiveTab('MY_WORKSPACES')}
+          >
+            <Icon name="folder" size={18} />
+            Không gian của tôi
+          </button>
+          <button
+            className={`dashboard-tab ${activeTab === 'EXPLORE' ? 'dashboard-tab--active' : ''}`}
+            type="button"
+            onClick={() => setActiveTab('EXPLORE')}
+          >
+            <Icon name="travel_explore" size={18} />
+            Khám phá
+          </button>
+        </div>
 
-        {!isLoading && !error && recentWorkspaces.length > 0 && (
-          <RecentSection workspaces={recentWorkspaces} />
-        )}
+        {activeTab === 'MY_WORKSPACES' ? (
+          <>
+            {!isLoading && !error && allWorkspaces.length > 0 && (
+              <QuickStats workspaces={allWorkspaces} />
+            )}
 
-        <AllWorkspacesSection
-          isLoading={isLoading}
-          error={error}
-          searchQuery={searchQuery}
-          activeFilter={activeFilter}
-          filteredWorkspaces={filteredWorkspaces}
-          onSearchChange={handleSearchChange}
-          onFilterChange={setActiveFilter}
-          onCreateClick={() => setIsFormOpen(true)}
-          onRetry={() => refetch()}
-        />
+            {!isLoading && !error && recentWorkspaces.length > 0 && (
+              <RecentSection workspaces={recentWorkspaces} />
+            )}
+
+            <AllWorkspacesSection
+              isLoading={isLoading}
+              error={error}
+              searchQuery={searchQuery}
+              activeFilter={activeFilter}
+              filteredWorkspaces={filteredWorkspaces}
+              onSearchChange={handleSearchChange}
+              onFilterChange={setActiveFilter}
+              onCreateClick={() => setIsFormOpen(true)}
+              onRetry={() => refetch()}
+            />
+          </>
+        ) : (
+          <ExploreTab />
+        )}
       </div>
 
       <WorkspaceForm open={isFormOpen} onClose={() => setIsFormOpen(false)} />
