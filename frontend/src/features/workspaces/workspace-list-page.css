@@ -14,6 +14,7 @@
   padding: 32px var(--gutter);
   max-width: var(--container-max);
   width: 100%;
+  margin: 0 auto;
 }
 
 /* Dashboard Tabs */
@@ -311,10 +312,6 @@
 /* Responsive */
 
 @media (min-width: 768px) {
-  .workspace-main {
-    margin-left: var(--sidebar-width);
-  }
-
   .all-workspaces-section__header {
     flex-direction: row;
     justify-content: space-between;
