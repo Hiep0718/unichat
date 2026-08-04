@@ -225,3 +225,21 @@
 **Context:** In the 'My Workspaces' page, users were seeing workspaces they did not own because the repository query fetched all workspaces with PUBLIC visibility, causing confusion (users thought they were seeing mock data).
 **Decision:** Removed OR w.visibility = PUBLIC from WorkspaceRepository.findAllVisibleToUser.
 **Consequences:** The 'My Workspaces' list now only correctly shows workspaces where the user is an active member or owner.
+
+## 2026-08-04 - Workspace Dashboard Hub Upgrade (Phase 1)
+
+- Decision: Remove auto-redirect logic from `workspace-list-page.tsx` that immediately navigated to the first workspace on load.
+  Rationale: The redirect prevented users from ever seeing the workspace dashboard page. The `/workspaces` route should serve as the main landing page after login, giving users an overview and choice.
+
+- Decision: Add Welcome Banner, Quick Stats, and Recent Workspaces sections to the workspace list page, transforming it into a Dashboard Hub.
+  Rationale: The previous flat list lacked context, personalization, and visual hierarchy. A dashboard pattern matches modern SaaS UX and provides quick orientation after login.
+
+- Decision: Compute Quick Stats (total workspaces, documents, members) by aggregating from the existing workspace list API response instead of creating a new backend endpoint.
+  Rationale: Avoids backend scope creep in Phase 1. The workspace list already returns `documentCount` and `memberCount` per workspace, making client-side aggregation trivial and accurate.
+
+- Decision: Add color-coded left border to workspace cards (Primary=Private, Secondary=Shared, Success=Public) and staggered entrance animation.
+  Rationale: Visual differentiation by visibility type improves scannability. Staggered animation creates a polished, premium feel consistent with the Corporate Modern design system.
+
+- Decision: Extract sub-components (WelcomeBanner, QuickStats, RecentSection, AllWorkspacesSection, ErrorState, EmptyState) from the monolithic workspace-list-page.
+  Rationale: The original 189-line page would have exceeded 300 lines with the new sections. Extracting keeps each component focused and within AGENTS.md limits (render ≤ 60 JSX lines, file ≤ 300 lines).
+
