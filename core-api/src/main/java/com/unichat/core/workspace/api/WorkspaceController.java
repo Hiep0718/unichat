@@ -92,7 +92,7 @@ public class WorkspaceController {
     /**
      * Retrieves workspace metadata.
      */
-    @GetMapping("/{workspaceId}")
+    @GetMapping("/{workspaceId:[0-9a-fA-F\\-]+}")
     public ResponseEntity<WorkspaceResponse> getWorkspace(
             @AuthenticationPrincipal Jwt jwt,
             @PathVariable("workspaceId") UUID workspaceId) {
@@ -103,7 +103,7 @@ public class WorkspaceController {
     /**
      * Updates an existing workspace.
      */
-    @PatchMapping("/{workspaceId}")
+    @PatchMapping("/{workspaceId:[0-9a-fA-F\\-]+}")
     public ResponseEntity<WorkspaceResponse> updateWorkspace(
             @AuthenticationPrincipal Jwt jwt,
             @PathVariable("workspaceId") UUID workspaceId,
@@ -115,7 +115,7 @@ public class WorkspaceController {
     /**
      * Deletes a workspace.
      */
-    @DeleteMapping("/{workspaceId}")
+    @DeleteMapping("/{workspaceId:[0-9a-fA-F\\-]+}")
     public ResponseEntity<Void> deleteWorkspace(
             @AuthenticationPrincipal Jwt jwt,
             @PathVariable("workspaceId") UUID workspaceId) {
@@ -142,7 +142,7 @@ public class WorkspaceController {
     /**
      * Allows the authenticated user to join a PUBLIC workspace as VIEWER.
      */
-    @PostMapping("/{workspaceId}/join")
+    @PostMapping("/{workspaceId:[0-9a-fA-F\\-]+}/join")
     public ResponseEntity<WorkspaceResponse> joinWorkspace(
             @AuthenticationPrincipal Jwt jwt,
             @PathVariable("workspaceId") UUID workspaceId) {
