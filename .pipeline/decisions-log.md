@@ -225,3 +225,42 @@
 **Context:** In the 'My Workspaces' page, users were seeing workspaces they did not own because the repository query fetched all workspaces with PUBLIC visibility, causing confusion (users thought they were seeing mock data).
 **Decision:** Removed OR w.visibility = PUBLIC from WorkspaceRepository.findAllVisibleToUser.
 **Consequences:** The 'My Workspaces' list now only correctly shows workspaces where the user is an active member or owner.
+
+## 2026-08-04 - Workspace Dashboard Hub Upgrade (Phase 1)
+
+- Decision: Remove auto-redirect logic from `workspace-list-page.tsx` that immediately navigated to the first workspace on load.
+  Rationale: The redirect prevented users from ever seeing the workspace dashboard page. The `/workspaces` route should serve as the main landing page after login, giving users an overview and choice.
+
+- Decision: Add Welcome Banner, Quick Stats, and Recent Workspaces sections to the workspace list page, transforming it into a Dashboard Hub.
+  Rationale: The previous flat list lacked context, personalization, and visual hierarchy. A dashboard pattern matches modern SaaS UX and provides quick orientation after login.
+
+- Decision: Compute Quick Stats (total workspaces, documents, members) by aggregating from the existing workspace list API response instead of creating a new backend endpoint.
+  Rationale: Avoids backend scope creep in Phase 1. The workspace list already returns `documentCount` and `memberCount` per workspace, making client-side aggregation trivial and accurate.
+
+- Decision: Add color-coded left border to workspace cards (Primary=Private, Secondary=Shared, Success=Public) and staggered entrance animation.
+  Rationale: Visual differentiation by visibility type improves scannability. Staggered animation creates a polished, premium feel consistent with the Corporate Modern design system.
+
+- Decision: Extract sub-components (WelcomeBanner, QuickStats, RecentSection, AllWorkspacesSection, ErrorState, EmptyState) from the monolithic workspace-list-page.
+  Rationale: The original 189-line page would have exceeded 300 lines with the new sections. Extracting keeps each component focused and within AGENTS.md limits (render ≤ 60 JSX lines, file ≤ 300 lines).
+
+## 2026-08-04 - Workspace Dashboard Explore Public Tab (Phase 2)
+
+- Decision: Add `findPublicWorkspacesExcludingMember` to `WorkspaceRepository` and expose it via `GET /api/v1/workspaces/explore`.
+  Rationale: The existing `findAllVisibleToUser` explicitly filters to only show workspaces where the user is an owner or member. The Explore tab needs to show the opposite: public workspaces the user hasn't joined yet.
+
+- Decision: Implement self-enrollment via `POST /api/v1/workspaces/{workspaceId}/join` granting the `VIEWER` role by default.
+  Rationale: Public workspaces are meant for community access. The user explicitly requested joining as a `VIEWER` by default to allow exploring content without accidentally modifying it.
+
+- Decision: Implement a "Segmented Control" (Tab) pattern on the Workspace Dashboard frontend to switch between "My Workspaces" and "Explore".
+  Rationale: Keeps the main dashboard uncluttered while providing a clear, top-level navigation paradigm for discovering new content.
+
+- Decision: Render public workspaces in the Explore tab using a dedicated `ExploreCard` component rather than reusing `WorkspaceCard`.
+  Rationale: The interactions are fundamentally different. `WorkspaceCard` navigates into the workspace, while `ExploreCard` needs a primary "Join" action button. Reusing the component would require complex conditional rendering and prop-drilling.
+
+## 2026-08-04 - Workspace Dashboard UI Polish (Phase 3)
+
+- Decision: Add Sort Dropdown and View Mode Toggle (Grid/List) directly inside the workspace controls section.
+  Rationale: Improves usability by giving users control over how they want to view their workspaces.
+- Decision: Use CSS Grid template modifications (`grid-template-columns: 1fr !important`) combined with flex layout changes in the card components for List view mode.
+  Rationale: CSS-only layout changes are much more performant than conditional React rendering of entirely different DOM structures.
+

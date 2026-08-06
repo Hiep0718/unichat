@@ -1,5 +1,6 @@
 /**
  * Workspace card component displaying workspace info, badge, and stats.
+ * Supports hover elevation and staggered entrance animation.
  */
 
 import { Link } from 'react-router-dom';
@@ -19,6 +20,8 @@ interface WorkspaceCardProps {
   readonly documentCount: number;
   readonly memberCount: number;
   readonly updatedAt: string;
+  /** Index used for staggered entrance animation delay. */
+  readonly animationIndex?: number;
 }
 
 const BADGE_CONFIG: Record<WorkspaceVisibility, { icon: string; label: string; className: string }> = {
@@ -38,11 +41,17 @@ export function WorkspaceCard({
   documentCount,
   memberCount,
   updatedAt,
+  animationIndex = 0,
 }: WorkspaceCardProps) {
   const badge = BADGE_CONFIG[visibility];
+  const borderClass = `workspace-card--${visibility.toLowerCase()}`;
 
   return (
-    <Link to={`/workspaces/${id}`} className="workspace-card">
+    <Link
+      to={`/workspaces/${id}`}
+      className={`workspace-card ${borderClass}`}
+      style={{ '--card-index': animationIndex } as React.CSSProperties}
+    >
       <div className="workspace-card__header">
         <span className={`workspace-card__badge ${badge.className}`}>
           <Icon name={badge.icon} size={14} />

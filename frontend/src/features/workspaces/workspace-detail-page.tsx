@@ -196,6 +196,7 @@ function DocumentsTab({ workspaceId }: { readonly workspaceId: string }) {
 
   return (
     <DocumentTable
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: align DocumentResponse with DocumentDto
       documents={documents as any}
       isLoading={isLoading}
       onDelete={handleDelete}

@@ -6,8 +6,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   createWorkspace,
   deleteWorkspace,
+  getPublicWorkspaces,
   getWorkspace,
   getWorkspaces,
+  joinWorkspace,
   updateWorkspace,
 } from './workspace-api';
 
@@ -18,6 +20,7 @@ const workspaceKeys = {
   all: ['workspaces'] as const,
   list: (page: number) => [...workspaceKeys.all, 'list', page] as const,
   detail: (id: string) => [...workspaceKeys.all, 'detail', id] as const,
+  explore: (search: string, page: number) => [...workspaceKeys.all, 'explore', search, page] as const,
 };
 
 /**
@@ -80,6 +83,31 @@ export function useUpdateWorkspace(workspaceId: string) {
 
   return useMutation({
     mutationFn: (data: UpdateWorkspaceInput) => updateWorkspace(workspaceId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: workspaceKeys.all });
+    },
+  });
+}
+
+/**
+ * Fetches public workspaces the user has not yet joined.
+ */
+export function usePublicWorkspaces(search = '', page = 0) {
+  return useQuery({
+    queryKey: workspaceKeys.explore(search, page),
+    queryFn: () => getPublicWorkspaces(page, 20, search || undefined),
+  });
+}
+
+/**
+ * Mutation to join a public workspace as VIEWER.
+ * Invalidates both explore and workspace list caches on success.
+ */
+export function useJoinWorkspace() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (workspaceId: string) => joinWorkspace(workspaceId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: workspaceKeys.all });
     },

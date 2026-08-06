@@ -4,10 +4,12 @@ import java.time.Instant;
 import java.util.UUID;
 
 import com.unichat.core.workspace.domain.Workspace;
+import com.unichat.core.workspace.domain.WorkspaceRole;
 import com.unichat.core.workspace.domain.WorkspaceVisibility;
 
 /**
- * Output representation of a workspace including aggregated stats.
+ * Output representation of a workspace including aggregated stats
+ * and the requesting user's role within that workspace.
  */
 public record WorkspaceResponse(
     UUID id,
@@ -20,19 +22,22 @@ public record WorkspaceResponse(
     long memberCount,
     long version,
     Instant createdAt,
-    Instant updatedAt
+    Instant updatedAt,
+    WorkspaceRole userRole
 ) {
     /**
-     * Maps a Workspace entity to a WorkspaceResponse DTO with counts.
+     * Maps a Workspace entity to a WorkspaceResponse DTO with counts and user role.
      *
      * @param workspace     the workspace entity
      * @param documentCount number of non-deleted documents in the workspace
      * @param memberCount   number of active members in the workspace
+     * @param userRole      role of the requesting user, null if not a member
      */
     public static WorkspaceResponse from(
             Workspace workspace,
             long documentCount,
-            long memberCount) {
+            long memberCount,
+            WorkspaceRole userRole) {
         return new WorkspaceResponse(
             workspace.getId(),
             workspace.getOwnerId(),
@@ -44,7 +49,8 @@ public record WorkspaceResponse(
             memberCount,
             workspace.getVersion(),
             workspace.getCreatedAt(),
-            workspace.getUpdatedAt()
+            workspace.getUpdatedAt(),
+            userRole
         );
     }
 }

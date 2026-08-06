@@ -49,7 +49,7 @@ public class WorkspaceService {
     @Transactional(readOnly = true)
     public Page<WorkspaceResponse> getWorkspaces(UUID userId, Pageable pageable) {
         return workspaceRepository.findAllVisibleToUser(userId, pageable)
-                .map(this::toResponse);
+                .map(workspace -> toResponseWithRole(workspace, userId));
     }
 
     /**
@@ -82,7 +82,7 @@ public class WorkspaceService {
         workspaceRepository.save(workspace);
         workspaceMemberRepository.save(ownerMember);
 
-        return WorkspaceResponse.from(workspace, 0, 1);
+        return WorkspaceResponse.from(workspace, 0, 1, WorkspaceRole.OWNER);
     }
 
     /**
@@ -93,11 +93,18 @@ public class WorkspaceService {
         Workspace workspace = workspaceRepository.findById(workspaceId)
                 .orElseThrow(() -> new NotFoundError("Workspace không tồn tại"));
 
+        WorkspaceRole userRole = null;
         if (!WorkspaceVisibility.PUBLIC.equals(workspace.getVisibility())) {
-            checkAccess(userId, workspaceId);
+            WorkspaceMember member = checkAccess(userId, workspaceId);
+            userRole = member.getRole();
+        } else {
+            userRole = workspaceMemberRepository
+                    .findByWorkspaceIdAndUserIdAndStatus(workspaceId, userId, WorkspaceMemberStatus.ACTIVE)
+                    .map(WorkspaceMember::getRole)
+                    .orElse(null);
         }
 
-        return toResponse(workspace);
+        return toResponse(workspace, userRole);
     }
 
     /**
@@ -141,7 +148,7 @@ public class WorkspaceService {
         workspace.setUpdatedAt(Instant.now(clock));
 
         workspaceRepository.save(workspace);
-        return toResponse(workspace);
+        return toResponse(workspace, member.getRole());
     }
 
     /**
@@ -164,18 +171,82 @@ public class WorkspaceService {
         // TODO: Full delete saga when document/chat features are implemented
     }
 
+    /**
+     * Finds public workspaces the user has not yet joined.
+     *
+     * @param userId   authenticated user
+     * @param search   optional search term (name/description)
+     * @param pageable pagination parameters
+     */
+    @Transactional(readOnly = true)
+    public Page<WorkspaceResponse> getPublicWorkspaces(UUID userId, String search, Pageable pageable) {
+        String searchTerm = (search == null || search.isBlank()) ? "%" : "%" + search.trim() + "%";
+        return workspaceRepository.findPublicWorkspacesExcludingMember(userId, searchTerm, pageable)
+                .map(workspace -> toResponse(workspace, null));
+    }
+
+    /**
+     * Allows a user to self-join a PUBLIC workspace as VIEWER.
+     *
+     * @param userId      user joining
+     * @param workspaceId target workspace
+     */
+    @Transactional
+    public WorkspaceResponse joinPublicWorkspace(UUID userId, UUID workspaceId) {
+        Workspace workspace = workspaceRepository.findById(workspaceId)
+                .orElseThrow(() -> new NotFoundError("Workspace không tồn tại"));
+
+        if (!WorkspaceVisibility.PUBLIC.equals(workspace.getVisibility())) {
+            throw new AuthorizationError("Chỉ có thể tham gia workspace công khai");
+        }
+
+        boolean alreadyMember = workspaceMemberRepository
+                .findByWorkspaceIdAndUserIdAndStatus(workspaceId, userId, WorkspaceMemberStatus.ACTIVE)
+                .isPresent();
+        if (alreadyMember) {
+            throw new ConflictError("Bạn đã là thành viên của workspace này");
+        }
+
+        WorkspaceMember member = new WorkspaceMember(
+                workspaceId,
+                userId,
+                WorkspaceRole.VIEWER,
+                WorkspaceMemberStatus.ACTIVE,
+                userId
+        );
+        workspaceMemberRepository.save(member);
+        workspace.incrementPermissionVersion();
+        workspaceRepository.save(workspace);
+
+        return toResponse(workspace, WorkspaceRole.VIEWER);
+    }
+
     private WorkspaceMember checkAccess(UUID userId, UUID workspaceId) {
         return workspaceMemberRepository.findByWorkspaceIdAndUserIdAndStatus(workspaceId, userId, WorkspaceMemberStatus.ACTIVE)
                 .orElseThrow(() -> new NotFoundError("Workspace không tồn tại"));
     }
 
     /**
-     * Converts a Workspace entity to response with aggregated counts.
+     * Converts a Workspace entity to response with aggregated counts and user role.
      * Document count is 0 until the document feature is implemented.
+     *
+     * @param workspace the workspace entity
+     * @param userRole  role of the requesting user, null if not a member
      */
-    private WorkspaceResponse toResponse(Workspace workspace) {
+    private WorkspaceResponse toResponse(Workspace workspace, WorkspaceRole userRole) {
         long memberCount = workspaceMemberRepository
                 .countByWorkspaceIdAndStatus(workspace.getId(), WorkspaceMemberStatus.ACTIVE);
-        return WorkspaceResponse.from(workspace, 0, memberCount);
+        return WorkspaceResponse.from(workspace, 0, memberCount, userRole);
+    }
+
+    /**
+     * Converts a Workspace entity to response, looking up the user's role.
+     */
+    private WorkspaceResponse toResponseWithRole(Workspace workspace, UUID userId) {
+        WorkspaceRole userRole = workspaceMemberRepository
+                .findByWorkspaceIdAndUserIdAndStatus(workspace.getId(), userId, WorkspaceMemberStatus.ACTIVE)
+                .map(WorkspaceMember::getRole)
+                .orElse(null);
+        return toResponse(workspace, userRole);
     }
 }
