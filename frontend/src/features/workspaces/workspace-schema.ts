@@ -20,6 +20,7 @@ export interface WorkspaceDto {
   readonly version: number;
   readonly createdAt: string;
   readonly updatedAt: string;
+  readonly userRole: 'OWNER' | 'EDITOR' | 'VIEWER' | null;
 }
 
 /** Paginated response from Spring Data Page. */

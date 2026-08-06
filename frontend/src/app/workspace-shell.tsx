@@ -27,7 +27,7 @@ export function WorkspaceShell() {
             id: data.id,
             name: data.name,
             visibility: data.visibility,
-            role: (data as unknown as { userRole?: 'OWNER' | 'EDITOR' | 'VIEWER' }).userRole || 'OWNER',
+            role: data.userRole ?? 'VIEWER',
           };
           if (data.description !== undefined) {
             (details as { description?: string }).description = data.description;

@@ -2,13 +2,14 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { createWorkspaceSchema, CreateWorkspaceFormValues } from '../workspace-schema';
-import { createWorkspace, WorkspaceResponse, CreateWorkspacePayload } from '../workspace-api';
+import type { WorkspaceDto } from '../workspace-schema';
+import { createWorkspace, CreateWorkspacePayload } from '../workspace-api';
 import './create-workspace-modal.css';
 
 interface CreateWorkspaceModalProps {
   readonly isOpen: boolean;
   readonly onClose: () => void;
-  readonly onSuccess: (workspace: WorkspaceResponse) => void;
+  readonly onSuccess: (workspace: WorkspaceDto) => void;
 }
 
 export function CreateWorkspaceModal({ isOpen, onClose, onSuccess }: CreateWorkspaceModalProps) {
