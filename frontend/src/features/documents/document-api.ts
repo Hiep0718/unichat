@@ -112,6 +112,12 @@ export async function deleteWorkspaceDocument(workspaceId: string, documentId: s
   });
 }
 
+export async function syncVectorStore(): Promise<{ status: string; processed_files: number; total_chunks: number }> {
+  return fetchJson<{ status: string; processed_files: number; total_chunks: number }>('/internal/v1/eval/sync-storage', {
+    method: 'POST',
+  });
+}
+
 export const getDocuments = (workspaceId: string, page = 0, size = 20): Promise<DocumentResponse[]> =>
   fetchWorkspaceDocuments(workspaceId, page, size).then((res) => res.content);
 

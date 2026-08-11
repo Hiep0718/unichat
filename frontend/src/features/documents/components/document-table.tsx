@@ -5,6 +5,7 @@ import {
   fetchWorkspaceDocuments,
   uploadWorkspaceDocument,
   deleteWorkspaceDocument,
+  syncVectorStore,
 } from '../document-api';
 import './document-table.css';
 
@@ -31,6 +32,7 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [uploadingDoc, setUploadingDoc] = useState<UploadingDocument | null>(null);
+  const [syncing, setSyncing] = useState(false);
   const [notificationToast, setNotificationToast] = useState<NotificationToast | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -64,7 +66,6 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
     }, 6000);
     return () => clearTimeout(timer);
   }, [notificationToast]);
-
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -103,7 +104,7 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
       setNotificationToast({
         type: 'success',
         title: 'Tải tài liệu thành công!',
-        message: `Tài liệu "${file.name}" đã tải lên sẵn sàng RAG Chat.`,
+        message: `Tài liệu "${file.name}" đã được tải lên và sẵn sàng RAG Chat.`,
       });
     } catch (err: unknown) {
       clearInterval(progressInterval);
@@ -120,6 +121,27 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
     }
   };
 
+  const handleSyncVector = async () => {
+    setSyncing(true);
+    try {
+      const res = await syncVectorStore();
+      setNotificationToast({
+        type: 'success',
+        title: 'Đồng bộ Vector DB hoàn tất!',
+        message: `Đã xử lý ${res.processed_files || 0} file và nạp ${res.total_chunks || 0} vector chunks vào ChromaDB Vector Store.`,
+      });
+      const updated = await fetchWorkspaceDocuments(workspaceId);
+      setDocuments(updated.content || []);
+    } catch (err: unknown) {
+      setNotificationToast({
+        type: 'error',
+        title: 'Lỗi đồng bộ Vector DB',
+        message: err instanceof Error ? err.message : 'Không thể thực hiện đồng bộ Vector DB',
+      });
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const handleDelete = async (documentId: string) => {
     if (!confirm('Bạn có chắc muốn xóa tài liệu này?')) return;
@@ -159,15 +181,26 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
             >
               ×
             </button>
-            <div className="doc-toast__timer-bar" />
           </div>,
           document.body
         )}
 
-
-
       <div className="document-management__header">
-        <h3 className="document-management__title">Tài liệu Workspace ({documents.length})</h3>
+        <div className="document-management__title-zone">
+          <h3 className="document-management__title">Tài liệu Workspace ({documents.length})</h3>
+        </div>
+        <button
+          type="button"
+          className="document-management__sync-btn"
+          onClick={handleSyncVector}
+          disabled={syncing}
+          title="Đồng bộ tất cả tài liệu đĩa sang ChromaDB Vector Store"
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
+            {syncing ? 'sync' : 'cloud_sync'}
+          </span>
+          <span>{syncing ? 'Đang đồng bộ Vector...' : 'Đồng bộ Vector DB'}</span>
+        </button>
       </div>
 
       {error && <div style={{ color: '#ef4444', fontSize: '14px', marginBottom: '1rem' }}>{error}</div>}
@@ -200,7 +233,7 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
               <th>Tên tài liệu</th>
               <th>Định dạng</th>
               <th>Dung lượng</th>
-              <th>Trạng thái</th>
+              <th>Trạng thái Vector DB</th>
               {canEdit && <th>Hành động</th>}
             </tr>
           </thead>
@@ -222,7 +255,8 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
                 <td>{formatSize(uploadingDoc.size)}</td>
                 <td>
                   <span className="document-badge document-badge--uploading">
-                    Đang tải ({uploadingDoc.progress}%)
+                    <span className="document-badge__icon">⏳</span>
+                    Đang nạp Vector ({uploadingDoc.progress}%)
                   </span>
                 </td>
                 {canEdit && <td>—</td>}
@@ -236,7 +270,16 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
                 <td>{formatSize(doc.byteSize)}</td>
                 <td>
                   <span className={`document-badge document-badge--${doc.status.toLowerCase()}`}>
-                    {doc.status}
+                    <span className="document-badge__icon">
+                      {doc.status === 'PROCESSED' ? '✓' : doc.status === 'FAILED' ? '✕' : '⏳'}
+                    </span>
+                    {doc.status === 'PROCESSED'
+                      ? 'Vector DB Ready'
+                      : doc.status === 'PROCESSING'
+                      ? 'Tách Vector...'
+                      : doc.status === 'FAILED'
+                      ? 'Lỗi Vector'
+                      : 'Chưa nạp Vector'}
                   </span>
                 </td>
                 {canEdit && (
@@ -254,5 +297,3 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
     </div>
   );
 };
-
-
