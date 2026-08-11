@@ -105,6 +105,10 @@
   border-bottom: 1px solid var(--color-outline-variant);
   white-space: nowrap;
   user-select: none;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
 .doc-table__th--actions {
@@ -113,11 +117,13 @@
 }
 
 .doc-table__row {
-  transition: background var(--transition-fast);
+  transition: background var(--transition-fast), border-left var(--transition-fast);
+  border-left: 3px solid transparent;
 }
 
 .doc-table__row:hover {
   background: var(--color-surface-container-low);
+  border-left-color: var(--color-primary);
 }
 
 .doc-table__td {
@@ -180,6 +186,22 @@
   height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
+}
+
+.doc-table__status--success .doc-table__status-dot {
+  background: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
+
+.doc-table__status--pending .doc-table__status-dot {
+  background: var(--color-outline);
+  animation: docStatusPulse 1.5s infinite;
+}
+
+@keyframes docStatusPulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(117, 118, 130, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(117, 118, 130, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(117, 118, 130, 0); }
 }
 
 .doc-table__status--success {
