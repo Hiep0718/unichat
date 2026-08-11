@@ -21,6 +21,12 @@
   position: absolute;
   border-radius: var(--radius-full);
   mix-blend-mode: multiply;
+  animation: blobRotate 20s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes blobRotate {
+  0% { transform: scale(1) rotate(0deg); }
+  100% { transform: scale(1.1) rotate(45deg); }
 }
 
 .login-page__blob--1 {
@@ -57,6 +63,7 @@
   width: 100%;
   max-width: 448px;
   padding: var(--margin-mobile);
+  animation: slideUp 0.6s ease both;
 }
 
 .login-page__logo {
