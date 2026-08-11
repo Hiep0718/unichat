@@ -113,6 +113,31 @@ export function LoginForm() {
           {loginMutation.isPending ? 'Đang xử lý...' : 'Đăng nhập'}
           {!loginMutation.isPending && <Icon name="arrow_forward" size={18} />}
         </button>
+
+        <button
+          className="login-form__submit"
+          type="button"
+          onClick={() => {
+            const mockJwt = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjNlNDU2Ny1lODliLTEyZDMtYTQ1Ni00MjY2MTQxNzQwMDAiLCJlbWFpbCI6ImRldkB1bmljaGF0LmlvIiwicm9sZSI6IlVTRVIiLCJpYXQiOjE1MTYyMzkwMjJ9.sig';
+            setToken(mockJwt, {
+              id: '123e4567-e89b-12d3-a456-426614174000',
+              email: 'dev@unichat.io',
+              systemRole: 'USER',
+              status: 'ACTIVE',
+            });
+            navigate('/workspaces');
+          }}
+          style={{
+            marginTop: '8px',
+            background: 'var(--color-surface-container-low, #f1f5f9)',
+            color: 'var(--color-on-surface, #0f172a)',
+            border: '1px solid var(--color-outline-variant, #cbd5e1)',
+            boxShadow: 'none',
+          }}
+        >
+          <Icon name="rocket_launch" size={18} />
+          <span>Đăng nhập Nhanh Demo Workspace</span>
+        </button>
       </form>
 
       <div className="login-card__footer">
