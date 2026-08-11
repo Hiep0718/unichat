@@ -33,13 +33,13 @@
 .skeleton-bone {
   background: linear-gradient(
     90deg,
-    var(--color-surface-container-high) 25%,
-    var(--color-surface-container) 50%,
-    var(--color-surface-container-high) 75%
+    var(--color-surface-container-low) 25%,
+    var(--color-surface-container-high) 50%,
+    var(--color-surface-container-low) 75%
   );
   background-size: 200% 100%;
   border-radius: var(--radius-md);
-  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  animation: skeleton-shimmer 2s ease-in-out infinite;
 }
 
 .skeleton-bone--badge {
