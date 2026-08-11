@@ -1,5 +1,6 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { CitationItem } from '../chat-api';
+import { getAccessToken } from '../../../lib/api-client';
 
 interface CitationDrawerProps {
   workspaceId?: string | undefined;
@@ -10,9 +11,12 @@ interface CitationDrawerProps {
 export const CitationDrawer: React.FC<CitationDrawerProps> = ({ workspaceId, citation, onClose }) => {
   const excerptRef = useRef<HTMLDivElement>(null);
   const [viewMode, setViewMode] = useState<'SPLIT' | 'EXCERPT_ONLY'>('SPLIT');
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  const [fileLoading, setFileLoading] = useState<boolean>(false);
+  const [fileError, setFileError] = useState<string | null>(null);
 
   const scorePercent = Math.round((citation.score || 0.75) * 100);
-  
+
   // Extract page number from locator (e.g. "page:28" -> 28)
   let pageNumber = 1;
   if (citation.locator) {
@@ -26,11 +30,47 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({ workspaceId, cit
     ? citation.locator.replace('page:', 'Trang ').replace('paragraph:', 'Đoạn ').replace('line:', 'Dòng ')
     : 'Tài liệu workspace';
 
-  const docUrl = workspaceId && citation.documentId
-    ? `/api/v1/workspaces/${workspaceId}/documents/${citation.documentId}/download`
-    : null;
+  useEffect(() => {
+    if (!workspaceId || !citation.documentId) return;
 
-  const pdfViewerUrl = docUrl ? `${docUrl}#page=${pageNumber}` : null;
+    let isMounted = true;
+    setFileLoading(true);
+    setFileError(null);
+
+    const token = getAccessToken();
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const downloadEndpoint = `/api/v1/workspaces/${workspaceId}/documents/${citation.documentId}/download`;
+
+    fetch(downloadEndpoint, { headers })
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+        return res.blob();
+      })
+      .then((blob) => {
+        if (!isMounted) return;
+        const objectUrl = URL.createObjectURL(blob);
+        setBlobUrl(objectUrl);
+        setFileLoading(false);
+      })
+      .catch((err) => {
+        if (!isMounted) return;
+        console.warn('Không thể tải file PDF đĩa:', err);
+        setFileError('File đĩa chưa sẵn sàng hoặc được tạo bằng DB seed');
+        setFileLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [workspaceId, citation.documentId]);
+
+  const pdfViewerUrl = blobUrl ? `${blobUrl}#page=${pageNumber}` : null;
 
   const handleScrollToExcerpt = () => {
     if (excerptRef.current) {
@@ -63,7 +103,7 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({ workspaceId, cit
               className="citation-drawer__action-btn"
               type="button"
               onClick={handleOpenDirectFile}
-              title="Mở file tài liệu trong cửa sổ mới"
+              title="Mở file tài liệu trong cửa sổ trình duyệt mới"
             >
               <span className="material-symbols-outlined">open_in_new</span>
             </button>
@@ -102,7 +142,7 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({ workspaceId, cit
             <span>Cuộn đến đoạn trích</span>
           </button>
 
-          {pdfViewerUrl && (
+          {blobUrl && (
             <button
               type="button"
               className="citation-drawer__tool-btn citation-drawer__tool-btn--mode"
@@ -119,18 +159,37 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({ workspaceId, cit
       </div>
 
       <div className="citation-drawer__body">
-        {/* Full PDF / File Viewer Pane */}
-        {pdfViewerUrl && viewMode === 'SPLIT' && (
+        {/* Loading state for PDF */}
+        {fileLoading && (
+          <div className="citation-drawer__loading-bar">
+            <span className="material-symbols-outlined citation-drawer__spin">sync</span>
+            <span>Đang xác thực & tải file PDF ({locatorLabel})...</span>
+          </div>
+        )}
+
+        {/* Full PDF Blob Viewer Pane */}
+        {pdfViewerUrl && viewMode === 'SPLIT' && !fileLoading && (
           <div className="citation-drawer__viewer-pane">
             <div className="citation-drawer__viewer-bar">
               <span className="material-symbols-outlined">find_in_page</span>
-              <span>Đang mở tài liệu tại <strong>{locatorLabel}</strong></span>
+              <span>Đang mở tài liệu PDF tại <strong>{locatorLabel}</strong></span>
             </div>
             <iframe
               src={pdfViewerUrl}
               className="citation-drawer__iframe"
               title={`Xem tài liệu ${citation.fileName}`}
             />
+          </div>
+        )}
+
+        {/* Fallback info when physical PDF file not stored on disk */}
+        {fileError && !fileLoading && (
+          <div className="citation-drawer__fallback-card">
+            <div className="citation-drawer__fallback-header">
+              <span className="material-symbols-outlined">menu_book</span>
+              <span>Chế độ đọc trích xuất RAG (Tài liệu gốc lưu DB Seed)</span>
+            </div>
+            <p>Hệ thống tự động cuộn và hiển thị tri thức gốc được bóc tách bên dưới.</p>
           </div>
         )}
 

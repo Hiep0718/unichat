@@ -750,3 +750,50 @@
   color: var(--color-outline);
   line-height: 1.5;
 }
+
+.citation-drawer__loading-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--color-ai-bubble);
+  border: 1px solid var(--color-ai-bubble-border);
+  border-radius: var(--radius-lg);
+  font: var(--font-label-sm);
+  color: var(--color-secondary);
+}
+
+.citation-drawer__spin {
+  animation: drawer-spin 1s linear infinite;
+  font-size: 18px;
+}
+
+@keyframes drawer-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.citation-drawer__fallback-card {
+  padding: 12px 14px;
+  background: #f8fafc;
+  border: 1px dashed var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.citation-drawer__fallback-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font: var(--font-label-md);
+  color: var(--color-on-surface);
+  font-weight: 600;
+}
+
+.citation-drawer__fallback-card p {
+  font: var(--font-body-md);
+  font-size: 12px;
+  color: var(--color-outline);
+}
