@@ -928,20 +928,20 @@
   box-shadow: 0 2px 6px rgba(0, 104, 122, 0.3);
 }
 
-/* NotebookLM Floating Dark Popover Card */
+/* NotebookLM Floating Dark Popover Card — Smoky Grey Theme */
 .notebook-citation-popover {
   position: absolute;
   bottom: calc(100% + 8px);
   left: 50%;
   transform: translateX(-50%);
   z-index: 999;
-  width: 320px;
-  padding: 14px 16px;
-  background: #18181b;
-  color: #f4f4f5;
-  border: 1px solid #27272a;
+  width: 340px;
+  padding: 16px 18px;
+  background: linear-gradient(145deg, #1e242b 0%, #171c22 100%);
+  color: #f1f5f9;
+  border: 1px solid #334155;
   border-radius: var(--radius-xl);
-  box-shadow: 0 16px 32px -4px rgba(0, 0, 0, 0.4), 0 6px 12px -2px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 20px 40px -6px rgba(0, 0, 0, 0.45), 0 8px 16px -4px rgba(0, 0, 0, 0.3);
   animation: notebook-popover-appear 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   flex-direction: column;
@@ -964,7 +964,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #a1a1aa;
+  color: #94a3b8;
 }
 
 .notebook-citation-popover__icon {
@@ -976,7 +976,7 @@
   font: var(--font-label-md);
   font-size: 13px;
   font-weight: 700;
-  color: #f4f4f5;
+  color: #f8fafc;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -985,20 +985,38 @@
 .notebook-citation-popover__excerpt {
   font: var(--font-body-md);
   font-size: 13px;
-  color: #d4d4d8;
+  color: #cbd5e1;
   line-height: 1.5;
-  max-height: 90px;
+  max-height: 96px;
   overflow-y: auto;
   font-style: italic;
-  padding-left: 8px;
+  padding-left: 10px;
   border-left: 2px solid #38bdf8;
+}
+
+.notebook-citation-popover__excerpt::-webkit-scrollbar {
+  width: 5px;
+}
+
+.notebook-citation-popover__excerpt::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.notebook-citation-popover__excerpt::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 4px;
+}
+
+.notebook-citation-popover__excerpt::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
 }
 
 .notebook-citation-popover__footer {
   display: flex;
   justify-content: flex-end;
-  border-top: 1px solid #27272a;
-  padding-top: 8px;
+  border-top: 1px solid #334155;
+  padding-top: 10px;
 }
 
 .notebook-citation-popover__action {
@@ -1012,7 +1030,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 8px;
+  padding: 4px 10px;
   border-radius: var(--radius-sm);
   transition: all var(--transition-fast);
 }
