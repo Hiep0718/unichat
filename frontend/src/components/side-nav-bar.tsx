@@ -29,13 +29,13 @@ export function SideNavBar() {
 
   const workspaceNavItems: readonly NavItem[] = workspaceId
     ? [
-        { icon: 'dashboard', label: 'Tổng quan', href: `/workspaces/${workspaceId}` },
-        { icon: 'description', label: 'Tài liệu', href: `/workspaces/${workspaceId}/documents` },
-        { icon: 'chat', label: 'Trò chuyện', href: `/workspaces/${workspaceId}/chat` },
-        { icon: 'history', label: 'Lịch sử', href: `/workspaces/${workspaceId}/conversations` },
-        { icon: 'analytics', label: 'Đánh giá', href: `/workspaces/${workspaceId}/evaluation`, ownerOrEditorOnly: true },
-        { icon: 'settings', label: 'Cài đặt', href: `/workspaces/${workspaceId}/settings`, ownerOrEditorOnly: true },
-      ]
+      { icon: 'dashboard', label: 'Tổng quan', href: `/workspaces/${workspaceId}` },
+      { icon: 'description', label: 'Tài liệu', href: `/workspaces/${workspaceId}/documents` },
+      { icon: 'chat', label: 'Trò chuyện', href: `/workspaces/${workspaceId}/chat` },
+      { icon: 'history', label: 'Lịch sử', href: `/workspaces/${workspaceId}/conversations` },
+      { icon: 'analytics', label: 'Đánh giá', href: `/workspaces/${workspaceId}/evaluation`, ownerOrEditorOnly: true },
+      { icon: 'settings', label: 'Cài đặt', href: `/workspaces/${workspaceId}/settings`, ownerOrEditorOnly: true },
+    ]
     : [];
 
   const globalNavItems: readonly NavItem[] = [
@@ -77,6 +77,7 @@ export function SideNavBar() {
             <Link
               key={item.href}
               to={item.href}
+              title={item.label}
               className={`side-nav__item ${isActive ? 'side-nav__item--active' : ''}`}
             >
               <Icon name={item.icon} size={20} />
