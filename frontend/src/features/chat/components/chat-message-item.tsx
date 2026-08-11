@@ -19,9 +19,45 @@ interface ChatMessageItemProps {
   onSelectCitation?: ((citation: CitationItem) => void) | undefined;
 }
 
+function processTextNode(
+  node: React.ReactNode,
+  citations?: CitationItem[],
+  onSelectCitation?: (citation: CitationItem) => void
+): React.ReactNode {
+  if (typeof node !== 'string' || !citations || citations.length === 0 || !onSelectCitation) {
+    return node;
+  }
+
+  const parts = node.split(/(\[\d+\])/g);
+  if (parts.length === 1) return node;
+
+  return parts.map((part, idx) => {
+    const match = part.match(/^\[(\d+)\]$/);
+    if (match && match[1]) {
+      const citNum = parseInt(match[1], 10);
+      const targetCit = citations[citNum - 1];
+      if (targetCit) {
+        return (
+          <button
+            key={idx}
+            type="button"
+            className="chat-msg__inline-citation-link"
+            onClick={() => onSelectCitation(targetCit)}
+            title={`Mở tài liệu gốc [${citNum}]: ${targetCit.fileName || 'Trích dẫn RAG'}`}
+          >
+            [{citNum}]
+          </button>
+        );
+      }
+    }
+    return part;
+  });
+}
+
 export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({ message, onSelectCitation }) => {
   const isUser = message.role === 'USER';
   const response = message.response;
+  const citations = response?.citations;
 
   return (
     <div className={`chat-msg chat-msg--${isUser ? 'user' : 'assistant'}`}>
@@ -50,14 +86,26 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({ message, onSel
             <div className="chat-msg__text">{message.content}</div>
           ) : (
             <div className="chat-msg__markdown">
-              <Markdown remarkPlugins={[remarkGfm]}>{message.content}</Markdown>
+              <Markdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  p({ children }) {
+                    return <p>{React.Children.map(children, (child) => processTextNode(child, citations, onSelectCitation))}</p>;
+                  },
+                  li({ children }) {
+                    return <li>{React.Children.map(children, (child) => processTextNode(child, citations, onSelectCitation))}</li>;
+                  },
+                }}
+              >
+                {message.content}
+              </Markdown>
             </div>
           )}
         </div>
 
-        {!isUser && response && response.decision === 'ANSWER' && response.citations && response.citations.length > 0 && (
+        {!isUser && response && response.decision === 'ANSWER' && citations && citations.length > 0 && (
           <CitationPanel
-            citations={response.citations}
+            citations={citations}
             onSelectCitation={onSelectCitation}
           />
         )}

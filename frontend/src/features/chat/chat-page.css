@@ -893,3 +893,27 @@
   line-height: 1.7;
   font-style: italic;
 }
+
+/* ── Inline Citation Hyperlinks in Message Content ([1], [2], [3]) ── */
+.chat-msg__inline-citation-link {
+  display: inline-flex;
+  align-items: center;
+  margin: 0 3px;
+  padding: 1px 6px;
+  background: var(--color-secondary-container);
+  color: var(--color-secondary);
+  border: 1px solid var(--color-secondary);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  vertical-align: baseline;
+  transition: all var(--transition-fast);
+}
+
+.chat-msg__inline-citation-link:hover {
+  background: var(--color-secondary);
+  color: var(--color-on-secondary);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 104, 122, 0.3);
+}
