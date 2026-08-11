@@ -305,6 +305,18 @@ function Start-ServicesSequentially {
         }
     }
 
+    # Auto sync existing document storage to ChromaDB Vector DB on startup
+    if (-not $script:Svcs['ai-service'].Skip) {
+        $script:CurrentAction = 'Syncing document storage to ChromaDB Vector DB...'
+        Render-Dashboard
+        try {
+            $venvPython = Join-Path $rootDir 'ai-service\.venv\Scripts\python.exe'
+            if (Test-Path $venvPython) {
+                & $venvPython -m app.services.reingest | Out-Null
+            }
+        } catch {}
+    }
+
     $script:CurrentAction = 'All services active! Opening Frontend browser...'
     Render-Dashboard
 

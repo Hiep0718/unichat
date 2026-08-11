@@ -49,15 +49,18 @@ export const ChatPage: React.FC<ChatPageProps> = ({ workspaceId: propWorkspaceId
             role: m.role,
             content: m.content,
           };
-          if (m.citations && m.citations.length > 0) {
+          if (m.role === 'ASSISTANT') {
+            const isRefusal = Boolean(m.refusalCode);
+            const isClarify = m.refusalCode === 'CLARIFY_REQUIRED';
             item.response = {
               messageId: m.id,
               conversationId: detail.id,
-              decision: 'ANSWER',
-              answer: m.content,
-              intent: 'FACT',
+              decision: isClarify ? 'CLARIFY' : (isRefusal ? 'REFUSE' : 'ANSWER'),
+              answer: isRefusal ? null : m.content,
+              intent: m.intent || 'FACT',
               strategyVersion: 'v1.0',
-              citations: m.citations.map((c, i) => ({
+              providerModel: m.providerModel || 'gemini-2.5-flash',
+              citations: (m.citations || []).map((c, i) => ({
                 citationId: String(i + 1),
                 documentId: c.documentId || '',
                 fileName: c.fileName || 'Tài liệu',
@@ -65,8 +68,8 @@ export const ChatPage: React.FC<ChatPageProps> = ({ workspaceId: propWorkspaceId
                 excerpt: c.excerpt || '',
                 score: c.score || 0.75,
               })),
-              refusalCode: null,
-              refusalReason: null,
+              refusalCode: m.refusalCode || null,
+              refusalReason: isRefusal ? m.content : null,
               requestId: 'history',
             };
           }

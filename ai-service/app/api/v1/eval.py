@@ -9,9 +9,15 @@ from app.evaluation.benchmark_suite import run_full_benchmark_suite
 from app.evaluation.question_generator import generate_draft_dataset
 from app.evaluation.report import generate_markdown_report
 from app.evaluation.storage import EvaluationStore
+from app.services.reingest import reingest_all_from_storage
 
 router = APIRouter()
 store = EvaluationStore()
+
+
+@router.post("/eval/sync-storage")
+def sync_storage_to_chroma() -> dict[str, Any]:
+    return reingest_all_from_storage()
 
 
 class EvalRunRequest(BaseModel):
