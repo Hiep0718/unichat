@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import {
   DocumentResponse,
   fetchWorkspaceDocuments,
@@ -12,11 +13,25 @@ interface DocumentTableProps {
   canEdit: boolean;
 }
 
+interface UploadingDocument {
+  name: string;
+  size: number;
+  mediaType: string;
+  progress: number;
+}
+
+interface NotificationToast {
+  type: 'success' | 'error';
+  title: string;
+  message: string;
+}
+
 export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEdit }) => {
   const [documents, setDocuments] = useState<DocumentResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
+  const [uploadingDoc, setUploadingDoc] = useState<UploadingDocument | null>(null);
+  const [notificationToast, setNotificationToast] = useState<NotificationToast | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -42,23 +57,69 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
     };
   }, [workspaceId]);
 
+  useEffect(() => {
+    if (!notificationToast) return;
+    const timer = setTimeout(() => {
+      setNotificationToast(null);
+    }, 6000);
+    return () => clearTimeout(timer);
+  }, [notificationToast]);
+
+
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    const fileExt = file.name.split('.').pop()?.toUpperCase() || 'FILE';
+
+    setUploadingDoc({
+      name: file.name,
+      size: file.size,
+      mediaType: fileExt,
+      progress: 10,
+    });
+    setError(null);
+
+    let currentProgress = 10;
+    const progressInterval = setInterval(() => {
+      currentProgress = Math.min(currentProgress + Math.floor(Math.random() * 12) + 8, 92);
+      setUploadingDoc((prev) => (prev ? { ...prev, progress: currentProgress } : null));
+    }, 120);
+
     try {
-      setUploading(true);
-      setError(null);
-      await uploadWorkspaceDocument(workspaceId, file);
+      await uploadWorkspaceDocument(workspaceId, file, (percent) => {
+        if (percent > currentProgress) {
+          currentProgress = Math.min(percent, 95);
+        }
+      });
+
+      clearInterval(progressInterval);
+      setUploadingDoc((prev) => (prev ? { ...prev, progress: 100 } : null));
+      await new Promise((r) => setTimeout(r, 450));
+
       const updated = await fetchWorkspaceDocuments(workspaceId);
       setDocuments(updated.content || []);
+
+      setNotificationToast({
+        type: 'success',
+        title: 'Tải tài liệu thành công!',
+        message: `Tài liệu "${file.name}" đã tải lên sẵn sàng RAG Chat.`,
+      });
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Không thể tải lên tài liệu');
+      clearInterval(progressInterval);
+      const msg = err instanceof Error ? err.message : 'Không thể tải lên tài liệu';
+      setError(msg);
+      setNotificationToast({
+        type: 'error',
+        title: 'Tải tài liệu thất bại',
+        message: msg,
+      });
     } finally {
-      setUploading(false);
+      setUploadingDoc(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
+
 
   const handleDelete = async (documentId: string) => {
     if (!confirm('Bạn có chắc muốn xóa tài liệu này?')) return;
@@ -81,23 +142,52 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
 
   return (
     <div className="document-management">
+      {notificationToast &&
+        createPortal(
+          <div className={`doc-toast doc-toast--${notificationToast.type}`}>
+            <div className={`doc-toast__icon doc-toast__icon--${notificationToast.type}`}>
+              {notificationToast.type === 'success' ? '✓' : '✕'}
+            </div>
+            <div className="doc-toast__body">
+              <h5 className="doc-toast__title">{notificationToast.title}</h5>
+              <p className="doc-toast__message">{notificationToast.message}</p>
+            </div>
+            <button
+              className="doc-toast__close"
+              onClick={() => setNotificationToast(null)}
+              title="Đóng thông báo"
+            >
+              ×
+            </button>
+            <div className="doc-toast__timer-bar" />
+          </div>,
+          document.body
+        )}
+
+
+
       <div className="document-management__header">
         <h3 className="document-management__title">Tài liệu Workspace ({documents.length})</h3>
       </div>
 
-      {error && <div style={{ color: '#ef4444', fontSize: '14px' }}>{error}</div>}
+      {error && <div style={{ color: '#ef4444', fontSize: '14px', marginBottom: '1rem' }}>{error}</div>}
 
       {canEdit && (
-        <div className="document-upload-zone" onClick={() => fileInputRef.current?.click()}>
+        <div
+          className="document-upload-zone"
+          onClick={() => !uploadingDoc && fileInputRef.current?.click()}
+          style={{ opacity: uploadingDoc ? 0.6 : 1, cursor: uploadingDoc ? 'not-allowed' : 'pointer' }}
+        >
           <input
             type="file"
             ref={fileInputRef}
             onChange={handleFileSelect}
             style={{ display: 'none' }}
             accept=".pdf,.docx,.txt"
+            disabled={Boolean(uploadingDoc)}
           />
           <div className="document-upload-zone__title">
-            {uploading ? 'Đang tải tệp lên...' : 'Nhấp để chọn tệp PDF, DOCX, TXT tải lên'}
+            {uploadingDoc ? `Đang tải tệp lên (${uploadingDoc.progress}%)...` : 'Nhấp để chọn tệp PDF, DOCX, TXT tải lên'}
           </div>
           <div className="document-upload-zone__subtitle">Dung lượng tối đa 20 MiB/tệp</div>
         </div>
@@ -115,6 +205,30 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
             </tr>
           </thead>
           <tbody>
+            {uploadingDoc && (
+              <tr className="document-row--uploading">
+                <td>
+                  <div className="document-uploading-info">
+                    <span className="document-uploading-name">{uploadingDoc.name}</span>
+                    <div className="document-progress-bar-container">
+                      <div
+                        className="document-progress-bar-fill"
+                        style={{ width: `${uploadingDoc.progress}%` }}
+                      />
+                    </div>
+                  </div>
+                </td>
+                <td>{uploadingDoc.mediaType}</td>
+                <td>{formatSize(uploadingDoc.size)}</td>
+                <td>
+                  <span className="document-badge document-badge--uploading">
+                    Đang tải ({uploadingDoc.progress}%)
+                  </span>
+                </td>
+                {canEdit && <td>—</td>}
+              </tr>
+            )}
+
             {documents.map((doc) => (
               <tr key={doc.id}>
                 <td>{doc.originalName}</td>
@@ -140,3 +254,5 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
     </div>
   );
 };
+
+

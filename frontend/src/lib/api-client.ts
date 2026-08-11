@@ -32,6 +32,11 @@ export function registerTokenAccessor(
   clearToken = clearer;
 }
 
+export function getAccessToken(): string | null {
+  return getToken();
+}
+
+
 export class ApiError extends Error {
   public status: number;
   public data: unknown;
