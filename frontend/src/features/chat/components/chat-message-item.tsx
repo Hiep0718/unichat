@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -19,6 +19,65 @@ interface ChatMessageItemProps {
   onSelectCitation?: ((citation: CitationItem) => void) | undefined;
 }
 
+interface NotebookCitationChipProps {
+  citNum: number;
+  citation: CitationItem;
+  onSelectCitation: (citation: CitationItem) => void;
+}
+
+/** NotebookLM Smart Citation Chip with Hover Popover Card & "Xem nguồn" Action */
+const NotebookCitationChip: React.FC<NotebookCitationChipProps> = ({
+  citNum,
+  citation,
+  onSelectCitation,
+}) => {
+  const [hovered, setHovered] = useState(false);
+
+  return (
+    <span
+      className="notebook-citation-wrapper"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <button
+        type="button"
+        className="notebook-citation-chip"
+        onClick={() => onSelectCitation(citation)}
+        aria-label={`Trích dẫn [${citNum}] từ ${citation.fileName || 'tài liệu'}`}
+      >
+        {citNum}
+      </button>
+
+      {hovered && (
+        <div className="notebook-citation-popover">
+          <div className="notebook-citation-popover__header">
+            <span className="material-symbols-outlined notebook-citation-popover__icon">description</span>
+            <span className="notebook-citation-popover__filename" title={citation.fileName}>
+              {citation.fileName || 'Tài liệu tham khảo'}
+            </span>
+          </div>
+          <div className="notebook-citation-popover__excerpt">
+            "{citation.excerpt}"
+          </div>
+          <div className="notebook-citation-popover__footer">
+            <button
+              type="button"
+              className="notebook-citation-popover__action"
+              onClick={(e) => {
+                e.stopPropagation();
+                onSelectCitation(citation);
+              }}
+            >
+              <span>Xem nguồn</span>
+              <span className="material-symbols-outlined" style={{ fontSize: '15px' }}>arrow_forward</span>
+            </button>
+          </div>
+        </div>
+      )}
+    </span>
+  );
+};
+
 function processTextNode(
   node: React.ReactNode,
   citations?: CitationItem[],
@@ -38,15 +97,12 @@ function processTextNode(
       const targetCit = citations[citNum - 1];
       if (targetCit) {
         return (
-          <button
+          <NotebookCitationChip
             key={idx}
-            type="button"
-            className="chat-msg__inline-citation-link"
-            onClick={() => onSelectCitation(targetCit)}
-            title={`Mở tài liệu gốc [${citNum}]: ${targetCit.fileName || 'Trích dẫn RAG'}`}
-          >
-            [{citNum}]
-          </button>
+            citNum={citNum}
+            citation={targetCit}
+            onSelectCitation={onSelectCitation}
+          />
         );
       }
     }

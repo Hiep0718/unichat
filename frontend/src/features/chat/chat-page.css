@@ -894,27 +894,130 @@
   font-style: italic;
 }
 
-/* ── Inline Citation Hyperlinks in Message Content ([1], [2], [3]) ── */
-.chat-msg__inline-citation-link {
-  display: inline;
-  margin: 0 1px;
-  padding: 0 2px;
-  background: transparent;
-  color: var(--color-primary);
-  border: none;
-  border-bottom: 1.5px dashed var(--color-primary);
-  border-radius: 2px;
-  font-size: inherit;
-  font-weight: 600;
-  cursor: pointer;
+/* ── NotebookLM Smart Citation Chip & Popover ── */
+.notebook-citation-wrapper {
+  position: relative;
+  display: inline-block;
+  margin: 0 2px;
   vertical-align: baseline;
+}
+
+.notebook-citation-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  background: var(--color-surface-container-high);
+  color: var(--color-on-surface-variant);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-full);
+  font: var(--font-label-sm);
+  font-weight: 700;
+  font-size: 11px;
+  cursor: pointer;
   transition: all var(--transition-fast);
 }
 
-.chat-msg__inline-citation-link:hover {
-  background: rgba(0, 104, 122, 0.1);
-  color: var(--color-primary-container);
-  border-bottom-style: solid;
-  transform: none;
-  box-shadow: none;
+.notebook-citation-chip:hover {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  border-color: var(--color-primary);
+  transform: scale(1.1);
+  box-shadow: 0 2px 6px rgba(0, 104, 122, 0.3);
+}
+
+/* NotebookLM Floating Dark Popover Card */
+.notebook-citation-popover {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 999;
+  width: 320px;
+  padding: 14px 16px;
+  background: #18181b;
+  color: #f4f4f5;
+  border: 1px solid #27272a;
+  border-radius: var(--radius-xl);
+  box-shadow: 0 16px 32px -4px rgba(0, 0, 0, 0.4), 0 6px 12px -2px rgba(0, 0, 0, 0.25);
+  animation: notebook-popover-appear 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: auto;
+}
+
+@keyframes notebook-popover-appear {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 6px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+}
+
+.notebook-citation-popover__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #a1a1aa;
+}
+
+.notebook-citation-popover__icon {
+  font-size: 16px;
+  color: #38bdf8;
+}
+
+.notebook-citation-popover__filename {
+  font: var(--font-label-md);
+  font-size: 13px;
+  font-weight: 700;
+  color: #f4f4f5;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.notebook-citation-popover__excerpt {
+  font: var(--font-body-md);
+  font-size: 13px;
+  color: #d4d4d8;
+  line-height: 1.5;
+  max-height: 90px;
+  overflow-y: auto;
+  font-style: italic;
+  padding-left: 8px;
+  border-left: 2px solid #38bdf8;
+}
+
+.notebook-citation-popover__footer {
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid #27272a;
+  padding-top: 8px;
+}
+
+.notebook-citation-popover__action {
+  background: none;
+  border: none;
+  color: #38bdf8;
+  font: var(--font-label-md);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.notebook-citation-popover__action:hover {
+  background: rgba(56, 189, 248, 0.15);
+  color: #7dd3fc;
 }
