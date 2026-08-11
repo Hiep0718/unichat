@@ -1,6 +1,10 @@
+import hashlib
+import os
 import re
 import unicodedata
 from enum import StrEnum
+from pathlib import Path
+import yaml  # type: ignore[import-untyped]
 
 
 class IntentEnum(StrEnum):
@@ -10,6 +14,7 @@ class IntentEnum(StrEnum):
     DEFINITION = "DEFINITION"
     REASONING = "REASONING"
     FACT = "FACT"
+    CLARIFY = "CLARIFY"
 
 
 class IntentResult:
@@ -19,11 +24,13 @@ class IntentResult:
         rule_id: str,
         confidence: float,
         normalized_text: str,
+        config_hash: str = "",
     ) -> None:
         self.intent = intent
         self.rule_id = rule_id
         self.confidence = confidence
         self.normalized_text = normalized_text
+        self.config_hash = config_hash
 
     def to_dict(self) -> dict[str, str | float]:
         return {
@@ -31,6 +38,7 @@ class IntentResult:
             "rule_id": self.rule_id,
             "confidence": self.confidence,
             "normalized_text": self.normalized_text,
+            "config_hash": self.config_hash,
         }
 
 
@@ -41,16 +49,27 @@ def remove_vietnamese_accent(text: str) -> str:
     return s.lower()
 
 
+_CONFIG_CACHE: dict[str, str] | None = None
+
+
+def get_config_hash() -> str:
+    yaml_path = Path(__file__).parent.parent.parent / "config" / "adaptive-retrieval-v1.yml"
+    if yaml_path.exists():
+        content = yaml_path.read_bytes()
+        return hashlib.sha256(content).hexdigest()[:16]
+    return "v1.0-default"
+
+
 PATTERNS: list[tuple[IntentEnum, str, str]] = [
     (
         IntentEnum.OUT_OF_SCOPE,
         "RULE_OOS_HACK",
-        r"(hack|override|jailbreak|giai ma mat khau|tan cong)",
+        r"(hack|override|jailbreak|giai ma mat khau|tan cong|system prompt)",
     ),
     (
         IntentEnum.COMPARISON,
         "RULE_COMPARE_VS",
-        r"(so sanh|khac nhau|giong nhau|uu nhược diem|uu va nhieu|giua .* va .*)",
+        r"(so sanh|khac nhau|giong nhau|uu nhược diem|uu va nhieu|giua .* va .*|khac gi)",
     ),
     (
         IntentEnum.SUMMARY,
@@ -76,15 +95,21 @@ PATTERNS: list[tuple[IntentEnum, str, str]] = [
 
 
 def detect_intent(question: str) -> IntentResult:
+    config_hash = get_config_hash()
     if not (3 <= len(question.strip()) <= 2000):
-        return IntentResult(IntentEnum.OUT_OF_SCOPE, "RULE_INVALID_LENGTH", 1.0, question.strip())
+        return IntentResult(IntentEnum.OUT_OF_SCOPE, "RULE_INVALID_LENGTH", 1.0, question.strip(), config_hash)
 
     normalized = unicodedata.normalize("NFC", question.strip())
     shadow_text = remove_vietnamese_accent(normalized)
 
+    # Check for ambiguous context-dependent pronouns (requires CLARIFY before retrieval)
+    if re.search(r"^(cai do|no|thang do|cho do|cho nay) (la gi|nhu the nao)$", shadow_text):
+        return IntentResult(IntentEnum.CLARIFY, "RULE_AMBIGUOUS_PRONOUN", 0.95, normalized, config_hash)
+
     for intent, rule_id, pattern in PATTERNS:
         if re.search(pattern, shadow_text):
-            return IntentResult(intent, rule_id, 0.90, normalized)
+            return IntentResult(intent, rule_id, 0.90, normalized, config_hash)
 
     # Fallback to FACT
-    return IntentResult(IntentEnum.FACT, "FACT_DEFAULT", 0.70, normalized)
+    return IntentResult(IntentEnum.FACT, "FACT_DEFAULT", 0.70, normalized, config_hash)
+

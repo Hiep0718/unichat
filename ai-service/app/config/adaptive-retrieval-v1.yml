@@ -1,0 +1,45 @@
+strategyVersion: "v1.0"
+description: "Adaptive Retrieval v1 intent detection and priority rules"
+
+intents:
+  OUT_OF_SCOPE:
+    priority: 1
+    rule_id: "RULE_OOS_HACK"
+    patterns:
+      - "(hack|override|jailbreak|giai ma mat khau|tan cong|system prompt|ignore previous instructions)"
+    negative_patterns: []
+
+  COMPARISON:
+    priority: 2
+    rule_id: "RULE_COMPARE_VS"
+    patterns:
+      - "(so sanh|khac nhau|giong nhau|uu nhược diem|uu va nhieu|giua .* va .*|khac gi|diem khac)"
+    negative_patterns: []
+
+  SUMMARY:
+    priority: 3
+    rule_id: "RULE_SUMMARY_ALL"
+    patterns:
+      - "(tom tat|tong quan|y chinh|noi dung chinh|tom luoc|khai quat)"
+    negative_patterns: []
+
+  DEFINITION:
+    priority: 4
+    rule_id: "RULE_DEF_WHAT"
+    patterns:
+      - "(la gi|dinh nghia|khai niem|the nao la)"
+    negative_patterns: []
+
+  REASONING:
+    priority: 5
+    rule_id: "RULE_REASON_WHY"
+    patterns:
+      - "(tai sao|vi sao|nguyen nhan|anh huong|tac dong|nhu the nao)"
+    negative_patterns: []
+
+  FACT:
+    priority: 6
+    rule_id: "RULE_FACT_EXPLICIT"
+    patterns:
+      - "(ai|khi nao|bao nhieu|o dau|thoi gian|ngay thang)"
+    negative_patterns: []
