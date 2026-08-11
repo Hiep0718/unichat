@@ -148,6 +148,17 @@ public class DocumentService {
     }
 
     /**
+     * Streams file bytes for document viewer and RAG reference reading.
+     */
+    @Transactional(readOnly = true)
+    public byte[] downloadDocument(UUID userId, UUID workspaceId, UUID documentId) {
+        validateAccess(userId, workspaceId, WorkspaceRole.VIEWER);
+        Document document = documentRepository.findByWorkspaceIdAndId(workspaceId, documentId)
+                .orElseThrow(() -> new NotFoundError("Tài liệu không tồn tại"));
+        return storagePort.retrieve(document.getStorageKey());
+    }
+
+    /**
      * Initiates soft delete saga for a document.
      */
     @Transactional

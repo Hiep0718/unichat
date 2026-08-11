@@ -77,6 +77,31 @@ public class DocumentController {
     }
 
     /**
+     * Downloads or streams physical document file content for preview and reference reading.
+     */
+    @GetMapping("/{documentId}/download")
+    public ResponseEntity<byte[]> downloadDocument(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable("workspaceId") UUID workspaceId,
+            @PathVariable("documentId") UUID documentId) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        DocumentResponse doc = documentService.getDocument(userId, workspaceId, documentId);
+        byte[] bytes = documentService.downloadDocument(userId, workspaceId, documentId);
+
+        MediaType mediaType = MediaType.APPLICATION_OCTET_STREAM;
+        try {
+            if (doc.mediaType() != null) {
+                mediaType = MediaType.parseMediaType(doc.mediaType());
+            }
+        } catch (Exception ignored) {}
+
+        return ResponseEntity.ok()
+                .contentType(mediaType)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + doc.originalName() + "\"")
+                .body(bytes);
+    }
+
+    /**
      * Retrieves ingestion job status for a document.
      */
     @GetMapping("/{documentId}/jobs")

@@ -171,6 +171,7 @@ export const ChatPage: React.FC<ChatPageProps> = ({ workspaceId: propWorkspaceId
 
       {selectedCitation && (
         <CitationDrawer
+          workspaceId={targetWorkspaceId}
           citation={selectedCitation}
           onClose={() => setSelectedCitation(null)}
         />
