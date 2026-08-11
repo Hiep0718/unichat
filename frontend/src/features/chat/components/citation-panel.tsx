@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { CitationItem } from '../chat-api';
 import './citation-panel.css';
 
@@ -10,19 +10,37 @@ interface CitationPanelProps {
 export const CitationPanel: React.FC<CitationPanelProps> = ({ citations, onSelectCitation }) => {
   const [activeHoverIdx, setActiveHoverIdx] = useState<number | null>(null);
 
-  if (!citations || citations.length === 0) return null;
+  // Filter out redundant duplicate citation entries from the same document & locator
+  const uniqueCitations = useMemo(() => {
+    if (!citations) return [];
+    const seen = new Set<string>();
+    return citations.filter((c) => {
+      const docName = c.fileName || c.documentId || 'doc';
+      const loc = c.locator || c.excerpt.slice(0, 20);
+      const key = `${docName}_${loc}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [citations]);
+
+  if (!uniqueCitations || uniqueCitations.length === 0) return null;
 
   return (
     <div className="citation-panel">
       <div className="citation-panel__header">
         <span className="material-symbols-outlined citation-panel__icon">find_in_page</span>
-        <span className="citation-panel__label">Nguồn trích dẫn RAG ({citations.length}):</span>
+        <span className="citation-panel__label">
+          Nguồn trích dẫn RAG ({uniqueCitations.length}):
+        </span>
       </div>
 
       <div className="citation-pills-list">
-        {citations.map((c, idx) => {
+        {uniqueCitations.map((c, idx) => {
           const scorePercent = Math.round((c.score || 0.75) * 100);
-          const locatorLabel = c.locator ? c.locator.replace('page:', 'Trang ').replace('paragraph:', 'Đoạn ').replace('line:', 'Dòng ') : 'Tài liệu';
+          const locatorLabel = c.locator
+            ? c.locator.replace('page:', 'Trang ').replace('paragraph:', 'Đoạn ').replace('line:', 'Dòng ')
+            : 'Tài liệu';
           const title = c.fileName && c.fileName !== 'Tài liệu' ? c.fileName : 'Tài liệu tham khảo';
 
           return (

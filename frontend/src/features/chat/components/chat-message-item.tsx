@@ -14,6 +14,15 @@ export interface MessageItem {
   timestamp?: string;
 }
 
+const INTENT_MAP_VI: Record<string, string> = {
+  FACT: 'Dữ liệu thực tế',
+  DEFINITION: 'Định nghĩa',
+  PROCEDURE: 'Quy trình',
+  COMPARISON: 'So sánh',
+  SUMMARIZATION: 'Tóm tắt',
+  GENERAL: 'Tổng quan',
+};
+
 interface ChatMessageItemProps {
   message: MessageItem;
   onSelectCitation?: ((citation: CitationItem) => void) | undefined;
@@ -130,7 +139,9 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({ message, onSel
           <span className="chat-msg__sender-name">{isUser ? 'Bạn' : 'UniChat AI Assistant'}</span>
           {message.timestamp && <span className="chat-msg__time">{message.timestamp}</span>}
           {!isUser && response?.intent && (
-            <span className="chat-msg__intent-badge">{response.intent}</span>
+            <span className="chat-msg__intent-badge">
+              {INTENT_MAP_VI[response.intent.toUpperCase()] || response.intent}
+            </span>
           )}
           {!isUser && response?.providerModel && (
             <span className="chat-msg__model-tag">🤖 {response.providerModel}</span>
