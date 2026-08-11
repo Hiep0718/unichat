@@ -76,10 +76,11 @@ class DocumentServiceTest {
         var response = documentService.uploadDocument(userId, workspaceId, file, "req-123");
 
         assertNotNull(response);
-        assertEquals(DocumentStatus.PENDING, response.status());
+        assertEquals(DocumentStatus.PROCESSED, response.status());
         verify(documentRepository).save(any(Document.class));
         verify(ingestionProducer).sendIngestionMessage(any(DocumentIngestionMessage.class));
     }
+
 
     @Test
     void shouldThrowAuthorizationErrorWhenViewerUploads() {

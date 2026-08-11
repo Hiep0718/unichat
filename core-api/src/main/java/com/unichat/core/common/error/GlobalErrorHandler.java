@@ -124,6 +124,23 @@ public final class GlobalErrorHandler {
     }
 
     /**
+     * Handles multipart file size limit violations safely.
+     *
+     * @param error   file size limit exceeded exception
+     * @param request current request
+     * @return file rejected problem response
+     */
+    @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
+    public ResponseEntity<ProblemDetail> handleMaxUploadSizeExceeded(
+            org.springframework.web.multipart.MaxUploadSizeExceededException error,
+            HttpServletRequest request) {
+        var fileError = new FileRejectedError("Dung lượng tệp vượt quá giới hạn 20 MiB cho phép.");
+        logExpected(fileError, request);
+        return response(fileError, request, Map.of());
+    }
+
+
+    /**
      * Handles unexpected failures with a safe response and detailed server log.
      *
      * @param error   unexpected failure

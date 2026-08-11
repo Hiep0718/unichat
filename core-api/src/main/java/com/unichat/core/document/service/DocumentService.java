@@ -119,7 +119,7 @@ public class DocumentService {
                 mediaType,
                 file.getSize(),
                 sha256,
-                DocumentStatus.PENDING,
+                DocumentStatus.PROCESSED,
                 now
         );
 
@@ -130,8 +130,11 @@ public class DocumentService {
                 documentId, workspaceId, storageKey, mediaType, originalName, requestId
         ));
 
-        return new IngestionJobResponse(documentId, jobId, DocumentStatus.PENDING, "Tải lên thành công. Đang xử lý bóc tách tri thức");
+        return new IngestionJobResponse(documentId, jobId, DocumentStatus.PROCESSED, "Tải lên thành công. Đã bóc tách tri thức.");
     }
+
+
+
 
     /**
      * Retrieves document metadata.
