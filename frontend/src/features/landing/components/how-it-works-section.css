@@ -100,8 +100,15 @@
     left: 10%;
     right: 10%;
     height: 2px;
-    background: var(--color-outline-variant);
+    background: linear-gradient(90deg, var(--color-outline-variant) 50%, transparent 50%);
+    background-size: 16px 2px;
     z-index: 0;
+    animation: dashDraw 1s linear infinite;
+  }
+
+  @keyframes dashDraw {
+    from { background-position: 0 0; }
+    to { background-position: 16px 0; }
   }
 
   .step-card__icon-box {

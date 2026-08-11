@@ -44,15 +44,22 @@
   border: 1px solid var(--color-outline-variant);
   border-radius: var(--radius-2xl);
   overflow: hidden;
-  transition: border-color var(--transition-normal);
+  transition: border-color var(--transition-normal), transform var(--transition-normal), box-shadow var(--transition-normal);
+  animation: slideUp 0.6s ease both;
 }
+
+.features__card:nth-child(2) { animation-delay: 0.1s; }
+.features__card:nth-child(3) { animation-delay: 0.2s; }
+.features__card:nth-child(4) { animation-delay: 0.3s; }
 
 .features__card:hover {
   border-color: var(--color-primary-container);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
 }
 
 .features__card--dark {
-  background: var(--color-inverse-surface);
+  background: linear-gradient(135deg, var(--color-inverse-surface) 0%, #1e293b 100%);
 }
 
 .features__card--dark .features__card-title {
@@ -72,6 +79,11 @@
   border-radius: var(--radius-xl);
   margin-bottom: var(--stack-lg);
   box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-normal);
+}
+
+.features__card:hover .features__card-icon {
+  transform: scale(1.1) rotate(-5deg);
 }
 
 .features__card--primary .features__card-icon {
