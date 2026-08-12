@@ -89,8 +89,7 @@ function Start-ServiceProcess {
             if (Test-Path $jdk) { $env:JAVA_HOME = $jdk }
             $mvnw = Join-Path $rootDir 'core-api\mvnw.cmd'
             $coreDir = Join-Path $rootDir 'core-api'
-            $jvmArgs = "-Dspring-boot.run.jvmArguments=`"-DPOSTGRES_URL=$env:POSTGRES_URL -DPOSTGRES_USER=$env:POSTGRES_USER -DPOSTGRES_PASSWORD=$env:POSTGRES_PASSWORD -DAI_SERVICE_BASE_URL=$env:AI_SERVICE_BASE_URL`""
-            return Start-Process -FilePath $mvnw -ArgumentList @('spring-boot:run', $jvmArgs) -WorkingDirectory $coreDir -NoNewWindow -PassThru
+            return Start-Process -FilePath $mvnw -ArgumentList 'spring-boot:run' -WorkingDirectory $coreDir -NoNewWindow -PassThru
         }
         'frontend' {
             $toolsNode = Join-Path $rootDir '.tools\node-v24.18.0-win-x64'

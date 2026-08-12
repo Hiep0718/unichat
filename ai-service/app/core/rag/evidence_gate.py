@@ -1,11 +1,11 @@
-from enum import StrEnum
+from enum import Enum
 
 from app.core.rag.intent_detector import IntentEnum
 from app.core.rag.retrieval_engine import RetrievedChunkCandidate
 from app.core.rag.strategy_selector import RetrievalStrategy
 
 
-class DecisionEnum(StrEnum):
+class DecisionEnum(str, Enum):
     ANSWER = "ANSWER"
     CLARIFY = "CLARIFY"
     REFUSE = "REFUSE"

@@ -1,5 +1,6 @@
 package com.unichat.core.workspace.api;
 
+import java.util.List;
 import java.util.UUID;
 
 import jakarta.validation.Valid;
@@ -25,10 +26,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.unichat.core.shared.idempotency.IdempotencyService;
+import com.unichat.core.workspace.domain.WorkspaceCategory;
+import com.unichat.core.workspace.domain.WorkspaceCategoryRepository;
 import com.unichat.core.workspace.service.WorkspaceService;
 
 /**
- * REST controller for workspace CRUD operations.
+ * REST controller for workspace CRUD, explore, join/leave, and category operations.
  */
 @RestController
 @RequestMapping("/api/v1/workspaces")
@@ -36,35 +39,35 @@ public class WorkspaceController {
 
     private final WorkspaceService workspaceService;
     private final IdempotencyService idempotencyService;
+    private final WorkspaceCategoryRepository categoryRepository;
 
-    public WorkspaceController(WorkspaceService workspaceService, IdempotencyService idempotencyService) {
+    public WorkspaceController(
+            WorkspaceService workspaceService,
+            IdempotencyService idempotencyService,
+            WorkspaceCategoryRepository categoryRepository) {
         this.workspaceService = workspaceService;
         this.idempotencyService = idempotencyService;
+        this.categoryRepository = categoryRepository;
     }
 
-    /**
-     * Lists workspaces accessible to the authenticated user.
-     */
+    /** Lists workspaces accessible to the authenticated user. */
     @GetMapping
     public ResponseEntity<Page<WorkspaceResponse>> getWorkspaces(
             @AuthenticationPrincipal Jwt jwt,
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "20") int size) {
         UUID userId = UUID.fromString(jwt.getSubject());
-        int pageSize = Math.min(size, 100);
-        Pageable pageable = PageRequest.of(page, pageSize);
+        Pageable pageable = PageRequest.of(page, Math.min(size, 100));
         return ResponseEntity.ok(workspaceService.getWorkspaces(userId, pageable));
     }
 
-    /**
-     * Creates a new workspace.
-     */
+    /** Creates a new workspace. */
     @PostMapping
     public ResponseEntity<?> createWorkspace(
             @AuthenticationPrincipal Jwt jwt,
             @Valid @RequestBody CreateWorkspaceRequest request,
             @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey) {
-        
+
         UUID userId = UUID.fromString(jwt.getSubject());
         String actorId = userId.toString();
         String routeKey = "/workspaces";
@@ -89,9 +92,7 @@ public class WorkspaceController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    /**
-     * Retrieves workspace metadata.
-     */
+    /** Retrieves workspace metadata. */
     @GetMapping("/{workspaceId:[0-9a-fA-F\\-]+}")
     public ResponseEntity<WorkspaceResponse> getWorkspace(
             @AuthenticationPrincipal Jwt jwt,
@@ -100,9 +101,7 @@ public class WorkspaceController {
         return ResponseEntity.ok(workspaceService.getWorkspace(userId, workspaceId));
     }
 
-    /**
-     * Updates an existing workspace.
-     */
+    /** Updates an existing workspace. */
     @PatchMapping("/{workspaceId:[0-9a-fA-F\\-]+}")
     public ResponseEntity<WorkspaceResponse> updateWorkspace(
             @AuthenticationPrincipal Jwt jwt,
@@ -112,9 +111,7 @@ public class WorkspaceController {
         return ResponseEntity.ok(workspaceService.updateWorkspace(userId, workspaceId, request));
     }
 
-    /**
-     * Deletes a workspace.
-     */
+    /** Deletes a workspace. */
     @DeleteMapping("/{workspaceId:[0-9a-fA-F\\-]+}")
     public ResponseEntity<Void> deleteWorkspace(
             @AuthenticationPrincipal Jwt jwt,
@@ -124,9 +121,7 @@ public class WorkspaceController {
         return ResponseEntity.noContent().build();
     }
 
-    /**
-     * Lists public workspaces the user has not yet joined.
-     */
+    /** Lists public workspaces the user has not yet joined. */
     @GetMapping("/explore")
     public ResponseEntity<Page<WorkspaceResponse>> exploreWorkspaces(
             @AuthenticationPrincipal Jwt jwt,
@@ -134,19 +129,32 @@ public class WorkspaceController {
             @RequestParam(value = "size", defaultValue = "20") int size,
             @RequestParam(value = "search", required = false) String search) {
         UUID userId = UUID.fromString(jwt.getSubject());
-        int pageSize = Math.min(size, 100);
-        Pageable pageable = PageRequest.of(page, pageSize);
+        Pageable pageable = PageRequest.of(page, Math.min(size, 100));
         return ResponseEntity.ok(workspaceService.getPublicWorkspaces(userId, search, pageable));
     }
 
-    /**
-     * Allows the authenticated user to join a PUBLIC workspace as VIEWER.
-     */
+    /** Lists all workspace categories sorted by display order. */
+    @GetMapping("/categories")
+    public ResponseEntity<List<WorkspaceCategory>> getCategories() {
+        return ResponseEntity.ok(categoryRepository.findAllByOrderBySortOrderAsc());
+    }
+
+    /** Allows the authenticated user to join a PUBLIC workspace. */
     @PostMapping("/{workspaceId:[0-9a-fA-F\\-]+}/join")
     public ResponseEntity<WorkspaceResponse> joinWorkspace(
             @AuthenticationPrincipal Jwt jwt,
             @PathVariable("workspaceId") UUID workspaceId) {
         UUID userId = UUID.fromString(jwt.getSubject());
         return ResponseEntity.ok(workspaceService.joinPublicWorkspace(userId, workspaceId));
+    }
+
+    /** Allows a non-OWNER member to leave a workspace. */
+    @DeleteMapping("/{workspaceId:[0-9a-fA-F\\-]+}/leave")
+    public ResponseEntity<Void> leaveWorkspace(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable("workspaceId") UUID workspaceId) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        workspaceService.leaveWorkspace(userId, workspaceId);
+        return ResponseEntity.noContent().build();
     }
 }

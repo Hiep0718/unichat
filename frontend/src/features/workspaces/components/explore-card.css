@@ -70,6 +70,16 @@
   color: #065f46;
 }
 
+.explore-card__category {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font: var(--font-label-sm);
+  background: rgba(99, 102, 241, 0.12);
+  color: #3730a3;
+}
+
 .explore-card__body {
   flex: 1;
   margin-bottom: var(--stack-md);

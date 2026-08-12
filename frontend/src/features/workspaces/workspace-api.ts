@@ -8,6 +8,7 @@ import type {
   CreateWorkspaceInput,
   UpdateWorkspaceInput,
   PagedResponse,
+  WorkspaceCategoryDto,
   WorkspaceDto,
 } from './workspace-schema';
 
@@ -99,7 +100,15 @@ export function getPublicWorkspaces(
 }
 
 /**
- * Joins a public workspace as VIEWER.
+ * Fetches all workspace categories sorted by display order.
+ */
+export function getCategories(): Promise<WorkspaceCategoryDto[]> {
+  return fetchJson('/workspaces/categories');
+}
+
+/**
+ * Joins a public workspace. Depending on joinPolicy,
+ * user becomes VIEWER immediately or enters PENDING_APPROVAL.
  */
 export function joinWorkspace(workspaceId: string): Promise<WorkspaceDto> {
   return fetchJson(`/workspaces/${workspaceId}/join`, {
@@ -107,3 +116,11 @@ export function joinWorkspace(workspaceId: string): Promise<WorkspaceDto> {
   });
 }
 
+/**
+ * Leaves a workspace. OWNER cannot leave.
+ */
+export function leaveWorkspace(workspaceId: string): Promise<void> {
+  return fetchJson(`/workspaces/${workspaceId}/leave`, {
+    method: 'DELETE',
+  });
+}

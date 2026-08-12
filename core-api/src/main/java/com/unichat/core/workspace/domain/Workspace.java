@@ -42,6 +42,20 @@ public class Workspace {
     @Column(name = "cloud_allowed", nullable = false)
     private boolean cloudAllowed;
 
+    @Column(name = "category")
+    private String category;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "join_policy")
+    private JoinPolicy joinPolicy;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "contribution_policy")
+    private ContributionPolicy contributionPolicy;
+
+    @Column(name = "question_count")
+    private int questionCount;
+
     @Column(name = "permission_version", nullable = false)
     private long permissionVersion;
 
@@ -68,6 +82,9 @@ public class Workspace {
         this.visibility = visibility;
         this.status = WorkspaceStatus.ACTIVE;
         this.cloudAllowed = cloudAllowed;
+        this.joinPolicy = JoinPolicy.OPEN;
+        this.contributionPolicy = ContributionPolicy.APPROVAL_REQUIRED;
+        this.questionCount = 0;
         this.permissionVersion = 0;
         this.version = 0;
         this.createdAt = now;
@@ -124,6 +141,38 @@ public class Workspace {
 
     public void setCloudAllowed(boolean cloudAllowed) {
         this.cloudAllowed = cloudAllowed;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public JoinPolicy getJoinPolicy() {
+        return joinPolicy;
+    }
+
+    public void setJoinPolicy(JoinPolicy joinPolicy) {
+        this.joinPolicy = joinPolicy;
+    }
+
+    public ContributionPolicy getContributionPolicy() {
+        return contributionPolicy;
+    }
+
+    public void setContributionPolicy(ContributionPolicy contributionPolicy) {
+        this.contributionPolicy = contributionPolicy;
+    }
+
+    public int getQuestionCount() {
+        return questionCount;
+    }
+
+    public void setQuestionCount(int questionCount) {
+        this.questionCount = questionCount;
     }
 
     public long getPermissionVersion() {

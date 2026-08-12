@@ -6,5 +6,6 @@ package com.unichat.core.workspace.domain;
 public enum WorkspaceRole {
     OWNER,
     EDITOR,
+    CONTRIBUTOR,
     VIEWER
 }

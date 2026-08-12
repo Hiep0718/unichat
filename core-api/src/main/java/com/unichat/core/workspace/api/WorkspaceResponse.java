@@ -3,13 +3,15 @@ package com.unichat.core.workspace.api;
 import java.time.Instant;
 import java.util.UUID;
 
+import com.unichat.core.workspace.domain.ContributionPolicy;
+import com.unichat.core.workspace.domain.JoinPolicy;
 import com.unichat.core.workspace.domain.Workspace;
 import com.unichat.core.workspace.domain.WorkspaceRole;
 import com.unichat.core.workspace.domain.WorkspaceVisibility;
 
 /**
- * Output representation of a workspace including aggregated stats
- * and the requesting user's role within that workspace.
+ * Output representation of a workspace including aggregated stats,
+ * community policies, and the requesting user's role.
  */
 public record WorkspaceResponse(
     UUID id,
@@ -18,6 +20,10 @@ public record WorkspaceResponse(
     String description,
     WorkspaceVisibility visibility,
     boolean cloudAllowed,
+    String category,
+    JoinPolicy joinPolicy,
+    ContributionPolicy contributionPolicy,
+    int questionCount,
     long documentCount,
     long memberCount,
     long version,
@@ -45,6 +51,10 @@ public record WorkspaceResponse(
             workspace.getDescription(),
             workspace.getVisibility(),
             workspace.isCloudAllowed(),
+            workspace.getCategory(),
+            workspace.getJoinPolicy(),
+            workspace.getContributionPolicy(),
+            workspace.getQuestionCount(),
             documentCount,
             memberCount,
             workspace.getVersion(),

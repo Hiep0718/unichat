@@ -60,6 +60,9 @@ public class Document {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
+    @Column(name = "contributor_id")
+    private UUID contributorId;
+
     public Document() {}
 
     public Document(
@@ -157,5 +160,13 @@ public class Document {
 
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public UUID getContributorId() {
+        return contributorId;
+    }
+
+    public void setContributorId(UUID contributorId) {
+        this.contributorId = contributorId;
     }
 }

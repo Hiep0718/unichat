@@ -7,6 +7,12 @@ import { z } from 'zod/v4';
 /** Workspace visibility options matching backend enum. */
 export type WorkspaceVisibility = 'PRIVATE' | 'SHARED' | 'PUBLIC';
 
+/** Join policy for community workspaces. */
+export type JoinPolicy = 'OPEN' | 'REQUEST_APPROVAL';
+
+/** Contribution policy for community workspaces. */
+export type ContributionPolicy = 'FREE' | 'APPROVAL_REQUIRED';
+
 /** Workspace data returned from the API. */
 export interface WorkspaceDto {
   readonly id: string;
@@ -15,12 +21,24 @@ export interface WorkspaceDto {
   readonly description: string;
   readonly visibility: WorkspaceVisibility;
   readonly cloudAllowed: boolean;
+  readonly category: string | null;
+  readonly joinPolicy: JoinPolicy | null;
+  readonly contributionPolicy: ContributionPolicy | null;
+  readonly questionCount: number;
   readonly documentCount: number;
   readonly memberCount: number;
   readonly version: number;
   readonly createdAt: string;
   readonly updatedAt: string;
-  readonly userRole: 'OWNER' | 'EDITOR' | 'VIEWER' | null;
+  readonly userRole: 'OWNER' | 'EDITOR' | 'CONTRIBUTOR' | 'VIEWER' | null;
+}
+
+/** Workspace category from master data. */
+export interface WorkspaceCategoryDto {
+  readonly code: string;
+  readonly displayName: string;
+  readonly icon: string | null;
+  readonly sortOrder: number;
 }
 
 /** Paginated response from Spring Data Page. */
@@ -44,6 +62,9 @@ export const createWorkspaceSchema = z.object({
     .optional()
     .default(''),
   visibility: z.enum(['PRIVATE', 'SHARED', 'PUBLIC']),
+  category: z.string().max(50).optional(),
+  joinPolicy: z.enum(['OPEN', 'REQUEST_APPROVAL']).optional(),
+  contributionPolicy: z.enum(['FREE', 'APPROVAL_REQUIRED']).optional(),
 });
 
 /** TypeScript type inferred from the Zod schema. */

@@ -1,9 +1,9 @@
 import re
 import unicodedata
-from enum import StrEnum
+from enum import Enum
 
 
-class IntentEnum(StrEnum):
+class IntentEnum(str, Enum):
     OUT_OF_SCOPE = "OUT_OF_SCOPE"
     COMPARISON = "COMPARISON"
     SUMMARY = "SUMMARY"

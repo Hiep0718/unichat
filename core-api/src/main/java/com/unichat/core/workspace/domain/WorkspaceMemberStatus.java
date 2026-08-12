@@ -5,5 +5,6 @@ package com.unichat.core.workspace.domain;
  */
 public enum WorkspaceMemberStatus {
     ACTIVE,
-    REVOKED
+    REVOKED,
+    PENDING_APPROVAL
 }

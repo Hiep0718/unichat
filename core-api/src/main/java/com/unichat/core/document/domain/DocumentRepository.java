@@ -43,4 +43,9 @@ public interface DocumentRepository extends JpaRepository<Document, UUID> {
      */
     @Query("SELECT d.id FROM Document d WHERE d.workspaceId IN :workspaceIds AND d.status = 'PROCESSED'")
     List<UUID> findAllowedDocumentIdsForWorkspaces(@Param("workspaceIds") List<UUID> workspaceIds);
+
+    /**
+     * Finds documents in a workspace with a specific status (e.g. PENDING_REVIEW).
+     */
+    Page<Document> findByWorkspaceIdAndStatus(UUID workspaceId, DocumentStatus status, Pageable pageable);
 }

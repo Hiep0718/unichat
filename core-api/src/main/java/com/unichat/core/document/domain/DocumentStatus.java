@@ -8,5 +8,8 @@ public enum DocumentStatus {
     PROCESSING,
     PROCESSED,
     FAILED,
-    DELETING
+    DELETING,
+    PENDING_REVIEW,
+    PLATFORM_REJECTED,
+    OWNER_REJECTED
 }

@@ -1,5 +1,6 @@
 /**
  * Explore card for public workspaces — displays workspace info with a join button.
+ * Shows community metadata: category, member count, document count, join policy.
  */
 
 import { Icon } from '../../../components/icon';
@@ -16,10 +17,12 @@ interface ExploreCardProps {
   readonly isJoining: boolean;
 }
 
-/**
- * Renders a public workspace card with join button.
- */
+/** Renders a public workspace card with join button and community info. */
 export function ExploreCard({ workspace, animationIndex = 0, onJoin, isJoining }: ExploreCardProps) {
+  const needsApproval = workspace.joinPolicy === 'REQUEST_APPROVAL';
+  const joinLabel = needsApproval ? 'Xin tham gia' : 'Tham gia';
+  const joiningLabel = needsApproval ? 'Đang gửi...' : 'Đang tham gia...';
+
   return (
     <div
       className="explore-card"
@@ -30,6 +33,11 @@ export function ExploreCard({ workspace, animationIndex = 0, onJoin, isJoining }
           <Icon name="public" size={14} />
           Công khai
         </span>
+        {workspace.category && (
+          <span className="explore-card__category">
+            {workspace.category}
+          </span>
+        )}
       </div>
 
       <div className="explore-card__body">
@@ -47,6 +55,12 @@ export function ExploreCard({ workspace, animationIndex = 0, onJoin, isJoining }
             <Icon name="group" size={16} />
             {workspace.memberCount} Thành viên
           </span>
+          {workspace.questionCount > 0 && (
+            <span className="explore-card__stat">
+              <Icon name="forum" size={16} />
+              {workspace.questionCount} Câu hỏi
+            </span>
+          )}
           <span className="explore-card__stat">
             Cập nhật: {formatRelativeTime(workspace.updatedAt)}
           </span>
@@ -57,8 +71,8 @@ export function ExploreCard({ workspace, animationIndex = 0, onJoin, isJoining }
           disabled={isJoining}
           onClick={() => onJoin(workspace.id)}
         >
-          <Icon name="login" size={16} />
-          {isJoining ? 'Đang tham gia...' : 'Tham gia'}
+          <Icon name={needsApproval ? 'how_to_reg' : 'login'} size={16} />
+          {isJoining ? joiningLabel : joinLabel}
         </button>
       </div>
     </div>

@@ -2,7 +2,7 @@
 import { createContext, useContext, useMemo } from 'react';
 import type { ReactNode } from 'react';
 
-export type WorkspaceRole = 'OWNER' | 'EDITOR' | 'VIEWER';
+export type WorkspaceRole = 'OWNER' | 'EDITOR' | 'CONTRIBUTOR' | 'VIEWER';
 export type WorkspaceVisibility = 'PRIVATE' | 'SHARED' | 'PUBLIC';
 
 export interface WorkspaceDetails {
@@ -19,6 +19,7 @@ interface WorkspaceContextState {
   readonly role: WorkspaceRole;
   readonly isOwner: boolean;
   readonly canEdit: boolean;
+  readonly canContribute: boolean;
 }
 
 const WorkspaceContext = createContext<WorkspaceContextState | null>(null);
@@ -33,12 +34,14 @@ export function WorkspaceProvider({ workspace, children }: WorkspaceProviderProp
     const role = workspace.role || 'VIEWER';
     const isOwner = role === 'OWNER';
     const canEdit = role === 'OWNER' || role === 'EDITOR';
+    const canContribute = role === 'OWNER' || role === 'EDITOR' || role === 'CONTRIBUTOR';
 
     return {
       workspace,
       role,
       isOwner,
       canEdit,
+      canContribute,
     };
   }, [workspace]);
 
