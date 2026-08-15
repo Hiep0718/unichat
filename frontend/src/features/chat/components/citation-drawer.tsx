@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { CitationItem } from '../chat-api';
 import { getAccessToken } from '../../../lib/api-client';
+import './citation-drawer.css';
 
 interface CitationDrawerProps {
   workspaceId?: string | undefined;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import {
   DocumentResponse,
@@ -7,6 +7,7 @@ import {
   deleteWorkspaceDocument,
   syncVectorStore,
 } from '../document-api';
+import { LoadingInline } from '../../../components/loading-screen';
 import './document-table.css';
 
 interface DocumentTableProps {
@@ -36,28 +37,40 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
   const [notificationToast, setNotificationToast] = useState<NotificationToast | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    let isMounted = true;
-
-    fetchWorkspaceDocuments(workspaceId)
-      .then((res) => {
-        if (isMounted) {
-          setDocuments(res.content || []);
-          setError(null);
-          setLoading(false);
-        }
-      })
-      .catch((err: unknown) => {
-        if (isMounted) {
-          setError(err instanceof Error ? err.message : 'Lỗi tải danh sách tài liệu');
-          setLoading(false);
-        }
-      });
-
-    return () => {
-      isMounted = false;
-    };
+  const loadDocuments = useCallback(async () => {
+    try {
+      const res = await fetchWorkspaceDocuments(workspaceId);
+      setDocuments(res.content || []);
+      setError(null);
+      setLoading(false);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Lỗi tải danh sách tài liệu');
+      setLoading(false);
+    }
   }, [workspaceId]);
+
+  // Initial load when workspaceId changes
+  useEffect(() => {
+    setLoading(true);
+    loadDocuments();
+  }, [workspaceId, loadDocuments]);
+
+  // Smart Polling: ONLY poll if documents are processing or during active upload/sync
+  useEffect(() => {
+    const isProcessing = documents.some(
+      (doc) => doc.status === 'PENDING' || doc.status === 'PROCESSING'
+    );
+
+    if (!isProcessing && !uploadingDoc && !syncing) {
+      return; // STOP POLLING COMPLETELY WHEN EVERYTHING IS PROCESSED!
+    }
+
+    const timer = setInterval(() => {
+      loadDocuments();
+    }, 5000);
+
+    return () => clearInterval(timer);
+  }, [documents, uploadingDoc, syncing, loadDocuments]);
 
   useEffect(() => {
     if (!notificationToast) return;
@@ -123,12 +136,17 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
 
   const handleSyncVector = async () => {
     setSyncing(true);
+    setNotificationToast({
+      type: 'success',
+      title: 'Đang khởi chạy đồng bộ Vector...',
+      message: 'Hệ thống đang thực thi đồng bộ tài liệu sang Chroma Cloud trong nền.',
+    });
     try {
       const res = await syncVectorStore();
       setNotificationToast({
         type: 'success',
-        title: 'Đồng bộ Vector DB hoàn tất!',
-        message: `Đã xử lý ${res.processed_files || 0} file và nạp ${res.total_chunks || 0} vector chunks vào ChromaDB Vector Store.`,
+        title: 'Đồng bộ Vector DB đã được khởi tạo!',
+        message: res.message || 'Tài liệu đang được tải và bóc tách vector vào Chroma Cloud.',
       });
       const updated = await fetchWorkspaceDocuments(workspaceId);
       setDocuments(updated.content || []);
@@ -160,7 +178,7 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
-  if (loading) return <div className="document-management">Đang tải danh sách tài liệu...</div>;
+  if (loading) return <LoadingInline label="Đang tải danh sách tài liệu..." />;
 
   return (
     <div className="document-management">
@@ -196,7 +214,10 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
           disabled={syncing}
           title="Đồng bộ tất cả tài liệu đĩa sang ChromaDB Vector Store"
         >
-          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
+          <span
+            className={`material-symbols-outlined ${syncing ? 'document-management__sync-icon--spinning' : ''}`}
+            style={{ fontSize: '18px' }}
+          >
             {syncing ? 'sync' : 'cloud_sync'}
           </span>
           <span>{syncing ? 'Đang đồng bộ Vector...' : 'Đồng bộ Vector DB'}</span>

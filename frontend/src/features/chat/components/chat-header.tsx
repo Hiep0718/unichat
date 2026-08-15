@@ -1,4 +1,5 @@
 import React from 'react';
+import aiAvatar from '../../../assets/ai-avatar.png';
 
 interface ChatHeaderProps {
   workspaceName?: string | undefined;
@@ -21,7 +22,7 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
     <header className="chat-header">
       <div className="chat-header__main">
         <div className="chat-header__icon-badge">
-          <span className="material-symbols-outlined">auto_awesome</span>
+          <img src={aiAvatar} alt="AI Avatar" className="chat-header__ai-avatar-img" />
         </div>
         <div className="chat-header__titles">
           <div className="chat-header__breadcrumb">

@@ -119,6 +119,8 @@ function processTextNode(
   });
 }
 
+import aiAvatar from '../../../assets/ai-avatar.png';
+
 export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({ message, onSelectCitation }) => {
   const isUser = message.role === 'USER';
   const response = message.response;
@@ -130,7 +132,7 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({ message, onSel
         {isUser ? (
           <span className="material-symbols-outlined">person</span>
         ) : (
-          <span className="material-symbols-outlined">smart_toy</span>
+          <img src={aiAvatar} alt="UniChat AI Logo" className="chat-msg__ai-avatar-img" />
         )}
       </div>
 

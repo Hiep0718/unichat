@@ -88,20 +88,9 @@ export function AppRouter() {
   );
 }
 
+import { LoadingScreen } from '../components/loading-screen';
+
 /** Simple centered loading indicator. */
 function PageLoader() {
-  return (
-    <div
-      style={{
-        display: 'grid',
-        placeItems: 'center',
-        minHeight: '100vh',
-        color: '#0284c7',
-        fontSize: '1rem',
-        fontWeight: 500,
-      }}
-    >
-      Đang tải...
-    </div>
-  );
+  return <LoadingScreen message="Đang kết nối giao diện..." />;
 }
