@@ -27,12 +27,32 @@ def get_embedding_model() -> SentenceTransformer:
 
 def get_chroma_client() -> Any:
     global _ephemeral_client
-    mode = os.getenv("CHROMA_MODE", "auto")
+    mode = os.getenv("CHROMA_MODE", "auto").lower()
+
+    # 1. Ephemeral local in-memory mode
     if mode == "ephemeral":
         if _ephemeral_client is None:
             _ephemeral_client = chromadb.EphemeralClient()
         return _ephemeral_client
 
+    # 2. Chroma Cloud mode
+    cloud_api_key = os.getenv("CHROMA_CLOUD_API_KEY") or os.getenv("CHROMA_API_KEY", "")
+    tenant = os.getenv("CHROMA_CLOUD_TENANT") or os.getenv("CHROMA_TENANT", "")
+    database = os.getenv("CHROMA_CLOUD_DATABASE") or os.getenv("CHROMA_DATABASE", "default_database")
+    host = os.getenv("CHROMA_HOST", "")
+
+    if mode == "cloud" or cloud_api_key or "trychroma.com" in host:
+        if cloud_api_key and tenant:
+            try:
+                return chromadb.CloudClient(
+                    tenant=tenant,
+                    database=database,
+                    api_key=cloud_api_key,
+                )
+            except Exception as e:
+                logger.error("Failed to connect to Chroma Cloud (tenant=%s, db=%s): %s", tenant, database, e)
+
+    # 3. Local Self-hosted Server / Docker mode
     host = os.getenv("CHROMA_SERVER_HOST", "localhost")
     port = int(os.getenv("CHROMA_SERVER_HTTP_PORT", "8000"))
     try:

@@ -15,9 +15,19 @@ router = APIRouter()
 store = EvaluationStore()
 
 
+from fastapi import APIRouter, BackgroundTasks, HTTPException
+
+
 @router.post("/eval/sync-storage")
-def sync_storage_to_chroma() -> dict[str, Any]:
-    return reingest_all_from_storage()
+def sync_storage_to_chroma(background_tasks: BackgroundTasks) -> dict[str, Any]:
+    """Triggers asynchronous document re-ingestion & vector sync in background."""
+    background_tasks.add_task(reingest_all_from_storage)
+    return {
+        "status": "ACCEPTED",
+        "message": "Quá trình đồng bộ Vector DB đã được khởi chạy bất đồng bộ trong nền.",
+        "processed_files": 0,
+        "total_chunks": 0,
+    }
 
 
 class EvalRunRequest(BaseModel):

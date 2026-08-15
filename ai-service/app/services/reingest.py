@@ -11,6 +11,10 @@ from app.services.chunker import chunk_blocks_hybrid
 from app.services.text_extractor import extract_blocks
 from app.services.vector_store import COLLECTION_V1, COLLECTION_V2, store_document_chunks
 
+import httpx
+
+from app.core.settings import get_settings
+
 logger = structlog.get_logger(__name__)
 
 
@@ -49,8 +53,83 @@ def reingest_document(
     return count
 
 
+def _reingest_all_supabase() -> dict[str, Any]:
+    """Scan Supabase Storage bucket and re-ingest all stored workspace documents into ChromaDB."""
+    settings = get_settings()
+    list_url = f"{settings.supabase_storage_url}/object/list/{settings.supabase_storage_bucket}"
+    headers = {
+        "Authorization": f"Bearer {settings.supabase_service_key}",
+        "apikey": settings.supabase_service_key,
+    }
+
+    try:
+        res = httpx.post(list_url, headers=headers, json={"prefix": "", "limit": 100}, timeout=30.0)
+        res.raise_for_status()
+        workspace_folders = res.json()
+    except Exception as e:
+        logger.error("Failed to list Supabase storage workspace folders", error=str(e))
+        return {"status": "SUPABASE_ERROR", "processed_files": 0, "total_chunks": 0}
+
+    processed_files = 0
+    total_chunks = 0
+
+    for item in workspace_folders:
+        folder_name = item.get("name")
+        if not folder_name:
+            continue
+
+        try:
+            f_res = httpx.post(list_url, headers=headers, json={"prefix": folder_name, "limit": 100}, timeout=30.0)
+            f_res.raise_for_status()
+            file_items = f_res.json()
+        except Exception:
+            continue
+
+        for f_item in file_items:
+            file_name = f_item.get("name")
+            if not file_name or file_name == folder_name:
+                continue
+
+            workspace_id = folder_name
+            storage_key = f"{folder_name}/{file_name}"
+            doc_id_part = file_name.split("_")[0] if "_" in file_name else file_name.split(".")[0]
+            document_id = doc_id_part
+
+            suffix = Path(file_name).suffix.lower()
+            media_type = "text/plain"
+            if suffix == ".pdf":
+                media_type = "application/pdf"
+            elif suffix == ".docx":
+                media_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+            try:
+                download_url = f"{settings.supabase_storage_url}/object/authenticated/{settings.supabase_storage_bucket}/{storage_key}"
+                d_res = httpx.get(download_url, headers=headers, timeout=60.0)
+                d_res.raise_for_status()
+                file_bytes = d_res.content
+
+                if file_bytes:
+                    c2 = reingest_document(workspace_id, document_id, file_bytes, media_type, COLLECTION_V2)
+                    reingest_document(workspace_id, document_id, file_bytes, media_type, COLLECTION_V1)
+                    processed_files += 1
+                    total_chunks += c2
+            except Exception as e:
+                logger.error("Failed to re-ingest Supabase file", storage_key=storage_key, error=str(e))
+
+    return {
+        "status": "SUCCESS",
+        "storage_provider": "supabase",
+        "processed_files": processed_files,
+        "total_chunks": total_chunks,
+    }
+
+
 def reingest_all_from_storage(storage_dir_path: str | None = None) -> dict[str, Any]:
-    """Scan local file storage directory and re-ingest all documents into ChromaDB."""
+    """Scan file storage directory (Supabase or local) and re-ingest all documents into ChromaDB."""
+    settings = get_settings()
+    if settings.storage_provider == "supabase" and not storage_dir_path:
+        return _reingest_all_supabase()
+
     candidates = []
     if storage_dir_path:
         candidates.append(Path(storage_dir_path))
@@ -108,6 +187,7 @@ def reingest_all_from_storage(storage_dir_path: str | None = None) -> dict[str, 
 
     return {
         "status": "SUCCESS",
+        "storage_provider": "local",
         "storage_dir": str(target_dir),
         "processed_files": processed_files,
         "total_chunks": total_chunks,
