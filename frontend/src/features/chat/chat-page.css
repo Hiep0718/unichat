@@ -244,9 +244,32 @@
 }
 
 .chat-msg--assistant .chat-msg__avatar {
-  background: linear-gradient(135deg, #00687a 0%, #0284c7 100%);
-  color: #ffffff;
-  box-shadow: 0 4px 12px rgba(0, 104, 122, 0.2);
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.chat-msg__ai-avatar-img {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  object-fit: cover;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.25);
+  border: 1.5px solid rgba(56, 189, 248, 0.3);
+  transition: transform 0.2s ease;
+}
+
+.chat-msg__ai-avatar-img:hover {
+  transform: scale(1.06);
+}
+
+.chat-header__ai-avatar-img {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  object-fit: cover;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
 }
 
 .chat-msg__content-zone {
