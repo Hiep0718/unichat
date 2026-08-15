@@ -40,6 +40,7 @@ class DocumentServiceTest {
     private WorkspaceMemberRepository workspaceMemberRepository;
     private StoragePort storagePort;
     private DocumentIngestionProducer ingestionProducer;
+    private com.unichat.core.chat.domain.CitationHistoryRepository citationHistoryRepository;
     private DocumentService documentService;
 
     @BeforeEach
@@ -47,12 +48,14 @@ class DocumentServiceTest {
         documentRepository = mock(DocumentRepository.class);
         workspaceRepository = mock(WorkspaceRepository.class);
         workspaceMemberRepository = mock(WorkspaceMemberRepository.class);
+        citationHistoryRepository = mock(com.unichat.core.chat.domain.CitationHistoryRepository.class);
         storagePort = mock(StoragePort.class);
         ingestionProducer = mock(DocumentIngestionProducer.class);
         documentService = new DocumentService(
                 documentRepository,
                 workspaceRepository,
                 workspaceMemberRepository,
+                citationHistoryRepository,
                 storagePort,
                 ingestionProducer,
                 java.time.Clock.systemUTC()
@@ -76,7 +79,7 @@ class DocumentServiceTest {
         var response = documentService.uploadDocument(userId, workspaceId, file, "req-123");
 
         assertNotNull(response);
-        assertEquals(DocumentStatus.PROCESSED, response.status());
+        assertEquals(DocumentStatus.PENDING, response.status());
         verify(documentRepository).save(any(Document.class));
         verify(ingestionProducer).sendIngestionMessage(any(DocumentIngestionMessage.class));
     }

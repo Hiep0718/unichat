@@ -41,7 +41,7 @@ public interface DocumentRepository extends JpaRepository<Document, UUID> {
     /**
      * Finds active documents for authorization list (allowedDocumentIds).
      */
-    @Query("SELECT d.id FROM Document d WHERE d.workspaceId IN :workspaceIds AND d.status IN ('PROCESSED', 'PENDING', 'PROCESSING')")
+    @Query("SELECT d.id FROM Document d WHERE d.workspaceId IN :workspaceIds AND d.status = 'PROCESSED'")
     List<UUID> findAllowedDocumentIdsForWorkspaces(@Param("workspaceIds") List<UUID> workspaceIds);
 }
 
