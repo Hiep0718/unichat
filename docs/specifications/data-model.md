@@ -67,7 +67,7 @@
 
 ## 5. Chroma collection
 
-Collection: unichat_chunks_v1, distance cosine, embedding dimension 768.
+Collection: unichat_chunks_v2 (v1 fallback), distance cosine, embedding dimension 768.
 
 Mỗi record có chunkId, workspaceId, documentId, ingestionVersion, chunkIndex, sourceGroup, locatorType, locatorValue, contentHash, extractorVersion và normalized text. Query luôn có allowedDocumentIds; không dùng Chroma làm nguồn quyền.
 

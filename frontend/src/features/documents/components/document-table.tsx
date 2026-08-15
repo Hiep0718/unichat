@@ -1,10 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import {
   DocumentResponse,
   fetchWorkspaceDocuments,
   uploadWorkspaceDocument,
   deleteWorkspaceDocument,
+  syncVectorStore,
 } from '../document-api';
+import { LoadingInline } from '../../../components/loading-screen';
 import './document-table.css';
 
 interface DocumentTableProps {
@@ -12,51 +15,149 @@ interface DocumentTableProps {
   canEdit: boolean;
 }
 
+interface UploadingDocument {
+  name: string;
+  size: number;
+  mediaType: string;
+  progress: number;
+}
+
+interface NotificationToast {
+  type: 'success' | 'error';
+  title: string;
+  message: string;
+}
+
 export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEdit }) => {
   const [documents, setDocuments] = useState<DocumentResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
+  const [uploadingDoc, setUploadingDoc] = useState<UploadingDocument | null>(null);
+  const [syncing, setSyncing] = useState(false);
+  const [notificationToast, setNotificationToast] = useState<NotificationToast | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    let isMounted = true;
-
-    fetchWorkspaceDocuments(workspaceId)
-      .then((res) => {
-        if (isMounted) {
-          setDocuments(res.content || []);
-          setError(null);
-          setLoading(false);
-        }
-      })
-      .catch((err: unknown) => {
-        if (isMounted) {
-          setError(err instanceof Error ? err.message : 'Lỗi tải danh sách tài liệu');
-          setLoading(false);
-        }
-      });
-
-    return () => {
-      isMounted = false;
-    };
+  const loadDocuments = useCallback(async () => {
+    try {
+      const res = await fetchWorkspaceDocuments(workspaceId);
+      setDocuments(res.content || []);
+      setError(null);
+      setLoading(false);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Lỗi tải danh sách tài liệu');
+      setLoading(false);
+    }
   }, [workspaceId]);
+
+  // Initial load when workspaceId changes
+  useEffect(() => {
+    setLoading(true);
+    loadDocuments();
+  }, [workspaceId, loadDocuments]);
+
+  // Smart Polling: ONLY poll if documents are processing or during active upload/sync
+  useEffect(() => {
+    const isProcessing = documents.some(
+      (doc) => doc.status === 'PENDING' || doc.status === 'PROCESSING'
+    );
+
+    if (!isProcessing && !uploadingDoc && !syncing) {
+      return; // STOP POLLING COMPLETELY WHEN EVERYTHING IS PROCESSED!
+    }
+
+    const timer = setInterval(() => {
+      loadDocuments();
+    }, 5000);
+
+    return () => clearInterval(timer);
+  }, [documents, uploadingDoc, syncing, loadDocuments]);
+
+  useEffect(() => {
+    if (!notificationToast) return;
+    const timer = setTimeout(() => {
+      setNotificationToast(null);
+    }, 6000);
+    return () => clearTimeout(timer);
+  }, [notificationToast]);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    const fileExt = file.name.split('.').pop()?.toUpperCase() || 'FILE';
+
+    setUploadingDoc({
+      name: file.name,
+      size: file.size,
+      mediaType: fileExt,
+      progress: 10,
+    });
+    setError(null);
+
+    let currentProgress = 10;
+    const progressInterval = setInterval(() => {
+      currentProgress = Math.min(currentProgress + Math.floor(Math.random() * 12) + 8, 92);
+      setUploadingDoc((prev) => (prev ? { ...prev, progress: currentProgress } : null));
+    }, 120);
+
     try {
-      setUploading(true);
-      setError(null);
-      await uploadWorkspaceDocument(workspaceId, file);
+      await uploadWorkspaceDocument(workspaceId, file, (percent) => {
+        if (percent > currentProgress) {
+          currentProgress = Math.min(percent, 95);
+        }
+      });
+
+      clearInterval(progressInterval);
+      setUploadingDoc((prev) => (prev ? { ...prev, progress: 100 } : null));
+      await new Promise((r) => setTimeout(r, 450));
+
+      const updated = await fetchWorkspaceDocuments(workspaceId);
+      setDocuments(updated.content || []);
+
+      setNotificationToast({
+        type: 'success',
+        title: 'Tải tài liệu thành công!',
+        message: `Tài liệu "${file.name}" đã được tải lên và sẵn sàng RAG Chat.`,
+      });
+    } catch (err: unknown) {
+      clearInterval(progressInterval);
+      const msg = err instanceof Error ? err.message : 'Không thể tải lên tài liệu';
+      setError(msg);
+      setNotificationToast({
+        type: 'error',
+        title: 'Tải tài liệu thất bại',
+        message: msg,
+      });
+    } finally {
+      setUploadingDoc(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleSyncVector = async () => {
+    setSyncing(true);
+    setNotificationToast({
+      type: 'success',
+      title: 'Đang khởi chạy đồng bộ Vector...',
+      message: 'Hệ thống đang thực thi đồng bộ tài liệu sang Chroma Cloud trong nền.',
+    });
+    try {
+      const res = await syncVectorStore();
+      setNotificationToast({
+        type: 'success',
+        title: 'Đồng bộ Vector DB đã được khởi tạo!',
+        message: res.message || 'Tài liệu đang được tải và bóc tách vector vào Chroma Cloud.',
+      });
       const updated = await fetchWorkspaceDocuments(workspaceId);
       setDocuments(updated.content || []);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Không thể tải lên tài liệu');
+      setNotificationToast({
+        type: 'error',
+        title: 'Lỗi đồng bộ Vector DB',
+        message: err instanceof Error ? err.message : 'Không thể thực hiện đồng bộ Vector DB',
+      });
     } finally {
-      setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
+      setSyncing(false);
     }
   };
 
@@ -77,27 +178,70 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
-  if (loading) return <div className="document-management">Đang tải danh sách tài liệu...</div>;
+  if (loading) return <LoadingInline label="Đang tải danh sách tài liệu..." />;
 
   return (
     <div className="document-management">
+      {notificationToast &&
+        createPortal(
+          <div className={`doc-toast doc-toast--${notificationToast.type}`}>
+            <div className={`doc-toast__icon doc-toast__icon--${notificationToast.type}`}>
+              {notificationToast.type === 'success' ? '✓' : '✕'}
+            </div>
+            <div className="doc-toast__body">
+              <h5 className="doc-toast__title">{notificationToast.title}</h5>
+              <p className="doc-toast__message">{notificationToast.message}</p>
+            </div>
+            <button
+              className="doc-toast__close"
+              onClick={() => setNotificationToast(null)}
+              title="Đóng thông báo"
+            >
+              ×
+            </button>
+          </div>,
+          document.body
+        )}
+
       <div className="document-management__header">
-        <h3 className="document-management__title">Tài liệu Workspace ({documents.length})</h3>
+        <div className="document-management__title-zone">
+          <h3 className="document-management__title">Tài liệu Workspace ({documents.length})</h3>
+        </div>
+        <button
+          type="button"
+          className="document-management__sync-btn"
+          onClick={handleSyncVector}
+          disabled={syncing}
+          title="Đồng bộ tất cả tài liệu đĩa sang ChromaDB Vector Store"
+        >
+          <span
+            className={`material-symbols-outlined ${syncing ? 'document-management__sync-icon--spinning' : ''}`}
+            style={{ fontSize: '18px' }}
+          >
+            {syncing ? 'sync' : 'cloud_sync'}
+          </span>
+          <span>{syncing ? 'Đang đồng bộ Vector...' : 'Đồng bộ Vector DB'}</span>
+        </button>
       </div>
 
-      {error && <div style={{ color: '#ef4444', fontSize: '14px' }}>{error}</div>}
+      {error && <div style={{ color: '#ef4444', fontSize: '14px', marginBottom: '1rem' }}>{error}</div>}
 
       {canEdit && (
-        <div className="document-upload-zone" onClick={() => fileInputRef.current?.click()}>
+        <div
+          className="document-upload-zone"
+          onClick={() => !uploadingDoc && fileInputRef.current?.click()}
+          style={{ opacity: uploadingDoc ? 0.6 : 1, cursor: uploadingDoc ? 'not-allowed' : 'pointer' }}
+        >
           <input
             type="file"
             ref={fileInputRef}
             onChange={handleFileSelect}
             style={{ display: 'none' }}
             accept=".pdf,.docx,.txt"
+            disabled={Boolean(uploadingDoc)}
           />
           <div className="document-upload-zone__title">
-            {uploading ? 'Đang tải tệp lên...' : 'Nhấp để chọn tệp PDF, DOCX, TXT tải lên'}
+            {uploadingDoc ? `Đang tải tệp lên (${uploadingDoc.progress}%)...` : 'Nhấp để chọn tệp PDF, DOCX, TXT tải lên'}
           </div>
           <div className="document-upload-zone__subtitle">Dung lượng tối đa 20 MiB/tệp</div>
         </div>
@@ -110,11 +254,36 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
               <th>Tên tài liệu</th>
               <th>Định dạng</th>
               <th>Dung lượng</th>
-              <th>Trạng thái</th>
+              <th>Trạng thái Vector DB</th>
               {canEdit && <th>Hành động</th>}
             </tr>
           </thead>
           <tbody>
+            {uploadingDoc && (
+              <tr className="document-row--uploading">
+                <td>
+                  <div className="document-uploading-info">
+                    <span className="document-uploading-name">{uploadingDoc.name}</span>
+                    <div className="document-progress-bar-container">
+                      <div
+                        className="document-progress-bar-fill"
+                        style={{ width: `${uploadingDoc.progress}%` }}
+                      />
+                    </div>
+                  </div>
+                </td>
+                <td>{uploadingDoc.mediaType}</td>
+                <td>{formatSize(uploadingDoc.size)}</td>
+                <td>
+                  <span className="document-badge document-badge--uploading">
+                    <span className="document-badge__icon">⏳</span>
+                    Đang nạp Vector ({uploadingDoc.progress}%)
+                  </span>
+                </td>
+                {canEdit && <td>—</td>}
+              </tr>
+            )}
+
             {documents.map((doc) => (
               <tr key={doc.id}>
                 <td>{doc.originalName}</td>
@@ -122,7 +291,16 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
                 <td>{formatSize(doc.byteSize)}</td>
                 <td>
                   <span className={`document-badge document-badge--${doc.status.toLowerCase()}`}>
-                    {doc.status}
+                    <span className="document-badge__icon">
+                      {doc.status === 'PROCESSED' ? '✓' : doc.status === 'FAILED' ? '✕' : '⏳'}
+                    </span>
+                    {doc.status === 'PROCESSED'
+                      ? 'Vector DB Ready'
+                      : doc.status === 'PROCESSING'
+                      ? 'Tách Vector...'
+                      : doc.status === 'FAILED'
+                      ? 'Lỗi Vector'
+                      : 'Chưa nạp Vector'}
                   </span>
                 </td>
                 {canEdit && (

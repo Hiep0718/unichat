@@ -8,6 +8,7 @@ import {
   ConversationDetailResponse,
 } from './conversation-api';
 import { askWorkspaceQuestion } from '../chat/chat-api';
+import { CitationPanel } from '../chat/components/citation-panel';
 import { Icon } from '../../components/icon';
 import '../chat/chat-page.css';
 
@@ -114,12 +115,16 @@ export function ConversationPage() {
                   msg.content
                 )}
               </div>
+              {msg.role === 'ASSISTANT' && msg.citations && msg.citations.length > 0 && (
+                <CitationPanel citations={msg.citations as any} />
+              )}
             </div>
           ))
         ) : (
           <div style={{ textAlign: 'center', color: '#94a3b8', marginTop: '2rem' }}>Chưa có tin nhắn trong hội thoại này.</div>
         )}
       </div>
+
 
       <form onSubmit={handleSend} className="chat-input-zone" style={{ padding: '1rem 1.5rem', borderTop: '1px solid #e2e8f0' }}>
         <input

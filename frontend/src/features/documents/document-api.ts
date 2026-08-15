@@ -5,7 +5,7 @@
  * @see api-contracts.md §4 (Tài liệu)
  */
 
-import { fetchJson } from '../../lib/api-client';
+import { fetchJson, getAccessToken } from '../../lib/api-client';
 
 export type DocumentStatus = 'PENDING' | 'PROCESSING' | 'PROCESSED' | 'FAILED' | 'DELETING';
 
@@ -50,25 +50,54 @@ export async function fetchWorkspaceDocuments(
 
 export async function uploadWorkspaceDocument(
   workspaceId: string,
-  file: File
+  file: File,
+  onProgress?: (percent: number) => void
 ): Promise<IngestionJobResponse> {
   const formData = new FormData();
   formData.append('file', file);
 
-  const token = localStorage.getItem('accessToken');
-  const response = await fetch(`/api/v1/workspaces/${workspaceId}/documents`, {
-    method: 'POST',
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-    body: formData,
+  const token = getAccessToken();
+
+  return new Promise<IngestionJobResponse>((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `/api/v1/workspaces/${workspaceId}/documents`);
+
+    if (token) {
+      xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+    }
+
+    if (xhr.upload && onProgress) {
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const percent = Math.round((event.loaded / event.total) * 100);
+          onProgress(percent);
+        }
+      };
+    }
+
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          const data = JSON.parse(xhr.responseText);
+          resolve(data);
+        } catch {
+          reject(new Error('Phản hồi từ máy chủ không hợp lệ'));
+        }
+      } else {
+        try {
+          const errorData = JSON.parse(xhr.responseText);
+          reject(new Error(errorData.detail || errorData.title || 'Lỗi khi tải lên tài liệu'));
+        } catch {
+          reject(new Error(`Tải lên thất bại với mã lỗi HTTP ${xhr.status}`));
+        }
+      }
+    };
+
+    xhr.onerror = () => reject(new Error('Lỗi kết nối mạng khi tải lên tài liệu'));
+    xhr.send(formData);
   });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.detail || errorData.title || 'Lỗi khi tải lên tài liệu');
-  }
-
-  return response.json();
 }
+
 
 export async function fetchIngestionJobStatus(
   workspaceId: string,
@@ -80,6 +109,12 @@ export async function fetchIngestionJobStatus(
 export async function deleteWorkspaceDocument(workspaceId: string, documentId: string): Promise<void> {
   return fetchJson<void>(`/workspaces/${workspaceId}/documents/${documentId}`, {
     method: 'DELETE',
+  });
+}
+
+export async function syncVectorStore(): Promise<{ status: string; processed_files: number; total_chunks: number; message?: string }> {
+  return fetchJson<{ status: string; processed_files: number; total_chunks: number; message?: string }>('/internal/v1/eval/sync-storage', {
+    method: 'POST',
   });
 }
 

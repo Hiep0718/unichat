@@ -82,10 +82,11 @@ public class Document {
         this.status = status;
         this.ingestionVersion = 1;
         this.pageOrBlockCount = 0;
-        this.version = 0L;
+        this.version = null;
         this.createdAt = createdAt;
         this.updatedAt = createdAt;
     }
+
 
     public UUID getId() {
         return id;

@@ -264,3 +264,9 @@
 - Decision: Use CSS Grid template modifications (`grid-template-columns: 1fr !important`) combined with flex layout changes in the card components for List view mode.
   Rationale: CSS-only layout changes are much more performant than conditional React rendering of entirely different DOM structures.
 
+## 2026-08-11 - Benchmark Scope Tech Debt Exclusions
+
+- Decision: Log tech debt items R-05, R-07, R-17 for post-benchmark resolution.
+  Rationale: Keeping security JWT bypass local fix (R-05), ChatService reauthorization before DB persist (R-07), and Service JWT from Core API to AI Service (R-17) logged as tech debt prevents blocking the immediate execution of the Benchmark & Evaluation Suite while ensuring they are resolved prior to production deployment.
+
+

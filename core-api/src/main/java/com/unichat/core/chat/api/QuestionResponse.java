@@ -15,5 +15,6 @@ public record QuestionResponse(
         String strategyVersion,
         List<CitationResponse> citations,
         String refusalCode,
-        String requestId
+        String requestId,
+        Double evidenceScore
 ) {}

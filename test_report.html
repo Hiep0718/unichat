@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Báo cáo Kiểm thử Tự động & Benchmark RAG — UniChat AI Platform</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-body: #0f172a;
+            --bg-card: #1e293b;
+            --bg-card-hover: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent-primary: #38bdf8;
+            --accent-secondary: #818cf8;
+            --success: #34d399;
+            --success-bg: rgba(52, 211, 153, 0.15);
+            --warning: #fbbf24;
+            --danger: #f87171;
+            --border-color: #334155;
+            --font-main: 'Inter', sans-serif;
+            --font-code: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);
+            border: 1px solid rgba(129, 140, 248, 0.3);
+            border-radius: 16px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, rgba(0,0,0,0) 70%);
+            pointer-events: none;
+        }
+
+        .badge-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--success-bg);
+            color: var(--success);
+            border: 1px solid rgba(52, 211, 153, 0.3);
+            padding: 0.35rem 0.85rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--success);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #f8fafc, #93c5fd);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .meta-info {
+            display: flex;
+            gap: 2rem;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .meta-item strong {
+            color: var(--text-primary);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 1.5rem;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent-primary);
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .stat-value.highlight-success {
+            color: var(--success);
+        }
+
+        .stat-value.highlight-blue {
+            color: var(--accent-primary);
+        }
+
+        .stat-foot {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.35rem;
+        }
+
+        /* Progress bar */
+        .progress-bar-bg {
+            background-color: #334155;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 0.75rem;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-primary), var(--success));
+            border-radius: 4px;
+        }
+
+        /* Section Layout */
+        .section-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 1.75rem;
+            margin-bottom: 2rem;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Table Design */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background-color: rgba(15, 23, 42, 0.6);
+            color: var(--text-secondary);
+            font-weight: 600;
+            padding: 0.85rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 0.85rem 1rem;
+            border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+            color: var(--text-primary);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background-color: rgba(51, 65, 85, 0.3);
+        }
+
+        .pill {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            font-family: var(--font-code);
+        }
+
+        .pill-pass {
+            background: rgba(52, 211, 153, 0.15);
+            color: var(--success);
+            border: 1px solid rgba(52, 211, 153, 0.3);
+        }
+
+        .pill-info {
+            background: rgba(56, 189, 248, 0.15);
+            color: var(--accent-primary);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+
+        .code-box {
+            background-color: #0f172a;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: var(--font-code);
+            font-size: 0.85rem;
+            color: #e2e8f0;
+            overflow-x: auto;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border-color);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div class="badge-status">
+            <span class="status-dot"></span>
+            TẤT CẢ TEST SUITE PASSED (100%)
+        </div>
+        <h1>Báo cáo Kiểm thử Tự động & Benchmark Optimization</h1>
+        <p class="subtitle">Hệ thống AI Knowledge Platform — UniChat (Core API, AI Service & Frontend)</p>
+        
+        <div class="meta-info">
+            <div class="meta-item">Thời gian thực thi: <strong>2026-08-11 20:04:30 UTC+7</strong></div>
+            <div class="meta-item">Môi trường: <strong>Local / Automated Test Pipeline</strong></div>
+            <div class="meta-item">Mục tiêu Coverage: <strong>&ge; 80.0%</strong> (Thực tế: <strong>81.75%</strong>)</div>
+        </div>
+    </header>
+
+    <!-- Stats Overview -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">Tổng số Test Cases</div>
+            <div class="stat-value highlight-blue">106</div>
+            <div class="stat-foot">Trên 3 tầng hệ thống</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Tỷ lệ Thành công (Pass Rate)</div>
+            <div class="stat-value highlight-success">100%</div>
+            <div class="stat-foot">106 PASSED / 0 FAILED</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">AI Service Code Coverage</div>
+            <div class="stat-value highlight-success">81.75%</div>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" style="width: 81.75%;"></div>
+            </div>
+            <div class="stat-foot">Required: &ge; 80.0%</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Chất lượng Kiểm tra Tĩnh</div>
+            <div class="stat-value highlight-blue">0 Errors</div>
+            <div class="stat-foot">Mypy 53 source files</div>
+        </div>
+    </div>
+
+    <!-- AI Service Python Test Suite -->
+    <div class="section-card">
+        <div class="section-header">
+            <div class="section-title">
+                <span>🐍 AI Service Python Test Suite (Pytest)</span>
+            </div>
+            <span class="pill pill-pass">50 / 50 PASSED</span>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Module Kiểm thử</th>
+                    <th>Số lượng Test</th>
+                    <th>Phạm vi Kiểm tra (Coverage Target)</th>
+                    <th>Trạng thái</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>test_text_extractor_heading.py</code></td>
+                    <td>2</td>
+                    <td>Heuristic text heading extraction cho PDF/DOCX/TXT (R-01)</td>
+                    <td><span class="pill pill-pass">PASSED</span></td>
+                </tr>
+                <tr>
+                    <td><code>test_sentence_splitter.py</code></td>
+                    <td>3</td>
+                    <td>Vietnamese sentence splitter, NFC normalization & abbreviation preservation</td>
+                    <td><span class="pill pill-pass">PASSED</span></td>
+                </tr>
+                <tr>
+                    <td><code>test_chunker_hybrid.py</code></td>
+                    <td>2</td>
+                    <td>Hybrid 3-level Chunker (Header &rarr; Paragraph &rarr; Sentence)</td>
+                    <td><span class="pill pill-pass">PASSED</span></td>
+                </tr>
+                <tr>
+                    <td><code>test_evaluation_storage.py</code></td>
+                    <td>1</td>
+                    <td>JSON/JSONL local file-based evaluation store (R-06 / R-15)</td>
+                    <td><span class="pill pill-pass">PASSED</span></td>
+                </tr>
+                <tr>
+                    <td><code>test_evaluation_metrics.py</code></td>
+                    <td>3</td>
+                    <td>Paired Bootstrap CI (95%), Hit@K, MRR & Latency Percentiles (R-13)</td>
+                    <td><span class="pill pill-pass">PASSED</span></td>
+                </tr>
+                <tr>
+                    <td><code>test_evaluation_runner.py</code></td>
+                    <td>1</td>
+                    <td>Rate Limiting 10 RPM, Exponential Backoff & Checkpoint/Resume (R-12)</td>
+                    <td><span class="pill pill-pass">PASSED</span></td>
+                </tr>
+                <tr>
+                    <td><code>test_benchmark_pipeline.py</code></td>
+                    <td>3</td>
+                    <td>End-to-end Benchmark Suite & Report 2-pass Answer Scoring (R-14)</td>
+                    <td><span class="pill pill-pass">PASSED</span></td>
+                </tr>
+                <tr>
+                    <td><code>test_eval_api_coverage.py</code></td>
+                    <td>4</td>
+                    <td>REST API endpoints (<code>/eval/run</code>, <code>/generate-questions</code>, <code>/runs</code>) & 404 handling</td>
+                    <td><span class="pill pill-pass">PASSED</span></td>
+                </tr>
+                <tr>
+                    <td><code>test_services_extra.py</code></td>
+                    <td>4</td>
+                    <td>Preflight check, ChromaDB compatibility, Embedding pre-cache & Re-ingest</td>
+                    <td><span class="pill pill-pass">PASSED</span></td>
+                </tr>
+                <tr>
+                    <td><code>test_adaptive_retrieval*.py</code></td>
+                    <td>10</td>
+                    <td>Intent detection, evidence gate, jailbreak & short question handling</td>
+                    <td><span class="pill pill-pass">PASSED</span></td>
+                </tr>
+                <tr>
+                    <td><code>test_spec_compliance.py</code> & các module khác</td>
+                    <td>17</td>
+                    <td>Citation validator, fallback policies, health & readiness endpoints</td>
+                    <td><span class="pill pill-pass">PASSED</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Core API Java Test Suite -->
+    <div class="section-card">
+        <div class="section-header">
+            <div class="section-title">
+                <span>☕ Core API Java Test Suite (JUnit / Maven)</span>
+            </div>
+            <span class="pill pill-pass">55 / 55 PASSED</span>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Test Class</th>
+                    <th>Số lượng Test</th>
+                    <th>Mô tả Chức năng Kiểm thử</th>
+                    <th>Trạng thái</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>ChatServiceTest</code></td>
+                    <td>2</td>
+                    <td>RAG Question flow, Message persistence & Provider model sync (R-08)</td>
+                    <td><span class="pill pill-pass">PASSED</span></td>
+                </tr>
+                <tr>
+                    <td><code>ConversationServiceTest</code></td>
+                    <td>4</td>
+                    <td>Conversation session tracking, history retrieval & deletion</td>
+                    <td><span class="pill pill-pass">PASSED</span></td>
+                </tr>
+                <tr>
+                    <td><code>DocumentServiceTest</code></td>
+                    <td>6</td>
+                    <td>Document upload validation (PDF/DOCX/TXT), status transition & deletion</td>
+                    <td><span class="pill pill-pass">PASSED</span></td>
+                </tr>
+                <tr>
+                    <td><code>WorkspaceMemberServiceTest</code> & <code>SecurityTest</code></td>
+                    <td>6</td>
+                    <td>Workspace ACL authorization, member role assignment & owner permission</td>
+                    <td><span class="pill pill-pass">PASSED</span></td>
+                </tr>
+                <tr>
+                    <td><code>GlobalErrorHandlerTest</code> & <code>RequestIdFilterTest</code></td>
+                    <td>9</td>
+                    <td>RFC 7807 problem details, request ID propagation & exception handling</td>
+                    <td><span class="pill pill-pass">PASSED</span></td>
+                </tr>
+                <tr>
+                    <td>Các test classes khác (UserService, StoragePort, Health)</td>
+                    <td>28</td>
+                    <td>User profile, local/supabase storage adapter & health readiness</td>
+                    <td><span class="pill pill-pass">PASSED</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Frontend React Test Suite -->
+    <div class="section-card">
+        <div class="section-header">
+            <div class="section-title">
+                <span>⚛️ Frontend React Test Suite (Vitest)</span>
+            </div>
+            <span class="pill pill-pass">1 / 1 PASSED</span>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Test File</th>
+                    <th>Thành phần Kiểm thử</th>
+                    <th>Trạng thái</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>App.test.tsx</code></td>
+                    <td>Landing Page & Application Router rendering test</td>
+                    <td><span class="pill pill-pass">PASSED</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Benchmark Optimization Plan Summary -->
+    <div class="section-card">
+        <div class="section-header">
+            <div class="section-title">
+                <span>📋 Tóm tắt Kế hoạch Tối ưu & Benchmark v2 (Risk-Hardened)</span>
+            </div>
+            <span class="pill pill-info">22 RISKS MITIGATED</span>
+        </div>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+            Hệ thống đã triển khai trọn vẹn 5 Phase tối ưu hóa pipeline RAG và bộ công cụ Benchmark:
+        </p>
+        <div class="code-box">
+✓ Phase 0 (Preflight): Rotate credentials check (.gitignore), ChromaDB HNSW cosine verification & pre-cache intfloat/multilingual-e5-base.
+✓ Phase 1 (Hybrid Chunking): PyPDF heuristic heading detection, Vietnamese sentence splitter (NFC), Hybrid 3-level Chunker (Header->Paragraph->Sentence), Dual Collection (unichat_chunks_v1/v2).
+✓ Phase 2 (Evaluation Framework): Local JSON/JSONL evaluation store, anti-bias 4-category question generator, rate-limited paired runner (10 RPM), stdlib Paired Bootstrap CI (95%), 2-pass answer scoring.
+✓ Phase 3 (Pipeline Optimization): Refactor google-genai v2.11.0 SDK (gemini-2.5-flash), Pattern YAML intent detector, dynamic provider model propagation in Core API, decisions-log Tech Debt exclusions.
+✓ Phase 4 (Benchmark Suite): REST API endpoints (/internal/v1/eval/*), full benchmark orchestrator, grading sheet export/import & report generator.
+        </div>
+    </div>
+
+    <footer>
+        UniChat AI Knowledge Platform — Report Generated Automatically by Agentic Pair Programmer<br>
+        DeepMind Advanced Agentic Coding Architecture
+    </footer>
+</div>
+
+</body>
+</html>

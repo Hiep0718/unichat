@@ -1,0 +1,11 @@
+{
+  "name": "@unichat/automation-tests",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "npx playwright test --config=playwright.config.ts",
+    "test:headed": "npx playwright test --config=playwright.config.ts --headed",
+    "report": "npx playwright show-report ./reports/html-report"
+  }
+}

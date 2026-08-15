@@ -11,8 +11,9 @@ from typing import Any
 import httpx
 
 from app.core.settings import get_settings
-from app.services.chunker import chunk_extracted_chunks
-from app.services.text_extractor import extract_document
+from app.services.chunker import chunk_blocks_hybrid
+from app.services.rabbitmq_publisher import publish_ingestion_result
+from app.services.text_extractor import extract_blocks
 from app.services.vector_store import store_document_chunks
 
 logger = logging.getLogger(__name__)
@@ -73,11 +74,11 @@ def process_ingestion_message(payload: dict[str, Any]) -> bool:
     try:
         file_bytes = _read_file(storage_key)
 
-        # 1. Extract text & locators
-        extracted_chunks = extract_document(file_bytes, media_type)
+        # 1. Extract structured blocks with headings
+        blocks = extract_blocks(file_bytes, media_type)
 
-        # 2. Chunk text
-        chunks = chunk_extracted_chunks(extracted_chunks)
+        # 2. Hybrid 3-level chunking
+        chunks = chunk_blocks_hybrid(blocks)
 
         # 3. Vector embedding & ChromaDB insertion
         stored_count = store_document_chunks(
@@ -87,9 +88,11 @@ def process_ingestion_message(payload: dict[str, Any]) -> bool:
         )
 
         logger.info("Successfully indexed %d vector chunks for document %s", stored_count, document_id)
+        publish_ingestion_result(document_id, success=True, chunk_count=stored_count)
         return True
 
-    except Exception:
+    except Exception as e:
         logger.exception("Failed ingestion for document %s", document_id)
+        publish_ingestion_result(document_id, success=False, chunk_count=0, error_message=str(e))
         return False
 

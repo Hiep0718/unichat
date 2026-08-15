@@ -48,11 +48,11 @@ export function SideNavBar() {
   return (
     <nav className="side-nav" aria-label="Thanh điều hướng chính">
       <div className="side-nav__header">
-        <Link to="/workspaces" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', textDecoration: 'none', color: 'inherit' }}>
+        <Link to="/workspaces" className="side-nav__brand-link" title="UniChat AI Platform">
           <div className="side-nav__avatar">
-            <img src={logoWhite} alt="UniChat Logo" width="32" height="32" style={{ objectFit: 'contain' }} />
+            <img src={logoWhite} alt="UniChat Logo" width="22" height="22" style={{ objectFit: 'contain' }} />
           </div>
-          <div>
+          <div className="side-nav__brand-info">
             <h1 className="side-nav__title">UniChat</h1>
             <p className="side-nav__subtitle">{isWorkspaceContext ? 'Workspace' : 'AI Platform'}</p>
           </div>
@@ -63,10 +63,10 @@ export function SideNavBar() {
         <Link
           to={`/workspaces/${workspaceId}/documents`}
           className="side-nav__upload-btn"
-          style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          title="Tải tài liệu mới"
         >
           <Icon name="add" size={20} />
-          Tải tài liệu mới
+          <span className="side-nav__upload-text">Tải tài liệu mới</span>
         </Link>
       )}
 
@@ -78,9 +78,10 @@ export function SideNavBar() {
               key={item.href}
               to={item.href}
               className={`side-nav__item ${isActive ? 'side-nav__item--active' : ''}`}
+              title={item.label}
             >
               <Icon name={item.icon} size={20} />
-              {item.label}
+              <span className="side-nav__label">{item.label}</span>
             </Link>
           );
         })}
@@ -88,18 +89,19 @@ export function SideNavBar() {
 
       <div className="side-nav__footer">
         {isWorkspaceContext && (
-          <Link to="/workspaces?select=true" className="side-nav__item">
+          <Link to="/workspaces?select=true" className="side-nav__item" title="Đổi Workspace">
             <Icon name="arrow_back" size={20} />
-            Đổi Workspace
+            <span className="side-nav__label">Đổi Workspace</span>
           </Link>
         )}
         {isAdmin && (
           <Link
             to="/admin/users"
             className={`side-nav__item ${location.pathname.startsWith('/admin') ? 'side-nav__item--active' : ''}`}
+            title="Quản trị viên"
           >
             <Icon name="admin_panel_settings" size={20} />
-            Quản trị viên
+            <span className="side-nav__label">Quản trị viên</span>
           </Link>
         )}
       </div>

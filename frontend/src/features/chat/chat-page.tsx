@@ -1,52 +1,104 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import Markdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 
-import { askWorkspaceQuestion, QuestionResponse } from './chat-api';
-import { CitationPanel } from './components/citation-panel';
-import { RefusalCard } from './components/refusal-card';
+import { askWorkspaceQuestion, CitationItem } from './chat-api';
+import { ChatHeader } from './components/chat-header';
+import { ChatWelcome } from './components/chat-welcome';
+import { ChatMessageItem, MessageItem } from './components/chat-message-item';
+import { ChatInputForm } from './components/chat-input-form';
+import { CitationDrawer } from './components/citation-drawer';
 import { useWorkspace } from '../workspaces/workspace-context';
+import { fetchWorkspaceConversations, fetchConversationDetail } from '../history/conversation-api';
 import './chat-page.css';
 
 interface ChatPageProps {
   workspaceId?: string;
 }
 
-interface MessageItem {
-  id: string;
-  role: 'USER' | 'ASSISTANT';
-  content: string;
-  response?: QuestionResponse;
-}
-
 export const ChatPage: React.FC<ChatPageProps> = ({ workspaceId: propWorkspaceId }) => {
   const params = useParams<{ workspaceId?: string }>();
   const workspaceContext = useWorkspace();
-
   const targetWorkspaceId = propWorkspaceId || params.workspaceId || workspaceContext?.workspace?.id;
 
   const [messages, setMessages] = useState<MessageItem[]>([]);
-  const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [conversationId, setConversationId] = useState<string | undefined>(undefined);
+  const [conversationTitle, setConversationTitle] = useState<string | undefined>(undefined);
+  const [selectedCitation, setSelectedCitation] = useState<CitationItem | null>(null);
+
+  useEffect(() => {
+    if (!targetWorkspaceId) return;
+
+    let isMounted = true;
+    fetchWorkspaceConversations(targetWorkspaceId)
+      .then((res) => {
+        if (!isMounted) return;
+        const list = res.content || [];
+        if (list.length > 0 && list[0]) {
+          const latest = list[0];
+          setConversationId(latest.id);
+          setConversationTitle(latest.title);
+          return fetchConversationDetail(targetWorkspaceId, latest.id);
+        }
+      })
+      .then((detail) => {
+        if (!isMounted || !detail) return;
+        const loadedMessages: MessageItem[] = (detail.messages || []).map((m) => {
+          const item: MessageItem = {
+            id: m.id,
+            role: m.role,
+            content: m.content,
+          };
+          if (m.role === 'ASSISTANT') {
+            const isRefusal = Boolean(m.refusalCode);
+            const isClarify = m.refusalCode === 'CLARIFY_REQUIRED';
+            item.response = {
+              messageId: m.id,
+              conversationId: detail.id,
+              decision: isClarify ? 'CLARIFY' : (isRefusal ? 'REFUSE' : 'ANSWER'),
+              answer: isRefusal ? null : m.content,
+              intent: m.intent || 'FACT',
+              strategyVersion: 'v1.0',
+              providerModel: m.providerModel || 'gemini-2.5-flash',
+              citations: (m.citations || []).map((c, i) => ({
+                citationId: String(i + 1),
+                documentId: c.documentId || '',
+                fileName: c.fileName || 'Tài liệu',
+                locator: c.locator || '',
+                excerpt: c.excerpt || '',
+                score: c.score || 0.75,
+              })),
+              refusalCode: m.refusalCode || null,
+              refusalReason: isRefusal ? m.content : null,
+              requestId: 'history',
+            };
+          }
+          return item;
+        });
+        setMessages(loadedMessages);
+      })
+      .catch((err) => {
+        console.error('Lỗi tải lịch sử cuộc trò chuyện:', err);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [targetWorkspaceId]);
 
   if (!targetWorkspaceId) {
-    return <div style={{ padding: '2rem', color: '#e11d48' }}>Lỗi: Không tìm thấy Workspace ID</div>;
+    return <div className="chat-page__error">Lỗi: Không tìm thấy Workspace ID</div>;
   }
 
-  const handleSend = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || loading) return;
-
-    const userText = input.trim();
-    setInput('');
+  const handleSendQuestion = async (userText: string) => {
+    if (loading) return;
     setLoading(true);
 
     const userMsg: MessageItem = {
       id: Date.now().toString(),
       role: 'USER',
       content: userText,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
     setMessages((prev) => [...prev, userMsg]);
 
@@ -65,13 +117,15 @@ export const ChatPage: React.FC<ChatPageProps> = ({ workspaceId: propWorkspaceId
         role: 'ASSISTANT',
         content: res.answer || res.refusalReason || 'Không có câu trả lời',
         response: res,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
       setMessages((prev) => [...prev, assistantMsg]);
     } catch (err: unknown) {
       const errorMsg: MessageItem = {
         id: Date.now().toString(),
         role: 'ASSISTANT',
-        content: err instanceof Error ? err.message : 'Đã xảy ra lỗi khi truy vấn',
+        content: err instanceof Error ? err.message : 'Đã xảy ra lỗi khi truy vấn RAG',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
       setMessages((prev) => [...prev, errorMsg]);
     } finally {
@@ -79,55 +133,49 @@ export const ChatPage: React.FC<ChatPageProps> = ({ workspaceId: propWorkspaceId
     }
   };
 
+  const handleNewChat = () => {
+    setConversationId(undefined);
+    setConversationTitle(undefined);
+    setMessages([]);
+    setSelectedCitation(null);
+  };
+
   return (
-    <div className="chat-page">
-      <div className="chat-messages">
-        {messages.length === 0 ? (
-          <div style={{ textAlign: 'center', color: '#64748b', marginTop: '60px' }}>
-            <h2 style={{ color: '#0f172a', marginBottom: '0.5rem' }}>Hỏi đáp Tri thức với UniChat AI</h2>
-            <p>Nhập câu hỏi của bạn để truy xuất và suy luận từ tài liệu trong Workspace</p>
-          </div>
-        ) : (
-          messages.map((msg) => (
-            <div
-              key={msg.id}
-              className={`chat-message chat-message--${msg.role.toLowerCase()}`}
-            >
-              <div className="chat-bubble">
-                {msg.role === 'ASSISTANT' ? (
-                  <Markdown remarkPlugins={[remarkGfm]}>{msg.content}</Markdown>
-                ) : (
-                  msg.content
-                )}
-              </div>
-              {msg.response && msg.response.decision === 'ANSWER' && (
-                <CitationPanel citations={msg.response.citations} />
-              )}
-              {msg.response && (msg.response.decision === 'REFUSE' || msg.response.decision === 'CLARIFY') && (
-                <RefusalCard
-                  decision={msg.response.decision}
-                  refusalReason={msg.response.refusalReason}
-                />
-              )}
-            </div>
-          ))
-        )}
+    <div className={`chat-layout ${selectedCitation ? 'chat-layout--split' : ''}`}>
+      <div className="chat-page">
+        <ChatHeader
+          workspaceName={workspaceContext?.workspace?.name}
+          conversationTitle={conversationTitle}
+          messageCount={messages.length}
+          onNewChat={handleNewChat}
+          onToggleDrawer={selectedCitation ? () => setSelectedCitation(null) : undefined}
+          hasDrawerOpen={Boolean(selectedCitation)}
+        />
+
+        <div className="chat-page__messages-body">
+          {messages.length === 0 ? (
+            <ChatWelcome onSelectPrompt={handleSendQuestion} />
+          ) : (
+            messages.map((msg) => (
+              <ChatMessageItem
+                key={msg.id}
+                message={msg}
+                onSelectCitation={(cit) => setSelectedCitation(cit)}
+              />
+            ))
+          )}
+        </div>
+
+        <ChatInputForm onSend={handleSendQuestion} loading={loading} />
       </div>
 
-      <form onSubmit={handleSend} className="chat-input-zone">
-        <input
-          type="text"
-          className="chat-input"
-          placeholder="Nhập câu hỏi tri thức (tối đa 2.000 ký tự)..."
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          disabled={loading}
-          maxLength={2000}
+      {selectedCitation && (
+        <CitationDrawer
+          workspaceId={targetWorkspaceId}
+          citation={selectedCitation}
+          onClose={() => setSelectedCitation(null)}
         />
-        <button type="submit" className="chat-send-btn" disabled={loading || !input.trim()}>
-          {loading ? 'Đang suy nghĩ...' : 'Gửi câu hỏi'}
-        </button>
-      </form>
+      )}
     </div>
   );
 };

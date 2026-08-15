@@ -19,6 +19,8 @@ export interface QuestionResponse {
   citations: CitationItem[];
   refusalCode: string | null;
   refusalReason?: string | null | undefined;
+  providerModel?: string | null | undefined;
+  evidenceScore?: number | null | undefined;
   requestId: string;
 }
 

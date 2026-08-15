@@ -12,9 +12,9 @@ import threading
 from typing import Any
 from urllib.parse import urlparse
 
-import pika
-from pika.adapters.blocking_connection import BlockingChannel
-from pika.spec import Basic, BasicProperties
+import pika  # type: ignore[import-untyped]
+from pika.adapters.blocking_connection import BlockingChannel  # type: ignore[import-untyped]
+from pika.spec import Basic, BasicProperties  # type: ignore[import-untyped]
 
 from app.services.ingestion_consumer import process_ingestion_message
 

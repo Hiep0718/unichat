@@ -20,6 +20,9 @@ public class RabbitMqConfig {
     public static final String INGESTION_QUEUE = "unichat.ingestion.queue";
     public static final String INGESTION_ROUTING_KEY = "document.uploaded";
 
+    public static final String INGESTION_RESULT_QUEUE = "unichat.ingestion.result.queue";
+    public static final String INGESTION_RESULT_ROUTING_KEY = "document.ingestion.result";
+
     public static final String DLQ_EXCHANGE = "unichat.dlq.exchange";
     public static final String DLQ_QUEUE = "unichat.dlq.queue";
     public static final String DLQ_ROUTING_KEY = "document.dlq";
@@ -52,6 +55,16 @@ public class RabbitMqConfig {
     @Bean
     public Binding ingestionBinding() {
         return BindingBuilder.bind(ingestionQueue()).to(ingestionExchange()).with(INGESTION_ROUTING_KEY);
+    }
+
+    @Bean
+    public Queue ingestionResultQueue() {
+        return QueueBuilder.durable(INGESTION_RESULT_QUEUE).build();
+    }
+
+    @Bean
+    public Binding ingestionResultBinding() {
+        return BindingBuilder.bind(ingestionResultQueue()).to(ingestionExchange()).with(INGESTION_RESULT_ROUTING_KEY);
     }
 
     @Bean
