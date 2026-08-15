@@ -1,62 +1,208 @@
-/* Citation Panel & Refusal Card Styling */
+/* ==========================================================================
+   Citation Panel & Refusal Card Styling — DESIGN.md Academic Precision
+   ========================================================================== */
 
 .citation-panel {
   margin-top: 12px;
-  padding: 12px 16px;
-  background: var(--color-surface-container-low);
-  border: 1px solid var(--color-outline-variant);
-  border-radius: var(--radius-md);
-}
-
-.citation-panel__header {
-  font: var(--font-label-md);
-  font-weight: 600;
-  color: var(--color-on-surface-variant);
-  margin-bottom: 8px;
-}
-
-.citation-panel__list {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.citation-card {
-  padding: 8px 12px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-outline-variant);
-  border-radius: var(--radius-sm);
-  font: var(--font-body-sm);
+.citation-panel__header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font: var(--font-label-sm);
+  color: var(--color-secondary);
+  font-weight: 600;
 }
 
-.citation-card__title {
-  font-weight: 600;
-  color: var(--color-primary);
+.citation-panel__icon {
+  font-size: 16px;
+}
+
+.citation-pills-list {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.citation-pill-container {
+  position: relative;
+  display: inline-block;
+}
+
+.citation-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  background: var(--color-surface-container-lowest);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-full);
+  font: var(--font-label-sm);
+  color: var(--color-on-surface);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.citation-pill-btn:hover {
+  background: var(--color-secondary-fixed);
+  border-color: var(--color-secondary);
+  color: var(--color-on-secondary-fixed);
+  transform: translateY(-1px);
+}
+
+.citation-pill-icon {
+  font-size: 14px;
+  color: var(--color-secondary);
+}
+
+.citation-pill-name {
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.citation-pill-score {
+  padding: 1px 6px;
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--color-success);
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* ── Hover Popover ── */
+.citation-popover {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 360px;
+  padding: 14px 16px;
+  background: var(--color-surface-container-lowest);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  z-index: 999;
+  animation: citation-pop-fade 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+}
+
+.citation-popover::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: var(--color-surface-container-lowest) transparent transparent transparent;
+}
+
+@keyframes citation-pop-fade {
+  from { opacity: 0; transform: translate(-50%, 6px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.citation-popover__header {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 4px;
+  align-items: center;
+  margin-bottom: 6px;
+  gap: 8px;
 }
 
-.citation-card__excerpt {
+.citation-popover__filename {
+  font: var(--font-label-md);
   color: var(--color-on-surface);
-  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
+.citation-popover__score {
+  font: var(--font-label-sm);
+  font-size: 11px;
+  color: var(--color-success);
+  background: rgba(16, 185, 129, 0.15);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.citation-popover__locator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font: var(--font-label-sm);
+  color: var(--color-secondary);
+  margin-bottom: 8px;
+}
+
+.citation-popover__locator .material-symbols-outlined { font-size: 14px; }
+
+.citation-popover__excerpt {
+  font: var(--font-body-md);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-on-surface-variant);
+  font-style: italic;
+  max-height: 120px;
+  overflow-y: auto;
+  background: var(--color-surface-container-low);
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--color-secondary);
+}
+
+.citation-popover__footer {
+  margin-top: 10px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--color-outline-variant);
+  font: var(--font-label-sm);
+  color: var(--color-secondary);
+  text-align: right;
+}
+
+/* ── Refusal Card ── */
 .refusal-card {
   margin-top: 12px;
   padding: 16px;
-  background: #fef2f2;
-  border: 1px solid #fca5a5;
-  border-radius: var(--radius-md);
-  color: #991b1b;
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.refusal-card--refuse {
+  background: var(--color-error-container);
+  border: 1px solid rgba(186, 26, 26, 0.3);
+  color: var(--color-on-error-container);
+}
+
+.refusal-card--clarify {
+  background: #fefce8;
+  border: 1px solid #fef08a;
+  color: #713f12;
+}
+
+.refusal-card__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .refusal-card__title {
-  font: var(--font-title-sm);
+  font: var(--font-label-md);
   font-weight: 700;
-  margin-bottom: 4px;
 }
 
 .refusal-card__reason {
   font: var(--font-body-md);
+  line-height: 1.5;
 }

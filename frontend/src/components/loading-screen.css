@@ -1,0 +1,199 @@
+/* Premium AI Loading Screen & Transition Component Styling */
+
+.loading-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100%;
+  background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 50%, #e2e8f0 100%);
+  padding: 24px;
+  box-sizing: border-box;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.loading-screen::before {
+  content: '';
+  position: absolute;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, rgba(2, 132, 199, 0) 70%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  animation: aura-pulse 3s ease-in-out infinite alternate;
+}
+
+@keyframes aura-pulse {
+  from {
+    transform: translate(-50%, -50%) scale(0.85);
+    opacity: 0.5;
+  }
+  to {
+    transform: translate(-50%, -50%) scale(1.25);
+    opacity: 0.9;
+  }
+}
+
+.loading-screen__emblem-container {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-screen__ring {
+  position: absolute;
+  inset: -6px;
+  border-radius: 24px;
+  border: 2px solid transparent;
+  border-top-color: #0284c7;
+  border-right-color: #38bdf8;
+  animation: ring-rotate 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.loading-screen__ring--outer {
+  inset: -14px;
+  border-radius: 28px;
+  border: 1.5px dashed rgba(2, 132, 199, 0.3);
+  animation: ring-rotate-reverse 6s linear infinite;
+}
+
+@keyframes ring-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes ring-rotate-reverse {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+.loading-screen__logo-img {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  object-fit: cover;
+  box-shadow: 0 8px 24px rgba(2, 132, 199, 0.25);
+  border: 2px solid #ffffff;
+  position: relative;
+  z-index: 2;
+  animation: logo-float 2.5s ease-in-out infinite alternate;
+}
+
+@keyframes logo-float {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-6px);
+  }
+}
+
+.loading-screen__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  z-index: 2;
+}
+
+.loading-screen__brand {
+  font: var(--font-headline-md);
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, #0b192c 0%, #0284c7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+}
+
+.loading-screen__message {
+  font: var(--font-body-md);
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--color-on-surface-variant);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.loading-screen__dots {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.loading-screen__dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  animation: dot-bounce 1.4s ease-in-out infinite both;
+}
+
+.loading-screen__dot:nth-child(1) {
+  animation-delay: 0s;
+}
+.loading-screen__dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.loading-screen__dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes dot-bounce {
+  0%, 80%, 100% {
+    transform: scale(0.6);
+    opacity: 0.4;
+  }
+  40% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}
+
+/* Inline Section Loader (For Tabs / Containers) */
+.loading-inline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.loading-inline__spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--color-outline-variant);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: ring-rotate 0.8s linear infinite;
+}
+
+.loading-inline__text {
+  font: var(--font-label-md);
+  color: var(--color-on-surface-variant);
+  font-weight: 500;
+}

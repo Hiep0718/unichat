@@ -10,10 +10,13 @@ from app.services.chunker import ChunkResult
 logger = logging.getLogger(__name__)
 
 EMBEDDING_MODEL_NAME = "intfloat/multilingual-e5-base"
-COLLECTION_NAME = "unichat_chunks_v1"
+COLLECTION_V1 = "unichat_chunks_v1"
+COLLECTION_V2 = "unichat_chunks_v2"
+COLLECTION_NAME = COLLECTION_V2
 
 _model: SentenceTransformer | None = None
 _ephemeral_client: Any = None
+
 
 def get_embedding_model() -> SentenceTransformer:
     global _model
@@ -21,19 +24,39 @@ def get_embedding_model() -> SentenceTransformer:
         _model = SentenceTransformer(EMBEDDING_MODEL_NAME)
     return _model
 
+
 def get_chroma_client() -> Any:
     global _ephemeral_client
-    mode = os.getenv("CHROMA_MODE", "auto")
+    mode = os.getenv("CHROMA_MODE", "auto").lower()
+
+    # 1. Ephemeral local in-memory mode
     if mode == "ephemeral":
         if _ephemeral_client is None:
             _ephemeral_client = chromadb.EphemeralClient()
         return _ephemeral_client
 
+    # 2. Chroma Cloud mode
+    cloud_api_key = os.getenv("CHROMA_CLOUD_API_KEY") or os.getenv("CHROMA_API_KEY", "")
+    tenant = os.getenv("CHROMA_CLOUD_TENANT") or os.getenv("CHROMA_TENANT", "")
+    database = os.getenv("CHROMA_CLOUD_DATABASE") or os.getenv("CHROMA_DATABASE", "default_database")
+    host = os.getenv("CHROMA_HOST", "")
+
+    if mode == "cloud" or cloud_api_key or "trychroma.com" in host:
+        if cloud_api_key and tenant:
+            try:
+                return chromadb.CloudClient(
+                    tenant=tenant,
+                    database=database,
+                    api_key=cloud_api_key,
+                )
+            except Exception as e:
+                logger.error("Failed to connect to Chroma Cloud (tenant=%s, db=%s): %s", tenant, database, e)
+
+    # 3. Local Self-hosted Server / Docker mode
     host = os.getenv("CHROMA_SERVER_HOST", "localhost")
     port = int(os.getenv("CHROMA_SERVER_HTTP_PORT", "8000"))
     try:
         client = chromadb.HttpClient(host=host, port=port)
-        # Ping server identity to verify connection
         client.get_user_identity()
         return client
     except Exception as e:
@@ -47,22 +70,33 @@ def get_chroma_client() -> Any:
             _ephemeral_client = chromadb.EphemeralClient()
         return _ephemeral_client
 
-def get_or_create_collection(client: Any) -> Any:
+
+def get_active_collection_name() -> str:
+    """Return collection name based on env CHUNKING_COLLECTION (v1 or v2)."""
+    return os.getenv("CHUNKING_COLLECTION", COLLECTION_V2)
+
+
+def get_or_create_collection(client: Any, collection_name: str | None = None) -> Any:
+    target_name = collection_name or get_active_collection_name()
     return client.get_or_create_collection(
-        name=COLLECTION_NAME,
+        name=target_name,
         metadata={"hnsw:space": "cosine"},
     )
+
 
 def store_document_chunks(
     workspace_id: str,
     document_id: str,
     chunks: list[ChunkResult],
+    target_collection: str | None = None,
 ) -> int:
+    """Store document chunks into specified ChromaDB collection with enriched metadata (R-03, R-18, R-19)."""
     if not chunks:
         return 0
 
     client = get_chroma_client()
-    collection = get_or_create_collection(client)
+    col_name = target_collection or get_active_collection_name()
+    collection = get_or_create_collection(client, collection_name=col_name)
     model = get_embedding_model()
 
     ids: list[str] = []
@@ -72,21 +106,30 @@ def store_document_chunks(
 
     for chunk in chunks:
         chunk_id = f"{document_id}_{chunk.chunk_index}"
-        # Add passage: prefix per E5 model specification
         prefixed_text = f"passage: {chunk.text}"
         embedding = model.encode(prefixed_text).tolist()
 
         ids.append(chunk_id)
         documents.append(chunk.text)
         embeddings.append(embedding)
-        metadatas.append({
+
+        meta: dict[str, Any] = {
             "workspace_id": workspace_id,
             "document_id": document_id,
             "chunk_index": chunk.chunk_index,
             "locator_type": chunk.locator_type,
             "locator_value": chunk.locator_value,
             "content_hash": chunk.content_hash,
-        })
+            # R-03: Additional metadata fields for retrieval filter
+            "document_status": "PROCESSED",
+            "ingestion_version": "v2.0",
+            # R-19: source_group = document_id for P0
+            "source_group": document_id,
+        }
+        if chunk.section_heading:
+            meta["section_heading"] = chunk.section_heading
+
+        metadatas.append(meta)
 
     collection.add(
         ids=ids,

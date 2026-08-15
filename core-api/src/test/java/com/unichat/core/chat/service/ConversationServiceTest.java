@@ -36,6 +36,8 @@ class ConversationServiceTest {
 
     private ConversationRepository conversationRepository;
     private MessageRepository messageRepository;
+    private com.unichat.core.chat.domain.CitationHistoryRepository citationHistoryRepository;
+    private com.unichat.core.document.domain.DocumentRepository documentRepository;
     private WorkspaceRepository workspaceRepository;
     private WorkspaceMemberRepository workspaceMemberRepository;
     private ConversationService conversationService;
@@ -44,16 +46,22 @@ class ConversationServiceTest {
     void setUp() {
         conversationRepository = mock(ConversationRepository.class);
         messageRepository = mock(MessageRepository.class);
+        citationHistoryRepository = mock(com.unichat.core.chat.domain.CitationHistoryRepository.class);
+        documentRepository = mock(com.unichat.core.document.domain.DocumentRepository.class);
         workspaceRepository = mock(WorkspaceRepository.class);
         workspaceMemberRepository = mock(WorkspaceMemberRepository.class);
         conversationService = new ConversationService(
                 conversationRepository,
                 messageRepository,
+                citationHistoryRepository,
+                documentRepository,
                 workspaceRepository,
                 workspaceMemberRepository,
                 Clock.systemUTC()
         );
     }
+
+
 
     @Test
     void shouldCreateConversationSuccessfully() {
@@ -110,6 +118,7 @@ class ConversationServiceTest {
                 .thenReturn(Optional.of(member));
         when(conversationRepository.findByUserIdAndIdAndStatus(userId, convId, "ACTIVE")).thenReturn(Optional.of(conv));
         when(messageRepository.findByConversationIdOrderByCreatedAtAsc(convId)).thenReturn(List.of(msg));
+        when(documentRepository.findByWorkspaceIdExcludingDeleting(any(), any())).thenReturn(new org.springframework.data.domain.PageImpl<>(List.of()));
 
         var detail = conversationService.getConversation(userId, workspaceId, convId);
 

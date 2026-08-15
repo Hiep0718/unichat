@@ -4,6 +4,9 @@ import java.util.UUID;
 
 import jakarta.validation.Valid;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -15,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.unichat.core.chat.service.ChatService;
+import com.unichat.core.shared.idempotency.IdempotencyService;
 
 /**
  * REST controller for asking questions and retrieving adaptive RAG reasoning answers.
@@ -24,21 +28,43 @@ import com.unichat.core.chat.service.ChatService;
 public class ChatController {
 
     private final ChatService chatService;
+    private final IdempotencyService idempotencyService;
 
-    public ChatController(ChatService chatService) {
+    public ChatController(ChatService chatService, IdempotencyService idempotencyService) {
         this.chatService = chatService;
+        this.idempotencyService = idempotencyService;
     }
 
     /**
      * Asks a question within a workspace and gets adaptive retrieval answer.
      */
     @PostMapping
-    public ResponseEntity<QuestionResponse> askQuestion(
+    public ResponseEntity<?> askQuestion(
             @AuthenticationPrincipal Jwt jwt,
             @PathVariable("workspaceId") UUID workspaceId,
             @Valid @RequestBody AskQuestionRequest request,
+            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
             @RequestHeader(value = "X-Request-Id", required = false, defaultValue = "") String requestId) {
         UUID userId = UUID.fromString(jwt.getSubject());
+        String actorId = userId.toString();
+        String routeKey = "/workspaces/" + workspaceId + "/questions";
+
+        if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+            String currentHash = idempotencyService.computeHash(request);
+            var recordOpt = idempotencyService.getRecord(actorId, routeKey, idempotencyKey);
+            if (recordOpt.isPresent()) {
+                var record = recordOpt.get();
+                idempotencyService.handleConflict(record, currentHash);
+                return ResponseEntity.status(record.getResponseStatus())
+                        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                        .body(record.getResponseBody());
+            }
+
+            QuestionResponse response = chatService.askQuestion(userId, workspaceId, request, requestId);
+            idempotencyService.saveRecord(actorId, routeKey, idempotencyKey, currentHash, 200, response);
+            return ResponseEntity.ok(response);
+        }
+
         QuestionResponse response = chatService.askQuestion(userId, workspaceId, request, requestId);
         return ResponseEntity.ok(response);
     }

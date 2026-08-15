@@ -5,6 +5,7 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.unichat.core.document.service.DocumentService;
+import com.unichat.core.shared.idempotency.IdempotencyService;
 
 /**
  * REST controller for document upload, ingestion tracking, and lifecycle operations.
@@ -31,9 +33,11 @@ import com.unichat.core.document.service.DocumentService;
 public class DocumentController {
 
     private final DocumentService documentService;
+    private final IdempotencyService idempotencyService;
 
-    public DocumentController(DocumentService documentService) {
+    public DocumentController(DocumentService documentService, IdempotencyService idempotencyService) {
         this.documentService = documentService;
+        this.idempotencyService = idempotencyService;
     }
 
     /**
@@ -54,12 +58,33 @@ public class DocumentController {
      * Uploads a document (PDF, DOCX, TXT) to workspace and triggers async ingestion via RabbitMQ.
      */
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<IngestionJobResponse> uploadDocument(
+    public ResponseEntity<?> uploadDocument(
             @AuthenticationPrincipal Jwt jwt,
             @PathVariable("workspaceId") UUID workspaceId,
             @RequestPart("file") MultipartFile file,
+            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
             @RequestHeader(value = "X-Request-Id", required = false, defaultValue = "") String requestId) {
         UUID userId = UUID.fromString(jwt.getSubject());
+        String actorId = userId.toString();
+        String routeKey = "/workspaces/" + workspaceId + "/documents";
+
+        if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+            String fileDescriptor = (file != null) ? file.getOriginalFilename() + ":" + file.getSize() : "";
+            String currentHash = idempotencyService.computeHash(fileDescriptor);
+            var recordOpt = idempotencyService.getRecord(actorId, routeKey, idempotencyKey);
+            if (recordOpt.isPresent()) {
+                var record = recordOpt.get();
+                idempotencyService.handleConflict(record, currentHash);
+                return ResponseEntity.status(record.getResponseStatus())
+                        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                        .body(record.getResponseBody());
+            }
+
+            IngestionJobResponse response = documentService.uploadDocument(userId, workspaceId, file, requestId);
+            idempotencyService.saveRecord(actorId, routeKey, idempotencyKey, currentHash, 202, response);
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
+        }
+
         IngestionJobResponse response = documentService.uploadDocument(userId, workspaceId, file, requestId);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
@@ -74,6 +99,31 @@ public class DocumentController {
             @PathVariable("documentId") UUID documentId) {
         UUID userId = UUID.fromString(jwt.getSubject());
         return ResponseEntity.ok(documentService.getDocument(userId, workspaceId, documentId));
+    }
+
+    /**
+     * Downloads or streams physical document file content for preview and reference reading.
+     */
+    @GetMapping("/{documentId}/download")
+    public ResponseEntity<byte[]> downloadDocument(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable("workspaceId") UUID workspaceId,
+            @PathVariable("documentId") UUID documentId) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        DocumentResponse doc = documentService.getDocument(userId, workspaceId, documentId);
+        byte[] bytes = documentService.downloadDocument(userId, workspaceId, documentId);
+
+        MediaType mediaType = MediaType.APPLICATION_OCTET_STREAM;
+        try {
+            if (doc.mediaType() != null) {
+                mediaType = MediaType.parseMediaType(doc.mediaType());
+            }
+        } catch (Exception ignored) {}
+
+        return ResponseEntity.ok()
+                .contentType(mediaType)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + doc.originalName() + "\"")
+                .body(bytes);
     }
 
     /**

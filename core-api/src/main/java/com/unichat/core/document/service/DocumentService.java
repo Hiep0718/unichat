@@ -17,9 +17,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.unichat.core.common.error.AuthorizationError;
 import com.unichat.core.common.error.ConflictError;
-
 import com.unichat.core.common.error.NotFoundError;
 import com.unichat.core.common.error.ValidationError;
 import com.unichat.core.document.api.DocumentResponse;
@@ -43,6 +45,8 @@ import com.unichat.core.workspace.domain.WorkspaceRole;
 @Service
 public class DocumentService {
 
+    private static final Logger log = LoggerFactory.getLogger(DocumentService.class);
+
     private static final long MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MiB
     private static final long MAX_WORKSPACE_STORAGE = 1024 * 1024 * 1024; // 1 GiB
     private static final long MAX_WORKSPACE_DOCUMENTS = 100;
@@ -53,9 +57,12 @@ public class DocumentService {
             "text/plain"
     );
 
+    private static final int MAX_PDF_PAGES = 500;
+
     private final DocumentRepository documentRepository;
     private final WorkspaceRepository workspaceRepository;
     private final WorkspaceMemberRepository workspaceMemberRepository;
+    private final com.unichat.core.chat.domain.CitationHistoryRepository citationHistoryRepository;
     private final StoragePort storagePort;
     private final DocumentIngestionProducer ingestionProducer;
     private final Clock clock;
@@ -64,12 +71,14 @@ public class DocumentService {
             DocumentRepository documentRepository,
             WorkspaceRepository workspaceRepository,
             WorkspaceMemberRepository workspaceMemberRepository,
+            com.unichat.core.chat.domain.CitationHistoryRepository citationHistoryRepository,
             StoragePort storagePort,
             DocumentIngestionProducer ingestionProducer,
             Clock clock) {
         this.documentRepository = documentRepository;
         this.workspaceRepository = workspaceRepository;
         this.workspaceMemberRepository = workspaceMemberRepository;
+        this.citationHistoryRepository = citationHistoryRepository;
         this.storagePort = storagePort;
         this.ingestionProducer = ingestionProducer;
         this.clock = clock;
@@ -130,8 +139,11 @@ public class DocumentService {
                 documentId, workspaceId, storageKey, mediaType, originalName, requestId
         ));
 
-        return new IngestionJobResponse(documentId, jobId, DocumentStatus.PENDING, "Tải lên thành công. Đang xử lý bóc tách tri thức");
+        return new IngestionJobResponse(documentId, jobId, DocumentStatus.PENDING, "Tải lên thành công. Đang bóc tách tri thức.");
     }
+
+
+
 
     /**
      * Retrieves document metadata.
@@ -142,6 +154,17 @@ public class DocumentService {
         Document document = documentRepository.findByWorkspaceIdAndId(workspaceId, documentId)
                 .orElseThrow(() -> new NotFoundError("Tài liệu không tồn tại trong workspace"));
         return DocumentResponse.from(document);
+    }
+
+    /**
+     * Streams file bytes for document viewer and RAG reference reading.
+     */
+    @Transactional(readOnly = true)
+    public byte[] downloadDocument(UUID userId, UUID workspaceId, UUID documentId) {
+        validateAccess(userId, workspaceId, WorkspaceRole.VIEWER);
+        Document document = documentRepository.findByWorkspaceIdAndId(workspaceId, documentId)
+                .orElseThrow(() -> new NotFoundError("Tài liệu không tồn tại"));
+        return storagePort.retrieve(document.getStorageKey());
     }
 
     /**
@@ -157,8 +180,25 @@ public class DocumentService {
         document.setUpdatedAt(Instant.now(clock));
         documentRepository.save(document);
 
-        // Physical deletion is handled asynchronously by delete saga
+        // Redact citation history excerpts for deleted document
+        citationHistoryRepository.redactByDocumentId(documentId);
+
+        // Physical deletion of storage blob
         storagePort.delete(document.getStorageKey());
+    }
+
+    /**
+     * Updates document status after ingestion result arrives via RabbitMQ reply queue.
+     */
+    @Transactional
+    public void updateIngestionResult(UUID documentId, DocumentStatus newStatus, int chunkCount) {
+        Document document = documentRepository.findById(documentId)
+                .orElseThrow(() -> new NotFoundError("Document not found for ingestion result: " + documentId));
+        document.setStatus(newStatus);
+        document.setPageOrBlockCount(chunkCount);
+        document.setUpdatedAt(Instant.now(clock));
+        documentRepository.save(document);
+        log.info("Updated document {} status to {} with {} chunks", documentId, newStatus, chunkCount);
     }
 
     private void validateAccess(UUID userId, UUID workspaceId, WorkspaceRole minRole) {

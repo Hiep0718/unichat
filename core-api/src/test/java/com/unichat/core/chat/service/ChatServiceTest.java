@@ -40,6 +40,8 @@ class ChatServiceTest {
     private DocumentRepository documentRepository;
     private ConversationRepository conversationRepository;
     private MessageRepository messageRepository;
+    private com.unichat.core.chat.domain.CitationHistoryRepository citationHistoryRepository;
+    private com.unichat.core.shared.config.ServiceTokenIssuer serviceTokenIssuer;
     private ChatService chatService;
 
     @BeforeEach
@@ -49,15 +51,21 @@ class ChatServiceTest {
         documentRepository = mock(DocumentRepository.class);
         conversationRepository = mock(ConversationRepository.class);
         messageRepository = mock(MessageRepository.class);
+        citationHistoryRepository = mock(com.unichat.core.chat.domain.CitationHistoryRepository.class);
+        serviceTokenIssuer = mock(com.unichat.core.shared.config.ServiceTokenIssuer.class);
+        org.mockito.Mockito.when(serviceTokenIssuer.issueToken()).thenReturn("Bearer test-token");
         chatService = new ChatService(
                 workspaceRepository,
                 workspaceMemberRepository,
                 documentRepository,
                 conversationRepository,
                 messageRepository,
+                citationHistoryRepository,
+                serviceTokenIssuer,
                 Clock.systemUTC()
         );
     }
+
 
     @Test
     void shouldAskQuestionSuccessfully() {
@@ -70,6 +78,7 @@ class ChatServiceTest {
         when(workspaceMemberRepository.findByWorkspaceIdAndUserIdAndStatus(workspaceId, userId, WorkspaceMemberStatus.ACTIVE))
                 .thenReturn(Optional.of(member));
         when(documentRepository.findAllowedDocumentIdsForWorkspaces(List.of(workspaceId))).thenReturn(List.of(UUID.randomUUID()));
+        when(documentRepository.findByWorkspaceIdExcludingDeleting(any(), any())).thenReturn(new org.springframework.data.domain.PageImpl<>(List.of()));
 
         var request = new AskQuestionRequest("Khái niệm Vector Embedding là gì?", null);
 

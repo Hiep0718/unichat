@@ -1,27 +1,85 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { CitationItem } from '../chat-api';
 import './citation-panel.css';
 
 interface CitationPanelProps {
   citations: CitationItem[];
+  onSelectCitation?: ((citation: CitationItem) => void) | undefined;
 }
 
-export const CitationPanel: React.FC<CitationPanelProps> = ({ citations }) => {
-  if (!citations || citations.length === 0) return null;
+export const CitationPanel: React.FC<CitationPanelProps> = ({ citations, onSelectCitation }) => {
+  const [activeHoverIdx, setActiveHoverIdx] = useState<number | null>(null);
+
+  // Filter out redundant duplicate citation entries from the same document & locator
+  const uniqueCitations = useMemo(() => {
+    if (!citations) return [];
+    const seen = new Set<string>();
+    return citations.filter((c) => {
+      const docName = c.fileName || c.documentId || 'doc';
+      const loc = c.locator || c.excerpt.slice(0, 20);
+      const key = `${docName}_${loc}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [citations]);
+
+  if (!uniqueCitations || uniqueCitations.length === 0) return null;
 
   return (
     <div className="citation-panel">
-      <div className="citation-panel__header">Trích dẫn nguồn tài liệu ({citations.length}):</div>
-      <div className="citation-panel__list">
-        {citations.map((c, idx) => (
-          <div key={idx} className="citation-card">
-            <div className="citation-card__title">
-              <span>[{c.citationId}] {c.fileName || 'Tài liệu nguồn'} ({c.locator})</span>
-              <span>Khớp: {(c.score * 100).toFixed(0)}%</span>
+      <div className="citation-panel__header">
+        <span className="material-symbols-outlined citation-panel__icon">find_in_page</span>
+        <span className="citation-panel__label">
+          Nguồn trích dẫn RAG ({uniqueCitations.length}):
+        </span>
+      </div>
+
+      <div className="citation-pills-list">
+        {uniqueCitations.map((c, idx) => {
+          const scorePercent = Math.round((c.score || 0.75) * 100);
+          const locatorLabel = c.locator
+            ? c.locator.replace('page:', 'Trang ').replace('paragraph:', 'Đoạn ').replace('line:', 'Dòng ')
+            : 'Tài liệu';
+          const title = c.fileName && c.fileName !== 'Tài liệu' ? c.fileName : 'Tài liệu tham khảo';
+
+          return (
+            <div
+              key={idx}
+              className="citation-pill-container"
+              onMouseEnter={() => setActiveHoverIdx(idx)}
+              onMouseLeave={() => setActiveHoverIdx(null)}
+            >
+              <button
+                className="citation-pill-btn"
+                type="button"
+                onClick={() => onSelectCitation?.(c)}
+                title="Nhấp để xem trích dẫn chi tiết trong tài liệu gốc"
+              >
+                <span className="material-symbols-outlined citation-pill-icon">description</span>
+                <span className="citation-pill-name">{title} ({locatorLabel})</span>
+                <span className="citation-pill-score">{scorePercent}%</span>
+              </button>
+
+              {activeHoverIdx === idx && (
+                <div className="citation-popover" onClick={() => onSelectCitation?.(c)}>
+                  <div className="citation-popover__header">
+                    <span className="citation-popover__filename">{title}</span>
+                    <span className="citation-popover__score">{scorePercent}% khớp</span>
+                  </div>
+                  <div className="citation-popover__locator">
+                    <span className="material-symbols-outlined">push_pin</span>
+                    <span>Vị trí: {locatorLabel}</span>
+                  </div>
+                  <div className="citation-popover__excerpt">"{c.excerpt}"</div>
+                  <div className="citation-popover__footer">
+                    <span>Mở xem chi tiết bên cạnh ➔</span>
+                  </div>
+                </div>
+              )}
             </div>
-            <div className="citation-card__excerpt">"{c.excerpt}"</div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

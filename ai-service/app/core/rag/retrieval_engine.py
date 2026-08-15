@@ -1,7 +1,13 @@
 from typing import Any
 
 from app.core.rag.strategy_selector import RetrievalStrategy
-from app.services.vector_store import COLLECTION_NAME, get_chroma_client, get_embedding_model
+from app.services.vector_store import (
+    COLLECTION_V1,
+    COLLECTION_V2,
+    get_active_collection_name,
+    get_chroma_client,
+    get_embedding_model,
+)
 
 
 class RetrievedChunkCandidate:
@@ -33,8 +39,25 @@ def retrieve_chunks(
         return []
 
     client = get_chroma_client()
+    col_name = get_active_collection_name()
+
+    candidates = _query_single_collection(client, col_name, workspace_id, allowed_document_ids, question, strategy)
+    if not candidates and col_name == COLLECTION_V2:
+        candidates = _query_single_collection(client, COLLECTION_V1, workspace_id, allowed_document_ids, question, strategy)
+
+    return candidates[: strategy.max_chunks]
+
+
+def _query_single_collection(
+    client: Any,
+    collection_name: str,
+    workspace_id: str,
+    allowed_document_ids: list[str],
+    question: str,
+    strategy: RetrievalStrategy,
+) -> list[RetrievedChunkCandidate]:
     try:
-        collection = client.get_collection(name=COLLECTION_NAME)
+        collection = client.get_collection(name=collection_name)
     except Exception:
         return []
 
@@ -43,7 +66,7 @@ def retrieve_chunks(
     query_text = f"query: {question}"
     query_embedding = model.encode(query_text).tolist()
 
-    # Query ChromaDB with document_id filter
+    # Query ChromaDB with document_id and document_status filter
     results = collection.query(
         query_embeddings=[query_embedding],
         n_results=strategy.top_k,
@@ -51,6 +74,7 @@ def retrieve_chunks(
             "$and": [
                 {"workspace_id": {"$eq": workspace_id}},
                 {"document_id": {"$in": allowed_document_ids}},
+                {"document_status": {"$eq": "PROCESSED"}},
             ]
         },
     )

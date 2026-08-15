@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 
 import { WorkspaceProvider, WorkspaceDetails } from '../features/workspaces/workspace-context';
 import { fetchWorkspace } from '../features/workspaces/workspace-api';
+import { LoadingScreen } from '../components/loading-screen';
 import { AppShell } from './app-shell';
 
 /**
@@ -53,11 +54,7 @@ export function WorkspaceShell() {
   }, [workspaceId]);
 
   if (loading) {
-    return (
-      <div style={{ display: 'grid', placeItems: 'center', minHeight: '100vh', font: 'var(--font-body-lg)' }}>
-        Đang tải thông tin Workspace...
-      </div>
-    );
+    return <LoadingScreen message="Đang tải thông tin Workspace..." />;
   }
 
   if (error || !workspace) {

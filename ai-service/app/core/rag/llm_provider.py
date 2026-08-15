@@ -2,18 +2,24 @@ import logging
 import os
 from typing import Any
 
+from google import genai
 import httpx
 
+from app.core.rag.citation_validator import validate_citations
 from app.core.rag.retrieval_engine import RetrievedChunkCandidate
 
 logger = logging.getLogger(__name__)
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+ENABLE_OLLAMA_FALLBACK = os.getenv("ENABLE_OLLAMA_FALLBACK", "true").lower() == "true"
+
 
 def generate_rag_answer(
     question: str,
     candidates: list[RetrievedChunkCandidate],
+    allowed_document_ids: list[str] | None = None,
 ) -> dict[str, Any]:
     context_blocks = []
     citations = []
@@ -30,6 +36,17 @@ def generate_rag_answer(
             "score": c.similarity,
         })
 
+    allowed_ids = allowed_document_ids or [c.document_id for c in candidates if c.document_id]
+
+    if not validate_citations(citations, allowed_ids):
+        logger.warning("Citation validation failed for retrieved candidates.")
+        return {
+            "answer": None,
+            "citations": [],
+            "provider": "rejected-citations",
+            "validationFailed": True,
+        }
+
     context_str = "\n\n".join(context_blocks)
     system_prompt = (
         "Bạn là trợ lý AI tri thức UniChat. Hãy trả lời câu hỏi dựa CHÍNH XÁC vào "
@@ -39,50 +56,68 @@ def generate_rag_answer(
         f"NGỮ CẢNH TÀI LIỆU:\n{context_str}"
     )
 
-    # Try Gemini API primary
+    should_fallback = False
+
+    # Try official Gemini SDK primary (R-04)
     if GEMINI_API_KEY:
         try:
-            answer = call_gemini_api(system_prompt, question)
+            answer, used_model = call_gemini_api(system_prompt, question)
             return {
                 "answer": answer,
                 "citations": citations,
-                "provider": "gemini-3.5-flash",
+                "provider": used_model,
+            }
+        except (TimeoutError, ConnectionError, httpx.TimeoutException, httpx.ConnectError) as e:
+            logger.warning("Gemini transient network error (%s), enabling fallback: %s", type(e).__name__, e)
+            should_fallback = True
+        except httpx.HTTPStatusError as e:
+            if e.response.status_code in (429, 500, 502, 503, 504):
+                logger.warning("Gemini server error HTTP %s, enabling fallback: %s", e.response.status_code, e)
+                should_fallback = True
+            else:
+                logger.error("Gemini client error HTTP %s, fallback disabled: %s", e.response.status_code, e)
+                should_fallback = False
+        except Exception as e:
+            logger.error("Gemini non-transient call failed (%s), fallback disabled: %s", type(e).__name__, e)
+            should_fallback = False
+    else:
+        # No Gemini key configured -> allow fallback in dev mode
+        should_fallback = True
+
+    # Ollama Local Fallback (Only for transient/network errors)
+    if ENABLE_OLLAMA_FALLBACK and should_fallback:
+        try:
+            answer = call_ollama_fallback(system_prompt, question)
+            return {
+                "answer": answer,
+                "citations": citations,
+                "provider": "ollama-local",
             }
         except Exception as e:
-            logger.warning(f"Gemini API call failed: {e}. Falling back to Ollama.")
+            logger.error("Ollama fallback call failed: %s", e)
 
-    # Ollama Local Fallback
-    try:
-        answer = call_ollama_fallback(system_prompt, question)
-        return {
-            "answer": answer,
-            "citations": citations,
-            "provider": "ollama-local",
-        }
-    except Exception as e:
-        logger.error(f"Ollama fallback failed: {e}")
-        fallback_text = "\n".join([f"- {c.text}" for c in candidates[:3]])
-        return {
-            "answer": f"Dựa trên các tài liệu thu hồi:\n{fallback_text}",
-            "citations": citations,
-            "provider": "extractive-fallback",
-        }
-
-def call_gemini_api(system_prompt: str, question: str) -> str:
-    endpoint = (
-        "https://generativelanguage.googleapis.com/v1beta/models/"
-        f"gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
-    )
-    payload = {
-        "contents": [
-            {"role": "user", "parts": [{"text": f"{system_prompt}\n\nCÂU HỎI: {question}"}]}
-        ]
+    # Provider failed -> Return REFUSE (User Decision #4: no extractive fallback)
+    logger.error("All available LLM providers failed to produce an answer.")
+    return {
+        "answer": None,
+        "citations": [],
+        "provider": "provider-unavailable",
+        "validationFailed": True,
     }
-    with httpx.Client(timeout=15.0) as client:
-        res = client.post(endpoint, json=payload)
-        res.raise_for_status()
-        data = res.json()
-        return str(data["candidates"][0]["content"]["parts"][0]["text"])
+
+
+def call_gemini_api(system_prompt: str, question: str) -> tuple[str, str]:
+    """Call Gemini using official google-genai SDK (R-04 mitigation)."""
+    client = genai.Client(api_key=GEMINI_API_KEY)
+    model_name = GEMINI_MODEL
+
+    response = client.models.generate_content(
+        model=model_name,
+        contents=f"{system_prompt}\n\nCÂU HỎI: {question}",
+    )
+    answer_text = response.text or ""
+    return answer_text, model_name
+
 
 def call_ollama_fallback(system_prompt: str, question: str) -> str:
     url = f"{OLLAMA_HOST}/api/generate"

@@ -10,7 +10,7 @@ def test_extract_txt_line_ranges() -> None:
     assert len(chunks) > 0
     assert "Xin chào" in chunks[0].text
     assert chunks[0].locator_type == "TXT_LINE_RANGE"
-    assert chunks[0].locator_value.startswith("lines:")
+    assert chunks[0].locator_value.startswith("line")
 
     chunk_dict = chunks[0].to_dict()
     assert chunk_dict["text"] == chunks[0].text

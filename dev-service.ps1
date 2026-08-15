@@ -72,6 +72,17 @@ function Read-Command {
 function Start-ServiceProcess {
     switch ($Service) {
         'chromadb' {
+            $chromaMode = if ($env:CHROMA_MODE) { $env:CHROMA_MODE.ToLower() } else { '' }
+            $chromaApiKey = if ($env:CHROMA_CLOUD_API_KEY) { $env:CHROMA_CLOUD_API_KEY } else { $env:CHROMA_API_KEY }
+            $chromaHost = if ($env:CHROMA_HOST) { $env:CHROMA_HOST } else { '' }
+
+            if ($chromaMode -eq 'cloud' -or $chromaApiKey -or $chromaHost -like '*trychroma.com*') {
+                Write-Host "  [i] Chroma Cloud mode active ($($env:CHROMA_DATABASE) @ api.trychroma.com)." -ForegroundColor Cyan
+                Write-Host "      No local ChromaDB server process is required." -ForegroundColor Gray
+                Set-Status 'ready'
+                return $null
+            }
+
             $dataDir = Join-Path $rootDir '.tmp\chroma-data'
             if (-not (Test-Path $dataDir)) {
                 New-Item -Path $dataDir -ItemType Directory -Force | Out-Null
@@ -130,7 +141,16 @@ while ($true) {
 
     try {
         $proc = Start-ServiceProcess
-        if ($null -eq $proc) { throw 'Start-Process returned null' }
+        if ($null -eq $proc) {
+            # Cloud or skipped service process — keep tab open listening for commands
+            while ($true) {
+                $cmd = Read-Command
+                if ($cmd -eq 'restart') { break }
+                if ($cmd -eq 'quit') { Set-Status 'stopped'; exit 0 }
+                Start-Sleep -Seconds 2
+            }
+            continue
+        }
         Set-ServicePid $proc.Id
         Write-Host "  >> PID $($proc.Id) running." -ForegroundColor Green
         Write-Host ""

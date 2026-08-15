@@ -39,8 +39,9 @@ public interface DocumentRepository extends JpaRepository<Document, UUID> {
     long sumByteSizeByWorkspaceId(@Param("workspaceId") UUID workspaceId);
 
     /**
-     * Finds processed documents for authorization list (allowedDocumentIds).
+     * Finds active documents for authorization list (allowedDocumentIds).
      */
     @Query("SELECT d.id FROM Document d WHERE d.workspaceId IN :workspaceIds AND d.status = 'PROCESSED'")
     List<UUID> findAllowedDocumentIdsForWorkspaces(@Param("workspaceIds") List<UUID> workspaceIds);
 }
+

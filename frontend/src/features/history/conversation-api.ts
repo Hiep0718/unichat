@@ -19,7 +19,15 @@ export interface MessageItem {
   refusalCode?: string | null;
   providerModel?: string | null;
   createdAt: string;
+  citations?: Array<{
+    documentId?: string;
+    fileName?: string;
+    locator?: string;
+    excerpt?: string;
+    score?: number;
+  }>;
 }
+
 
 export interface ConversationDetailResponse extends ConversationItem {
   messages: MessageItem[];

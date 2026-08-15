@@ -72,6 +72,20 @@ function Kill-ServiceProcess([string]$Key) {
     }
 }
 
+function Import-DotEnv {
+    $envFile = Join-Path $rootDir '.env'
+    if (-not (Test-Path $envFile)) { return }
+    foreach ($line in Get-Content $envFile) {
+        $tLine = $line.Trim()
+        if ($tLine -match '^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$') {
+            $key = $Matches[1].Trim()
+            $val = $Matches[2].Trim().Trim('"').Trim("'")
+            [Environment]::SetEnvironmentVariable($key, $val, 'Process')
+            Set-Item -Path "env:$key" -Value $val
+        }
+    }
+}
+
 function Render-Dashboard {
     $ts = Get-Date -Format 'HH:mm:ss'
     $keys = @($script:Svcs.Keys)
@@ -83,6 +97,7 @@ function Render-Dashboard {
         
         $stateText = switch -regex ($s.State) {
             '^READY$'       { '[READY]    ' }
+            '^CLOUD$'       { '[CLOUD]    ' }
             '^STARTING'     { "[$($s.State)]".PadRight(11) }
             '^FAILED$'      { '[FAILED]   ' }
             '^SKIPPED$'     { '[SKIPPED]  ' }
@@ -93,6 +108,7 @@ function Render-Dashboard {
 
         $color = switch -regex ($s.State) {
             '^READY$'       { 'Green' }
+            '^CLOUD$'       { 'Cyan' }
             '^STARTING'     { 'Yellow' }
             '^FAILED$'      { 'Red' }
             '^PORT_ERR$'    { 'Red' }
@@ -180,10 +196,25 @@ function Start-ServicesSequentially {
     }
     New-Item $statusDir -ItemType Directory -Force | Out-Null
 
+    Import-DotEnv
+
+    # Auto-detect Chroma Cloud mode from .env settings
+    $chromaMode = if ($env:CHROMA_MODE) { $env:CHROMA_MODE.ToLower() } else { '' }
+    $chromaApiKey = if ($env:CHROMA_CLOUD_API_KEY) { $env:CHROMA_CLOUD_API_KEY } else { $env:CHROMA_API_KEY }
+    $chromaHost = if ($env:CHROMA_HOST) { $env:CHROMA_HOST } else { '' }
+
+    if ($chromaMode -eq 'cloud' -or $chromaApiKey -or $chromaHost -like '*trychroma.com*') {
+        $script:Svcs['chromadb'].Skip = $true
+        $script:Svcs['chromadb'].State = 'CLOUD'
+    }
+
     $keys = @($script:Svcs.Keys)
 
     foreach ($key in $keys) {
         $svc = $script:Svcs[$key]
+        if ($svc.Skip) {
+            continue
+        }
         $port = $svc.Port
 
         # Check port
@@ -303,6 +334,18 @@ function Start-ServicesSequentially {
                 exit 0
             }
         }
+    }
+
+    # Auto sync existing document storage to ChromaDB Vector DB on startup
+    if (-not $script:Svcs['ai-service'].Skip) {
+        $script:CurrentAction = 'Syncing document storage to ChromaDB Vector DB...'
+        Render-Dashboard
+        try {
+            $venvPython = Join-Path $rootDir 'ai-service\.venv\Scripts\python.exe'
+            if (Test-Path $venvPython) {
+                & $venvPython -m app.services.reingest | Out-Null
+            }
+        } catch {}
     }
 
     $script:CurrentAction = 'All services active! Opening Frontend browser...'
