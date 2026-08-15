@@ -56,6 +56,8 @@ def generate_rag_answer(
         f"NGỮ CẢNH TÀI LIỆU:\n{context_str}"
     )
 
+    should_fallback = False
+
     # Try official Gemini SDK primary (R-04)
     if GEMINI_API_KEY:
         try:
@@ -65,11 +67,25 @@ def generate_rag_answer(
                 "citations": citations,
                 "provider": used_model,
             }
+        except (TimeoutError, ConnectionError, httpx.TimeoutException, httpx.ConnectError) as e:
+            logger.warning("Gemini transient network error (%s), enabling fallback: %s", type(e).__name__, e)
+            should_fallback = True
+        except httpx.HTTPStatusError as e:
+            if e.response.status_code in (429, 500, 502, 503, 504):
+                logger.warning("Gemini server error HTTP %s, enabling fallback: %s", e.response.status_code, e)
+                should_fallback = True
+            else:
+                logger.error("Gemini client error HTTP %s, fallback disabled: %s", e.response.status_code, e)
+                should_fallback = False
         except Exception as e:
-            logger.warning(f"Gemini API call failed via SDK: {e}")
+            logger.error("Gemini non-transient call failed (%s), fallback disabled: %s", type(e).__name__, e)
+            should_fallback = False
+    else:
+        # No Gemini key configured -> allow fallback in dev mode
+        should_fallback = True
 
-    # Ollama Local Fallback (Disabled in evaluation Q4)
-    if ENABLE_OLLAMA_FALLBACK:
+    # Ollama Local Fallback (Only for transient/network errors)
+    if ENABLE_OLLAMA_FALLBACK and should_fallback:
         try:
             answer = call_ollama_fallback(system_prompt, question)
             return {
@@ -78,13 +94,15 @@ def generate_rag_answer(
                 "provider": "ollama-local",
             }
         except Exception as e:
-            logger.error(f"Ollama fallback failed: {e}")
+            logger.error("Ollama fallback call failed: %s", e)
 
-    fallback_text = "\n".join([f"- {c.text}" for c in candidates[:3]])
+    # Provider failed -> Return REFUSE (User Decision #4: no extractive fallback)
+    logger.error("All available LLM providers failed to produce an answer.")
     return {
-        "answer": f"Dựa trên các tài liệu thu hồi:\n{fallback_text}",
-        "citations": citations,
-        "provider": "extractive-fallback",
+        "answer": None,
+        "citations": [],
+        "provider": "provider-unavailable",
+        "validationFailed": True,
     }
 
 

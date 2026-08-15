@@ -35,6 +35,21 @@ class RetrievalTrace:
         return asdict(self)
 
 
+import json
+from pathlib import Path
+
+TRACE_DIR = Path(__file__).parent.parent.parent / "data" / "traces"
+
+
 def record_trace(trace: RetrievalTrace) -> None:
-    """Log structured trace record for observability."""
-    logger.info("RETRIEVAL_TRACE %s", trace.to_dict())
+    """Log structured trace record for observability and persist to JSONL file."""
+    trace_data = trace.to_dict()
+    logger.info("RETRIEVAL_TRACE %s", trace_data)
+
+    try:
+        TRACE_DIR.mkdir(parents=True, exist_ok=True)
+        trace_file = TRACE_DIR / "retrieval_traces.jsonl"
+        with trace_file.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(trace_data, ensure_ascii=False) + "\n")
+    except Exception:
+        logger.exception("Failed to persist retrieval trace to disk")

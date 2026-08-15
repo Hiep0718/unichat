@@ -124,15 +124,17 @@ def extract_pdf_blocks(file_bytes: bytes) -> list[ExtractedBlock]:
 
 
 def extract_docx_blocks(file_bytes: bytes) -> list[ExtractedBlock]:
-    """Extract structured blocks from DOCX using native paragraph styles."""
+    """Extract structured blocks from DOCX using native paragraph styles and table cells."""
     doc = docx.Document(io.BytesIO(file_bytes))
     blocks: list[ExtractedBlock] = []
+    block_counter = 0
 
-    for idx, para in enumerate(doc.paragraphs, start=1):
+    for para in doc.paragraphs:
         text = para.text.strip()
         if not text:
             continue
 
+        block_counter += 1
         style_name = para.style.name if para.style else ""
         is_heading = "Heading" in style_name or style_name == "Title"
 
@@ -144,7 +146,7 @@ def extract_docx_blocks(file_bytes: bytes) -> list[ExtractedBlock]:
                 heading_level = 1
 
         block_type: BlockType = "HEADING" if is_heading else "PARAGRAPH"
-        locator_value = f"paragraph:{idx}"
+        locator_value = f"paragraph:{block_counter}"
 
         blocks.append(
             ExtractedBlock(
@@ -154,9 +156,30 @@ def extract_docx_blocks(file_bytes: bytes) -> list[ExtractedBlock]:
                 locator_type="DOCX_PARAGRAPH",
                 locator_value=locator_value,
                 content_hash=compute_hash(text),
-                source_page_or_index=idx,
+                source_page_or_index=block_counter,
             )
         )
+
+    # Extract tables
+    for table_idx, table in enumerate(doc.tables, start=1):
+        for row_idx, row in enumerate(table.rows, start=1):
+            for cell_idx, cell in enumerate(row.cells, start=1):
+                cell_text = cell.text.strip()
+                if not cell_text:
+                    continue
+                block_counter += 1
+                locator_value = f"table:{table_idx}/row:{row_idx}/cell:{cell_idx}"
+                blocks.append(
+                    ExtractedBlock(
+                        text=cell_text,
+                        block_type="TABLE",
+                        heading_level=None,
+                        locator_type="DOCX_TABLE_CELL",
+                        locator_value=locator_value,
+                        content_hash=compute_hash(cell_text),
+                        source_page_or_index=block_counter,
+                    )
+                )
 
     return blocks
 
@@ -177,7 +200,7 @@ def extract_txt_blocks(file_bytes: bytes) -> list[ExtractedBlock]:
 
         is_heading, level = _is_heading_heuristic(stripped, prev_blank, next_blank)
         block_type: BlockType = "HEADING" if is_heading else "PARAGRAPH"
-        locator_value = f"line:{idx}"
+        locator_value = f"line:{idx}-{idx}"
 
         blocks.append(
             ExtractedBlock(

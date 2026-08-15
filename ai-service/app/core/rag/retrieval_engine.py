@@ -66,7 +66,7 @@ def _query_single_collection(
     query_text = f"query: {question}"
     query_embedding = model.encode(query_text).tolist()
 
-    # Query ChromaDB with document_id filter
+    # Query ChromaDB with document_id and document_status filter
     results = collection.query(
         query_embeddings=[query_embedding],
         n_results=strategy.top_k,
@@ -74,6 +74,7 @@ def _query_single_collection(
             "$and": [
                 {"workspace_id": {"$eq": workspace_id}},
                 {"document_id": {"$in": allowed_document_ids}},
+                {"document_status": {"$eq": "PROCESSED"}},
             ]
         },
     )

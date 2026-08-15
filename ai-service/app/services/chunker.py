@@ -102,7 +102,7 @@ def chunk_blocks_hybrid(
         # Level 2: Section too large -> Split by paragraphs / blocks
         for block in sec_blocks:
             b_text = block.text
-            if len(b_text) <= max_chunk_size:
+            if block.block_type == "TABLE" or len(b_text) <= max_chunk_size:
                 raw_chunks.append({
                     "text": b_text,
                     "locator_type": block.locator_type,
