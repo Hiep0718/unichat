@@ -41,6 +41,7 @@ class ChatServiceTest {
     private ConversationRepository conversationRepository;
     private MessageRepository messageRepository;
     private com.unichat.core.chat.domain.CitationHistoryRepository citationHistoryRepository;
+    private com.unichat.core.shared.config.ServiceTokenIssuer serviceTokenIssuer;
     private ChatService chatService;
 
     @BeforeEach
@@ -51,6 +52,8 @@ class ChatServiceTest {
         conversationRepository = mock(ConversationRepository.class);
         messageRepository = mock(MessageRepository.class);
         citationHistoryRepository = mock(com.unichat.core.chat.domain.CitationHistoryRepository.class);
+        serviceTokenIssuer = mock(com.unichat.core.shared.config.ServiceTokenIssuer.class);
+        org.mockito.Mockito.when(serviceTokenIssuer.issueToken()).thenReturn("Bearer test-token");
         chatService = new ChatService(
                 workspaceRepository,
                 workspaceMemberRepository,
@@ -58,6 +61,7 @@ class ChatServiceTest {
                 conversationRepository,
                 messageRepository,
                 citationHistoryRepository,
+                serviceTokenIssuer,
                 Clock.systemUTC()
         );
     }

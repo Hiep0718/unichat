@@ -42,6 +42,7 @@ public class ChatService {
     private final ConversationRepository conversationRepository;
     private final MessageRepository messageRepository;
     private final com.unichat.core.chat.domain.CitationHistoryRepository citationHistoryRepository;
+    private final com.unichat.core.shared.config.ServiceTokenIssuer serviceTokenIssuer;
     private final RestTemplate restTemplate;
     private final Clock clock;
 
@@ -55,6 +56,7 @@ public class ChatService {
             ConversationRepository conversationRepository,
             MessageRepository messageRepository,
             com.unichat.core.chat.domain.CitationHistoryRepository citationHistoryRepository,
+            com.unichat.core.shared.config.ServiceTokenIssuer serviceTokenIssuer,
             Clock clock) {
         this.workspaceRepository = workspaceRepository;
         this.workspaceMemberRepository = workspaceMemberRepository;
@@ -62,6 +64,7 @@ public class ChatService {
         this.conversationRepository = conversationRepository;
         this.messageRepository = messageRepository;
         this.citationHistoryRepository = citationHistoryRepository;
+        this.serviceTokenIssuer = serviceTokenIssuer;
         this.restTemplate = new RestTemplate();
         this.clock = clock;
     }
@@ -105,6 +108,7 @@ public class ChatService {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Authorization", serviceTokenIssuer.issueToken());
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(aiRequest, headers);
 
         Map<String, Object> aiResponse;
@@ -129,6 +133,7 @@ public class ChatService {
         String intent = (String) aiResponse.getOrDefault("intent", "FACT");
         String refusalCode = (String) aiResponse.get("refusalCode");
         String refusalReason = (String) aiResponse.get("refusalReason");
+        Double evidenceScore = aiResponse.get("evidenceScore") instanceof Number n ? n.doubleValue() : null;
 
         String assistantContent = answerText != null ? answerText : (refusalReason != null ? refusalReason : "Không có câu trả lời");
 
@@ -176,7 +181,8 @@ public class ChatService {
                 "v1.0",
                 citations,
                 refusalCode,
-                requestId
+                requestId,
+                evidenceScore
         );
     }
 
