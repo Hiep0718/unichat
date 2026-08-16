@@ -431,19 +431,7 @@
   line-height: 1.6;
 }
 
-.chat-msg__markdown blockquote {
-  margin: 12px 0;
-  padding: 10px 16px;
-  border-left: 3px solid var(--color-secondary, #0284c7);
-  background: rgba(2, 132, 199, 0.04);
-  border-radius: 0 8px 8px 0;
-  color: var(--color-on-surface-variant, #475569);
-  font-style: normal;
-}
 
-.chat-msg__markdown blockquote p {
-  margin: 0;
-}
 
 .chat-msg__markdown strong {
   color: var(--color-on-surface, #0f172a);
@@ -1341,7 +1329,8 @@
 .mermaid-viewport {
   padding: 24px;
   overflow: auto;
-  max-height: 600px;
+  min-height: 200px;
+  max-height: 700px;
 }
 
 .mermaid-container--fullscreen .mermaid-viewport {
@@ -1353,10 +1342,12 @@
   display: flex;
   justify-content: center;
   transition: transform 0.2s ease;
+  min-width: 100%;
 }
 
 .mermaid-svg-wrapper svg {
-  max-width: 100%;
+  width: 100%;
+  min-height: 180px;
   height: auto;
 }
 
