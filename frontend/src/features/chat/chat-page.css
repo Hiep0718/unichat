@@ -1319,6 +1319,26 @@
   letter-spacing: 0.2px;
 }
 
+.mermaid-toolbar__btn--download {
+  width: auto;
+  padding: 0 10px;
+  gap: 4px;
+  background: rgba(2, 132, 199, 0.06);
+  color: #0284c7;
+  font-weight: 600;
+}
+
+.mermaid-toolbar__btn--download:hover {
+  background: #0284c7;
+  color: #ffffff;
+}
+
+.mermaid-toolbar__btn-text {
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  font-family: 'Inter Variable', 'Be Vietnam Pro', system-ui, sans-serif;
+}
+
 .mermaid-toolbar__divider {
   width: 1px;
   height: 20px;

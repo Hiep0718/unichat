@@ -200,6 +200,59 @@ export const MermaidDiagram: React.FC<MermaidDiagramProps> = ({ chart }) => {
     setZoom(1);
   }, []);
 
+  const handleDownloadSvg = useCallback(() => {
+    if (!svgHtml) return;
+    const blob = new Blob([svgHtml], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `so-do-unichat-${Date.now()}.svg`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }, [svgHtml]);
+
+  const handleDownloadPng = useCallback(() => {
+    if (!containerRef.current) return;
+    const svgEl = containerRef.current.querySelector('svg');
+    if (!svgEl) return;
+
+    const svgData = new XMLSerializer().serializeToString(svgEl);
+    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(svgBlob);
+
+    const img = new Image();
+    img.onload = () => {
+      const bbox = svgEl.getBoundingClientRect();
+      const scale = 2; // High resolution 2x
+      const width = Math.max(bbox.width || 800, 400) * scale;
+      const height = Math.max(bbox.height || 600, 300) * scale;
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      // Crisp background
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, width, height);
+      ctx.drawImage(img, 0, 0, width, height);
+
+      URL.revokeObjectURL(url);
+
+      const pngUrl = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.href = pngUrl;
+      link.download = `so-do-unichat-${Date.now()}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    };
+    img.src = url;
+  }, []);
+
   if (error) {
     return (
       <div className="mermaid-error">
@@ -261,6 +314,27 @@ export const MermaidDiagram: React.FC<MermaidDiagramProps> = ({ chart }) => {
               aria-label="Phóng to sơ đồ"
             >
               <span className="material-symbols-outlined">add</span>
+            </button>
+            <div className="mermaid-toolbar__divider" />
+            <button
+              type="button"
+              className="mermaid-toolbar__btn mermaid-toolbar__btn--download"
+              onClick={handleDownloadPng}
+              title="Tải về định dạng PNG"
+              aria-label="Tải về hình ảnh PNG"
+            >
+              <span className="material-symbols-outlined">image</span>
+              <span className="mermaid-toolbar__btn-text">PNG</span>
+            </button>
+            <button
+              type="button"
+              className="mermaid-toolbar__btn mermaid-toolbar__btn--download"
+              onClick={handleDownloadSvg}
+              title="Tải về định dạng SVG (Vector)"
+              aria-label="Tải về file vector SVG"
+            >
+              <span className="material-symbols-outlined">download</span>
+              <span className="mermaid-toolbar__btn-text">SVG</span>
             </button>
             <div className="mermaid-toolbar__divider" />
             <button
