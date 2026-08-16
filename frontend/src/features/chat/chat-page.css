@@ -1375,6 +1375,46 @@
   margin: 0 auto;
 }
 
+/* Vivid SVG Node Styling */
+.mermaid-svg-wrapper svg .node rect,
+.mermaid-svg-wrapper svg .node polygon,
+.mermaid-svg-wrapper svg .node circle {
+  rx: 12px !important;
+  ry: 12px !important;
+  filter: drop-shadow(0 3px 10px rgba(2, 132, 199, 0.08));
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mermaid-svg-wrapper svg .node:hover rect,
+.mermaid-svg-wrapper svg .node:hover polygon,
+.mermaid-svg-wrapper svg .node:hover circle {
+  filter: drop-shadow(0 8px 22px rgba(2, 132, 199, 0.25));
+  stroke: #0284c7 !important;
+  stroke-width: 2.5px !important;
+}
+
+.mermaid-svg-wrapper svg .node text {
+  font-family: 'Inter Variable', 'Be Vietnam Pro', system-ui, sans-serif !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+}
+
+.mermaid-svg-wrapper svg .edgePath path {
+  stroke: #0284c7 !important;
+  stroke-width: 2px !important;
+  transition: all 0.2s ease;
+}
+
+.mermaid-svg-wrapper svg .edgePath:hover path {
+  stroke: #0369a1 !important;
+  stroke-width: 3px !important;
+}
+
+.mermaid-svg-wrapper svg .marker path {
+  fill: #0284c7 !important;
+  stroke: #0284c7 !important;
+}
+
 .mermaid-fullscreen-overlay {
   position: fixed;
   inset: 0;
