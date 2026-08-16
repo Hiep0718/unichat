@@ -5,11 +5,12 @@ import mermaid from 'mermaid';
 let mermaidCounter = 0;
 
 /**
- * Initialize mermaid with a sleek dark-aware theme.
+ * Initialize mermaid with a sleek theme.
  * Called once on module load.
  */
 mermaid.initialize({
   startOnLoad: false,
+  suppressErrorRendering: true,
   theme: 'base',
   themeVariables: {
     primaryColor: '#0284c7',
@@ -40,6 +41,81 @@ mermaid.initialize({
   },
 });
 
+/** Known mermaid diagram type keywords */
+const DIAGRAM_KEYWORDS = [
+  'mindmap', 'flowchart', 'graph', 'sequenceDiagram',
+  'classDiagram', 'stateDiagram', 'erDiagram', 'gantt',
+  'pie', 'gitgraph', 'journey', 'quadrantChart',
+  'xychart-beta', 'block-beta', 'sankey-beta',
+];
+
+/**
+ * Check if the code starts with a known mermaid diagram declaration.
+ */
+function hasDiagramDeclaration(code: string): boolean {
+  const firstLine = code.split('\n')[0]?.trim() ?? '';
+  return DIAGRAM_KEYWORDS.some((kw) => firstLine.startsWith(kw));
+}
+
+/**
+ * Detect and fix common mermaid syntax issues:
+ * 1. Missing diagram type declaration (auto-detect flowchart vs mindmap)
+ * 2. Strip citation markers [1], [2]
+ * 3. Quote node labels with special characters for mindmap
+ */
+function sanitizeMermaidCode(raw: string): string {
+  let code = raw.trim();
+
+  // Strip citation markers like [1], [2], [1][4] everywhere
+  code = code.replace(/\s*\[\d+\]/g, '');
+
+  // If no diagram declaration found, auto-detect type
+  if (!hasDiagramDeclaration(code)) {
+    // Detect flowchart pattern: "A --> B" or "A --- B" or "A ==> B"
+    if (/\w+\s*[-=]+>?\s*\w+/.test(code)) {
+      code = `flowchart TD\n${code}`;
+    }
+    // Detect mindmap pattern: indented lines with root((...))
+    else if (/root\s*\(\(/.test(code)) {
+      code = `mindmap\n${code}`;
+    }
+    // Default to flowchart
+    else {
+      code = `flowchart TD\n${code}`;
+    }
+  }
+
+  // For mindmap diagrams: quote labels with special characters
+  if (code.startsWith('mindmap')) {
+    code = code
+      .split('\n')
+      .map((line) => {
+        const match = line.match(/^(\s+)(.+)$/);
+        if (!match) return line;
+        const indent = match[1] ?? '';
+        const label = (match[2] ?? '').trim();
+        // Skip keyword lines, root lines, or already quoted
+        if (
+          !label ||
+          label.startsWith('root') ||
+          label.startsWith('%%') ||
+          label.startsWith('mindmap') ||
+          label.startsWith('"')
+        ) {
+          return line;
+        }
+        // If label has special chars, wrap in double quotes
+        if (/[:\-–—(){}|<>#&@$%^*+=!?/\\;,.]/.test(label)) {
+          return `${indent}"${label.replace(/"/g, "'")}"`;
+        }
+        return line;
+      })
+      .join('\n');
+  }
+
+  return code;
+}
+
 interface MermaidDiagramProps {
   /** Raw mermaid syntax string */
   chart: string;
@@ -49,43 +125,6 @@ interface MermaidDiagramProps {
  * Renders a Mermaid diagram from its textual syntax.
  * Features: auto-render, zoom, fullscreen toggle, error fallback.
  */
-/**
- * Sanitize mermaid code by removing citation markers and
- * quoting node labels that contain special characters.
- */
-function sanitizeMermaidCode(raw: string): string {
-  return raw
-    .split('\n')
-    .map((line) => {
-      // Strip citation markers like [1], [2], [1][4]
-      let cleaned = line.replace(/\s*\[\d+\]/g, '');
-
-      // For mindmap lines: if indented content contains special chars
-      // that aren't already quoted, wrap the label portion in quotes
-      const mindmapMatch = cleaned.match(/^(\s+)(.+)$/);
-      if (mindmapMatch) {
-        const indent = mindmapMatch[1] ?? '';
-        const label = mindmapMatch[2] ?? '';
-        const trimLabel = label.trim();
-        // Skip lines that are diagram keywords or already have syntax markers
-        if (
-          !trimLabel.startsWith('root') &&
-          !trimLabel.startsWith('```') &&
-          !trimLabel.startsWith('%%') &&
-          !/^(mindmap|flowchart|sequenceDiagram|classDiagram|gantt|pie|graph)/.test(trimLabel)
-        ) {
-          // If label has special chars that break mermaid parsing, wrap in quotes
-          if (/[:\-–—\[\](){}|<>#&@$%^*+=!?/\\;,.]/.test(trimLabel) && !trimLabel.startsWith('"')) {
-            cleaned = `${indent}"${trimLabel.replace(/"/g, "'")}"`;
-          }
-        }
-      }
-
-      return cleaned;
-    })
-    .join('\n');
-}
-
 export const MermaidDiagram: React.FC<MermaidDiagramProps> = ({ chart }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [svgHtml, setSvgHtml] = useState<string>('');
@@ -103,12 +142,23 @@ export const MermaidDiagram: React.FC<MermaidDiagramProps> = ({ chart }) => {
         if (!trimmed) return;
 
         const sanitized = sanitizeMermaidCode(trimmed);
-        const { svg } = await mermaid.render(idRef.current, sanitized);
+
+        // Use a unique ID per render attempt to avoid stale DOM nodes
+        const renderId = `${idRef.current}-${Date.now()}`;
+        const { svg } = await mermaid.render(renderId, sanitized);
+
+        // Clean up any orphaned render containers mermaid leaves behind
+        const orphan = document.getElementById(`d${renderId}`);
+        if (orphan) orphan.remove();
+
         if (!cancelled) {
           setSvgHtml(svg);
           setError(null);
         }
       } catch (err: unknown) {
+        // Clean up any error elements mermaid inserts into the DOM
+        document.querySelectorAll('[id^="dmermaid-diagram-"]').forEach((el) => el.remove());
+
         if (!cancelled) {
           const message = err instanceof Error ? err.message : String(err);
           setError(message);

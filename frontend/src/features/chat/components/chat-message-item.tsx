@@ -242,6 +242,9 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({ message, onSel
                   li({ children }) {
                     return <li>{React.Children.map(children, (child) => processTextNode(child, citations, onSelectCitation))}</li>;
                   },
+                  blockquote({ children }) {
+                    return <div>{children}</div>;
+                  },
                   code({ className, children, ...rest }) {
                     const match = /language-(\w+)/.exec(className || '');
                     const lang = match?.[1];
