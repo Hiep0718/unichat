@@ -33,20 +33,20 @@ mermaid.initialize({
     nodeTextColor: '#0f172a',
   },
   mindmap: {
-    useMaxWidth: true,
+    useMaxWidth: false,
     padding: 20,
   },
   flowchart: {
-    useMaxWidth: true,
+    useMaxWidth: false,
     htmlLabels: true,
     curve: 'basis',
-    padding: 20,
-    nodeSpacing: 30,
-    rankSpacing: 50,
+    padding: 24,
+    nodeSpacing: 36,
+    rankSpacing: 54,
     defaultRenderer: 'dagre-wrapper',
   },
   sequence: {
-    useMaxWidth: true,
+    useMaxWidth: false,
   },
 });
 
