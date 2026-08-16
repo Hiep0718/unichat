@@ -334,13 +334,13 @@
   color: #ffffff;
 }
 
-/* Assistant Card Surface */
+/* Assistant Card Surface — clean, borderless flow */
 .chat-msg--assistant .chat-msg__bubble {
-  background: #ffffff;
-  border: 1px solid var(--color-outline-variant, #e2e8f0);
-  padding: 20px 24px;
-  border-radius: 4px 20px 20px 20px;
-  box-shadow: 0 4px 20px -4px rgba(15, 23, 42, 0.05);
+  background: transparent;
+  border: none;
+  padding: 4px 0;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 /* AI Thinking Message Bubble Placeholder */
@@ -429,6 +429,58 @@
 .chat-msg__markdown li {
   margin-bottom: 6px;
   line-height: 1.6;
+}
+
+.chat-msg__markdown blockquote {
+  margin: 12px 0;
+  padding: 10px 16px;
+  border-left: 3px solid var(--color-secondary, #0284c7);
+  background: rgba(2, 132, 199, 0.04);
+  border-radius: 0 8px 8px 0;
+  color: var(--color-on-surface-variant, #475569);
+  font-style: normal;
+}
+
+.chat-msg__markdown blockquote p {
+  margin: 0;
+}
+
+.chat-msg__markdown strong {
+  color: var(--color-on-surface, #0f172a);
+  font-weight: 700;
+}
+
+.chat-msg__markdown table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0;
+  font-size: 13.5px;
+}
+
+.chat-msg__markdown th,
+.chat-msg__markdown td {
+  padding: 8px 12px;
+  border: 1px solid var(--color-outline-variant, #e2e8f0);
+  text-align: left;
+}
+
+.chat-msg__markdown th {
+  background: #f1f5f9;
+  font-weight: 600;
+  color: var(--color-on-surface, #0f172a);
+}
+
+.chat-msg__markdown tr:nth-child(even) {
+  background: #fafbfc;
+}
+
+.chat-msg__markdown code {
+  background: rgba(15, 23, 42, 0.06);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: 'Fira Code', 'Cascadia Code', monospace;
+  color: #be185d;
 }
 
 /* Interactive Follow-up Suggestion Cards */

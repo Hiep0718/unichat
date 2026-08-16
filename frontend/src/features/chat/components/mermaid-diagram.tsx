@@ -49,6 +49,43 @@ interface MermaidDiagramProps {
  * Renders a Mermaid diagram from its textual syntax.
  * Features: auto-render, zoom, fullscreen toggle, error fallback.
  */
+/**
+ * Sanitize mermaid code by removing citation markers and
+ * quoting node labels that contain special characters.
+ */
+function sanitizeMermaidCode(raw: string): string {
+  return raw
+    .split('\n')
+    .map((line) => {
+      // Strip citation markers like [1], [2], [1][4]
+      let cleaned = line.replace(/\s*\[\d+\]/g, '');
+
+      // For mindmap lines: if indented content contains special chars
+      // that aren't already quoted, wrap the label portion in quotes
+      const mindmapMatch = cleaned.match(/^(\s+)(.+)$/);
+      if (mindmapMatch) {
+        const indent = mindmapMatch[1] ?? '';
+        const label = mindmapMatch[2] ?? '';
+        const trimLabel = label.trim();
+        // Skip lines that are diagram keywords or already have syntax markers
+        if (
+          !trimLabel.startsWith('root') &&
+          !trimLabel.startsWith('```') &&
+          !trimLabel.startsWith('%%') &&
+          !/^(mindmap|flowchart|sequenceDiagram|classDiagram|gantt|pie|graph)/.test(trimLabel)
+        ) {
+          // If label has special chars that break mermaid parsing, wrap in quotes
+          if (/[:\-–—\[\](){}|<>#&@$%^*+=!?/\\;,.]/.test(trimLabel) && !trimLabel.startsWith('"')) {
+            cleaned = `${indent}"${trimLabel.replace(/"/g, "'")}"`;
+          }
+        }
+      }
+
+      return cleaned;
+    })
+    .join('\n');
+}
+
 export const MermaidDiagram: React.FC<MermaidDiagramProps> = ({ chart }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [svgHtml, setSvgHtml] = useState<string>('');
@@ -65,7 +102,8 @@ export const MermaidDiagram: React.FC<MermaidDiagramProps> = ({ chart }) => {
         const trimmed = chart.trim();
         if (!trimmed) return;
 
-        const { svg } = await mermaid.render(idRef.current, trimmed);
+        const sanitized = sanitizeMermaidCode(trimmed);
+        const { svg } = await mermaid.render(idRef.current, sanitized);
         if (!cancelled) {
           setSvgHtml(svg);
           setError(null);
