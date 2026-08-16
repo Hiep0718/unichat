@@ -8,6 +8,7 @@ import 'katex/dist/katex.min.css';
 import { QuestionResponse, CitationItem } from '../chat-api';
 import { CitationPanel } from './citation-panel';
 import { RefusalCard } from './refusal-card';
+import { MermaidDiagram } from './mermaid-diagram';
 
 export interface MessageItem {
   id: string;
@@ -240,6 +241,28 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({ message, onSel
                   },
                   li({ children }) {
                     return <li>{React.Children.map(children, (child) => processTextNode(child, citations, onSelectCitation))}</li>;
+                  },
+                  code({ className, children, ...rest }) {
+                    const match = /language-(\w+)/.exec(className || '');
+                    const lang = match?.[1];
+                    if (lang === 'mermaid') {
+                      const chartCode = String(children).replace(/\n$/, '');
+                      return <MermaidDiagram chart={chartCode} />;
+                    }
+                    // For other code blocks, render with syntax highlight class
+                    if (lang) {
+                      return (
+                        <div className="chat-code-block">
+                          <div className="chat-code-block__header">
+                            <span className="chat-code-block__lang">{lang}</span>
+                          </div>
+                          <pre className="chat-code-block__pre">
+                            <code className={className} {...rest}>{children}</code>
+                          </pre>
+                        </div>
+                      );
+                    }
+                    return <code className={className} {...rest}>{children}</code>;
                   },
                 }}
               >
