@@ -39,9 +39,9 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
       <div className="chat-header__actions">
         <div className="chat-header__info-pill" title="Mô hình AI & Phiên làm việc">
           <span className="material-symbols-outlined">psychology</span>
-          <span>Gemini 2.5 Flash</span>
+          <span>Gemini 3.5 Flash</span>
         </div>
-        
+
         <div className="chat-header__info-pill" title="Tổng số tin nhắn trong phiên">
           <span className="material-symbols-outlined">forum</span>
           <span>{messageCount} tin nhắn</span>

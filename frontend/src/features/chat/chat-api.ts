@@ -27,6 +27,7 @@ export interface QuestionResponse {
 export interface AskQuestionPayload {
   question: string;
   conversationId?: string | undefined;
+  allowExternalKnowledge?: boolean | undefined;
 }
 
 export async function askWorkspaceQuestion(

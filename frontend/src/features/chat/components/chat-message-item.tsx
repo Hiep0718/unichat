@@ -1,10 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import 'katex/dist/katex.min.css';
 
 import { QuestionResponse, CitationItem } from '../chat-api';
 import { CitationPanel } from './citation-panel';
 import { RefusalCard } from './refusal-card';
+import { MermaidDiagram } from './mermaid-diagram';
+import aiAvatar from '../../../assets/ai-avatar.png';
 
 export interface MessageItem {
   id: string;
@@ -26,39 +31,128 @@ const INTENT_MAP_VI: Record<string, string> = {
 interface ChatMessageItemProps {
   message: MessageItem;
   onSelectCitation?: ((citation: CitationItem) => void) | undefined;
+  onSelectPrompt?: ((prompt: string) => void) | undefined;
 }
 
-interface NotebookCitationChipProps {
+interface NotebookCitedTextProps {
+  citedText: string;
   citNum: number;
   citation: CitationItem;
   onSelectCitation: (citation: CitationItem) => void;
 }
 
-/** NotebookLM Smart Citation Chip with Hover Popover Card & "Xem nguồn" Action */
-const NotebookCitationChip: React.FC<NotebookCitationChipProps> = ({
+/** Dedicated interactive follow-up suggestion panel */
+interface SuggestionPanelProps {
+  suggestions: string[];
+  onSelectPrompt?: ((prompt: string) => void) | undefined;
+}
+
+const SuggestionPanel: React.FC<SuggestionPanelProps> = ({ suggestions, onSelectPrompt }) => {
+  if (!suggestions || suggestions.length === 0) return null;
+
+  return (
+    <div className="chat-suggestions-panel">
+      <div className="chat-suggestions-panel__header">
+        <span className="chat-suggestions-panel__icon">💡</span>
+        <span className="chat-suggestions-panel__title">Gợi ý câu hỏi & bước tiếp theo:</span>
+      </div>
+      <div className="chat-suggestions-panel__list">
+        {suggestions.map((prompt, idx) => (
+          <button
+            key={idx}
+            type="button"
+            className="chat-suggestions-panel__item"
+            onClick={() => onSelectPrompt?.(prompt)}
+          >
+            <span className="material-symbols-outlined chat-suggestions-panel__item-icon">auto_awesome</span>
+            <span className="chat-suggestions-panel__item-text">{prompt}</span>
+            <span className="material-symbols-outlined chat-suggestions-panel__arrow">arrow_forward</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+/** Parse main markdown content and extract suggestion prompts separately */
+function parseContentAndSuggestions(content: string): { mainContent: string; suggestions: string[] } {
+  const markerRegex = /\n*---\n+###\s+💡\s+Gợi ý câu hỏi[^\n]*\n*/i;
+  const match = markerRegex.exec(content);
+
+  if (!match) {
+    return { mainContent: content, suggestions: [] };
+  }
+
+  const mainContent = content.slice(0, match.index).trim();
+  const suggestionsText = content.slice(match.index + match[0].length).trim();
+
+  const suggestions: string[] = [];
+  const lines = suggestionsText.split('\n');
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+      const cleanPrompt = trimmed
+        .replace(/^[-*]\s*/, '')
+        .replace(/^\[|\]$/g, '')
+        .trim();
+      if (cleanPrompt) {
+        suggestions.push(cleanPrompt);
+      }
+    }
+  }
+
+  return { mainContent, suggestions };
+}
+
+/** NotebookLM Smart Cited Text with Dotted/Dashed Underline & Hover Popover Card */
+const NotebookCitedText: React.FC<NotebookCitedTextProps> = ({
+  citedText,
   citNum,
   citation,
   onSelectCitation,
 }) => {
   const [hovered, setHovered] = useState(false);
+  const [placement, setPlacement] = useState<'top' | 'bottom'>('top');
+  const spanRef = useRef<HTMLSpanElement>(null);
+
+  const handleMouseEnter = () => {
+    if (spanRef.current) {
+      const rect = spanRef.current.getBoundingClientRect();
+      if (rect.top < 210) {
+        setPlacement('bottom');
+      } else {
+        setPlacement('top');
+      }
+    }
+    setHovered(true);
+  };
 
   return (
     <span
-      className="notebook-citation-wrapper"
-      onMouseEnter={() => setHovered(true)}
+      ref={spanRef}
+      className={`notebook-cited-text-wrapper ${hovered ? 'notebook-cited-text-wrapper--hovered' : ''}`}
+      onMouseEnter={handleMouseEnter}
       onMouseLeave={() => setHovered(false)}
+      onClick={() => onSelectCitation(citation)}
+      role="button"
+      tabIndex={0}
+      title={`Tham khảo từ: ${citation.fileName || 'Tài liệu'}`}
     >
+      <span className="notebook-cited-text">{citedText}</span>
       <button
         type="button"
         className="notebook-citation-chip"
-        onClick={() => onSelectCitation(citation)}
+        onClick={(e) => {
+          e.stopPropagation();
+          onSelectCitation(citation);
+        }}
         aria-label={`Trích dẫn [${citNum}] từ ${citation.fileName || 'tài liệu'}`}
       >
         {citNum}
       </button>
 
       {hovered && (
-        <div className="notebook-citation-popover">
+        <div className={`notebook-citation-popover notebook-citation-popover--${placement}`}>
           <div className="notebook-citation-popover__header">
             <span className="material-symbols-outlined notebook-citation-popover__icon">description</span>
             <span className="notebook-citation-popover__filename" title={citation.fileName}>
@@ -96,35 +190,90 @@ function processTextNode(
     return node;
   }
 
-  const parts = node.split(/(\[\d+\])/g);
-  if (parts.length === 1) return node;
+  const regex = /\[(\d+)\]/g;
+  if (!regex.test(node)) {
+    return node;
+  }
 
-  return parts.map((part, idx) => {
-    const match = part.match(/^\[(\d+)\]$/);
-    if (match && match[1]) {
-      const citNum = parseInt(match[1], 10);
-      const targetCit = citations[citNum - 1];
-      if (targetCit) {
-        return (
-          <NotebookCitationChip
-            key={idx}
-            citNum={citNum}
-            citation={targetCit}
-            onSelectCitation={onSelectCitation}
-          />
-        );
+  regex.lastIndex = 0;
+  const result: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = regex.exec(node)) !== null) {
+    const citNumStr = match[1];
+    if (!citNumStr) continue;
+
+    const citNum = parseInt(citNumStr, 10);
+    const targetCit = citations[citNum - 1];
+    const matchStart = match.index;
+    const matchEnd = regex.lastIndex;
+
+    const precedingText = node.slice(lastIndex, matchStart);
+
+    if (targetCit) {
+      let splitIdx = 0;
+
+      if (precedingText.length > 0) {
+        let lastBoundary = -1;
+        const matches = Array.from(precedingText.matchAll(/[\n.:;]\s*/g));
+        if (matches.length > 0) {
+          const lastM = matches[matches.length - 1];
+          if (lastM && typeof lastM.index === 'number') {
+            lastBoundary = lastM.index + lastM[0].length;
+          }
+        }
+
+        if (lastBoundary > 0 && lastBoundary < precedingText.length) {
+          splitIdx = lastBoundary;
+        }
       }
+
+      const unreferencedPrefix = precedingText.slice(0, splitIdx);
+      const citedPhrase = precedingText.slice(splitIdx);
+
+      if (unreferencedPrefix) {
+        result.push(unreferencedPrefix);
+      }
+
+      result.push(
+        <NotebookCitedText
+          key={`${matchStart}-${citNum}`}
+          citedText={citedPhrase}
+          citNum={citNum}
+          citation={targetCit}
+          onSelectCitation={onSelectCitation}
+        />
+      );
+    } else {
+      result.push(node.slice(lastIndex, matchEnd));
     }
-    return part;
-  });
+
+    lastIndex = matchEnd;
+  }
+
+  if (lastIndex < node.length) {
+    result.push(node.slice(lastIndex));
+  }
+
+  return result;
 }
 
-import aiAvatar from '../../../assets/ai-avatar.png';
-
-export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({ message, onSelectCitation }) => {
+export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
+  message,
+  onSelectCitation,
+  onSelectPrompt,
+}) => {
   const isUser = message.role === 'USER';
   const response = message.response;
   const citations = response?.citations;
+
+  const { mainContent, suggestions } = useMemo(() => {
+    if (isUser || !message.content) {
+      return { mainContent: message.content, suggestions: [] };
+    }
+    return parseContentAndSuggestions(message.content);
+  }, [isUser, message.content]);
 
   return (
     <div className={`chat-msg chat-msg--${isUser ? 'user' : 'assistant'}`}>
@@ -156,7 +305,8 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({ message, onSel
           ) : (
             <div className="chat-msg__markdown">
               <Markdown
-                remarkPlugins={[remarkGfm]}
+                remarkPlugins={[remarkGfm, remarkMath]}
+                rehypePlugins={[rehypeKatex]}
                 components={{
                   p({ children }) {
                     return <p>{React.Children.map(children, (child) => processTextNode(child, citations, onSelectCitation))}</p>;
@@ -164,10 +314,41 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({ message, onSel
                   li({ children }) {
                     return <li>{React.Children.map(children, (child) => processTextNode(child, citations, onSelectCitation))}</li>;
                   },
+                  blockquote({ children }) {
+                    return <div>{children}</div>;
+                  },
+                  code({ className, children, ...rest }) {
+                    const match = /language-(\w+)/.exec(className || '');
+                    const lang = match?.[1];
+                    if (lang === 'mermaid') {
+                      const chartCode = String(children).replace(/\n$/, '');
+                      return <MermaidDiagram chart={chartCode} />;
+                    }
+                    if (lang) {
+                      return (
+                        <div className="chat-code-block">
+                          <div className="chat-code-block__header">
+                            <span className="chat-code-block__lang">{lang}</span>
+                          </div>
+                          <pre className="chat-code-block__pre">
+                            <code className={className} {...rest}>{children}</code>
+                          </pre>
+                        </div>
+                      );
+                    }
+                    return <code className={className} {...rest}>{children}</code>;
+                  },
                 }}
               >
-                {message.content}
+                {mainContent}
               </Markdown>
+
+              {suggestions.length > 0 && (
+                <SuggestionPanel
+                  suggestions={suggestions}
+                  onSelectPrompt={onSelectPrompt}
+                />
+              )}
             </div>
           )}
         </div>

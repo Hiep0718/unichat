@@ -1,0 +1,393 @@
+/* Workspace Overview Page Styling — Academic RAG SaaS Grade */
+
+.ws-overview-container {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 36px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  animation: msg-fade-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── Hero Header Banner ── */
+.ws-overview-hero {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 32px 36px;
+  background: linear-gradient(135deg, #0b192c 0%, #1e293b 100%);
+  border-radius: var(--radius-2xl, 20px);
+  color: #ffffff;
+  box-shadow: 0 12px 32px -8px rgba(11, 25, 44, 0.35);
+  overflow: hidden;
+}
+
+.ws-overview-hero::before {
+  content: '';
+  position: absolute;
+  top: -80px;
+  right: -80px;
+  width: 260px;
+  height: 260px;
+  background: radial-gradient(circle, rgba(2, 132, 199, 0.3) 0%, rgba(0, 0, 0, 0) 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.ws-overview-hero__left {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  z-index: 1;
+}
+
+.ws-overview-hero__icon-box {
+  width: 60px;
+  height: 60px;
+  border-radius: var(--radius-xl, 16px);
+  background: linear-gradient(135deg, #00687a 0%, #0284c7 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(2, 132, 199, 0.3);
+  flex-shrink: 0;
+}
+
+.ws-overview-hero__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ws-overview-hero__title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.ws-overview-hero__title {
+  font: var(--font-headline-lg);
+  font-size: 26px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: -0.4px;
+}
+
+.ws-overview-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
+  border-radius: var(--radius-full, 9999px);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.ws-overview-badge--public {
+  background: rgba(56, 189, 248, 0.16);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.ws-overview-badge--shared {
+  background: rgba(251, 191, 36, 0.16);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.ws-overview-badge--private {
+  background: rgba(148, 163, 184, 0.16);
+  color: #cbd5e1;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+.ws-overview-badge--role {
+  background: rgba(255, 255, 255, 0.1);
+  color: #f1f5f9;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-md, 8px);
+}
+
+.ws-overview-hero__desc {
+  font-size: 14px;
+  color: #94a3b8;
+  margin: 0;
+  line-height: 1.6;
+  max-width: 620px;
+}
+
+.ws-overview-hero__settings-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-lg, 12px);
+  font: var(--font-label-md);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  backdrop-filter: blur(8px);
+  transition: all 0.2s ease;
+  z-index: 1;
+  white-space: nowrap;
+}
+
+.ws-overview-hero__settings-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+/* ── Stats Summary Bar ── */
+.ws-overview-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.ws-overview-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  background: #ffffff;
+  border: 1.5px solid var(--color-outline-variant, #e2e8f0);
+  border-radius: var(--radius-xl, 14px);
+  box-shadow: 0 2px 10px -2px rgba(15, 23, 42, 0.04);
+}
+
+.ws-overview-stat-card__icon-box {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-lg, 12px);
+  background: var(--color-surface-container-low, #f1f5f9);
+  color: var(--color-secondary, #0284c7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ws-overview-stat-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ws-overview-stat-card__value {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--color-on-surface, #0f172a);
+}
+
+.ws-overview-stat-card__label {
+  font-size: 12px;
+  color: var(--color-on-surface-variant, #64748b);
+}
+
+/* ── Main Feature Hubs Grid ── */
+.ws-overview-hubs-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.ws-hub-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 26px 28px;
+  border-radius: var(--radius-2xl, 18px);
+  text-decoration: none;
+  transition: all var(--transition-medium, 0.2s ease);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Primary AI Hub Card */
+.ws-hub-card--primary {
+  background: linear-gradient(135deg, #00687a 0%, #0284c7 100%);
+  color: #ffffff;
+  box-shadow: 0 8px 24px -4px rgba(0, 104, 122, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.ws-hub-card--primary:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 36px -6px rgba(0, 104, 122, 0.45);
+}
+
+/* Secondary Hub Cards */
+.ws-hub-card--secondary {
+  background: #ffffff;
+  border: 1.5px solid var(--color-outline-variant, #e2e8f0);
+  color: var(--color-on-surface, #0f172a);
+  box-shadow: 0 4px 16px -4px rgba(15, 23, 42, 0.05);
+}
+
+.ws-hub-card--secondary:hover {
+  border-color: var(--color-secondary, #0284c7);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px -4px rgba(2, 132, 199, 0.14);
+}
+
+.ws-hub-card__header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.ws-hub-card__icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-xl, 14px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ws-hub-card--primary .ws-hub-card__icon-box {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+.ws-hub-card--secondary .ws-hub-card__icon-box {
+  background: #e0f2fe;
+  color: #0284c7;
+}
+
+.ws-hub-card__title {
+  font: var(--font-headline-md);
+  font-size: 18px;
+  font-weight: 800;
+  margin: 0;
+  letter-spacing: -0.2px;
+}
+
+.ws-hub-card--primary .ws-hub-card__title {
+  color: #ffffff;
+}
+
+.ws-hub-card--secondary .ws-hub-card__title {
+  color: #0f172a;
+}
+
+.ws-hub-card__desc {
+  font: var(--font-body-md);
+  font-size: 13.5px;
+  line-height: 1.65;
+  margin: 0;
+}
+
+.ws-hub-card--primary .ws-hub-card__desc {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.ws-hub-card--secondary .ws-hub-card__desc {
+  color: #64748b;
+}
+
+.ws-hub-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 14px;
+  border-top: 1px solid rgba(226, 232, 240, 0.6);
+}
+
+.ws-hub-card--primary .ws-hub-card__footer {
+  border-top-color: rgba(255, 255, 255, 0.2);
+}
+
+.ws-hub-card__action-text {
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ws-hub-card--primary .ws-hub-card__action-text {
+  color: #ffffff;
+}
+
+.ws-hub-card--secondary .ws-hub-card__action-text {
+  color: #0284c7;
+}
+
+/* ── Security & Policy Section ── */
+.ws-overview-security-card {
+  background: #ffffff;
+  border: 1.5px solid var(--color-outline-variant, #e2e8f0);
+  border-radius: var(--radius-2xl, 18px);
+  padding: 28px 32px;
+  box-shadow: 0 4px 16px -4px rgba(15, 23, 42, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.ws-overview-security-card__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ws-overview-security-card__icon-box {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-lg, 12px);
+  background: #f0fdf4;
+  color: #16a34a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ws-overview-security-card__title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+}
+
+.ws-overview-security-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.ws-security-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 16px;
+  background: var(--color-surface-container-low, #f8fafc);
+  border: 1px solid var(--color-outline-variant, #e2e8f0);
+  border-radius: var(--radius-lg, 12px);
+}
+
+.ws-security-item__icon {
+  color: #16a34a;
+  font-size: 20px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.ws-security-item__text {
+  font-size: 13px;
+  color: #334155;
+  line-height: 1.5;
+  margin: 0;
+}
