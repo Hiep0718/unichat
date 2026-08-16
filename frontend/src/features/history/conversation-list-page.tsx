@@ -1,13 +1,12 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 
 import {
   fetchWorkspaceConversations,
   deleteWorkspaceConversation,
-  createWorkspaceConversation,
   ConversationItem,
 } from './conversation-api';
-import { Icon } from '../../components/icon';
+import './conversation-list-page.css';
 
 export function ConversationListPage() {
   const { workspaceId } = useParams<{ workspaceId: string }>();
@@ -15,11 +14,14 @@ export function ConversationListPage() {
 
   const [conversations, setConversations] = useState<ConversationItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!workspaceId) return;
     let mounted = true;
+    setLoading(true);
+
     fetchWorkspaceConversations(workspaceId)
       .then((res) => {
         if (mounted) {
@@ -41,20 +43,15 @@ export function ConversationListPage() {
     };
   }, [workspaceId]);
 
-  const handleCreateNew = async () => {
+  const handleStartNewChat = () => {
     if (!workspaceId) return;
-    try {
-      const newConv = await createWorkspaceConversation(workspaceId);
-      navigate(`/workspaces/${workspaceId}/conversations/${newConv.id}`);
-    } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Lỗi khi tạo phiên mới');
-    }
+    navigate(`/workspaces/${workspaceId}/chat`);
   };
 
   const handleDelete = async (e: React.MouseEvent, conversationId: string) => {
     e.stopPropagation();
     e.preventDefault();
-    if (!workspaceId || !confirm('Bạn có chắc muốn xóa lịch sử hội thoại này?')) return;
+    if (!workspaceId || !confirm('Bạn có chắc muốn xóa lịch sử cuộc hội thoại này?')) return;
 
     try {
       await deleteWorkspaceConversation(workspaceId, conversationId);
@@ -64,111 +61,139 @@ export function ConversationListPage() {
     }
   };
 
-  if (loading) {
-    return <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>Đang tải lịch sử hội thoại...</div>;
-  }
+  const filteredConversations = conversations.filter((c) => {
+    if (!searchQuery.trim()) return true;
+    const title = (c.title || 'Hội thoại').toLowerCase();
+    return title.includes(searchQuery.trim().toLowerCase());
+  });
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '1000px', margin: '0 auto' }}>
-      <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-        <div>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0f172a', margin: '0 0 0.25rem 0' }}>
-            Lịch sử Hỏi đáp
-          </h1>
-          <p style={{ fontSize: '0.875rem', color: '#64748b', margin: 0 }}>
-            Quản lý các phiên thảo luận và truy xuất tri thức đã lưu trong Workspace.
-          </p>
+    <div className="conv-list-container">
+      {/* Hero Header Section */}
+      <header className="conv-list-header">
+        <div className="conv-list-header__info">
+          <div className="conv-list-header__icon-badge">
+            <span className="material-symbols-outlined" style={{ fontSize: '28px' }}>history</span>
+          </div>
+          <div className="conv-list-header__titles">
+            <h1 className="conv-list-header__title">Lịch sử Hỏi đáp & Tri thức</h1>
+            <p className="conv-list-header__desc">
+              Quản lý các phiên thảo luận và truy xuất lại tri thức đã hỏi đáp trong Workspace.
+            </p>
+          </div>
         </div>
 
         <button
           type="button"
-          onClick={handleCreateNew}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            padding: '0.625rem 1.25rem',
-            background: '#0284c7',
-            color: '#ffffff',
-            border: 'none',
-            borderRadius: '0.375rem',
-            fontSize: '0.875rem',
-            fontWeight: 500,
-            cursor: 'pointer',
-          }}
+          className="conv-list-header__new-btn"
+          onClick={handleStartNewChat}
         >
-          <Icon name="add" size={18} />
-          Tạo cuộc hội thoại mới
+          <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>add</span>
+          <span>Tạo cuộc hội thoại mới</span>
         </button>
       </header>
 
-      {error ? (
-        <div style={{ color: '#e11d48', padding: '1rem', background: '#fff1f2', borderRadius: '0.375rem' }}>{error}</div>
-      ) : conversations.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '4rem 1rem', background: '#f8fafc', borderRadius: '0.75rem', border: '1px solid #e2e8f0' }}>
-          <Icon name="history" size={48} style={{ color: '#cbd5e1', marginBottom: '1rem' }} />
-          <h3 style={{ fontSize: '1.125rem', color: '#334155', marginBottom: '0.5rem' }}>Chưa có phiên hội thoại nào</h3>
-          <p style={{ color: '#64748b', marginBottom: '1.5rem' }}>Bắt đầu bằng cách hỏi AI một câu hỏi từ tài liệu Workspace.</p>
-          <Link
-            to={`/workspaces/${workspaceId}/chat`}
-            style={{
-              padding: '0.625rem 1.25rem',
-              background: '#0284c7',
-              color: '#ffffff',
-              borderRadius: '0.375rem',
-              textDecoration: 'none',
-              fontSize: '0.875rem',
-            }}
+      {/* Search & Filter Toolbar */}
+      <div className="conv-list-toolbar">
+        <div className="conv-list-search">
+          <span className="material-symbols-outlined conv-list-search__icon">search</span>
+          <input
+            type="text"
+            className="conv-list-search__input"
+            placeholder="Tìm kiếm nội dung cuộc hội thoại..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+
+        <div className="conv-list-stats-pill">
+          <span className="material-symbols-outlined" style={{ fontSize: '16px', color: '#0284c7' }}>forum</span>
+          <span>{filteredConversations.length} phiên hội thoại</span>
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      {loading ? (
+        <div className="conv-list-skeleton-grid">
+          <div className="conv-list-skeleton-card">
+            <div className="chat-skeleton-line" style={{ width: '40px', height: '40px', borderRadius: '12px' }}></div>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div className="chat-skeleton-line" style={{ width: '40%' }}></div>
+              <div className="chat-skeleton-line" style={{ width: '25%' }}></div>
+            </div>
+          </div>
+          <div className="conv-list-skeleton-card">
+            <div className="chat-skeleton-line" style={{ width: '40px', height: '40px', borderRadius: '12px' }}></div>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div className="chat-skeleton-line" style={{ width: '55%' }}></div>
+              <div className="chat-skeleton-line" style={{ width: '30%' }}></div>
+            </div>
+          </div>
+        </div>
+      ) : error ? (
+        <div style={{ color: '#e11d48', padding: '1rem', background: '#fff1f2', borderRadius: '0.5rem', border: '1px solid #fecdd3' }}>
+          {error}
+        </div>
+      ) : filteredConversations.length === 0 ? (
+        <div className="conv-list-empty">
+          <div className="conv-list-empty__icon-box">
+            <span className="material-symbols-outlined" style={{ fontSize: '32px' }}>forum</span>
+          </div>
+          <h3 className="conv-list-empty__title">
+            {searchQuery ? 'Không tìm thấy cuộc hội thoại phù hợp' : 'Chưa có phiên hội thoại nào'}
+          </h3>
+          <p className="conv-list-empty__desc">
+            {searchQuery
+              ? 'Thử thay đổi từ khóa tìm kiếm hoặc tạo một cuộc trò chuyện hoàn toàn mới.'
+              : 'Bắt đầu bằng cách hỏi UniChat AI một câu hỏi từ kho tài liệu trong Workspace.'}
+          </p>
+          <button
+            type="button"
+            className="conv-list-header__new-btn"
+            onClick={handleStartNewChat}
+            style={{ marginTop: '6px' }}
           >
-            Đến trang Trò chuyện
-          </Link>
+            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>chat</span>
+            <span>Bắt đầu cuộc trò chuyện ngay</span>
+          </button>
         </div>
       ) : (
-        <div style={{ display: 'grid', gap: '0.75rem' }}>
-          {conversations.map((c) => (
+        <div className="conv-list-grid">
+          {filteredConversations.map((c) => (
             <Link
               key={c.id}
-              to={`/workspaces/${workspaceId}/conversations/${c.id}`}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '1rem 1.25rem',
-                background: '#ffffff',
-                border: '1px solid #e2e8f0',
-                borderRadius: '0.5rem',
-                textDecoration: 'none',
-                color: 'inherit',
-                transition: 'box-shadow 0.15s, border-color 0.15s',
-              }}
+              to={`/workspaces/${workspaceId}/chat?conversationId=${c.id}`}
+              className="conv-card"
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <Icon name="chat_bubble_outline" size={20} style={{ color: '#0284c7' }} />
-                <div>
-                  <h3 style={{ fontSize: '1rem', fontWeight: 600, color: '#0f172a', margin: '0 0 0.25rem 0' }}>
-                    {c.title || 'Hội thoại'}
-                  </h3>
-                  <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
-                    Cập nhật: {new Date(c.updatedAt || c.createdAt).toLocaleString('vi-VN')}
-                  </span>
+              <div className="conv-card__main">
+                <div className="conv-card__icon-box">
+                  <span className="material-symbols-outlined" style={{ fontSize: '22px' }}>chat_bubble</span>
+                </div>
+                <div className="conv-card__details">
+                  <h3 className="conv-card__title">{c.title || 'Cuộc hội thoại chưa đặt tên'}</h3>
+                  <div className="conv-card__meta">
+                    <span className="conv-card__time">
+                      <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>schedule</span>
+                      <span>Cập nhật: {new Date(c.updatedAt || c.createdAt).toLocaleString('vi-VN')}</span>
+                    </span>
+                  </div>
                 </div>
               </div>
 
-              <button
-                type="button"
-                onClick={(e) => handleDelete(e, c.id)}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: '#94a3b8',
-                  cursor: 'pointer',
-                  padding: '0.5rem',
-                  borderRadius: '0.25rem',
-                }}
-                title="Xóa hội thoại"
-              >
-                <Icon name="delete" size={18} />
-              </button>
+              <div className="conv-card__actions">
+                <span className="conv-card__continue-btn">
+                  <span>Tiếp tục chat</span>
+                  <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>arrow_forward</span>
+                </span>
+                <button
+                  type="button"
+                  className="conv-card__delete-btn"
+                  onClick={(e) => handleDelete(e, c.id)}
+                  title="Xóa cuộc hội thoại này"
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>delete</span>
+                </button>
+              </div>
             </Link>
           ))}
         </div>
@@ -178,3 +203,4 @@ export function ConversationListPage() {
 }
 
 export default ConversationListPage;
+
