@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -28,18 +28,6 @@ const INTENT_MAP_VI: Record<string, string> = {
   GENERAL: 'Tổng quan',
 };
 
-function getTextFromChildren(children: React.ReactNode): string {
-  if (typeof children === 'string') return children;
-  if (typeof children === 'number') return String(children);
-  if (Array.isArray(children)) {
-    return children.map(getTextFromChildren).join('');
-  }
-  if (React.isValidElement(children) && children.props && (children.props as { children?: React.ReactNode }).children) {
-    return getTextFromChildren((children.props as { children?: React.ReactNode }).children);
-  }
-  return '';
-}
-
 interface ChatMessageItemProps {
   message: MessageItem;
   onSelectCitation?: ((citation: CitationItem) => void) | undefined;
@@ -51,6 +39,69 @@ interface NotebookCitedTextProps {
   citNum: number;
   citation: CitationItem;
   onSelectCitation: (citation: CitationItem) => void;
+}
+
+/** Dedicated interactive follow-up suggestion panel */
+interface SuggestionPanelProps {
+  suggestions: string[];
+  onSelectPrompt?: ((prompt: string) => void) | undefined;
+}
+
+const SuggestionPanel: React.FC<SuggestionPanelProps> = ({ suggestions, onSelectPrompt }) => {
+  if (!suggestions || suggestions.length === 0) return null;
+
+  return (
+    <div className="chat-suggestions-panel">
+      <div className="chat-suggestions-panel__header">
+        <span className="chat-suggestions-panel__icon">💡</span>
+        <span className="chat-suggestions-panel__title">Gợi ý câu hỏi & bước tiếp theo:</span>
+      </div>
+      <div className="chat-suggestions-panel__list">
+        {suggestions.map((prompt, idx) => (
+          <button
+            key={idx}
+            type="button"
+            className="chat-suggestions-panel__item"
+            onClick={() => onSelectPrompt?.(prompt)}
+          >
+            <span className="material-symbols-outlined chat-suggestions-panel__item-icon">auto_awesome</span>
+            <span className="chat-suggestions-panel__item-text">{prompt}</span>
+            <span className="material-symbols-outlined chat-suggestions-panel__arrow">arrow_forward</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+/** Parse main markdown content and extract suggestion prompts separately */
+function parseContentAndSuggestions(content: string): { mainContent: string; suggestions: string[] } {
+  const markerRegex = /\n*---\n+###\s+💡\s+Gợi ý câu hỏi[^\n]*\n*/i;
+  const match = markerRegex.exec(content);
+
+  if (!match) {
+    return { mainContent: content, suggestions: [] };
+  }
+
+  const mainContent = content.slice(0, match.index).trim();
+  const suggestionsText = content.slice(match.index + match[0].length).trim();
+
+  const suggestions: string[] = [];
+  const lines = suggestionsText.split('\n');
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+      const cleanPrompt = trimmed
+        .replace(/^[-*]\s*/, '')
+        .replace(/^\[|\]$/g, '')
+        .trim();
+      if (cleanPrompt) {
+        suggestions.push(cleanPrompt);
+      }
+    }
+  }
+
+  return { mainContent, suggestions };
 }
 
 /** NotebookLM Smart Cited Text with Dotted/Dashed Underline & Hover Popover Card */
@@ -217,6 +268,13 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
   const response = message.response;
   const citations = response?.citations;
 
+  const { mainContent, suggestions } = useMemo(() => {
+    if (isUser || !message.content) {
+      return { mainContent: message.content, suggestions: [] };
+    }
+    return parseContentAndSuggestions(message.content);
+  }, [isUser, message.content]);
+
   return (
     <div className={`chat-msg chat-msg--${isUser ? 'user' : 'assistant'}`}>
       <div className="chat-msg__avatar">
@@ -254,27 +312,7 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
                     return <p>{React.Children.map(children, (child) => processTextNode(child, citations, onSelectCitation))}</p>;
                   },
                   li({ children }) {
-                    const rawText = getTextFromChildren(children).trim();
-                    const cleanPrompt = rawText.replace(/^[-•\s\d.)]+/, '').trim();
-
-                    const handleClick = (e: React.MouseEvent<HTMLLIElement>) => {
-                      const target = e.currentTarget;
-                      // Only trigger prompt submission if list item is inside a suggestion container
-                      const isSuggestionList = Boolean(
-                        target.parentElement?.previousElementSibling?.tagName === 'H3' ||
-                        target.closest('ul')?.previousElementSibling?.tagName === 'H3'
-                      );
-
-                      if (onSelectPrompt && cleanPrompt && isSuggestionList) {
-                        onSelectPrompt(cleanPrompt);
-                      }
-                    };
-
-                    return (
-                      <li onClick={handleClick}>
-                        {React.Children.map(children, (child) => processTextNode(child, citations, onSelectCitation))}
-                      </li>
-                    );
+                    return <li>{React.Children.map(children, (child) => processTextNode(child, citations, onSelectCitation))}</li>;
                   },
                   blockquote({ children }) {
                     return <div>{children}</div>;
@@ -302,8 +340,15 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
                   },
                 }}
               >
-                {message.content}
+                {mainContent}
               </Markdown>
+
+              {suggestions.length > 0 && (
+                <SuggestionPanel
+                  suggestions={suggestions}
+                  onSelectPrompt={onSelectPrompt}
+                />
+              )}
             </div>
           )}
         </div>

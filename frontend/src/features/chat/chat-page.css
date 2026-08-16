@@ -471,35 +471,82 @@
   color: #be185d;
 }
 
-/* Interactive Follow-up Suggestion Cards (only applies to suggestion list after hr & h3) */
-.chat-msg__markdown hr ~ h3 ~ ul {
-  padding-left: 0;
-  list-style: none;
+/* ── Dedicated Follow-up Suggestion Action Panel ── */
+.chat-suggestions-panel {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1.5px dashed var(--color-outline-variant, #cbd5e1);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.chat-suggestions-panel__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-secondary, #0284c7);
+}
+
+.chat-suggestions-panel__icon {
+  font-size: 16px;
+}
+
+.chat-suggestions-panel__list {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.chat-msg__markdown hr ~ h3 ~ ul li {
-  margin-bottom: 0;
-  padding: 10px 14px;
-  background: var(--color-surface-container-low, #f8fafc);
+.chat-suggestions-panel__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 16px;
+  background: #ffffff;
   border: 1px solid var(--color-outline-variant, #e2e8f0);
-  border-radius: var(--radius-lg, 10px);
+  border-radius: var(--radius-lg, 12px);
+  text-align: left;
   font-size: 13.5px;
   font-weight: 500;
-  color: var(--color-on-surface, #0f172a);
+  color: var(--color-on-surface, #1e293b);
   cursor: pointer;
-  user-select: none;
-  transition: all 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
 }
 
-.chat-msg__markdown hr ~ h3 ~ ul li:hover {
-  border-color: var(--color-secondary, #0284c7);
+.chat-suggestions-panel__item:hover {
+  border-color: #0284c7;
   background: #f0f9ff;
-  color: var(--color-secondary, #0284c7);
+  color: #0284c7;
   transform: translateX(4px);
-  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.12);
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.12);
+}
+
+.chat-suggestions-panel__item-icon {
+  font-size: 17px;
+  color: #0284c7;
+  flex-shrink: 0;
+}
+
+.chat-suggestions-panel__item-text {
+  flex: 1;
+  line-height: 1.45;
+}
+
+.chat-suggestions-panel__arrow {
+  font-size: 16px;
+  color: var(--color-outline, #94a3b8);
+  transition: transform 0.2s ease, color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.chat-suggestions-panel__item:hover .chat-suggestions-panel__arrow {
+  color: #0284c7;
+  transform: translateX(3px);
 }
 
 /* ── Bottom Floating Input Command Center ── */
