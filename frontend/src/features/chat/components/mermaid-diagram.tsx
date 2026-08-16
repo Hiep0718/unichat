@@ -252,6 +252,51 @@ export const MermaidDiagram: React.FC<MermaidDiagramProps> = ({ chart }) => {
     };
     img.src = url;
   }, []);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const isDraggingRef = useRef(false);
+  const isRightClickDragRef = useRef(false);
+  const startPosRef = useRef({ x: 0, y: 0 });
+  const scrollPosRef = useRef({ left: 0, top: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+
+  const handleMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.button !== 0 && e.button !== 2) return;
+    if (!viewportRef.current) return;
+
+    isDraggingRef.current = true;
+    isRightClickDragRef.current = (e.button === 2);
+    setIsDragging(true);
+    startPosRef.current = { x: e.clientX, y: e.clientY };
+    scrollPosRef.current = {
+      left: viewportRef.current.scrollLeft,
+      top: viewportRef.current.scrollTop,
+    };
+  }, []);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isDraggingRef.current || !viewportRef.current) return;
+
+    const dx = e.clientX - startPosRef.current.x;
+    const dy = e.clientY - startPosRef.current.y;
+
+    viewportRef.current.scrollLeft = scrollPosRef.current.left - dx;
+    viewportRef.current.scrollTop = scrollPosRef.current.top - dy;
+  }, []);
+
+  const handleMouseUp = useCallback(() => {
+    if (isDraggingRef.current) {
+      isDraggingRef.current = false;
+      setIsDragging(false);
+    }
+  }, []);
+
+  const handleContextMenu = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    // Prevent native context menu if user performed right-click drag pan
+    if (isRightClickDragRef.current) {
+      e.preventDefault();
+      isRightClickDragRef.current = false;
+    }
+  }, []);
 
   if (error) {
     return (
@@ -352,8 +397,14 @@ export const MermaidDiagram: React.FC<MermaidDiagramProps> = ({ chart }) => {
         </div>
 
         <div
-          className="mermaid-viewport"
+          ref={viewportRef}
+          className={`mermaid-viewport ${isDragging ? 'mermaid-viewport--dragging' : ''}`}
           style={{ overflow: 'auto' }}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+          onContextMenu={handleContextMenu}
         >
           <div
             className="mermaid-svg-wrapper"

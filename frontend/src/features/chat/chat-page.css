@@ -1352,6 +1352,12 @@
   min-height: 240px;
   max-height: 720px;
   background: radial-gradient(circle at center, #ffffff 0%, #f8fafc 100%);
+  cursor: grab;
+  user-select: none;
+}
+
+.mermaid-viewport--dragging {
+  cursor: grabbing !important;
 }
 
 .mermaid-container--fullscreen .mermaid-viewport {
