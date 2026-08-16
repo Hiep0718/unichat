@@ -22,6 +22,7 @@ class RetrievalAnswerRequest(BaseModel):
     question: str = Field(..., min_length=3, max_length=2000, description="User question")
     strategyVersion: str | None = Field("v1.0", description="RAG strategy version")
     requestId: str | None = Field(None, description="Correlation request ID")
+    allowExternalKnowledge: bool | None = Field(True, description="Allow AI external knowledge expansion when documents lack details")
 
 
 class CitationItem(BaseModel):
@@ -154,6 +155,7 @@ def get_retrieval_answer(
         request.question,
         candidates,
         allowed_document_ids=request.allowedDocumentIds,
+        allow_external_knowledge=request.allowExternalKnowledge if request.allowExternalKnowledge is not None else True,
     )
 
     if rag_res.get("validationFailed"):

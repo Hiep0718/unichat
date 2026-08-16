@@ -13,5 +13,7 @@ public record AskQuestionRequest(
         @Size(min = 3, max = 2000, message = "Câu hỏi phải từ 3 đến 2.000 ký tự")
         String question,
 
-        UUID conversationId
+        UUID conversationId,
+
+        Boolean allowExternalKnowledge
 ) {}

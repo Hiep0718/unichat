@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 interface ChatInputFormProps {
-  onSend: (text: string) => void;
+  onSend: (text: string, allowExternalKnowledge: boolean) => void;
   loading: boolean;
 }
 
@@ -13,17 +13,25 @@ const QUICK_PROMPTS = [
 
 export const ChatInputForm: React.FC<ChatInputFormProps> = ({ onSend, loading }) => {
   const [input, setInput] = useState('');
+  const [allowExternalKnowledge, setAllowExternalKnowledge] = useState<boolean>(true);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!loading) {
+      inputRef.current?.focus();
+    }
+  }, [loading]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || loading) return;
-    onSend(input.trim());
+    onSend(input.trim(), allowExternalKnowledge);
     setInput('');
   };
 
   const handleQuickPromptClick = (promptText: string) => {
     if (loading) return;
-    onSend(promptText);
+    onSend(promptText, allowExternalKnowledge);
   };
 
   return (
@@ -45,26 +53,34 @@ export const ChatInputForm: React.FC<ChatInputFormProps> = ({ onSend, loading })
       </div>
 
       <form onSubmit={handleSubmit} className="chat-input-form">
-        {loading && (
-          <div className="chat-input-form__thinking">
-            <div className="chat-input-form__dots">
-              <span className="dot"></span>
-              <span className="dot"></span>
-              <span className="dot"></span>
-            </div>
-            <span className="chat-input-form__thinking-text">
-              UniChat AI đang truy xuất vector & suy luận từ kho tài liệu...
-            </span>
-          </div>
-        )}
-
         <div className="chat-input-form__wrapper">
-          <div className="chat-input-form__context-indicator" title="Đã kết nối cơ sở tri thức RAG Workspace">
-            <span className="material-symbols-outlined">database</span>
-            <span>RAG Active</span>
-          </div>
+          <button
+            type="button"
+            className={`chat-input-form__context-indicator ${
+              allowExternalKnowledge
+                ? 'chat-input-form__context-indicator--hybrid'
+                : 'chat-input-form__context-indicator--strict'
+            }`}
+            onClick={() => setAllowExternalKnowledge((prev) => !prev)}
+            title={
+              allowExternalKnowledge
+                ? 'Đang ở chế độ: RAG + AI Mở rộng (Click để đổi sang Chỉ theo Tài liệu)'
+                : 'Đang ở chế độ: Chỉ theo Tài liệu Strict (Click để đổi sang RAG + AI Mở rộng)'
+            }
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
+              {allowExternalKnowledge ? 'public' : 'shield'}
+            </span>
+            <span className="chat-input-form__context-label">
+              {allowExternalKnowledge ? 'RAG + AI Mở rộng' : 'Chỉ theo Tài liệu'}
+            </span>
+            <span className="material-symbols-outlined chat-input-form__swap-icon" style={{ fontSize: '15px' }}>
+              swap_horiz
+            </span>
+          </button>
 
           <input
+            ref={inputRef}
             type="text"
             className="chat-input-form__field"
             placeholder="Nhập câu hỏi tri thức (tối đa 2.000 ký tự)..."
