@@ -226,6 +226,7 @@ export const ChatPage: React.FC<ChatPageProps> = ({
                   key={msg.id}
                   message={msg}
                   onSelectCitation={(cit) => setSelectedCitation(cit)}
+                  onSelectPrompt={handleSendQuestion}
                 />
               ))}
               {loading && (

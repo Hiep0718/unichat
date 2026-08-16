@@ -9,6 +9,7 @@ import { QuestionResponse, CitationItem } from '../chat-api';
 import { CitationPanel } from './citation-panel';
 import { RefusalCard } from './refusal-card';
 import { MermaidDiagram } from './mermaid-diagram';
+import aiAvatar from '../../../assets/ai-avatar.png';
 
 export interface MessageItem {
   id: string;
@@ -27,9 +28,22 @@ const INTENT_MAP_VI: Record<string, string> = {
   GENERAL: 'Tổng quan',
 };
 
+function getTextFromChildren(children: React.ReactNode): string {
+  if (typeof children === 'string') return children;
+  if (typeof children === 'number') return String(children);
+  if (Array.isArray(children)) {
+    return children.map(getTextFromChildren).join('');
+  }
+  if (React.isValidElement(children) && children.props && (children.props as { children?: React.ReactNode }).children) {
+    return getTextFromChildren((children.props as { children?: React.ReactNode }).children);
+  }
+  return '';
+}
+
 interface ChatMessageItemProps {
   message: MessageItem;
   onSelectCitation?: ((citation: CitationItem) => void) | undefined;
+  onSelectPrompt?: ((prompt: string) => void) | undefined;
 }
 
 interface NotebookCitedTextProps {
@@ -53,8 +67,6 @@ const NotebookCitedText: React.FC<NotebookCitedTextProps> = ({
   const handleMouseEnter = () => {
     if (spanRef.current) {
       const rect = spanRef.current.getBoundingClientRect();
-      // If distance from top of viewport to the element is less than 210px,
-      // place popover BELOW to prevent clipping at the top header boundary.
       if (rect.top < 210) {
         setPlacement('bottom');
       } else {
@@ -196,9 +208,11 @@ function processTextNode(
   return result;
 }
 
-import aiAvatar from '../../../assets/ai-avatar.png';
-
-export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({ message, onSelectCitation }) => {
+export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
+  message,
+  onSelectCitation,
+  onSelectPrompt,
+}) => {
   const isUser = message.role === 'USER';
   const response = message.response;
   const citations = response?.citations;
@@ -240,7 +254,27 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({ message, onSel
                     return <p>{React.Children.map(children, (child) => processTextNode(child, citations, onSelectCitation))}</p>;
                   },
                   li({ children }) {
-                    return <li>{React.Children.map(children, (child) => processTextNode(child, citations, onSelectCitation))}</li>;
+                    const rawText = getTextFromChildren(children).trim();
+                    const cleanPrompt = rawText.replace(/^[-•\s\d.)]+/, '').trim();
+
+                    const handleClick = (e: React.MouseEvent<HTMLLIElement>) => {
+                      const target = e.currentTarget;
+                      // Only trigger prompt submission if list item is inside a suggestion container
+                      const isSuggestionList = Boolean(
+                        target.parentElement?.previousElementSibling?.tagName === 'H3' ||
+                        target.closest('ul')?.previousElementSibling?.tagName === 'H3'
+                      );
+
+                      if (onSelectPrompt && cleanPrompt && isSuggestionList) {
+                        onSelectPrompt(cleanPrompt);
+                      }
+                    };
+
+                    return (
+                      <li onClick={handleClick}>
+                        {React.Children.map(children, (child) => processTextNode(child, citations, onSelectCitation))}
+                      </li>
+                    );
                   },
                   blockquote({ children }) {
                     return <div>{children}</div>;
@@ -252,7 +286,6 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({ message, onSel
                       const chartCode = String(children).replace(/\n$/, '');
                       return <MermaidDiagram chart={chartCode} />;
                     }
-                    // For other code blocks, render with syntax highlight class
                     if (lang) {
                       return (
                         <div className="chat-code-block">
