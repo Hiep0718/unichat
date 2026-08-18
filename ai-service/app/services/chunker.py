@@ -6,8 +6,8 @@ from typing import Any
 from app.services.sentence_splitter import split_sentences
 from app.services.text_extractor import ExtractedBlock, ExtractedChunk
 
-DEFAULT_MAX_CHUNK_SIZE = 800
-DEFAULT_MIN_CHUNK_SIZE = 100
+DEFAULT_MAX_CHUNK_SIZE = 3000
+DEFAULT_MIN_CHUNK_SIZE = 200
 DEFAULT_SENTENCE_OVERLAP = 2
 
 
@@ -102,9 +102,18 @@ def chunk_blocks_hybrid(
         # Level 2: Section too large -> Split by paragraphs / blocks
         for block in sec_blocks:
             b_text = block.text
-            if block.block_type == "TABLE" or len(b_text) <= max_chunk_size:
+            if len(b_text) <= max_chunk_size:
                 raw_chunks.append({
                     "text": b_text,
+                    "locator_type": block.locator_type,
+                    "locator_value": block.locator_value,
+                    "heading": sec_heading,
+                    "level": 2,
+                })
+            elif block.block_type == "TABLE":
+                # TABLE too large: truncate at max_chunk_size
+                raw_chunks.append({
+                    "text": b_text[:max_chunk_size],
                     "locator_type": block.locator_type,
                     "locator_value": block.locator_value,
                     "heading": sec_heading,

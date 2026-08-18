@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
-ENABLE_OLLAMA_FALLBACK = os.getenv("ENABLE_OLLAMA_FALLBACK", "true").lower() == "true"
+ENABLE_OLLAMA_FALLBACK = os.getenv("ENABLE_OLLAMA_FALLBACK", "false").lower() == "true"
 
 
 def get_gemini_api_keys() -> list[str]:
@@ -60,6 +60,10 @@ def get_candidate_gemini_models() -> list[str]:
     return models
 
 
+MAX_SINGLE_CHUNK_CHARS = 3_000
+"""Safety cap per chunk to prevent wasted Gemini tokens on oversized V1/TABLE chunks."""
+
+
 def generate_rag_answer(
     question: str,
     candidates: list[RetrievedChunkCandidate],
@@ -70,14 +74,15 @@ def generate_rag_answer(
     citations = []
 
     for idx, c in enumerate(candidates, start=1):
+        text = c.text[:MAX_SINGLE_CHUNK_CHARS]
         context_blocks.append(
-            f"[{idx}] (Tài liệu: {c.document_id}, Vị trí: {c.locator_value}):\n{c.text}"
+            f"[{idx}] (Tài liệu: {c.document_id}, Vị trí: {c.locator_value}):\n{text}"
         )
         citations.append({
             "citationId": str(idx),
             "documentId": c.document_id,
             "locator": c.locator_value,
-            "excerpt": c.text[:200],
+            "excerpt": text[:200],
             "score": c.similarity,
         })
 
@@ -276,7 +281,7 @@ def call_gemini_api(
     """Call Gemini using official google-genai SDK (R-04 mitigation) with target API key, model, and max output tokens."""
     key_to_use = api_key or os.getenv("GEMINI_API_KEY", "")
     client = genai.Client(api_key=key_to_use)
-    model_name = target_model or os.getenv("GEMINI_MODEL", "gemini-3.5-flash")
+    model_name = target_model or os.getenv("GEMINI_MODEL") or "gemini-3.5-flash"
 
     # Set max_output_tokens=8192 to prevent premature output truncation
     config = types.GenerateContentConfig(

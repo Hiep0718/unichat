@@ -41,5 +41,6 @@ intents:
     priority: 6
     rule_id: "RULE_FACT_EXPLICIT"
     patterns:
-      - "(ai|khi nao|bao nhieu|o dau|thoi gian|ngay thang)"
-    negative_patterns: []
+      - "(\\bai\\b|khi nao|bao nhieu|o dau|thoi gian|ngay thang|nam nao|may gio)"
+    negative_patterns:
+      - "(tai sao|vi sao|the nao)"

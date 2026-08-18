@@ -41,10 +41,22 @@ def retrieve_chunks(
     client = get_chroma_client()
     col_name = get_active_collection_name()
 
-    candidates = _query_single_collection(client, col_name, workspace_id, allowed_document_ids, question, strategy)
-    if not candidates and col_name == COLLECTION_V2:
-        candidates = _query_single_collection(client, COLLECTION_V1, workspace_id, allowed_document_ids, question, strategy)
+    candidates = _query_single_collection(
+        client, col_name, workspace_id, allowed_document_ids, question, strategy
+    )
 
+    # Supplement from V1 if V2 yields fewer candidates than max_chunks
+    if len(candidates) < strategy.max_chunks and col_name == COLLECTION_V2:
+        v1_candidates = _query_single_collection(
+            client, COLLECTION_V1, workspace_id, allowed_document_ids, question, strategy
+        )
+        seen_keys = {(c.document_id, c.locator_value) for c in candidates}
+        for c in v1_candidates:
+            if (c.document_id, c.locator_value) not in seen_keys:
+                candidates.append(c)
+                seen_keys.add((c.document_id, c.locator_value))
+
+    candidates.sort(key=lambda c: c.similarity, reverse=True)
     return candidates[: strategy.max_chunks]
 
 
