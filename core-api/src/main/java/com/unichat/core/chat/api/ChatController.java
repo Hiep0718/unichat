@@ -17,7 +17,10 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
 import com.unichat.core.chat.service.ChatService;
+import com.unichat.core.chat.service.SseChatService;
 import com.unichat.core.shared.idempotency.IdempotencyService;
 
 /**
@@ -28,10 +31,12 @@ import com.unichat.core.shared.idempotency.IdempotencyService;
 public class ChatController {
 
     private final ChatService chatService;
+    private final SseChatService sseChatService;
     private final IdempotencyService idempotencyService;
 
-    public ChatController(ChatService chatService, IdempotencyService idempotencyService) {
+    public ChatController(ChatService chatService, SseChatService sseChatService, IdempotencyService idempotencyService) {
         this.chatService = chatService;
+        this.sseChatService = sseChatService;
         this.idempotencyService = idempotencyService;
     }
 
@@ -67,5 +72,18 @@ public class ChatController {
 
         QuestionResponse response = chatService.askQuestion(userId, workspaceId, request, requestId);
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Asks a question within a workspace and streams the response token-by-token via Server-Sent Events (SSE).
+     */
+    @PostMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter askQuestionStream(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable("workspaceId") UUID workspaceId,
+            @Valid @RequestBody AskQuestionRequest request,
+            @RequestHeader(value = "X-Request-Id", required = false, defaultValue = "") String requestId) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        return sseChatService.askQuestionStream(userId, workspaceId, request, requestId);
     }
 }
