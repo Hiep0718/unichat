@@ -17,6 +17,7 @@ export interface MessageItem {
   content: string;
   response?: QuestionResponse;
   timestamp?: string;
+  isStreaming?: boolean;
 }
 
 const INTENT_MAP_VI: Record<string, string> = {
@@ -342,6 +343,7 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
               >
                 {mainContent}
               </Markdown>
+              {message.isStreaming && <span className="chat-msg__streaming-cursor">▌</span>}
 
               {suggestions.length > 0 && (
                 <SuggestionPanel
