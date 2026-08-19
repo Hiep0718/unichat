@@ -79,7 +79,7 @@ export async function uploadWorkspaceDocument(
       if (xhr.status >= 200 && xhr.status < 300) {
         try {
           const data = JSON.parse(xhr.responseText);
-          resolve(data);
+          resolve(Array.isArray(data) ? data[0] : data);
         } catch {
           reject(new Error('Phản hồi từ máy chủ không hợp lệ'));
         }
@@ -96,6 +96,33 @@ export async function uploadWorkspaceDocument(
     xhr.onerror = () => reject(new Error('Lỗi kết nối mạng khi tải lên tài liệu'));
     xhr.send(formData);
   });
+}
+
+export async function uploadWorkspaceDocuments(
+  workspaceId: string,
+  files: File[],
+  onProgressPerFile?: (fileIndex: number, percent: number) => void
+): Promise<IngestionJobResponse[]> {
+  if (!files || files.length === 0) {
+    throw new Error('Không có tệp nào được chọn');
+  }
+
+  const results: IngestionJobResponse[] = [];
+
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    if (!file) continue;
+
+    const res = await uploadWorkspaceDocument(workspaceId, file, (percent) => {
+      if (onProgressPerFile) {
+        onProgressPerFile(i, percent);
+      }
+    });
+
+    results.push(res);
+  }
+
+  return results;
 }
 
 
