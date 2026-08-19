@@ -280,4 +280,12 @@
 - Decision: Present an explicit Side-Effects Warning Modal (`PdfSplitModal`) before executing PDF page splitting.
   Rationale: Ensures complete transparency regarding Context Fragmentation in RAG embeddings, Workspace 100-document quota consumption, and altered RAG source citation labels (e.g. `[Filename]_Part1.pdf`).
 
+## 2026-08-19 - Adaptive PDF Slide vs Text Layout Extraction & Chunking
 
+- Decision: Implement layout classifier (`pdf_classifier.py`) to automatically distinguish PowerPoint/Keynote PDF slides from continuous Word/Text PDFs based on aspect ratio (>= 1.15) and word density (<= 140 words/page).
+  Rationale: Lecture slides contain sparse text boxes and graphics. Preserving full-slide chunks with `SLIDE_NUMBER` locators (`slide:X`) prevents context fragmentation and provides precise slide-level source citations for educational RAG queries.
+
+## 2026-08-19 - Academic RAG Benchmark Evaluation Plan ($0 Budget)
+
+- Decision: Standardize academic RAG evaluation pipeline using Arize Phoenix Web UI + RAGAS framework + 120-question Golden Dataset.
+  Rationale: Delivers a 100% free ($0 budget), highly credible, industry-standard evaluation dashboard (localhost:6006) for academic thesis defense, measuring Faithfulness, Context Precision, Answer Relevance, and Refusal F1-Score.
