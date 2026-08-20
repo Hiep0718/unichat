@@ -3,6 +3,7 @@ from typing import Any
 import time
 import uuid
 from fastapi import APIRouter, Depends
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from app.core.rag.evidence_gate import DecisionEnum, evaluate_evidence
@@ -11,6 +12,7 @@ from app.core.rag.llm_provider import generate_rag_answer
 from app.core.rag.retrieval_engine import retrieve_chunks
 from app.core.rag.retrieval_trace import RetrievalTrace, record_trace
 from app.core.rag.strategy_selector import get_strategy
+from app.core.rag.stream_provider import format_sse, generate_rag_answer_stream
 from app.core.security import verify_service_jwt
 
 router = APIRouter()
@@ -22,6 +24,7 @@ class RetrievalAnswerRequest(BaseModel):
     question: str = Field(..., min_length=3, max_length=2000, description="User question")
     strategyVersion: str | None = Field("v1.0", description="RAG strategy version")
     requestId: str | None = Field(None, description="Correlation request ID")
+    allowExternalKnowledge: bool | None = Field(True, description="Allow AI external knowledge expansion when documents lack details")
 
 
 class CitationItem(BaseModel):
@@ -119,7 +122,12 @@ def get_retrieval_answer(
     )
 
     # 4. Evidence Gate evaluation
-    gate_res = evaluate_evidence(intent_res.intent, strategy, candidates)
+    gate_res = evaluate_evidence(
+        intent_res.intent,
+        strategy,
+        candidates,
+        workspace_document_count=len(request.allowedDocumentIds),
+    )
 
     if gate_res.decision != DecisionEnum.ANSWER:
         trace = RetrievalTrace(
@@ -154,6 +162,7 @@ def get_retrieval_answer(
         request.question,
         candidates,
         allowed_document_ids=request.allowedDocumentIds,
+        allow_external_knowledge=request.allowExternalKnowledge if request.allowExternalKnowledge is not None else True,
     )
 
     if rag_res.get("validationFailed"):
@@ -223,4 +232,100 @@ def get_retrieval_answer(
         citations=citations,
         requestId=req_id,
     )
+
+
+@router.post("/retrieval/answers/stream")
+def get_retrieval_answer_stream(
+    request: RetrievalAnswerRequest,
+    _auth: dict[str, Any] = Depends(verify_service_jwt),
+) -> StreamingResponse:
+    """Stream RAG reasoning answer as Server-Sent Events (SSE)."""
+    req_id = request.requestId or str(uuid.uuid4())
+
+    async def event_generator() -> Any:
+        if not request.allowedDocumentIds:
+            yield format_sse("metadata", {
+                "decision": DecisionEnum.REFUSE.value,
+                "intent": "OUT_OF_SCOPE",
+                "strategyVersion": request.strategyVersion or "v1.0",
+                "refusalCode": "NO_ALLOWED_DOCUMENTS",
+                "refusalReason": "Không có tài liệu nào được cấp quyền trong workspace.",
+                "citations": [],
+                "evidenceScore": 0.0,
+                "requestId": req_id,
+            })
+            yield format_sse("done", {
+                "messageId": req_id,
+                "refusalCode": "NO_ALLOWED_DOCUMENTS",
+                "providerModel": "none",
+            })
+            return
+
+        intent_res = detect_intent(request.question)
+        if intent_res.intent == IntentEnum.CLARIFY:
+            yield format_sse("metadata", {
+                "decision": DecisionEnum.CLARIFY.value,
+                "intent": intent_res.intent.value,
+                "strategyVersion": request.strategyVersion or "v1.0",
+                "refusalCode": "CLARIFY_REQUIRED",
+                "refusalReason": "Câu hỏi chứa đại từ mập mờ, cần làm rõ ngữ cảnh.",
+                "citations": [],
+                "evidenceScore": 0.0,
+                "requestId": req_id,
+            })
+            yield format_sse("done", {
+                "messageId": req_id,
+                "refusalCode": "CLARIFY_REQUIRED",
+                "providerModel": "none",
+            })
+            return
+
+        strategy = get_strategy(intent_res.intent)
+        candidates = retrieve_chunks(
+            workspace_id=request.workspaceId,
+            allowed_document_ids=request.allowedDocumentIds,
+            question=request.question,
+            strategy=strategy,
+        )
+
+        gate_res = evaluate_evidence(
+            intent_res.intent,
+            strategy,
+            candidates,
+            workspace_document_count=len(request.allowedDocumentIds),
+        )
+
+        if gate_res.decision != DecisionEnum.ANSWER:
+            yield format_sse("metadata", {
+                "decision": gate_res.decision.value,
+                "intent": intent_res.intent.value,
+                "strategyVersion": request.strategyVersion or "v1.0",
+                "refusalCode": "EVIDENCE_GATE_REFUSAL",
+                "refusalReason": gate_res.refusal_reason or "Tài liệu hiện có chưa đủ bằng chứng.",
+                "citations": [],
+                "evidenceScore": gate_res.evidence_score,
+                "requestId": req_id,
+            })
+            yield format_sse("done", {
+                "messageId": req_id,
+                "refusalCode": "EVIDENCE_GATE_REFUSAL",
+                "providerModel": "none",
+            })
+            return
+
+        allow_ext = request.allowExternalKnowledge if request.allowExternalKnowledge is not None else True
+        async for sse_event in generate_rag_answer_stream(
+            question=request.question,
+            candidates=candidates,
+            intent=intent_res.intent.value,
+            strategy_version=request.strategyVersion or "v1.0",
+            request_id=req_id,
+            allowed_document_ids=request.allowedDocumentIds,
+            allow_external_knowledge=allow_ext,
+            evidence_score=gate_res.evidence_score,
+        ):
+            yield sse_event
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
+
 

@@ -45,7 +45,12 @@ def run_evaluation_suite(workspace_id: str, allowed_document_ids: list[str]) -> 
 
         strategy = get_strategy(intent_res.intent)
         candidates = retrieve_chunks(workspace_id, allowed_document_ids, q, strategy)
-        gate_res = evaluate_evidence(intent_res.intent, strategy, candidates)
+        gate_res = evaluate_evidence(
+            intent_res.intent,
+            strategy,
+            candidates,
+            workspace_document_count=len(allowed_document_ids),
+        )
 
         latency_ms = round((time.time() - sample_start) * 1000, 2)
 

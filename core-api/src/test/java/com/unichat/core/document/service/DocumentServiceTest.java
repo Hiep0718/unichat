@@ -5,8 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -161,5 +163,31 @@ class DocumentServiceTest {
         when(documentRepository.countByWorkspaceId(workspaceId)).thenReturn(100L);
 
         assertThrows(ConflictError.class, () -> documentService.uploadDocument(userId, workspaceId, file, "req-123"));
+    }
+
+    @Test
+    void shouldUploadMultipleDocumentsSuccessfullyWhenEditor() {
+        var userId = UUID.randomUUID();
+        var workspaceId = UUID.randomUUID();
+        var workspace = new Workspace(workspaceId, userId, "Test Workspace", "", WorkspaceVisibility.PRIVATE, false, Instant.now());
+        var member = new WorkspaceMember(workspaceId, userId, WorkspaceRole.EDITOR, WorkspaceMemberStatus.ACTIVE, userId);
+        MultipartFile file1 = new MockMultipartFile("files", "doc1.pdf", "application/pdf", "PDF 1 content".getBytes());
+        MultipartFile file2 = new MockMultipartFile("files", "doc2.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "Doc 2 content".getBytes());
+        java.util.List<MultipartFile> files = java.util.List.of(file1, file2);
+
+        when(workspaceRepository.findById(workspaceId)).thenReturn(Optional.of(workspace));
+        when(workspaceMemberRepository.findByWorkspaceIdAndUserIdAndStatus(workspaceId, userId, WorkspaceMemberStatus.ACTIVE))
+                .thenReturn(Optional.of(member));
+        when(documentRepository.countByWorkspaceId(workspaceId)).thenReturn(5L);
+        when(documentRepository.sumByteSizeByWorkspaceId(workspaceId)).thenReturn(1000L);
+
+        var responses = documentService.uploadDocuments(userId, workspaceId, files, "req-batch");
+
+        assertNotNull(responses);
+        assertEquals(2, responses.size());
+        assertEquals(DocumentStatus.PENDING, responses.get(0).status());
+        assertEquals(DocumentStatus.PENDING, responses.get(1).status());
+        verify(documentRepository, times(2)).save(any(Document.class));
+        verify(ingestionProducer, times(2)).sendIngestionMessage(any(DocumentIngestionMessage.class));
     }
 }

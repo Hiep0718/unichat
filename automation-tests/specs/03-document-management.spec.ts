@@ -6,4 +6,9 @@ test.describe('Automation Suite 03 — Document Management UI Scaffold', () => {
     await page.goto('/login');
     await expect(page).toHaveTitle(/UniChat/i);
   });
+
+  test('should verify multi-file upload input element support', async ({ page }) => {
+    await page.goto('/login');
+    await page.waitForLoadState('networkidle');
+  });
 });

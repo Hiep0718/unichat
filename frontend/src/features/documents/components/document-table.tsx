@@ -3,10 +3,12 @@ import { createPortal } from 'react-dom';
 import {
   DocumentResponse,
   fetchWorkspaceDocuments,
-  uploadWorkspaceDocument,
+  uploadWorkspaceDocuments,
   deleteWorkspaceDocument,
   syncVectorStore,
 } from '../document-api';
+import { splitPdfFile } from '../utils/pdf-splitter';
+import { PdfSplitModal } from './pdf-split-modal';
 import { LoadingInline } from '../../../components/loading-screen';
 import './document-table.css';
 
@@ -16,6 +18,7 @@ interface DocumentTableProps {
 }
 
 interface UploadingDocument {
+  id: string;
   name: string;
   size: number;
   mediaType: string;
@@ -32,37 +35,59 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
   const [documents, setDocuments] = useState<DocumentResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [uploadingDoc, setUploadingDoc] = useState<UploadingDocument | null>(null);
+  const [uploadingDocs, setUploadingDocs] = useState<UploadingDocument[]>([]);
   const [syncing, setSyncing] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const [notificationToast, setNotificationToast] = useState<NotificationToast | null>(null);
+
+  // Oversized PDF Handling States
+  const [oversizedFiles, setOversizedFiles] = useState<File[]>([]);
+  const [isSplittingPdf, setIsSplittingPdf] = useState(false);
+  const [splitProgressText, setSplitProgressText] = useState<string | null>(null);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const loadDocuments = useCallback(async () => {
+    setLoading(true);
     try {
       const res = await fetchWorkspaceDocuments(workspaceId);
       setDocuments(res.content || []);
       setError(null);
-      setLoading(false);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Lỗi tải danh sách tài liệu');
+    } finally {
       setLoading(false);
     }
   }, [workspaceId]);
 
-  // Initial load when workspaceId changes
   useEffect(() => {
-    setLoading(true);
-    loadDocuments();
-  }, [workspaceId, loadDocuments]);
+    let isMounted = true;
+    fetchWorkspaceDocuments(workspaceId)
+      .then((res) => {
+        if (isMounted) {
+          setDocuments(res.content || []);
+          setError(null);
+          setLoading(false);
+        }
+      })
+      .catch((err: unknown) => {
+        if (isMounted) {
+          setError(err instanceof Error ? err.message : 'Lỗi tải danh sách tài liệu');
+          setLoading(false);
+        }
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, [workspaceId]);
 
-  // Smart Polling: ONLY poll if documents are processing or during active upload/sync
   useEffect(() => {
     const isProcessing = documents.some(
       (doc) => doc.status === 'PENDING' || doc.status === 'PROCESSING'
     );
 
-    if (!isProcessing && !uploadingDoc && !syncing) {
-      return; // STOP POLLING COMPLETELY WHEN EVERYTHING IS PROCESSED!
+    if (!isProcessing && uploadingDocs.length === 0 && !syncing) {
+      return;
     }
 
     const timer = setInterval(() => {
@@ -70,7 +95,7 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
     }, 5000);
 
     return () => clearInterval(timer);
-  }, [documents, uploadingDoc, syncing, loadDocuments]);
+  }, [documents, uploadingDocs, syncing, loadDocuments]);
 
   useEffect(() => {
     if (!notificationToast) return;
@@ -80,36 +105,37 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
     return () => clearTimeout(timer);
   }, [notificationToast]);
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const uploadBatchFiles = async (targetFiles: File[]) => {
+    if (targetFiles.length === 0) return;
 
-    const fileExt = file.name.split('.').pop()?.toUpperCase() || 'FILE';
-
-    setUploadingDoc({
+    const initialUploading: UploadingDocument[] = targetFiles.map((file, idx) => ({
+      id: `${file.name}-${idx}-${Date.now()}`,
       name: file.name,
       size: file.size,
-      mediaType: fileExt,
+      mediaType: file.name.split('.').pop()?.toUpperCase() || 'FILE',
       progress: 10,
-    });
-    setError(null);
+    }));
+
+    setUploadingDocs((prev) => [...prev, ...initialUploading]);
 
     let currentProgress = 10;
     const progressInterval = setInterval(() => {
-      currentProgress = Math.min(currentProgress + Math.floor(Math.random() * 12) + 8, 92);
-      setUploadingDoc((prev) => (prev ? { ...prev, progress: currentProgress } : null));
-    }, 120);
+      currentProgress = Math.min(currentProgress + Math.floor(Math.random() * 10) + 5, 90);
+      setUploadingDocs((prev) =>
+        prev.map((doc) => ({ ...doc, progress: Math.max(doc.progress, currentProgress) }))
+      );
+    }, 150);
 
     try {
-      await uploadWorkspaceDocument(workspaceId, file, (percent) => {
-        if (percent > currentProgress) {
-          currentProgress = Math.min(percent, 95);
-        }
+      await uploadWorkspaceDocuments(workspaceId, targetFiles, (fileIdx, percent) => {
+        setUploadingDocs((prev) =>
+          prev.map((doc, idx) => (idx === fileIdx ? { ...doc, progress: Math.max(doc.progress, percent) } : doc))
+        );
       });
 
       clearInterval(progressInterval);
-      setUploadingDoc((prev) => (prev ? { ...prev, progress: 100 } : null));
-      await new Promise((r) => setTimeout(r, 450));
+      setUploadingDocs((prev) => prev.map((doc) => ({ ...doc, progress: 100 })));
+      await new Promise((r) => setTimeout(r, 400));
 
       const updated = await fetchWorkspaceDocuments(workspaceId);
       setDocuments(updated.content || []);
@@ -117,7 +143,7 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
       setNotificationToast({
         type: 'success',
         title: 'Tải tài liệu thành công!',
-        message: `Tài liệu "${file.name}" đã được tải lên và sẵn sàng RAG Chat.`,
+        message: `Đã tải lên ${targetFiles.length} tài liệu thành công và sẵn sàng RAG Chat.`,
       });
     } catch (err: unknown) {
       clearInterval(progressInterval);
@@ -129,9 +155,103 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
         message: msg,
       });
     } finally {
-      setUploadingDoc(null);
+      setUploadingDocs([]);
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
+  };
+
+  const processFiles = async (files: File[]) => {
+    if (files.length === 0) return;
+
+    const allowedExtensions = ['.pdf', '.docx', '.txt'];
+    const validFiles: File[] = [];
+    const oversizedPdfs: File[] = [];
+    const invalidFiles: string[] = [];
+
+    files.forEach((file) => {
+      const ext = '.' + (file.name.split('.').pop()?.toLowerCase() || '');
+      if (!allowedExtensions.includes(ext)) {
+        invalidFiles.push(`${file.name} (định dạng không hỗ trợ)`);
+        return;
+      }
+
+      if (file.size <= 20 * 1024 * 1024) {
+        validFiles.push(file);
+      } else if (ext === '.pdf') {
+        oversizedPdfs.push(file);
+      } else {
+        invalidFiles.push(`${file.name} (> 20 MB)`);
+      }
+    });
+
+    if (invalidFiles.length > 0) {
+      setError(`Các tệp không hợp lệ: ${invalidFiles.join(', ')}`);
+    } else {
+      setError(null);
+    }
+
+    if (oversizedPdfs.length > 0) {
+      setOversizedFiles(oversizedPdfs);
+    }
+
+    if (validFiles.length > 0) {
+      await uploadBatchFiles(validFiles);
+    }
+  };
+
+  const handleConfirmSplit = async () => {
+    if (oversizedFiles.length === 0) return;
+    setIsSplittingPdf(true);
+
+    try {
+      const splitFiles: File[] = [];
+      for (const file of oversizedFiles) {
+        setSplitProgressText(`Đang xử lý & cắt tệp "${file.name}"...`);
+        const parts = await splitPdfFile(file, 15, (p) => {
+          setSplitProgressText(`"${file.name}": ${p.message}`);
+        });
+        splitFiles.push(...parts);
+      }
+
+      setOversizedFiles([]);
+      setIsSplittingPdf(false);
+      setSplitProgressText(null);
+
+      if (splitFiles.length > 0) {
+        await uploadBatchFiles(splitFiles);
+      }
+    } catch (err: unknown) {
+      setIsSplittingPdf(false);
+      setSplitProgressText(null);
+      const msg = err instanceof Error ? err.message : 'Không thể cắt tệp PDF';
+      setError(`Lỗi cắt tệp PDF: ${msg}`);
+    }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = Array.from(e.target.files || []);
+    processFiles(selectedFiles);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (uploadingDocs.length === 0) setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    if (uploadingDocs.length > 0) return;
+    const droppedFiles = Array.from(e.dataTransfer.files);
+    processFiles(droppedFiles);
   };
 
   const handleSyncVector = async () => {
@@ -180,8 +300,25 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
 
   if (loading) return <LoadingInline label="Đang tải danh sách tài liệu..." />;
 
+  const isUploading = uploadingDocs.length > 0;
+
   return (
     <div className="document-management">
+      {oversizedFiles.length > 0 && (
+        <PdfSplitModal
+          files={oversizedFiles}
+          isProcessing={isSplittingPdf}
+          progressText={splitProgressText}
+          onConfirm={handleConfirmSplit}
+          onCancel={() => {
+            setOversizedFiles([]);
+            setIsSplittingPdf(false);
+            setSplitProgressText(null);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+          }}
+        />
+      )}
+
       {notificationToast &&
         createPortal(
           <div className={`doc-toast doc-toast--${notificationToast.type}`}>
@@ -228,9 +365,12 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
 
       {canEdit && (
         <div
-          className="document-upload-zone"
-          onClick={() => !uploadingDoc && fileInputRef.current?.click()}
-          style={{ opacity: uploadingDoc ? 0.6 : 1, cursor: uploadingDoc ? 'not-allowed' : 'pointer' }}
+          className={`document-upload-zone ${isDragging ? 'document-upload-zone--dragging' : ''}`}
+          onClick={() => !isUploading && fileInputRef.current?.click()}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          style={{ opacity: isUploading ? 0.6 : 1, cursor: isUploading ? 'not-allowed' : 'pointer' }}
         >
           <input
             type="file"
@@ -238,12 +378,17 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
             onChange={handleFileSelect}
             style={{ display: 'none' }}
             accept=".pdf,.docx,.txt"
-            disabled={Boolean(uploadingDoc)}
+            multiple
+            disabled={isUploading}
           />
           <div className="document-upload-zone__title">
-            {uploadingDoc ? `Đang tải tệp lên (${uploadingDoc.progress}%)...` : 'Nhấp để chọn tệp PDF, DOCX, TXT tải lên'}
+            {isUploading
+              ? `Đang tải lên ${uploadingDocs.length} tài liệu...`
+              : 'Nhấp hoặc kéo thả nhiều tệp PDF, DOCX, TXT để tải lên cùng lúc'}
           </div>
-          <div className="document-upload-zone__subtitle">Dung lượng tối đa 20 MiB/tệp</div>
+          <div className="document-upload-zone__subtitle">
+            Hỗ trợ upload hàng loạt tệp • Dung lượng tối đa 20 MiB/tệp
+          </div>
         </div>
       )}
 
@@ -259,30 +404,30 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
             </tr>
           </thead>
           <tbody>
-            {uploadingDoc && (
-              <tr className="document-row--uploading">
+            {uploadingDocs.map((doc) => (
+              <tr key={doc.id} className="document-row--uploading">
                 <td>
                   <div className="document-uploading-info">
-                    <span className="document-uploading-name">{uploadingDoc.name}</span>
+                    <span className="document-uploading-name">{doc.name}</span>
                     <div className="document-progress-bar-container">
                       <div
                         className="document-progress-bar-fill"
-                        style={{ width: `${uploadingDoc.progress}%` }}
+                        style={{ width: `${doc.progress}%` }}
                       />
                     </div>
                   </div>
                 </td>
-                <td>{uploadingDoc.mediaType}</td>
-                <td>{formatSize(uploadingDoc.size)}</td>
+                <td>{doc.mediaType}</td>
+                <td>{formatSize(doc.size)}</td>
                 <td>
                   <span className="document-badge document-badge--uploading">
                     <span className="document-badge__icon">⏳</span>
-                    Đang nạp Vector ({uploadingDoc.progress}%)
+                    Đang nạp Vector ({doc.progress}%)
                   </span>
                 </td>
                 {canEdit && <td>—</td>}
               </tr>
-            )}
+            ))}
 
             {documents.map((doc) => (
               <tr key={doc.id}>

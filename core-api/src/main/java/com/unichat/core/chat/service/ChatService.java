@@ -103,7 +103,8 @@ public class ChatService {
                 "allowedDocumentIds", allowedDocIds,
                 "question", request.question(),
                 "strategyVersion", "v1.0",
-                "requestId", requestId != null ? requestId : UUID.randomUUID().toString()
+                "requestId", requestId != null ? requestId : UUID.randomUUID().toString(),
+                "allowExternalKnowledge", request.allowExternalKnowledge() != null ? request.allowExternalKnowledge() : true
         );
 
         HttpHeaders headers = new HttpHeaders();

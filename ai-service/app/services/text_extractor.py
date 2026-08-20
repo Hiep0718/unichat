@@ -88,9 +88,54 @@ def _is_heading_heuristic(line: str, prev_blank: bool, next_blank: bool) -> tupl
 
 
 def extract_pdf_blocks(file_bytes: bytes) -> list[ExtractedBlock]:
-    """Extract structured blocks from PDF with heuristic heading detection."""
-    reader = PdfReader(io.BytesIO(file_bytes))
+    """Extract structured blocks from PDF adaptively based on document layout.
+
+    For Slide Presentations (PowerPoint/Keynote PDF exports):
+      Extracts full slide contents with 'SLIDE_NUMBER' locator_type (e.g. 'slide:1').
+    For Continuous Text (Word/LaTeX/Ebook PDF exports):
+      Extracts line-by-line paragraph/heading blocks with 'PDF_PAGE' locator_type (e.g. 'page:1').
+    """
+    from app.services.pdf_classifier import PdfLayoutType, classify_pdf_layout
+
+    try:
+        layout_type = classify_pdf_layout(file_bytes)
+        reader = PdfReader(io.BytesIO(file_bytes))
+        if not reader.pages:
+            raise ValueError("Tệp PDF không chứa trang hợp lệ")
+    except Exception as exc:
+        raise ValueError(f"Tệp PDF bị hỏng hoặc không thể đọc: {exc}") from exc
+
     blocks: list[ExtractedBlock] = []
+
+    if layout_type == PdfLayoutType.SLIDE_PRESENTATION:
+        for i, page in enumerate(reader.pages, start=1):
+            raw_text = (page.extract_text() or "").strip()
+            if not raw_text:
+                continue
+
+            lines = [l.strip() for l in raw_text.splitlines() if l.strip()]
+            if not lines:
+                continue
+
+            title_candidate = lines[0]
+            prev_blank, next_blank = True, True
+            is_heading, level = _is_heading_heuristic(title_candidate, prev_blank, next_blank)
+
+            slide_text = "\n".join(lines)
+            locator_value = f"slide:{i}"
+
+            blocks.append(
+                ExtractedBlock(
+                    text=slide_text,
+                    block_type="HEADING" if is_heading else "PARAGRAPH",
+                    heading_level=level if is_heading else None,
+                    locator_type="SLIDE_NUMBER",
+                    locator_value=locator_value,
+                    content_hash=compute_hash(slide_text),
+                    source_page_or_index=i,
+                )
+            )
+        return blocks
 
     for i, page in enumerate(reader.pages, start=1):
         raw_text = page.extract_text() or ""
