@@ -10,6 +10,12 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0..1,0&display=swap" rel="stylesheet" />
     <title>UniChat — Nền tảng Tri thức AI RAG Workspace</title>
+    <script>
+      // Polyfill for sockjs-client which expects Node's 'global' object
+      if (typeof global === 'undefined') {
+        window.global = window;
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

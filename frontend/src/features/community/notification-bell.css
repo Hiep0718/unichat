@@ -1,0 +1,185 @@
+/* ==========================================================================
+   Notification Bell & Dropdown Styles
+   ========================================================================== */
+
+.notification-bell {
+  position: relative;
+}
+
+.notification-bell__btn {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-on-surface-variant);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition-fast), color var(--transition-fast);
+  position: relative;
+}
+
+.notification-bell__btn:hover {
+  background: var(--color-surface-container-high);
+  color: var(--color-on-surface);
+}
+
+.notification-bell__badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  min-width: 18px;
+  height: 18px;
+  border-radius: var(--radius-full);
+  background: var(--color-error);
+  color: var(--color-on-error);
+  font: var(--font-label-sm);
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  animation: badgePop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes badgePop {
+  from { transform: scale(0); }
+  to { transform: scale(1); }
+}
+
+/* ---------- Dropdown ---------- */
+.notification-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: min(380px, 92vw);
+  max-height: 420px;
+  background: var(--color-surface-container-lowest);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  overflow: hidden;
+  z-index: 300;
+  animation: dropdownSlide 0.15s ease;
+}
+
+@keyframes dropdownSlide {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.notification-dropdown__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--color-outline-variant);
+}
+
+.notification-dropdown__title {
+  font: var(--font-headline-md);
+  font-size: 15px;
+  color: var(--color-on-surface);
+}
+
+.notification-dropdown__mark-all {
+  font: var(--font-label-sm);
+  color: var(--color-primary);
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-default);
+  transition: background var(--transition-fast);
+}
+
+.notification-dropdown__mark-all:hover {
+  background: var(--color-surface-container-high);
+}
+
+.notification-dropdown__list {
+  overflow-y: auto;
+  max-height: 340px;
+}
+
+/* ---------- Notification Item ---------- */
+.notification-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  border-bottom: 1px solid var(--color-surface-container);
+}
+
+.notification-item:hover {
+  background: var(--color-surface-container-low);
+}
+
+.notification-item--unread {
+  background: var(--color-primary-fixed);
+}
+
+.notification-item--unread:hover {
+  background: var(--color-primary-fixed-dim);
+}
+
+.notification-item__icon {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.notification-item__icon--reply {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.notification-item__icon--ai {
+  background: #cffafe;
+  color: #0891b2;
+}
+
+.notification-item__icon--approval {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.notification-item__icon--mention {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.notification-item__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.notification-item__text {
+  font: var(--font-body-md);
+  color: var(--color-on-surface);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.notification-item__time {
+  font: var(--font-label-sm);
+  color: var(--color-on-surface-variant);
+  margin-top: 2px;
+}
+
+.notification-dropdown__empty {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--color-on-surface-variant);
+  font: var(--font-body-md);
+}
