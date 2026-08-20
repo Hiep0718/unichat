@@ -7,6 +7,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.UUID;
@@ -99,47 +100,72 @@ public class DocumentService {
      */
     @Transactional
     public IngestionJobResponse uploadDocument(UUID userId, UUID workspaceId, MultipartFile file, String requestId) {
-        validateAccess(userId, workspaceId, WorkspaceRole.EDITOR);
-        validateFile(file);
+        if (file == null) {
+            throw new ValidationError("Tài liệu tải lên không được để trống");
+        }
+        return uploadDocuments(userId, workspaceId, List.of(file), requestId).get(0);
+    }
 
-        long count = documentRepository.countByWorkspaceId(workspaceId);
-        if (count >= MAX_WORKSPACE_DOCUMENTS) {
+    /**
+     * Uploads and initiates asynchronous ingestion for multiple documents in a single batch.
+     */
+    @Transactional
+    public List<IngestionJobResponse> uploadDocuments(UUID userId, UUID workspaceId, List<MultipartFile> files, String requestId) {
+        if (files == null || files.isEmpty()) {
+            throw new ValidationError("Danh sách tài liệu tải lên không được để trống");
+        }
+
+        validateAccess(userId, workspaceId, WorkspaceRole.EDITOR);
+
+        for (MultipartFile f : files) {
+            validateFile(f);
+        }
+
+        long currentCount = documentRepository.countByWorkspaceId(workspaceId);
+        if (currentCount + files.size() > MAX_WORKSPACE_DOCUMENTS) {
             throw new ConflictError("Vượt quá giới hạn 100 tài liệu cho mỗi Workspace");
         }
 
-        long totalSize = documentRepository.sumByteSizeByWorkspaceId(workspaceId);
-        if (totalSize + file.getSize() > MAX_WORKSPACE_STORAGE) {
+        long currentTotalSize = documentRepository.sumByteSizeByWorkspaceId(workspaceId);
+        long batchSize = files.stream().mapToLong(MultipartFile::getSize).sum();
+        if (currentTotalSize + batchSize > MAX_WORKSPACE_STORAGE) {
             throw new ConflictError("Vượt quá giới hạn dung lượng 1 GiB cho Workspace");
         }
 
+        List<IngestionJobResponse> responses = new ArrayList<>();
         Instant now = Instant.now(clock);
-        UUID documentId = UuidGenerator.generateV7();
-        String originalName = sanitizeFilename(file.getOriginalFilename());
-        String mediaType = file.getContentType();
-        String storageKey = workspaceId + "/" + documentId + "_" + originalName;
 
-        String sha256 = computeSha256AndStore(file, storageKey);
+        for (MultipartFile file : files) {
+            UUID documentId = UuidGenerator.generateV7();
+            String originalName = sanitizeFilename(file.getOriginalFilename());
+            String mediaType = file.getContentType();
+            String storageKey = workspaceId + "/" + documentId + "_" + originalName;
 
-        Document document = new Document(
-                documentId,
-                workspaceId,
-                storageKey,
-                originalName,
-                mediaType,
-                file.getSize(),
-                sha256,
-                DocumentStatus.PENDING,
-                now
-        );
+            String sha256 = computeSha256AndStore(file, storageKey);
 
-        documentRepository.save(document);
+            Document document = new Document(
+                    documentId,
+                    workspaceId,
+                    storageKey,
+                    originalName,
+                    mediaType,
+                    file.getSize(),
+                    sha256,
+                    DocumentStatus.PENDING,
+                    now
+            );
 
-        UUID jobId = UuidGenerator.generateV7();
-        ingestionProducer.sendIngestionMessage(new DocumentIngestionMessage(
-                documentId, workspaceId, storageKey, mediaType, originalName, requestId
-        ));
+            documentRepository.save(document);
 
-        return new IngestionJobResponse(documentId, jobId, DocumentStatus.PENDING, "Tải lên thành công. Đang bóc tách tri thức.");
+            UUID jobId = UuidGenerator.generateV7();
+            ingestionProducer.sendIngestionMessage(new DocumentIngestionMessage(
+                    documentId, workspaceId, storageKey, mediaType, originalName, requestId
+            ));
+
+            responses.add(new IngestionJobResponse(documentId, jobId, DocumentStatus.PENDING, "Tải lên thành công. Đang bóc tách tri thức."));
+        }
+
+        return responses;
     }
 
 

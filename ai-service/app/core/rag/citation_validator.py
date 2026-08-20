@@ -12,6 +12,9 @@ VALID_LOCATOR_PATTERNS = [
     re.compile(r"^paragraph:\d+$"),
     re.compile(r"^table:\d+/row:\d+/cell:\d+$"),
     re.compile(r"^line:\d+(?:-\d+)?$"),
+    re.compile(r"^slide:\d+$"),
+    re.compile(r"^sheet:\d+$"),
+    re.compile(r"^section:\d+$"),
 ]
 
 

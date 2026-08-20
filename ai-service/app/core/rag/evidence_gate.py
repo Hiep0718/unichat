@@ -27,7 +27,17 @@ def evaluate_evidence(
     intent: IntentEnum,
     strategy: RetrievalStrategy,
     candidates: list[RetrievedChunkCandidate],
+    workspace_document_count: int | None = None,
 ) -> EvidenceGateResult:
+    """Evaluate retrieval evidence quality and decide ANSWER/REFUSE.
+
+    Args:
+        workspace_document_count: Total allowed documents in workspace.
+            When provided, reduces effective min_source_groups so
+            single-document workspaces are not falsely refused.
+            When None (default), uses strategy.min_source_groups as-is
+            for backward compatibility.
+    """
     if intent == IntentEnum.OUT_OF_SCOPE:
         return EvidenceGateResult(
             DecisionEnum.REFUSE, 0.0, "Câu hỏi nằm ngoài phạm vi hỗ trợ của hệ thống."
@@ -43,10 +53,19 @@ def evaluate_evidence(
     unique_doc_ids = set(c.document_id for c in candidates if c.document_id)
     num_source_groups = len(unique_doc_ids)
 
-    if num_source_groups < strategy.min_source_groups:
+    # Adaptive: reduce min when workspace has fewer documents than required
+    if workspace_document_count is not None:
+        effective_min_groups = min(
+            strategy.min_source_groups,
+            max(1, workspace_document_count),
+        )
+    else:
+        effective_min_groups = strategy.min_source_groups
+
+    if num_source_groups < effective_min_groups:
         reason = (
             "Thiếu nguồn thông tin đối sánh (yêu cầu tối thiểu "
-            f"{strategy.min_source_groups} nguồn tài liệu)."
+            f"{effective_min_groups} nguồn tài liệu)."
         )
         return EvidenceGateResult(DecisionEnum.REFUSE, 0.0, reason)
 
@@ -54,7 +73,7 @@ def evaluate_evidence(
     top3_sims = [c.similarity for c in candidates[:3]]
     mean_top3_sim = sum(top3_sims) / len(top3_sims) if top3_sims else 0.0
 
-    coverage_score = min(1.0, num_source_groups / max(1, strategy.min_source_groups))
+    coverage_score = min(1.0, num_source_groups / max(1, effective_min_groups))
 
     evidence_score = 0.50 * top_sim + 0.30 * mean_top3_sim + 0.20 * coverage_score
 

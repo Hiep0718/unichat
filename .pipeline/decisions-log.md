@@ -264,9 +264,28 @@
 - Decision: Use CSS Grid template modifications (`grid-template-columns: 1fr !important`) combined with flex layout changes in the card components for List view mode.
   Rationale: CSS-only layout changes are much more performant than conditional React rendering of entirely different DOM structures.
 
-## 2026-08-11 - Benchmark Scope Tech Debt Exclusions
+## 2026-08-19 - Batch Multi-File Document Upload Implementation
 
-- Decision: Log tech debt items R-05, R-07, R-17 for post-benchmark resolution.
-  Rationale: Keeping security JWT bypass local fix (R-05), ChatService reauthorization before DB persist (R-07), and Service JWT from Core API to AI Service (R-17) logged as tech debt prevents blocking the immediate execution of the Benchmark & Evaluation Suite while ensuring they are resolved prior to production deployment.
+- Decision: Update `POST /api/v1/workspaces/{workspaceId}/documents` in Core API to accept both single `file` and batch array `files` (`MultipartFile[]`).
+  Rationale: Maintains 100% backward compatibility for single-file API clients while enabling efficient batch document uploads in a single request.
 
+- Decision: Perform pre-flight batch quota validation across all uploaded files in `DocumentService.uploadDocuments` before persisting database records.
+  Rationale: Ensures workspace document limits (100 documents max, 1 GiB total storage size, 20 MiB per file) are consistently enforced across the entire batch, throwing a `ConflictError` before processing if limits would be exceeded.
 
+## 2026-08-19 - Browser-side PDF Splitting & Side-Effects Warning Modal
+
+- Decision: Maintain 20MB per-file upload limit on Core API backend and build a browser-side PDF auto-splitting tool using `pdf-lib`.
+  Rationale: Protects Core API RAM/Disk resources and HTTP multipart bandwidth while allowing users to upload large lecture PDFs (>100MB) without external software.
+
+- Decision: Present an explicit Side-Effects Warning Modal (`PdfSplitModal`) before executing PDF page splitting.
+  Rationale: Ensures complete transparency regarding Context Fragmentation in RAG embeddings, Workspace 100-document quota consumption, and altered RAG source citation labels (e.g. `[Filename]_Part1.pdf`).
+
+## 2026-08-19 - Adaptive PDF Slide vs Text Layout Extraction & Chunking
+
+- Decision: Implement layout classifier (`pdf_classifier.py`) to automatically distinguish PowerPoint/Keynote PDF slides from continuous Word/Text PDFs based on aspect ratio (>= 1.15) and word density (<= 140 words/page).
+  Rationale: Lecture slides contain sparse text boxes and graphics. Preserving full-slide chunks with `SLIDE_NUMBER` locators (`slide:X`) prevents context fragmentation and provides precise slide-level source citations for educational RAG queries.
+
+## 2026-08-19 - Academic RAG Benchmark Evaluation Plan ($0 Budget)
+
+- Decision: Standardize academic RAG evaluation pipeline using Arize Phoenix Web UI + RAGAS framework + 120-question Golden Dataset.
+  Rationale: Delivers a 100% free ($0 budget), highly credible, industry-standard evaluation dashboard (localhost:6006) for academic thesis defense, measuring Faithfulness, Context Precision, Answer Relevance, and Refusal F1-Score.

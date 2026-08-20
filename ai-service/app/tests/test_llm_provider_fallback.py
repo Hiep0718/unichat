@@ -6,6 +6,7 @@ from app.core.rag.llm_provider import generate_rag_answer
 from app.core.rag.retrieval_engine import RetrievedChunkCandidate
 
 
+@patch("app.core.rag.llm_provider.ENABLE_OLLAMA_FALLBACK", True)
 def test_generate_rag_answer_gemini_failure_fallback_to_ollama() -> None:
     candidates = [
         RetrievedChunkCandidate("chunk1", "doc1", "Đoạn trích tri thức CSDL", 0.85, "PDF_PAGE", "page:1", "hash1")
@@ -24,6 +25,8 @@ def test_generate_rag_answer_gemini_failure_fallback_to_ollama() -> None:
             assert "Ollama Local" in res["answer"]
             assert len(res["citations"]) == 1
 
+
+@patch("app.core.rag.llm_provider.ENABLE_OLLAMA_FALLBACK", True)
 def test_generate_rag_answer_all_llms_fail_returns_refuse() -> None:
     candidates = [
         RetrievedChunkCandidate("chunk1", "doc1", "Đoạn trích trích xuất trực tiếp", 0.90, "PDF_PAGE", "page:1", "hash1")

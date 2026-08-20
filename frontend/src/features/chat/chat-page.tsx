@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 
-import { askWorkspaceQuestion, CitationItem } from './chat-api';
+import { askWorkspaceQuestion, askWorkspaceQuestionStream, CitationItem, QuestionResponse } from './chat-api';
 import { ChatHeader } from './components/chat-header';
 import { ChatWelcome } from './components/chat-welcome';
 import { ChatMessageItem, MessageItem } from './components/chat-message-item';
@@ -159,39 +159,137 @@ export const ChatPage: React.FC<ChatPageProps> = ({
       content: userText,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
-    setMessages((prev) => [...prev, userMsg]);
+
+    const assistantMsgId = `${Date.now()}-assistant`;
+    const initialAssistantMsg: MessageItem = {
+      id: assistantMsgId,
+      role: 'ASSISTANT',
+      content: '',
+      isStreaming: true,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    };
+
+    setMessages((prev) => [...prev, userMsg, initialAssistantMsg]);
     scrollToBottom(true);
 
-    try {
-      const res = await askWorkspaceQuestion(targetWorkspaceId, {
-        question: userText,
-        conversationId,
-        allowExternalKnowledge,
-      });
+    let tokenBuffer = '';
+    let isStreamDone = false;
+    let streamHasError = false;
+    let tokensReceived = false;
 
-      if (!conversationId && res.conversationId) {
-        setConversationId(res.conversationId);
+    // Typewriter Queue Ticker (~15ms interval for smooth character rải)
+    const ticker = setInterval(() => {
+      if (tokenBuffer.length > 0) {
+        // Take 1 to 3 characters per tick for smooth typewriter speed
+        const chunkSize = tokenBuffer.length > 30 ? 3 : 1;
+        const charSegment = tokenBuffer.slice(0, chunkSize);
+        tokenBuffer = tokenBuffer.slice(chunkSize);
+
+        setMessages((prev) =>
+          prev.map((m) => (m.id === assistantMsgId ? { ...m, content: m.content + charSegment } : m))
+        );
+        scrollToBottom(true);
+      } else if (isStreamDone || streamHasError) {
+        clearInterval(ticker);
+        setMessages((prev) =>
+          prev.map((m) => (m.id === assistantMsgId ? { ...m, isStreaming: false } : m))
+        );
+        setLoading(false);
+        scrollToBottom(true);
       }
+    }, 15);
 
-      const assistantMsg: MessageItem = {
-        id: res.messageId,
-        role: 'ASSISTANT',
-        content: res.answer || res.refusalReason || 'Không có câu trả lời',
-        response: res,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      };
-      setMessages((prev) => [...prev, assistantMsg]);
-    } catch (err: unknown) {
-      const errorMsg: MessageItem = {
-        id: Date.now().toString(),
-        role: 'ASSISTANT',
-        content: err instanceof Error ? err.message : 'Đã xảy ra lỗi khi truy vấn RAG',
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      };
-      setMessages((prev) => [...prev, errorMsg]);
-    } finally {
-      setLoading(false);
-      scrollToBottom(true);
+    try {
+      await askWorkspaceQuestionStream(
+        targetWorkspaceId,
+        {
+          question: userText,
+          conversationId,
+          allowExternalKnowledge,
+        },
+        {
+          onMetadata: (meta) => {
+            tokensReceived = true;
+            if (meta.conversationId && !conversationId) {
+              setConversationId(meta.conversationId);
+            }
+
+            const partialResp: QuestionResponse = {
+              messageId: assistantMsgId,
+              conversationId: meta.conversationId || conversationId || '',
+              decision: meta.decision || 'ANSWER',
+              answer: null,
+              intent: meta.intent || 'FACT',
+              strategyVersion: meta.strategyVersion || 'v1.0',
+              citations: meta.citations || [],
+              refusalCode: meta.refusalCode || null,
+              refusalReason: meta.refusalReason || null,
+              providerModel: meta.providerModel || 'gemini-2.5-flash',
+              evidenceScore: meta.evidenceScore,
+              requestId: meta.requestId || 'stream',
+            };
+
+            setMessages((prev) =>
+              prev.map((m) => (m.id === assistantMsgId ? { ...m, response: partialResp } : m))
+            );
+
+            if (meta.decision === 'REFUSE' || meta.decision === 'CLARIFY') {
+              if (meta.refusalReason) {
+                tokenBuffer += meta.refusalReason;
+              }
+            }
+          },
+          onToken: (delta) => {
+            tokensReceived = true;
+            tokenBuffer += delta;
+          },
+          onDone: (done) => {
+            if (done.conversationId && !conversationId) {
+              setConversationId(done.conversationId);
+            }
+            isStreamDone = true;
+          },
+          onError: (err) => {
+            console.warn('SSE stream error, handling fallback...', err);
+            streamHasError = true;
+          },
+        }
+      );
+    } catch (streamErr: unknown) {
+      if (!tokensReceived) {
+        // Fallback to REST POST non-streaming if stream connection fails before tokens
+        try {
+          const res = await askWorkspaceQuestion(targetWorkspaceId, {
+            question: userText,
+            conversationId,
+            allowExternalKnowledge,
+          });
+
+          if (!conversationId && res.conversationId) {
+            setConversationId(res.conversationId);
+          }
+
+          tokenBuffer = res.answer || res.refusalReason || 'Không có câu trả lời';
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === assistantMsgId
+                ? {
+                    ...m,
+                    id: res.messageId,
+                    response: res,
+                  }
+                : m
+            )
+          );
+        } catch (fallbackErr: unknown) {
+          const errorText = fallbackErr instanceof Error ? fallbackErr.message : 'Đã xảy ra lỗi khi kết nối AI';
+          tokenBuffer = errorText;
+        } finally {
+          isStreamDone = true;
+        }
+      } else {
+        isStreamDone = true;
+      }
     }
   };
 

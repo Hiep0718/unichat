@@ -25,6 +25,7 @@ coverage/
 playwright-report/
 test-results/
 blob-report/
+automation-tests/reports/
 
 # Java
 target/

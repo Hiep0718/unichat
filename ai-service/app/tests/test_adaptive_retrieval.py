@@ -34,3 +34,20 @@ def test_evidence_gate_answer_on_high_similarity() -> None:
     gate_res = evaluate_evidence(IntentEnum.FACT, strategy, candidates)
     assert gate_res.decision == DecisionEnum.ANSWER
     assert gate_res.evidence_score >= strategy.evidence_gate_threshold
+
+
+def test_evidence_gate_comparison_adaptive_single_doc_workspace() -> None:
+    """COMPARISON with single document workspace should not refuse if workspace_document_count=1."""
+    strategy = get_strategy(IntentEnum.COMPARISON)
+    candidates = [
+        RetrievedChunkCandidate("c1", "doc1", "Info A", 0.90, "PDF_PAGE", "page:1", "h1"),
+        RetrievedChunkCandidate("c2", "doc1", "Info B", 0.88, "PDF_PAGE", "page:2", "h2"),
+    ]
+    gate_res = evaluate_evidence(
+        IntentEnum.COMPARISON,
+        strategy,
+        candidates,
+        workspace_document_count=1,
+    )
+    assert gate_res.decision == DecisionEnum.ANSWER
+

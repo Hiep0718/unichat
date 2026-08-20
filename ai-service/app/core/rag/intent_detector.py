@@ -103,7 +103,7 @@ def _load_rules() -> list[tuple[IntentEnum, str, str, list[str]]]:
         (IntentEnum.SUMMARY, "RULE_SUMMARY_ALL", r"(tom tat|tong quan|y chinh|noi dung chinh|tom luoc)", []),
         (IntentEnum.DEFINITION, "RULE_DEF_WHAT", r"(la gi|dinh nghia|khai niem|the nao la)", []),
         (IntentEnum.REASONING, "RULE_REASON_WHY", r"(tai sao|vi sao|nguyen nhan|anh huong|tac dong|nhu the nao)", []),
-        (IntentEnum.FACT, "RULE_FACT_EXPLICIT", r"(ai|khi nao|bao nhieu|o dau|thoi gian|ngay thang)", []),
+        (IntentEnum.FACT, "RULE_FACT_EXPLICIT", r"(\bai\b|khi nao|bao nhieu|o dau|thoi gian|ngay thang|nam nao|may gio)", [r"(tai sao|vi sao|the nao)"]),
     ]
     _CACHED_RULES = fallback_rules
     _CACHED_HASH = current_hash

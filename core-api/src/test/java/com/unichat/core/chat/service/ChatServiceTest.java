@@ -80,7 +80,7 @@ class ChatServiceTest {
         when(documentRepository.findAllowedDocumentIdsForWorkspaces(List.of(workspaceId))).thenReturn(List.of(UUID.randomUUID()));
         when(documentRepository.findByWorkspaceIdExcludingDeleting(any(), any())).thenReturn(new org.springframework.data.domain.PageImpl<>(List.of()));
 
-        var request = new AskQuestionRequest("Khái niệm Vector Embedding là gì?", null);
+        var request = new AskQuestionRequest("Khái niệm Vector Embedding là gì?", null, true);
 
         var response = chatService.askQuestion(userId, workspaceId, request, "req-999");
 
@@ -101,7 +101,7 @@ class ChatServiceTest {
         when(workspaceMemberRepository.findByWorkspaceIdAndUserIdAndStatus(workspaceId, userId, WorkspaceMemberStatus.ACTIVE))
                 .thenReturn(Optional.empty());
 
-        var request = new AskQuestionRequest("Hỏi đáp RAG", null);
+        var request = new AskQuestionRequest("Hỏi đáp RAG", null, true);
 
         assertThrows(NotFoundError.class, () -> chatService.askQuestion(userId, workspaceId, request, "req-999"));
     }
