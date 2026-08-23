@@ -371,60 +371,58 @@
   position: fixed;
   inset: 0;
   z-index: 100;
-  background-color: var(--color-surface-container-low);
+  background-color: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(2px);
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   animation: fadeIn 0.15s ease;
-}
-
-.discussion-detail-header-bar {
-  background: var(--color-surface);
-  padding: 8px 24px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  border-bottom: 1px solid var(--color-outline-variant);
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
-.discussion-detail__close {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font: var(--font-label-md);
-  color: var(--color-on-surface-variant);
-  cursor: pointer;
-  background: var(--color-surface-container);
-  border: none;
-  padding: 6px 16px;
-  border-radius: var(--radius-full);
-  transition: all var(--transition-fast);
-}
-
-.discussion-detail__close:hover {
-  background: var(--color-surface-container-high);
-  color: var(--color-on-surface);
+  padding: 40px 0;
 }
 
 .discussion-detail-container {
   display: flex;
   gap: 24px;
-  padding: 24px;
-  max-width: 1000px;
+  padding: 0 24px;
+  width: 100%;
+  max-width: 1200px;
   margin: 0 auto;
   align-items: flex-start;
+  position: relative;
+}
+
+.discussion-detail__close-inline {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  color: var(--color-on-surface-variant);
+  cursor: pointer;
+  background: var(--color-surface-container);
+  border: none;
+  border-radius: 50%;
+  transition: all var(--transition-fast);
+}
+
+.discussion-detail__close-inline:hover {
+  background: var(--color-surface-container-high);
+  color: var(--color-on-surface);
 }
 
 .discussion-detail__main {
   flex: 1;
   min-width: 0;
-  max-width: 700px;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  background-color: var(--color-surface);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
 }
 
 .discussion-detail__sidebar {
@@ -478,10 +476,9 @@
 
 .discussion-detail__post {
   width: 100%;
-  background: var(--color-surface-container-lowest);
-  border-radius: var(--radius-xl);
-  padding: 24px;
-  border: 1px solid var(--color-outline-variant);
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--color-outline-variant);
+  position: relative;
 }
 
 .discussion-detail__post-vote {
@@ -561,46 +558,61 @@
 }
 
 /* ---------- Replies ---------- */
+.discussion-detail__comments-section {
+  padding-top: 16px;
+}
+
 .discussion-detail__replies-header {
   font: var(--font-headline-md);
   color: var(--color-on-surface);
-  margin-bottom: 16px;
+  margin-bottom: 24px;
   display: flex;
   align-items: center;
   gap: 8px;
+  margin-top: 24px;
+}
+
+.discussion-reply-thread {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.discussion-reply-children {
+  padding-left: 24px;
+  position: relative;
+}
+
+/* Threading line */
+.discussion-reply-children::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 15px; /* Center of the avatar above */
+  width: 2px;
+  background-color: var(--color-outline-variant);
+  border-radius: 2px;
+}
+
+/* Hover effect on threading line */
+.discussion-reply-children:hover::before {
+  background-color: var(--color-primary);
 }
 
 .discussion-reply {
   display: flex;
   gap: 12px;
-  padding: 12px 16px;
-  border-radius: 0;
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid var(--color-outline-variant);
-  margin-bottom: 0;
+  padding: 12px 0;
   position: relative;
-}
-
-/* Thread line for nested comments */
-.discussion-reply::before {
-  content: '';
-  position: absolute;
-  top: 48px;
-  bottom: 0;
-  left: 31px;
-  width: 2px;
-  background-color: var(--color-outline-variant);
-}
-
-/* Remove thread line for the last reply if needed, or hide if it's AI */
-.discussion-reply--ai::before {
-  background-color: rgba(6, 182, 212, 0.3);
 }
 
 .discussion-reply--ai {
   background: var(--color-ai-bubble);
   border-color: var(--color-ai-bubble-border);
+  padding: 12px;
+  border-radius: var(--radius-lg);
+  margin: 8px 0;
 }
 
 .discussion-reply__avatar {
@@ -657,15 +669,44 @@
 .discussion-reply__actions {
   display: flex;
   align-items: center;
+  gap: 8px;
+}
+
+.discussion-reply__action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font: var(--font-label-md);
+  color: var(--color-on-surface-variant);
+  background: none;
+  border: none;
+  padding: 4px 8px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.discussion-reply__action-btn:hover {
+  background: var(--color-surface-container);
+  color: var(--color-on-surface);
+}
+
+.discussion-reply-form-wrapper {
+  margin-top: 8px;
 }
 
 /* ---------- Reply Input ---------- */
 .discussion-reply-form {
-  background: var(--color-surface-container-lowest);
+  background: var(--color-surface);
   border-radius: var(--radius-lg);
-  padding: 16px;
+  padding: 12px;
   border: 1px solid var(--color-outline-variant);
-  margin-bottom: 24px;
+  margin-bottom: 8px;
+}
+
+.discussion-reply-form:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 1px var(--color-primary);
 }
 
 .discussion-reply-form__input {
@@ -686,11 +727,27 @@
 .discussion-reply-form__footer {
   display: flex;
   justify-content: flex-end;
+  gap: 8px;
   margin-top: 12px;
 }
 
+.discussion-reply-form__cancel {
+  padding: 6px 16px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--color-on-surface-variant);
+  font: var(--font-label-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.discussion-reply-form__cancel:hover {
+  background: var(--color-surface-container);
+}
+
 .discussion-reply-form__submit {
-  padding: 10px 20px;
+  padding: 6px 16px;
   border: none;
   border-radius: var(--radius-full);
   background: var(--color-primary);
@@ -698,7 +755,6 @@
   font: var(--font-label-md);
   cursor: pointer;
   transition: all var(--transition-fast);
-  align-self: flex-end;
 }
 
 .discussion-reply-form__submit:hover {

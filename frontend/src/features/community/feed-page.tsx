@@ -65,34 +65,42 @@ export function FeedPage() {
     <div className="feed-page-wrapper">
       <div className="feed-page">
         <header className="feed-page__header">
-        <div className="feed-page__header-top">
-          <h1 className="feed-page__title">Bảng tin cộng đồng</h1>
-          <div className="feed-page__search">
-            <Icon name="search" size={20} />
-            <input type="text" placeholder="Tìm kiếm trong Bảng tin..." />
+          <div className="feed-page__header-top">
+            <h1 className="feed-page__title">Bảng tin cộng đồng</h1>
+            <div className="feed-page__search">
+              <Icon name="search" size={20} />
+              <input type="text" placeholder="Tìm kiếm trong Bảng tin..." />
+            </div>
           </div>
-        </div>
-        <div className="feed-page__tabs">
-          <button
-            className={`feed-page__tab ${scope === 'JOINED' ? 'feed-page__tab--active' : ''}`}
-            onClick={() => handleScopeChange('JOINED')}
-          >
-            🏠 Trang chủ
-          </button>
-          <button
-            className={`feed-page__tab ${scope === 'ALL' ? 'feed-page__tab--active' : ''}`}
-            onClick={() => handleScopeChange('ALL')}
-          >
-            🔥 Phổ biến
-          </button>
-        </div>
-      </header>
+        </header>
 
       <div className="feed-page__layout">
+        <nav className="feed-page__nav">
+          <div className="feed-nav-card">
+            <ul className="feed-nav-list">
+              <li 
+                className={scope === 'JOINED' ? 'active' : ''} 
+                onClick={() => handleScopeChange('JOINED')}
+              >
+                <Icon name="home" size={24} /> Trang chủ
+              </li>
+              <li 
+                className={scope === 'ALL' ? 'active' : ''} 
+                onClick={() => handleScopeChange('ALL')}
+              >
+                <Icon name="local_fire_department" size={24} /> Phổ biến
+              </li>
+              <li onClick={() => navigate('/workspaces')}>
+                <Icon name="explore" size={24} /> Khám phá
+              </li>
+            </ul>
+          </div>
+        </nav>
+
         <main className="feed-page__main">
           <div className="feed-page__create-bar" onClick={() => navigate('/workspaces')}>
             <div className="feed-page__create-avatar">
-              <Icon name="person" size={20} />
+              <img src="https://api.dicebear.com/7.x/identicon/svg?seed=user_avatar" alt="Avatar" />
             </div>
             <input className="feed-page__create-input" type="text" placeholder="Tạo bài viết..." readOnly />
             <button className="feed-page__create-icon-btn"><Icon name="image" size={20} /></button>

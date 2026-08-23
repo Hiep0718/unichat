@@ -280,6 +280,52 @@ const NewDiscussionModal: React.FC<NewDiscussionModalProps> = ({ workspaceId, on
   );
 };
 
+/* ---------- Discussion Reply Form ---------- */
+interface DiscussionReplyFormProps {
+  loading: boolean;
+  onSubmit: (body: string) => void;
+  onCancel?: () => void;
+  autoFocus?: boolean;
+}
+
+const DiscussionReplyForm: React.FC<DiscussionReplyFormProps> = ({ loading, onSubmit, onCancel, autoFocus }) => {
+  const [replyInput, setReplyInput] = useState('');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!replyInput.trim()) return;
+    onSubmit(replyInput);
+    setReplyInput('');
+  };
+
+  return (
+    <form className="discussion-reply-form" onSubmit={handleSubmit}>
+      <textarea
+        className="discussion-reply-form__input"
+        value={replyInput}
+        onChange={(e) => setReplyInput(e.target.value)}
+        placeholder="Viết bình luận... (Gõ @AI để yêu cầu AI trả lời)"
+        rows={3}
+        autoFocus={autoFocus}
+      />
+      <div className="discussion-reply-form__footer">
+        {onCancel && (
+          <button type="button" className="discussion-reply-form__cancel" onClick={onCancel}>
+            Hủy
+          </button>
+        )}
+        <button
+          type="submit"
+          className="discussion-reply-form__submit"
+          disabled={loading || !replyInput.trim()}
+        >
+          {loading ? 'Đang gửi...' : 'Bình luận'}
+        </button>
+      </div>
+    </form>
+  );
+};
+
 /* ---------- Discussion Detail ---------- */
 
 export interface DiscussionDetailProps {
@@ -291,7 +337,6 @@ export interface DiscussionDetailProps {
 export const DiscussionDetail: React.FC<DiscussionDetailProps> = ({ workspaceId, discussion: initialDiscussion, onBack }) => {
   const [discussion, setDiscussion] = useState(initialDiscussion);
   const [replies, setReplies] = useState<ReplyResponse[]>([]);
-  const [replyInput, setReplyInput] = useState('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -305,21 +350,6 @@ export const DiscussionDetail: React.FC<DiscussionDetailProps> = ({ workspaceId,
       .catch(() => setReplies([]));
   }, [workspaceId, initialDiscussion.id]);
 
-  const handleAddReply = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!replyInput.trim()) return;
-    setLoading(true);
-    try {
-      const result = await addReply(workspaceId, discussion.id, { body: replyInput.trim() });
-      setReplies((prev) => [...prev, result]);
-      setReplyInput('');
-    } catch {
-      /* handled silently */
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const formatTime = (iso: string) => {
     try {
       return new Date(iso).toLocaleString('vi-VN', {
@@ -329,18 +359,92 @@ export const DiscussionDetail: React.FC<DiscussionDetailProps> = ({ workspaceId,
     } catch { return ''; }
   };
 
-  return (
-    <div className="discussion-detail-wrapper">
-      <div className="discussion-detail-header-bar">
-        <button className="discussion-detail__close" onClick={onBack}>
-          <Icon name="close" size={24} />
-          Đóng
-        </button>
+  const handleAddReply = async (body: string, parentId?: string) => {
+    setLoading(true);
+    try {
+      const payload: any = { body };
+      if (parentId) payload.parentReplyId = parentId;
+      const result = await addReply(workspaceId, discussion.id, payload);
+      setReplies((prev) => [...prev, result]);
+    } catch {
+      /* handled silently */
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const repliesByParent = React.useMemo(() => {
+    const map = new Map<string | null, ReplyResponse[]>();
+    map.set(null, []);
+    replies.forEach((r) => {
+      const pId = r.parentReplyId || null;
+      if (!map.has(pId)) map.set(pId, []);
+      map.get(pId)!.push(r);
+    });
+    return map;
+  }, [replies]);
+
+  const ReplyThread = ({ reply }: { reply: ReplyResponse }) => {
+    const children = repliesByParent.get(reply.id) || [];
+    const [showForm, setShowForm] = useState(false);
+
+    return (
+      <div className="discussion-reply-thread">
+        <div className={`discussion-reply ${reply.isAiAnswer ? 'discussion-reply--ai' : ''}`}>
+          <div className="discussion-reply__avatar">
+            {reply.isAiAnswer ? <Icon name="smart_toy" size={16} /> : reply.authorName?.charAt(0) || '?'}
+          </div>
+          <div className="discussion-reply__content-wrapper">
+            <div className="discussion-reply__meta">
+              <span className="discussion-reply__author">
+                {reply.isAiAnswer ? 'UniChat AI' : reply.authorName}
+              </span>
+              <span className="discussion-reply__time">{formatTime(reply.createdAt)}</span>
+            </div>
+            <p className="discussion-reply__body">{reply.body}</p>
+            <div className="discussion-reply__actions">
+              <VoteControl 
+                targetType="DISCUSSION_REPLY"
+                targetId={reply.id}
+                initialScore={reply.voteScore}
+                initialVote={reply.userVote}
+                orientation="horizontal"
+              />
+              <button className="discussion-reply__action-btn" onClick={() => setShowForm(!showForm)}>
+                <Icon name="reply" size={16} /> Trả lời
+              </button>
+            </div>
+            {showForm && (
+              <div className="discussion-reply-form-wrapper">
+                <DiscussionReplyForm 
+                  loading={loading} 
+                  onSubmit={async (b) => { await handleAddReply(b, reply.id); setShowForm(false); }} 
+                  onCancel={() => setShowForm(false)}
+                  autoFocus
+                />
+              </div>
+            )}
+          </div>
+        </div>
+        {children.length > 0 && (
+          <div className="discussion-reply-children">
+            {children.map((child) => (
+              <ReplyThread key={child.id} reply={child} />
+            ))}
+          </div>
+        )}
       </div>
-      
-      <div className="discussion-detail-container">
+    );
+  };
+
+  return (
+    <div className="discussion-detail-wrapper" onClick={onBack}>
+      <div className="discussion-detail-container" onClick={(e) => e.stopPropagation()}>
         <div className="discussion-detail__main">
           <div className="discussion-detail__post">
+            <button className="discussion-detail__close-inline" onClick={onBack} aria-label="Đóng">
+              <Icon name="close" size={24} />
+            </button>
             <div className="discussion-detail__post-content">
               <div className="discussion-detail__post-meta">
                 <div className="discussion-detail__workspace-group">
@@ -380,55 +484,22 @@ export const DiscussionDetail: React.FC<DiscussionDetailProps> = ({ workspaceId,
             </div>
           </div>
 
-          <h2 className="discussion-detail__replies-header">
-            <Icon name="comment" size={22} />
-            {replies.length} Trả lời
-          </h2>
-
-          <form className="discussion-reply-form" onSubmit={handleAddReply}>
-            <textarea
-              className="discussion-reply-form__input"
-              value={replyInput}
-              onChange={(e) => setReplyInput(e.target.value)}
-              placeholder="Viết bình luận... (Gõ @AI để yêu cầu AI trả lời)"
-              rows={3}
+          <div className="discussion-detail__comments-section">
+            <DiscussionReplyForm 
+              loading={loading} 
+              onSubmit={(body) => handleAddReply(body)} 
             />
-            <div className="discussion-reply-form__footer">
-              <button
-                type="submit"
-                className="discussion-reply-form__submit"
-                disabled={loading || !replyInput.trim()}
-              >
-                {loading ? 'Đang gửi...' : 'Bình luận'}
-              </button>
-            </div>
-          </form>
 
-          {replies.map((r) => (
-            <div key={r.id} className={`discussion-reply ${r.isAiAnswer ? 'discussion-reply--ai' : ''}`}>
-              <div className="discussion-reply__avatar">
-                {r.isAiAnswer ? <Icon name="smart_toy" size={16} /> : r.authorName?.charAt(0) || '?'}
-              </div>
-              <div className="discussion-reply__content-wrapper">
-                <div className="discussion-reply__meta">
-                  <span className="discussion-reply__author">
-                    {r.isAiAnswer ? 'UniChat AI' : r.authorName}
-                  </span>
-                  <span className="discussion-reply__time">{formatTime(r.createdAt)}</span>
-                </div>
-                <p className="discussion-reply__body">{r.body}</p>
-                <div className="discussion-reply__actions">
-                  <VoteControl 
-                    targetType="DISCUSSION_REPLY"
-                    targetId={r.id}
-                    initialScore={r.voteScore}
-                    initialVote={r.userVote}
-                    orientation="horizontal"
-                  />
-                </div>
-              </div>
+            <h2 className="discussion-detail__replies-header">
+              {replies.length} Trả lời
+            </h2>
+
+            <div className="discussion-replies-list">
+              {(repliesByParent.get(null) || []).map((reply) => (
+                <ReplyThread key={reply.id} reply={reply} />
+              ))}
             </div>
-          ))}
+          </div>
         </div>
 
         <aside className="discussion-detail__sidebar">
