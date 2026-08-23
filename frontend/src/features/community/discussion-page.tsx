@@ -10,7 +10,9 @@ import {
   addReply,
   DiscussionResponse,
   ReplyResponse,
+  getDiscussion,
 } from './community-api';
+import { VoteControl } from './components/vote-control';
 import './discussion-page.css';
 
 const LABELS = ['ALL', 'QUESTION', 'DISCUSSION', 'ANNOUNCEMENT'] as const;
@@ -21,6 +23,7 @@ const DiscussionPage: React.FC = () => {
 
   const [discussions, setDiscussions] = useState<DiscussionResponse[]>([]);
   const [activeLabel, setActiveLabel] = useState<string>('ALL');
+  const [activeSort, setActiveSort] = useState<'HOT' | 'NEW'>('NEW');
   const [showModal, setShowModal] = useState(false);
   const [selectedDiscussion, setSelectedDiscussion] = useState<DiscussionResponse | null>(null);
 
@@ -28,10 +31,10 @@ const DiscussionPage: React.FC = () => {
   useEffect(() => {
     if (!workspaceId) return;
     const label = activeLabel === 'ALL' ? undefined : activeLabel;
-    fetchDiscussions(workspaceId, 0, 20, label)
+    fetchDiscussions(workspaceId, 0, 20, label, activeSort)
       .then((page) => setDiscussions(page.content))
       .catch(() => setDiscussions([]));
-  }, [workspaceId, activeLabel]);
+  }, [workspaceId, activeLabel, activeSort]);
 
   if (selectedDiscussion && workspaceId) {
     return (
@@ -76,6 +79,22 @@ const DiscussionPage: React.FC = () => {
               {labelName(l)}
             </button>
           ))}
+          
+          <div className="discussion-list__divider" />
+          
+          <button
+            className={`discussion-list__filter-btn ${activeSort === 'HOT' ? 'discussion-list__filter-btn--active' : ''}`}
+            onClick={() => setActiveSort('HOT')}
+          >
+            🔥 HOT
+          </button>
+          <button
+            className={`discussion-list__filter-btn ${activeSort === 'NEW' ? 'discussion-list__filter-btn--active' : ''}`}
+            onClick={() => setActiveSort('NEW')}
+          >
+            🆕 NEW
+          </button>
+
           <button className="discussion-list__new-btn" onClick={() => setShowModal(true)}>
             <Icon name="add" size={18} />
             Tạo bài mới
@@ -99,8 +118,12 @@ const DiscussionPage: React.FC = () => {
             onClick={() => setSelectedDiscussion(d)}
           >
             <div className="discussion-card__votes">
-              <span className="discussion-card__vote-count">{d.replyCount}</span>
-              <span className="discussion-card__vote-label">trả lời</span>
+              <VoteControl 
+                targetType="DISCUSSION"
+                targetId={d.id}
+                initialScore={d.voteScore}
+                initialVote={d.userVote}
+              />
             </div>
             <div className="discussion-card__body">
               <h3 className="discussion-card__title">
@@ -118,6 +141,9 @@ const DiscussionPage: React.FC = () => {
                 </span>
                 <span className="discussion-card__meta-item">
                   <Icon name="schedule" size={14} /> {formatDate(d.updatedAt)}
+                </span>
+                <span className="discussion-card__meta-item">
+                  <Icon name="comment" size={14} /> {d.replyCount}
                 </span>
                 <span className="discussion-card__meta-item">
                   <Icon name="visibility" size={14} /> {d.viewCount}
@@ -233,16 +259,22 @@ interface DiscussionDetailProps {
   onBack: () => void;
 }
 
-const DiscussionDetail: React.FC<DiscussionDetailProps> = ({ workspaceId, discussion, onBack }) => {
+const DiscussionDetail: React.FC<DiscussionDetailProps> = ({ workspaceId, discussion: initialDiscussion, onBack }) => {
+  const [discussion, setDiscussion] = useState(initialDiscussion);
   const [replies, setReplies] = useState<ReplyResponse[]>([]);
   const [replyInput, setReplyInput] = useState('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetchReplies(workspaceId, discussion.id)
+    // Refresh discussion to get latest viewCount and score
+    getDiscussion(workspaceId, initialDiscussion.id)
+      .then(setDiscussion)
+      .catch(console.error);
+
+    fetchReplies(workspaceId, initialDiscussion.id)
       .then(setReplies)
       .catch(() => setReplies([]));
-  }, [workspaceId, discussion.id]);
+  }, [workspaceId, initialDiscussion.id]);
 
   const handleAddReply = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -276,15 +308,25 @@ const DiscussionDetail: React.FC<DiscussionDetailProps> = ({ workspaceId, discus
       </button>
 
       <div className="discussion-detail__post">
-        <h1 className="discussion-detail__post-title">{discussion.title}</h1>
-        <div className="discussion-detail__post-meta">
-          <span>{discussion.authorName}</span>
-          <span>•</span>
-          <span>{formatTime(discussion.createdAt)}</span>
-          <span>•</span>
-          <span>{discussion.viewCount} lượt xem</span>
+        <div className="discussion-detail__post-vote">
+          <VoteControl 
+            targetType="DISCUSSION"
+            targetId={discussion.id}
+            initialScore={discussion.voteScore}
+            initialVote={discussion.userVote}
+          />
         </div>
-        <p className="discussion-detail__post-body">{discussion.body}</p>
+        <div className="discussion-detail__post-content">
+          <h1 className="discussion-detail__post-title">{discussion.title}</h1>
+          <div className="discussion-detail__post-meta">
+            <span>{discussion.authorName}</span>
+            <span>•</span>
+            <span>{formatTime(discussion.createdAt)}</span>
+            <span>•</span>
+            <span>{discussion.viewCount} lượt xem</span>
+          </div>
+          <p className="discussion-detail__post-body">{discussion.body}</p>
+        </div>
       </div>
 
       <h2 className="discussion-detail__replies-header">
@@ -297,7 +339,7 @@ const DiscussionDetail: React.FC<DiscussionDetailProps> = ({ workspaceId, discus
           <div className="discussion-reply__avatar">
             {r.isAiAnswer ? <Icon name="smart_toy" size={16} /> : r.authorName?.charAt(0) || '?'}
           </div>
-          <div className="discussion-reply__content">
+          <div className="discussion-reply__content-wrapper">
             <div className="discussion-reply__meta">
               <span className="discussion-reply__author">
                 {r.isAiAnswer ? 'UniChat AI' : r.authorName}
@@ -305,6 +347,15 @@ const DiscussionDetail: React.FC<DiscussionDetailProps> = ({ workspaceId, discus
               <span className="discussion-reply__time">{formatTime(r.createdAt)}</span>
             </div>
             <p className="discussion-reply__body">{r.body}</p>
+            <div className="discussion-reply__actions">
+              <VoteControl 
+                targetType="DISCUSSION_REPLY"
+                targetId={r.id}
+                initialScore={r.voteScore}
+                initialVote={r.userVote}
+                orientation="horizontal"
+              />
+            </div>
           </div>
         </div>
       ))}

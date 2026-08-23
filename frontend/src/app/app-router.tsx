@@ -23,6 +23,8 @@ const WorkspaceOverviewPage = lazy(() =>
   })),
 );
 
+const FeedPage = lazy(() => import('../features/community/feed-page').then((m) => ({ default: m.FeedPage })));
+
 const DocumentPage = lazy(() => import('../features/documents/document-page'));
 const ChatPage = lazy(() => import('../features/chat/chat-page'));
 const ConversationListPage = lazy(() => import('../features/history/conversation-list-page'));
@@ -58,6 +60,7 @@ export function AppRouter() {
 
           {/* Global Authenticated Shell Routes */}
           <Route element={<AuthGuard><AppShell /></AuthGuard>}>
+            <Route path="/feed" element={<FeedPage />} />
             <Route path="/workspaces" element={<WorkspaceListPage />} />
             <Route path="/workspaces/:workspaceId/detail" element={<WorkspaceDetailPage />} />
             <Route path="/account" element={<AccountPage />} />

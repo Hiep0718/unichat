@@ -18,6 +18,8 @@ export interface DiscussionResponse {
   replyCount: number;
   createdAt: string;
   updatedAt: string;
+  voteScore: number;
+  userVote: string | null;
   authorName: string;
   authorAvatar: string | null;
 }
@@ -37,6 +39,8 @@ export interface ReplyResponse {
   parentReplyId: string | null;
   isAiAnswer: boolean;
   createdAt: string;
+  voteScore: number;
+  userVote: string | null;
   authorName: string;
   authorAvatar: string | null;
 }
@@ -57,11 +61,19 @@ export async function fetchDiscussions(
   page = 0,
   size = 20,
   label?: string,
+  sort = 'NEW'
 ): Promise<DiscussionPage> {
   const labelParam = label ? `&label=${label}` : '';
   return fetchJson<DiscussionPage>(
-    `/workspaces/${workspaceId}/discussions?page=${page}&size=${size}${labelParam}`,
+    `/workspaces/${workspaceId}/discussions?page=${page}&size=${size}&sort=${sort}${labelParam}`,
   );
+}
+
+export async function getDiscussion(
+  workspaceId: string,
+  discussionId: string,
+): Promise<DiscussionResponse> {
+  return fetchJson<DiscussionResponse>(`/workspaces/${workspaceId}/discussions/${discussionId}`);
 }
 
 export async function createDiscussion(

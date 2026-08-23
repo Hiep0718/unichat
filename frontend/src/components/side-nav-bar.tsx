@@ -41,6 +41,7 @@ export function SideNavBar() {
     : [];
 
   const globalNavItems: readonly NavItem[] = [
+    { icon: 'dynamic_feed', label: 'Bảng tin', href: '/feed' },
     { icon: 'workspaces', label: 'Knowledge Spaces', href: '/workspaces' },
     { icon: 'person', label: 'Tài khoản', href: '/account' },
   ];
