@@ -25,8 +25,9 @@ export interface FeedPage {
 
 export async function fetchFeed(
   sort: 'HOT' | 'NEW' = 'HOT',
+  scope: 'ALL' | 'JOINED' = 'JOINED',
   page = 0,
   size = 20
 ): Promise<FeedPage> {
-  return fetchJson<FeedPage>(`/feed?sort=${sort}&page=${page}&size=${size}`);
+  return fetchJson<FeedPage>(`/feed?sort=${sort}&scope=${scope}&page=${page}&size=${size}`);
 }

@@ -117,38 +117,41 @@ const DiscussionPage: React.FC = () => {
             className={`discussion-card ${d.pinned ? 'discussion-card__pinned' : ''}`}
             onClick={() => setSelectedDiscussion(d)}
           >
-            <div className="discussion-card__votes">
+            <div className="discussion-card__meta">
+              <span className="discussion-card__meta-item">
+                <Icon name="person" size={14} /> {d.authorName}
+              </span>
+              <span className="discussion-card__dot">•</span>
+              <span className="discussion-card__meta-item">
+                <Icon name="schedule" size={14} /> {formatDate(d.updatedAt)}
+              </span>
+            </div>
+            
+            <h3 className="discussion-card__title">
+              {d.label && (
+                <span className={`discussion-card__label discussion-card__label--${d.label.toLowerCase()}`}>
+                  {labelName(d.label)}
+                </span>
+              )}
+              {d.title}
+            </h3>
+            
+            <p className="discussion-card__excerpt">{d.body}</p>
+            
+            <div className="discussion-card__footer">
               <VoteControl 
                 targetType="DISCUSSION"
                 targetId={d.id}
                 initialScore={d.voteScore}
                 initialVote={d.userVote}
+                orientation="horizontal"
               />
-            </div>
-            <div className="discussion-card__body">
-              <h3 className="discussion-card__title">
-                {d.title}
-                {d.label && (
-                  <span className={`discussion-card__label discussion-card__label--${d.label.toLowerCase()}`}>
-                    {labelName(d.label)}
-                  </span>
-                )}
-              </h3>
-              <p className="discussion-card__excerpt">{d.body}</p>
-              <div className="discussion-card__meta">
-                <span className="discussion-card__meta-item">
-                  <Icon name="person" size={14} /> {d.authorName}
-                </span>
-                <span className="discussion-card__meta-item">
-                  <Icon name="schedule" size={14} /> {formatDate(d.updatedAt)}
-                </span>
-                <span className="discussion-card__meta-item">
-                  <Icon name="comment" size={14} /> {d.replyCount}
-                </span>
-                <span className="discussion-card__meta-item">
-                  <Icon name="visibility" size={14} /> {d.viewCount}
-                </span>
-              </div>
+              <span className="discussion-card__action-btn">
+                <Icon name="comment" size={16} /> {d.replyCount} Bình luận
+              </span>
+              <span className="discussion-card__action-btn">
+                <Icon name="share" size={16} /> Chia sẻ
+              </span>
             </div>
           </div>
         ))
@@ -308,24 +311,34 @@ const DiscussionDetail: React.FC<DiscussionDetailProps> = ({ workspaceId, discus
       </button>
 
       <div className="discussion-detail__post">
-        <div className="discussion-detail__post-vote">
-          <VoteControl 
-            targetType="DISCUSSION"
-            targetId={discussion.id}
-            initialScore={discussion.voteScore}
-            initialVote={discussion.userVote}
-          />
-        </div>
         <div className="discussion-detail__post-content">
-          <h1 className="discussion-detail__post-title">{discussion.title}</h1>
           <div className="discussion-detail__post-meta">
-            <span>{discussion.authorName}</span>
+            <span>Đăng bởi {discussion.authorName}</span>
             <span>•</span>
             <span>{formatTime(discussion.createdAt)}</span>
             <span>•</span>
             <span>{discussion.viewCount} lượt xem</span>
           </div>
+          <h1 className="discussion-detail__post-title">{discussion.title}</h1>
           <p className="discussion-detail__post-body">{discussion.body}</p>
+          
+          <div className="discussion-detail__post-actions">
+            <VoteControl 
+              targetType="DISCUSSION"
+              targetId={discussion.id}
+              initialScore={discussion.voteScore}
+              initialVote={discussion.userVote}
+              orientation="horizontal"
+            />
+            <span className="discussion-detail__action-btn">
+              <Icon name="comment" size={18} />
+              {discussion.replyCount} Bình luận
+            </span>
+            <span className="discussion-detail__action-btn">
+              <Icon name="share" size={18} />
+              Chia sẻ
+            </span>
+          </div>
         </div>
       </div>
 

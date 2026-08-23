@@ -4,7 +4,7 @@
  */
 
 import { lazy, Suspense } from 'react';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 
 import { AuthGuard, GuestGuard, AdminGuard } from '../features/auth/route-guard';
 import { AppShell } from './app-shell';
@@ -68,7 +68,8 @@ export function AppRouter() {
 
           {/* Workspace Scoped Shell Routes */}
           <Route element={<AuthGuard><WorkspaceShell /></AuthGuard>}>
-            <Route path="/workspaces/:workspaceId" element={<WorkspaceOverviewPage />} />
+            <Route path="/workspaces/:workspaceId" element={<Navigate to="discussions" replace />} />
+            <Route path="/workspaces/:workspaceId/overview" element={<WorkspaceOverviewPage />} />
             <Route path="/workspaces/:workspaceId/documents" element={<DocumentPage />} />
             <Route path="/workspaces/:workspaceId/chat" element={<ChatPage />} />
             <Route path="/workspaces/:workspaceId/conversations" element={<ConversationListPage />} />

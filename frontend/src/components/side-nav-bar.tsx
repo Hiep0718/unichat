@@ -30,7 +30,8 @@ export function SideNavBar() {
 
   const workspaceNavItems: readonly NavItem[] = workspaceId
     ? [
-        { icon: 'dashboard', label: 'Tổng quan', href: `/workspaces/${workspaceId}` },
+        { icon: 'forum', label: 'Thảo luận', href: `/workspaces/${workspaceId}/discussions` },
+        { icon: 'dashboard', label: 'Tổng quan', href: `/workspaces/${workspaceId}/overview` },
         { icon: 'description', label: 'Tài liệu', href: `/workspaces/${workspaceId}/documents` },
         { icon: 'chat', label: 'Trò chuyện', href: `/workspaces/${workspaceId}/chat` },
 

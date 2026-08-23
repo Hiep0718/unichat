@@ -7,7 +7,8 @@ import './feed-page.css';
 export function FeedPage() {
   const navigate = useNavigate();
   const [posts, setPosts] = useState<FeedPostResponse[]>([]);
-  const [sort, setSort] = useState<'HOT' | 'NEW'>('HOT');
+  const [scope, setScope] = useState<'JOINED' | 'ALL'>('JOINED');
+  const [sort] = useState<'HOT' | 'NEW'>('HOT');
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -15,13 +16,13 @@ export function FeedPage() {
 
   useEffect(() => {
     loadFeed();
-  }, [sort, page]);
+  }, [scope, sort, page]);
 
   const loadFeed = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await fetchFeed(sort, page, 20);
+      const data = await fetchFeed(sort, scope, page, 20);
       setPosts(data.content);
       setTotalPages(data.totalPages);
     } catch (err: any) {
@@ -31,15 +32,15 @@ export function FeedPage() {
     }
   };
 
-  const handleSortChange = (newSort: 'HOT' | 'NEW') => {
-    if (sort !== newSort) {
-      setSort(newSort);
+  const handleScopeChange = (newScope: 'JOINED' | 'ALL') => {
+    if (scope !== newScope) {
+      setScope(newScope);
       setPage(0);
     }
   };
 
   const navigateToDiscussion = (workspaceId: string, discussionId: string) => {
-    navigate(`/workspaces/${workspaceId}?tab=discussions&discussionId=${discussionId}`);
+    navigate(`/workspaces/${workspaceId}/discussions?discussionId=${discussionId}`);
   };
 
   return (
@@ -48,22 +49,23 @@ export function FeedPage() {
         <h1 className="feed-page__title">Bảng tin cộng đồng</h1>
         <div className="feed-page__tabs">
           <button
-            className={`feed-page__tab ${sort === 'HOT' ? 'feed-page__tab--active' : ''}`}
-            onClick={() => handleSortChange('HOT')}
+            className={`feed-page__tab ${scope === 'JOINED' ? 'feed-page__tab--active' : ''}`}
+            onClick={() => handleScopeChange('JOINED')}
           >
-            🔥 Phổ biến
+            🏠 Trang chủ
           </button>
           <button
-            className={`feed-page__tab ${sort === 'NEW' ? 'feed-page__tab--active' : ''}`}
-            onClick={() => handleSortChange('NEW')}
+            className={`feed-page__tab ${scope === 'ALL' ? 'feed-page__tab--active' : ''}`}
+            onClick={() => handleScopeChange('ALL')}
           >
-            🆕 Mới nhất
+            🔥 Phổ biến
           </button>
         </div>
       </header>
 
-      <main className="feed-page__content">
-        {isLoading && posts.length === 0 ? (
+      <div className="feed-page__layout">
+        <main className="feed-page__main">
+          {isLoading && posts.length === 0 ? (
           <div className="feed-page__loading">Đang tải bảng tin...</div>
         ) : error ? (
           <div className="feed-page__error">{error}</div>
@@ -80,42 +82,46 @@ export function FeedPage() {
                 className="feed-card"
                 onClick={() => navigateToDiscussion(post.workspaceId, post.id)}
               >
-                <div className="feed-card__vote">
+                <div className="feed-card__meta">
+                  <span className="feed-card__workspace" onClick={(e) => { e.stopPropagation(); navigate(`/workspaces/${post.workspaceId}/discussions`); }}>
+                    w/{post.workspaceName}
+                  </span>
+                  <span className="feed-card__dot">•</span>
+                  <span className="feed-card__author">Tạo bởi {post.authorName}</span>
+                  <span className="feed-card__dot">•</span>
+                  <time className="feed-card__time">
+                    {new Date(post.createdAt).toLocaleDateString('vi-VN')}
+                  </time>
+                </div>
+                
+                <h3 className="feed-card__title">
+                  <span className="feed-card__label">[{post.label}]</span> {post.title}
+                </h3>
+                
+                <p className="feed-card__body">{post.body}</p>
+                
+                <div className="feed-card__footer">
                   <VoteControl 
                     targetType="DISCUSSION" 
                     targetId={post.id} 
                     initialScore={post.voteScore} 
                     initialVote={post.userVote} 
+                    orientation="horizontal"
                   />
-                </div>
-                
-                <div className="feed-card__content">
-                  <div className="feed-card__meta">
-                    <span className="feed-card__workspace" onClick={(e) => { e.stopPropagation(); navigate(`/workspaces/${post.workspaceId}`); }}>
-                      {post.workspaceName}
-                    </span>
-                    <span className="feed-card__dot">•</span>
-                    <span className="feed-card__author">Tạo bởi {post.authorName}</span>
-                    <span className="feed-card__dot">•</span>
-                    <time className="feed-card__time">
-                      {new Date(post.createdAt).toLocaleDateString('vi-VN')}
-                    </time>
-                  </div>
-                  
-                  <h3 className="feed-card__title">
-                    <span className="feed-card__label">[{post.label}]</span> {post.title}
-                  </h3>
-                  
-                  <p className="feed-card__body">{post.body}</p>
-                  
-                  <div className="feed-card__footer">
-                    <span className="feed-card__replies">💬 {post.replyCount} Bình luận</span>
-                  </div>
+                  <span className="feed-card__action-btn">
+                    <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>chat_bubble</span>
+                    {post.replyCount}
+                  </span>
+                  <span className="feed-card__action-btn">
+                    <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>share</span>
+                    Chia sẻ
+                  </span>
                 </div>
               </article>
             ))}
           </div>
         )}
+
 
         {totalPages > 1 && (
           <div className="feed-page__pagination">
@@ -134,7 +140,26 @@ export function FeedPage() {
             </button>
           </div>
         )}
-      </main>
+        </main>
+
+        <aside className="feed-page__sidebar">
+          <div className="feed-sidebar-card">
+            <div className="feed-sidebar-card__header">
+              <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>info</span>
+              <h3>Giới thiệu Bảng tin</h3>
+            </div>
+            <p className="feed-sidebar-card__body">
+              Bảng tin là nơi tổng hợp các thảo luận từ các Workspace tri thức (RAG) trên toàn hệ thống UniChat. 
+              Bạn có thể theo dõi những câu hỏi và thông báo nổi bật nhất tại đây.
+            </p>
+            <div className="feed-sidebar-card__footer">
+              <button className="feed-sidebar-card__btn" onClick={() => navigate('/workspaces')}>
+                Khám phá Workspace
+              </button>
+            </div>
+          </div>
+        </aside>
+      </div>
     </div>
   );
 }
