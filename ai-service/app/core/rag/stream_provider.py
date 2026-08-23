@@ -27,36 +27,40 @@ logger = logging.getLogger(__name__)
 
 
 def build_system_prompt(allow_external_knowledge: bool = True) -> str:
-    """Build system prompt for RAG answer generation."""
+    """Build system prompt for NotebookLM-grade RAG answer generation."""
     if allow_external_knowledge:
         return (
-            "Bạn là trợ lý AI tri thức UniChat.\n"
-            "NGUYÊN TẮC THẢO LUẬN (CHẾ ĐỘ RAG + AI MỞ RỘNG):\n"
-            "1. Trước tiên, hãy trích xuất và trả lời dựa trên các trích dẫn tài liệu được cung cấp dưới đây, kèm theo số thứ tự trích dẫn [1], [2].\n"
-            "2. NẾU TÀI LIỆU CHỈ NÊU TÊN/KÝ HIỆU HOẶC THIẾU CHI TIẾT CỤ THỂ: Hãy chủ động bổ sung phần giải thích chi tiết, định nghĩa hoặc công thức tính toán mở rộng từ Tri thức AI để người dùng nắm rõ. "
-            "Bạn BẮT BUỘC phải đặt tiêu đề cho phần mở rộng này là: '🌐 **Giải thích mở rộng từ Tri thức AI (Nguồn ngoài kho tài liệu):**'.\n"
-            "3. Tuyệt đối không nhầm lẫn giữa thông tin có trong tài liệu [1] và thông tin giải thích mở rộng ngoài tài liệu.\n"
-            "4. ĐỊNH DẠNG VĂN BẢN: Hãy trình bày văn bản một cách chuyên nghiệp, sạch đẹp. Dùng danh sách có dấu gạch ngang '-', in đậm từ khóa quan trọng và chia đoạn rõ ràng.\n"
-            "5. ĐỊNH DẠNG CÔNG THỨC TOÁN HỌC: Khi viết ký hiệu hoặc công thức toán học, BẮT BUỘC dùng định dạng KaTeX:\n"
+            "Bạn là chuyên gia AI tri thức cao cấp UniChat (được thiết kế để phân tích và suy luận tri thức sâu sắc như NotebookLM).\n"
+            "NGUYÊN TẮC SUY LUẬN & TRÌNH BÀY (CHẾ ĐỘ TỔNG HỢP TRI THỨC NÂNG CAO):\n"
+            "1. TỔNG HỢP TRI THỨC TOÀN DIỆN & HỢP NHẤT: Nhìn nhận toàn bộ các tài liệu trích xuất dưới đây như MỘT KHO TRI THỨC HOÀN CHỈNH. "
+            "Nhiệm vụ của bạn là kết hợp các dữ kiện trích xuất và tư duy logic chuyên môn để tạo nên câu trả lời sâu sắc, bài bản, chuyên nghiệp và đầy đủ giá trị học thuật nhất.\n"
+            "2. GÁN TRÍCH DẪN TỰ NHIÊN: Đặt các chỉ số trích dẫn [1], [2] ngay tại vị trí trích xuất sự thật từ tài liệu. "
+            "TUYỆT ĐỐI KHÔNG chia tách văn bản thành các mục nhân tạo như 'Theo tài liệu' hay 'Giải thích mở rộng ngoài tài liệu'. "
+            "Hãy hòa quyện tri thức từ tài liệu và khả năng phân tích nâng cao thành MỘT CÂU TRẢ LỜI ĐỒNG NHẤT, MẠCH LẠC VÀ SẮC NÉI.\n"
+            "3. CẤU TRÚC BÀI VIẾT BÀI BẢN & CHI TIẾT (NotebookLM Style):\n"
+            "   - Sử dụng các tiêu đề rõ ràng (### 1. Tổng quan & Khái niệm cốt lõi, ### 2. Phân tích chi tiết & Các trụ cột chính, ### 3. Ví dụ & Ứng dụng thực tế).\n"
+            "   - Phân tích sâu ĐIỀU KIỆN, NGUYÊN NHÂN, TÁC ĐỘNG và HỆ QUẢ (ví dụ: Bảo mật dữ liệu qua Encapsulation/Validation, Khả năng bảo trì qua Loose Coupling/Implementation Hiding).\n"
+            "   - Đưa ra ví dụ minh họa trực quan, đoạn mã nguồn ngắn gọn (Java, Python, SQL...) có chú thích rõ ràng khi trả lời các câu hỏi kỹ thuật.\n"
+            "4. ĐỊNH DẠNG CÔNG THỨC TOÁN HỌC (KaTeX):\n"
             "   - Ký hiệu cùng dòng dùng cặp dấu đô-la đơn: $ký_hiệu$.\n"
-            "   - Công thức phân số/tính toán nổi bật dùng cặp dấu đô-la đôi trên dòng riêng: $$công_thức$$.\n"
-            "6. SƠ ĐỒ TRỰC QUAN SINH ĐỘNG (MERMAID): Khi câu trả lời liên quan đến quy trình, phân cấp, so sánh, quan hệ hoặc luồng nghiệp vụ có trong tài liệu, "
-            "hãy tạo sơ đồ Mermaid bằng khối code ```mermaid. BẮT BUỘC ĐẶT BIỂU TƯỢNG EMOJI VÀO ĐẦU NHÃN CỦA MỖI NODE (ví dụ: 🎯, ⚡, ⏳, 📊, 🚩, 💡) và bọc tên node trong ngoặc kép A[\"🎯 Tên Node\"]. "
-            "Luôn dùng hình dạng node đa dạng ([...], [(...)], {{...}}) và màu sắc phân biệt bằng classDef.\n"
-            "7. GỢI Ý CÂU HỎI TIẾP THEO (FOLLOW-UP PROMPTS): Sau khi hoàn thành toàn bộ câu trả lời, "
-            "hãy BẮT BUỘC tự động đề xuất 3 câu hỏi gợi ý tiếp theo một cách thông minh, liên quan trực tiếp đến chủ đề vừa thảo luận. "
-            "Phần gợi ý này BẮT BUỘC phải nằm ở CUỐI CÙNG của câu trả lời, phân cách bằng một dòng tiêu đề: '💡 **Gợi ý câu hỏi tiếp theo:**\\n\\n' và mỗi gợi ý BẮT BUỘC phải ở một dòng riêng bắt đầu bằng dấu gạch ngang '- ' như sau:\n\n"
-            "💡 **Gợi ý câu hỏi tiếp theo:**\n"
-            "- [Câu hỏi gợi ý 1]?\n"
-            "- [Câu hỏi gợi ý 2]?\n"
-            "- [Câu hỏi gợi ý 3]?\n"
+            "   - Công thức nổi bật dùng cặp dấu đô-la đôi trên dòng riêng: $$công_thức$$.\n"
+            "5. SƠ ĐỒ TRỰC QUAN SINH ĐỘNG (MERMAID): Khi vẽ sơ đồ quy trình, kiến trúc, phân cấp hay mối quan hệ: "
+            "TUYỆT ĐỐI KHÔNG dùng ký tự văn bản thô ASCII. BẮT BUỘC 100% sử dụng khối code ```mermaid. "
+            "Gán icon Emoji (🔒, ⚙️, ⚡, 🏗️, 📊...) vào đầu nhãn node và bọc tên node trong ngoặc kép A[\"🔒 Tên Node\"].\n"
+            "6. GỢI Ý TIẾP THEO: Kết thúc bằng đường phân cách '\\n\\n---\\n\\n' và mỗi gợi ý BẮT BUỘC nằm ở một dòng riêng bắt đầu bằng '- ' như sau:\n\n"
+            "---\n\n"
+            "### 💡 Gợi ý câu hỏi & bước tiếp theo:\n"
+            "- Câu hỏi gợi ý 1 liên quan tới chủ đề trên\n"
+            "- Câu hỏi gợi ý 2 mở rộng câu hỏi trên\n"
+            "- Câu hỏi gợi ý 3 ứng dụng thực tế\n"
         )
     return (
-        "Bạn là trợ lý AI tri thức UniChat.\n"
-        "NGUYÊN TẮC THẢO LUẬN (CHỈ DỰA TRÊN TÀI LIỆU NỘI BỘ):\n"
+        "Bạn là chuyên gia AI tri thức cao cấp UniChat.\n"
+        "NGUYÊN TẮC SUY LUẬN (CHỈ DỰA TRÊN TÀI LIỆU NỘI BỘ):\n"
         "1. CHỈ sử dụng thông tin có trong các tài liệu được cung cấp dưới đây.\n"
         "2. Kèm số thứ tự trích dẫn [1], [2] cho mọi thông tin trích xuất.\n"
-        "3. Nếu tài liệu không chứa đủ thông tin để trả lời, hãy thành thật từ chối."
+        "3. Trình bày sắc nét, cấu trúc bài bản, mạch lạc.\n"
+        "4. GỢI Ý TIẾP THEO: Cuối câu trả lời BẮT BUỘC tạo phân cách '---\\n\\n### 💡 Gợi ý câu hỏi & bước tiếp theo:' kèm 3 gợi ý dạng '- '."
     )
 
 
@@ -117,6 +121,28 @@ async def generate_rag_answer_stream(
     system_prompt = build_system_prompt(allow_external_knowledge)
     full_prompt = f"{system_prompt}\n\n--- TÀI LIỆU KHỞI THỦY ---\n{context_str}\n\nCÂU HỎI: {question}"
 
+    # Real-time RAG Pipeline Execution Thought Events
+    yield format_sse("thought", {
+        "stepIndex": 1,
+        "stepKey": "INTENT",
+        "title": "Initiating Request & Intent Analysis",
+        "detail": f"Đã phân tích ý định (Phân loại: {intent}), bóc tách từ khóa chuyên môn và khoanh vùng phạm vi tri thức RAG.",
+    })
+
+    yield format_sse("thought", {
+        "stepIndex": 2,
+        "stepKey": "RETRIEVAL",
+        "title": "Retrieving & Grounding Sources",
+        "detail": f"Đã quét kho tài liệu Vector DB, bóc tách thành công {len(citations)} trích dẫn tri thức có điểm tương đồng cao nhất.",
+    })
+
+    yield format_sse("thought", {
+        "stepIndex": 3,
+        "stepKey": "SYNTHESIS",
+        "title": "Synthesizing Key Concepts",
+        "detail": f"Đang hợp nhất {len(candidates)} khối bằng chứng trích dẫn và truyền sang Gemini LLM để tổng hợp bài viết chuyên sâu...",
+    })
+
     gemini_keys = get_gemini_api_keys()
     candidate_models = get_candidate_gemini_models()
 
@@ -145,6 +171,7 @@ async def generate_rag_answer_stream(
     )
 
     success_stream = False
+    metadata_sent = False
     used_model_name = candidate_models[0] if candidate_models else "gemini-2.5-flash"
 
     for k_idx, key in enumerate(gemini_keys, start=1):
@@ -167,18 +194,25 @@ async def generate_rag_answer_stream(
 
                 used_model_name = model
 
-                # First event: metadata
-                yield format_sse("metadata", {
-                    "decision": "ANSWER",
-                    "intent": intent,
-                    "strategyVersion": strategy_version,
-                    "citations": citations,
-                    "evidenceScore": evidence_score,
-                    "providerModel": used_model_name,
-                    "requestId": request_id,
-                })
-
                 for chunk in stream:
+                    if not metadata_sent:
+                        yield format_sse("thought", {
+                            "stepIndex": 4,
+                            "stepKey": "GENERATION",
+                            "title": "Verifying Citations & Formatting Output",
+                            "detail": f"Đã xác thực trích dẫn [1], [2], đang stream trực tiếp câu trả lời và định dạng sơ đồ Mermaid...",
+                        })
+                        yield format_sse("metadata", {
+                            "decision": "ANSWER",
+                            "intent": intent,
+                            "strategyVersion": strategy_version,
+                            "citations": citations,
+                            "evidenceScore": evidence_score,
+                            "providerModel": used_model_name,
+                            "requestId": request_id,
+                        })
+                        metadata_sent = True
+
                     if chunk.text:
                         yield format_sse("token", {"delta": chunk.text})
 
@@ -190,6 +224,8 @@ async def generate_rag_answer_stream(
                     "Gemini SSE streaming Key #%d, Model '%s' error: %s. Trying next...",
                     k_idx, model, e
                 )
+                if metadata_sent:
+                    break
 
     if success_stream:
         yield format_sse("done", {
@@ -199,16 +235,17 @@ async def generate_rag_answer_stream(
         })
     else:
         logger.error("All Gemini streaming candidates failed.")
-        yield format_sse("metadata", {
-            "decision": "REFUSE",
-            "intent": intent,
-            "strategyVersion": strategy_version,
-            "refusalCode": "PROVIDER_UNAVAILABLE",
-            "refusalReason": "Tất cả các dịch vụ LLM hiện tại không thể phản hồi.",
-            "citations": citations,
-            "evidenceScore": evidence_score,
-            "requestId": request_id,
-        })
+        if not metadata_sent:
+            yield format_sse("metadata", {
+                "decision": "REFUSE",
+                "intent": intent,
+                "strategyVersion": strategy_version,
+                "refusalCode": "PROVIDER_UNAVAILABLE",
+                "refusalReason": "Tất cả các dịch vụ LLM hiện tại không thể phản hồi.",
+                "citations": citations,
+                "evidenceScore": evidence_score,
+                "requestId": request_id,
+            })
         yield format_sse("done", {
             "messageId": request_id,
             "refusalCode": "PROVIDER_UNAVAILABLE",
