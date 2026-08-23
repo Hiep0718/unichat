@@ -289,3 +289,17 @@
 
 - Decision: Standardize academic RAG evaluation pipeline using Arize Phoenix Web UI + RAGAS framework + 120-question Golden Dataset.
   Rationale: Delivers a 100% free ($0 budget), highly credible, industry-standard evaluation dashboard (localhost:6006) for academic thesis defense, measuring Faithfulness, Context Precision, Answer Relevance, and Refusal F1-Score.
+
+## 2026-08-23 - Reddit-Style Forum Pivot (Phase A: Community Chat Decommission)
+
+- Decision: Remove all community chat real-time messaging infrastructure (WebSocket, STOMP, Redis, Channels, Messages) from both Core API and frontend.
+  Rationale: The dual-channel (Chat + Discussion) model added architectural complexity without proportional value. A unified Reddit-style REST discussion model consolidates community interaction into thread-based discussions with voting, reducing infrastructure dependencies (Redis, WebSocket) while improving knowledge discoverability.
+
+- Decision: Remove `spring-boot-starter-websocket` and `spring-boot-starter-data-redis` dependencies from pom.xml.
+  Rationale: No remaining features require WebSocket message broker or Redis. NotificationEventListener uses `@Async` (thread pool), not Redis pub/sub.
+
+- Decision: Remove `@stomp/stompjs` and `sockjs-client` npm packages from frontend.
+  Rationale: All real-time chat UI code is deleted. Remaining community features (discussions, reactions, notifications) use REST APIs only.
+
+- Decision: Preserve Discussion, Reply, Reaction, Notification entities and services.
+  Rationale: These form the foundation for the Reddit-style mechanics (voting, threaded comments, notification bell) being built in subsequent phases.

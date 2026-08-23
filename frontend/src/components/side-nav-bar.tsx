@@ -33,8 +33,7 @@ export function SideNavBar() {
         { icon: 'dashboard', label: 'Tổng quan', href: `/workspaces/${workspaceId}` },
         { icon: 'description', label: 'Tài liệu', href: `/workspaces/${workspaceId}/documents` },
         { icon: 'chat', label: 'Trò chuyện', href: `/workspaces/${workspaceId}/chat` },
-        { icon: 'forum', label: 'Chat cộng đồng', href: `/workspaces/${workspaceId}/community-chat` },
-        { icon: 'question_answer', label: 'Thảo luận', href: `/workspaces/${workspaceId}/discussions` },
+
         { icon: 'history', label: 'Lịch sử', href: `/workspaces/${workspaceId}/conversations` },
         { icon: 'analytics', label: 'Đánh giá', href: `/workspaces/${workspaceId}/evaluation`, ownerOrEditorOnly: true },
         { icon: 'settings', label: 'Cài đặt', href: `/workspaces/${workspaceId}/settings`, ownerOrEditorOnly: true },

@@ -29,7 +29,6 @@ const ConversationListPage = lazy(() => import('../features/history/conversation
 const ConversationPage = lazy(() => import('../features/history/conversation-page'));
 const WorkspaceSettingsPage = lazy(() => import('../features/settings/settings-page'));
 const EvaluationPage = lazy(() => import('../features/evaluation/evaluation-page'));
-const CommunityChatPage = lazy(() => import('../features/community/community-chat-page'));
 const DiscussionPage = lazy(() => import('../features/community/discussion-page'));
 
 const AccountPage = lazy(() => import('../features/account/settings-page'));
@@ -73,7 +72,6 @@ export function AppRouter() {
             <Route path="/workspaces/:workspaceId/conversations/:conversationId" element={<ConversationPage />} />
             <Route path="/workspaces/:workspaceId/settings" element={<WorkspaceSettingsPage />} />
             <Route path="/workspaces/:workspaceId/evaluation" element={<EvaluationPage />} />
-            <Route path="/workspaces/:workspaceId/community-chat" element={<CommunityChatPage />} />
             <Route path="/workspaces/:workspaceId/discussions" element={<DiscussionPage />} />
           </Route>
 
