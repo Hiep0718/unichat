@@ -99,15 +99,24 @@ export function FeedPage() {
                 onClick={() => navigateToDiscussion(post.workspaceId, post.id)}
               >
                 <div className="feed-card__meta">
-                  <span className="feed-card__workspace" onClick={(e) => { e.stopPropagation(); navigate(`/workspaces/${post.workspaceId}/discussions`); }}>
-                    w/{post.workspaceName}
-                  </span>
-                  <span className="feed-card__dot">•</span>
-                  <span className="feed-card__author">Tạo bởi {post.authorName}</span>
+                  <div className="feed-card__workspace-group">
+                    <img 
+                      src={`https://api.dicebear.com/7.x/identicon/svg?seed=${post.workspaceId}`} 
+                      alt="avatar" 
+                      className="feed-card__workspace-avatar" 
+                    />
+                    <span className="feed-card__workspace" onClick={(e) => { e.stopPropagation(); navigate(`/workspaces/${post.workspaceId}/discussions`); }}>
+                      w/{post.workspaceName}
+                    </span>
+                  </div>
                   <span className="feed-card__dot">•</span>
                   <time className="feed-card__time">
                     {new Date(post.createdAt).toLocaleDateString('vi-VN')}
                   </time>
+                  <span className="feed-card__dot">•</span>
+                  <button className="feed-card__join-btn" onClick={(e) => { e.stopPropagation(); navigate(`/workspaces/${post.workspaceId}/discussions`); }}>
+                    Tham gia
+                  </button>
                 </div>
                 
                 <h3 className="feed-card__title">

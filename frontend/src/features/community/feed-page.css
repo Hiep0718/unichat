@@ -221,8 +221,21 @@
   color: var(--color-on-surface-variant);
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   margin-bottom: 8px;
+}
+
+.feed-card__workspace-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.feed-card__workspace-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 .feed-card__workspace {
@@ -232,6 +245,22 @@
 
 .feed-card__workspace:hover {
   text-decoration: underline;
+}
+
+.feed-card__join-btn {
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font: var(--font-label-sm);
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: opacity var(--transition-fast);
+}
+
+.feed-card__join-btn:hover {
+  opacity: 0.9;
 }
 
 .feed-card__title {

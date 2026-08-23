@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 
 import { Icon } from '../../components/icon';
 import { useWorkspace } from '../workspaces/workspace-context';
@@ -27,6 +27,7 @@ const DiscussionPage: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedDiscussion, setSelectedDiscussion] = useState<DiscussionResponse | null>(null);
 
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const discussionIdParam = searchParams.get('discussionId');
 
@@ -57,8 +58,12 @@ const DiscussionPage: React.FC = () => {
         workspaceId={workspaceId}
         discussion={selectedDiscussion}
         onBack={() => {
-          setSelectedDiscussion(null);
-          setSearchParams({});
+          if (discussionIdParam) {
+            navigate(-1);
+          } else {
+            setSelectedDiscussion(null);
+            setSearchParams({});
+          }
         }}
       />
     );
@@ -326,91 +331,126 @@ const DiscussionDetail: React.FC<DiscussionDetailProps> = ({ workspaceId, discus
 
   return (
     <div className="discussion-detail-wrapper">
-      <div className="discussion-detail">
-        <button className="discussion-detail__back" onClick={onBack}>
-          <Icon name="arrow_back" size={18} />
-          Quay lại danh sách
+      <div className="discussion-detail-header-bar">
+        <button className="discussion-detail__close" onClick={onBack}>
+          <Icon name="close" size={24} />
+          Đóng
         </button>
-
-      <div className="discussion-detail__post">
-        <div className="discussion-detail__post-content">
-          <div className="discussion-detail__post-meta">
-            <span>Đăng bởi {discussion.authorName}</span>
-            <span>•</span>
-            <span>{formatTime(discussion.createdAt)}</span>
-            <span>•</span>
-            <span>{discussion.viewCount} lượt xem</span>
-          </div>
-          <h1 className="discussion-detail__post-title">{discussion.title}</h1>
-          <p className="discussion-detail__post-body">{discussion.body}</p>
-          
-          <div className="discussion-detail__post-actions">
-            <VoteControl 
-              targetType="DISCUSSION"
-              targetId={discussion.id}
-              initialScore={discussion.voteScore}
-              initialVote={discussion.userVote}
-              orientation="horizontal"
-            />
-            <span className="discussion-detail__action-btn">
-              <Icon name="comment" size={18} />
-              {discussion.replyCount} Bình luận
-            </span>
-            <span className="discussion-detail__action-btn">
-              <Icon name="share" size={18} />
-              Chia sẻ
-            </span>
-          </div>
-        </div>
       </div>
-
-      <h2 className="discussion-detail__replies-header">
-        <Icon name="comment" size={22} />
-        {replies.length} Trả lời
-      </h2>
-
-      {replies.map((r) => (
-        <div key={r.id} className={`discussion-reply ${r.isAiAnswer ? 'discussion-reply--ai' : ''}`}>
-          <div className="discussion-reply__avatar">
-            {r.isAiAnswer ? <Icon name="smart_toy" size={16} /> : r.authorName?.charAt(0) || '?'}
-          </div>
-          <div className="discussion-reply__content-wrapper">
-            <div className="discussion-reply__meta">
-              <span className="discussion-reply__author">
-                {r.isAiAnswer ? 'UniChat AI' : r.authorName}
-              </span>
-              <span className="discussion-reply__time">{formatTime(r.createdAt)}</span>
+      
+      <div className="discussion-detail-container">
+        <div className="discussion-detail__main">
+          <div className="discussion-detail__post">
+            <div className="discussion-detail__post-content">
+              <div className="discussion-detail__post-meta">
+                <div className="discussion-detail__workspace-group">
+                  <img 
+                    src={`https://api.dicebear.com/7.x/identicon/svg?seed=${workspaceId}`} 
+                    alt="avatar" 
+                    className="discussion-detail__workspace-avatar" 
+                  />
+                  <span>w/{workspaceId.substring(0, 8)}</span>
+                  <button className="discussion-detail__join-btn">Tham gia</button>
+                </div>
+                <span>•</span>
+                <span>Đăng bởi {discussion.authorName}</span>
+                <span>•</span>
+                <span>{formatTime(discussion.createdAt)}</span>
+              </div>
+              <h1 className="discussion-detail__post-title">{discussion.title}</h1>
+              <p className="discussion-detail__post-body">{discussion.body}</p>
+              
+              <div className="discussion-detail__post-actions">
+                <VoteControl 
+                  targetType="DISCUSSION"
+                  targetId={discussion.id}
+                  initialScore={discussion.voteScore}
+                  initialVote={discussion.userVote}
+                  orientation="horizontal"
+                />
+                <span className="discussion-detail__action-btn">
+                  <Icon name="comment" size={18} />
+                  {discussion.replyCount} Bình luận
+                </span>
+                <span className="discussion-detail__action-btn">
+                  <Icon name="share" size={18} />
+                  Chia sẻ
+                </span>
+              </div>
             </div>
-            <p className="discussion-reply__body">{r.body}</p>
-            <div className="discussion-reply__actions">
-              <VoteControl 
-                targetType="DISCUSSION_REPLY"
-                targetId={r.id}
-                initialScore={r.voteScore}
-                initialVote={r.userVote}
-                orientation="horizontal"
-              />
-            </div>
           </div>
+
+          <h2 className="discussion-detail__replies-header">
+            <Icon name="comment" size={22} />
+            {replies.length} Trả lời
+          </h2>
+
+          <form className="discussion-reply-form" onSubmit={handleAddReply}>
+            <textarea
+              className="discussion-reply-form__input"
+              value={replyInput}
+              onChange={(e) => setReplyInput(e.target.value)}
+              placeholder="Viết bình luận... (Gõ @AI để yêu cầu AI trả lời)"
+              rows={3}
+            />
+            <div className="discussion-reply-form__footer">
+              <button
+                type="submit"
+                className="discussion-reply-form__submit"
+                disabled={loading || !replyInput.trim()}
+              >
+                {loading ? 'Đang gửi...' : 'Bình luận'}
+              </button>
+            </div>
+          </form>
+
+          {replies.map((r) => (
+            <div key={r.id} className={`discussion-reply ${r.isAiAnswer ? 'discussion-reply--ai' : ''}`}>
+              <div className="discussion-reply__avatar">
+                {r.isAiAnswer ? <Icon name="smart_toy" size={16} /> : r.authorName?.charAt(0) || '?'}
+              </div>
+              <div className="discussion-reply__content-wrapper">
+                <div className="discussion-reply__meta">
+                  <span className="discussion-reply__author">
+                    {r.isAiAnswer ? 'UniChat AI' : r.authorName}
+                  </span>
+                  <span className="discussion-reply__time">{formatTime(r.createdAt)}</span>
+                </div>
+                <p className="discussion-reply__body">{r.body}</p>
+                <div className="discussion-reply__actions">
+                  <VoteControl 
+                    targetType="DISCUSSION_REPLY"
+                    targetId={r.id}
+                    initialScore={r.voteScore}
+                    initialVote={r.userVote}
+                    orientation="horizontal"
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
-      ))}
 
-      <form className="discussion-reply-form" onSubmit={handleAddReply}>
-        <textarea
-          className="discussion-reply-form__input"
-          value={replyInput}
-          onChange={(e) => setReplyInput(e.target.value)}
-          placeholder="Viết bình luận... (Gõ @AI để yêu cầu AI trả lời)"
-          rows={2}
-        />
-        <button
-          type="submit"
-          className="discussion-reply-form__submit"
-          disabled={loading || !replyInput.trim()}
-        >
-          {loading ? 'Đang gửi...' : 'Trả lời'}
-        </button>
-      </form>
+        <aside className="discussion-detail__sidebar">
+          <div className="discussion-sidebar-card">
+            <div className="discussion-sidebar-card__header">
+              <h3>Thông tin Workspace</h3>
+            </div>
+            <div className="discussion-sidebar-card__body">
+              <p>Chào mừng bạn đến với cộng đồng tri thức này. Nơi đây tập hợp các thảo luận và câu hỏi xoay quanh tài liệu RAG.</p>
+              <div className="discussion-sidebar-card__stats">
+                <div className="stat">
+                  <strong>{discussion.viewCount}</strong>
+                  <span>Lượt xem</span>
+                </div>
+                <div className="stat">
+                  <strong>{replies.length}</strong>
+                  <span>Bình luận</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </aside>
       </div>
     </div>
   );
