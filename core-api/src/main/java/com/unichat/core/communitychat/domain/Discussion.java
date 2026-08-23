@@ -46,6 +46,9 @@ public class Discussion {
     @Column(name = "reply_count", nullable = false)
     private int replyCount;
 
+    @Column(name = "vote_score", nullable = false)
+    private int voteScore;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -66,6 +69,7 @@ public class Discussion {
         this.status = status;
         this.viewCount = 0;
         this.replyCount = 0;
+        this.voteScore = 0;
         this.createdAt = now;
         this.updatedAt = now;
     }
@@ -92,4 +96,6 @@ public class Discussion {
     
     public void incrementViewCount() { this.viewCount++; }
     public void incrementReplyCount() { this.replyCount++; }
+    public int getVoteScore() { return voteScore; }
+    public void adjustVoteScore(int delta) { this.voteScore += delta; }
 }

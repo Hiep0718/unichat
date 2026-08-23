@@ -7,6 +7,9 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import com.unichat.core.communitychat.domain.Reaction;
+import com.unichat.core.communitychat.domain.ReactionRepository;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,6 +53,7 @@ public class DiscussionService {
     private final DocumentRepository documentRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final RestTemplate restTemplate;
+    private final ReactionRepository reactionRepository;
 
     @Value("${unichat.ai-service.url:http://localhost:8001}")
     private String aiServiceUrl;
@@ -59,34 +63,78 @@ public class DiscussionService {
                              WorkspaceMemberRepository memberRepository,
                              UserRepository userRepository,
                              DocumentRepository documentRepository,
-                             ApplicationEventPublisher eventPublisher) {
+                             ApplicationEventPublisher eventPublisher,
+                             ReactionRepository reactionRepository) {
         this.discussionRepository = discussionRepository;
         this.replyRepository = replyRepository;
         this.memberRepository = memberRepository;
         this.userRepository = userRepository;
         this.documentRepository = documentRepository;
         this.eventPublisher = eventPublisher;
+        this.reactionRepository = reactionRepository;
         this.restTemplate = new RestTemplate();
     }
 
-    public Page<DiscussionResponse> listDiscussions(UUID workspaceId, UUID userId, String label, int page, int size) {
+    public Page<DiscussionResponse> listDiscussions(UUID workspaceId, UUID userId, String label, String sort, int page, int size) {
         verifyMembership(workspaceId, userId);
         
-        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "pinned", "updatedAt"));
+        PageRequest pageRequest;
+        if ("HOT".equalsIgnoreCase(sort)) {
+            pageRequest = PageRequest.of(page, size);
+        } else if ("TOP".equalsIgnoreCase(sort)) {
+            pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "voteScore", "createdAt"));
+        } else { // NEW default
+            pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        }
+
         Page<Discussion> result;
         
         if (label != null && !label.isBlank()) {
             result = discussionRepository.findByWorkspaceIdAndLabel(workspaceId, label, pageRequest);
         } else {
-            result = discussionRepository.findByWorkspaceId(workspaceId, pageRequest);
+            if ("HOT".equalsIgnoreCase(sort)) {
+                result = discussionRepository.findByWorkspaceIdOrderByVoteScoreDescCreatedAtDesc(workspaceId, pageRequest);
+            } else if ("TOP".equalsIgnoreCase(sort)) {
+                result = discussionRepository.findByWorkspaceIdOrderByVoteScoreDescCreatedAtDesc(workspaceId, pageRequest); // Can optimize further later
+            } else {
+                result = discussionRepository.findByWorkspaceIdOrderByCreatedAtDesc(workspaceId, pageRequest);
+            }
         }
+
+        List<UUID> discussionIds = result.getContent().stream().map(Discussion::getId).toList();
+        Map<UUID, String> userVotes = reactionRepository.findByUserIdAndTargetTypeAndTargetIdIn(userId, "DISCUSSION", discussionIds)
+                .stream().collect(Collectors.toMap(Reaction::getTargetId, Reaction::getReactionType));
 
         return result.map(d -> {
             String authorName = userRepository.findById(d.getAuthorId())
                     .map(u -> u.getEmail().split("@")[0])
                     .orElse("Unknown");
-            return DiscussionResponse.from(d, authorName, null);
+            return DiscussionResponse.from(d, authorName, null, userVotes.get(d.getId()));
         });
+    }
+
+    @Transactional
+    public DiscussionResponse getDiscussion(UUID workspaceId, UUID discussionId, UUID userId) {
+        verifyMembership(workspaceId, userId);
+        
+        Discussion discussion = discussionRepository.findById(discussionId)
+                .orElseThrow(() -> new NotFoundError("Discussion not found"));
+                
+        if (!discussion.getWorkspaceId().equals(workspaceId)) {
+            throw new AuthorizationError("Discussion does not belong to this workspace");
+        }
+        
+        discussion.incrementViewCount();
+        discussionRepository.save(discussion);
+
+        String authorName = userRepository.findById(discussion.getAuthorId())
+                .map(u -> u.getEmail().split("@")[0])
+                .orElse("Unknown");
+                
+        String userVote = reactionRepository.findByUserIdAndTargetTypeAndTargetId(userId, "DISCUSSION", discussionId)
+                .map(Reaction::getReactionType).orElse(null);
+                
+        return DiscussionResponse.from(discussion, authorName, null, userVote);
     }
 
     @Transactional
@@ -109,7 +157,7 @@ public class DiscussionService {
         discussionRepository.save(discussion);
 
         String authorName = userRepository.findById(userId).map(u -> u.getEmail().split("@")[0]).orElse("Unknown");
-        return DiscussionResponse.from(discussion, authorName, null);
+        return DiscussionResponse.from(discussion, authorName, null, null);
     }
 
     public List<ReplyResponse> getReplies(UUID workspaceId, UUID discussionId, UUID userId) {
@@ -121,13 +169,18 @@ public class DiscussionService {
             throw new AuthorizationError("Discussion does not belong to this workspace");
         }
 
-        return replyRepository.findByDiscussionIdOrderByCreatedAtAsc(discussionId)
-                .stream()
+        List<DiscussionReply> replies = replyRepository.findByDiscussionIdOrderByCreatedAtAsc(discussionId);
+        List<UUID> replyIds = replies.stream().map(DiscussionReply::getId).toList();
+        
+        Map<UUID, String> userVotes = reactionRepository.findByUserIdAndTargetTypeAndTargetIdIn(userId, "DISCUSSION_REPLY", replyIds)
+                .stream().collect(Collectors.toMap(Reaction::getTargetId, Reaction::getReactionType));
+
+        return replies.stream()
                 .map(r -> {
                     String authorName = userRepository.findById(r.getAuthorId())
                             .map(u -> u.getEmail().split("@")[0])
                             .orElse("Unknown");
-                    return ReplyResponse.from(r, authorName, null);
+                    return ReplyResponse.from(r, authorName, null, userVotes.get(r.getId()));
                 })
                 .collect(Collectors.toList());
     }
@@ -169,7 +222,7 @@ public class DiscussionService {
         }
 
         String authorName = userRepository.findById(userId).map(u -> u.getEmail().split("@")[0]).orElse("Unknown");
-        return ReplyResponse.from(reply, authorName, null);
+        return ReplyResponse.from(reply, authorName, null, null);
     }
 
     private void verifyMembership(UUID workspaceId, UUID userId) {

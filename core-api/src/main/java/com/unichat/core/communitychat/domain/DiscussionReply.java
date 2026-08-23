@@ -34,6 +34,9 @@ public class DiscussionReply {
     @Column(name = "is_ai_answer", nullable = false)
     private boolean isAiAnswer;
 
+    @Column(name = "vote_score", nullable = false)
+    private int voteScore;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -47,6 +50,7 @@ public class DiscussionReply {
         this.body = body;
         this.parentReplyId = parentReplyId;
         this.isAiAnswer = isAiAnswer;
+        this.voteScore = 0;
         this.createdAt = createdAt;
     }
 
@@ -57,6 +61,8 @@ public class DiscussionReply {
     public UUID getParentReplyId() { return parentReplyId; }
     public boolean isAiAnswer() { return isAiAnswer; }
     public Instant getCreatedAt() { return createdAt; }
+    public int getVoteScore() { return voteScore; }
     
     public void setBody(String body) { this.body = body; }
+    public void adjustVoteScore(int delta) { this.voteScore += delta; }
 }

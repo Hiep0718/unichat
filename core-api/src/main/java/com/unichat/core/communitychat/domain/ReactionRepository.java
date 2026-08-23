@@ -11,6 +11,9 @@ import org.springframework.stereotype.Repository;
 public interface ReactionRepository extends JpaRepository<Reaction, UUID> {
     
     Optional<Reaction> findByUserIdAndTargetTypeAndTargetId(UUID userId, String targetType, UUID targetId);
+    
+    List<Reaction> findByUserIdAndTargetTypeAndTargetIdIn(UUID userId, String targetType, List<UUID> targetIds);
+
 
     List<Reaction> findByTargetTypeAndTargetId(String targetType, UUID targetId);
     

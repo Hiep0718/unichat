@@ -33,13 +33,25 @@ public class DiscussionController {
     public ResponseEntity<Page<DiscussionResponse>> listDiscussions(
             @PathVariable UUID workspaceId,
             @RequestParam(required = false) String label,
+            @RequestParam(defaultValue = "NEW") String sort,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @AuthenticationPrincipal Jwt jwt) {
         
         UUID userId = UUID.fromString(jwt.getSubject());
-        Page<DiscussionResponse> discussions = discussionService.listDiscussions(workspaceId, userId, label, page, size);
+        Page<DiscussionResponse> discussions = discussionService.listDiscussions(workspaceId, userId, label, sort, page, size);
         return ResponseEntity.ok(discussions);
+    }
+
+    @GetMapping("/{discussionId}")
+    public ResponseEntity<DiscussionResponse> getDiscussion(
+            @PathVariable UUID workspaceId,
+            @PathVariable UUID discussionId,
+            @AuthenticationPrincipal Jwt jwt) {
+            
+        UUID userId = UUID.fromString(jwt.getSubject());
+        DiscussionResponse discussion = discussionService.getDiscussion(workspaceId, discussionId, userId);
+        return ResponseEntity.ok(discussion);
     }
 
     @PostMapping

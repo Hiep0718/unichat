@@ -18,14 +18,17 @@ public record DiscussionResponse(
         int replyCount,
         Instant createdAt,
         Instant updatedAt,
+        int voteScore,
+        String userVote,
         String authorName,
         String authorAvatar
 ) {
-    public static DiscussionResponse from(Discussion d, String authorName, String authorAvatar) {
+    public static DiscussionResponse from(Discussion d, String authorName, String authorAvatar, String userVote) {
         return new DiscussionResponse(
                 d.getId(), d.getWorkspaceId(), d.getAuthorId(), d.getTitle(),
                 d.getBody(), d.getLabel(), d.isPinned(), d.getStatus(),
                 d.getViewCount(), d.getReplyCount(), d.getCreatedAt(), d.getUpdatedAt(),
+                d.getVoteScore(), userVote,
                 authorName, authorAvatar
         );
     }
