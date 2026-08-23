@@ -22,6 +22,7 @@ import com.unichat.core.workspace.domain.WorkspaceMember;
 import com.unichat.core.workspace.domain.WorkspaceMemberRepository;
 import com.unichat.core.workspace.domain.WorkspaceMemberStatus;
 import com.unichat.core.workspace.domain.WorkspaceRepository;
+import com.unichat.core.workspace.domain.WorkspaceVisibility;
 
 @Service
 @Transactional(readOnly = true)
@@ -45,9 +46,18 @@ public class FeedService {
         this.reactionRepository = reactionRepository;
     }
 
-    public Page<FeedPostResponse> getFeed(UUID userId, String sort, int page, int size) {
-        List<UUID> workspaceIds = memberRepository.findByUserIdAndStatus(userId, WorkspaceMemberStatus.ACTIVE)
-                .stream().map(WorkspaceMember::getWorkspaceId).toList();
+    public Page<FeedPostResponse> getFeed(UUID userId, String sort, String scope, int page, int size) {
+        List<UUID> workspaceIds;
+        
+        if ("ALL".equalsIgnoreCase(scope)) {
+            workspaceIds = workspaceRepository.findAll().stream()
+                    .filter(w -> w.getVisibility() == WorkspaceVisibility.PUBLIC)
+                    .map(Workspace::getId)
+                    .toList();
+        } else {
+            workspaceIds = memberRepository.findByUserIdAndStatus(userId, WorkspaceMemberStatus.ACTIVE)
+                    .stream().map(WorkspaceMember::getWorkspaceId).toList();
+        }
                 
         if (workspaceIds.isEmpty()) {
             return Page.empty();

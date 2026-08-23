@@ -6,7 +6,6 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
@@ -21,11 +20,9 @@ public class NotificationEventListener {
     private static final Logger log = LoggerFactory.getLogger(NotificationEventListener.class);
     
     private final NotificationRepository notificationRepository;
-    private final SimpMessagingTemplate messagingTemplate;
 
-    public NotificationEventListener(NotificationRepository notificationRepository, SimpMessagingTemplate messagingTemplate) {
+    public NotificationEventListener(NotificationRepository notificationRepository) {
         this.notificationRepository = notificationRepository;
-        this.messagingTemplate = messagingTemplate;
     }
 
     @Async
@@ -49,14 +46,6 @@ public class NotificationEventListener {
         );
 
         notificationRepository.save(notification);
-        
-        // Push real-time notification to the discussion author
-        String destination = "/user/" + event.discussionAuthorId().toString() + "/queue/notifications";
-        try {
-            messagingTemplate.convertAndSend(destination, NotificationResponse.from(notification));
-            log.debug("Sent real-time notification to {}", event.discussionAuthorId());
-        } catch (Exception e) {
-            log.error("Failed to send real-time notification via STOMP", e);
-        }
+        log.debug("Saved notification for user {}", event.discussionAuthorId());
     }
 }
