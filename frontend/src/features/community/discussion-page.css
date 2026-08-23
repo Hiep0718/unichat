@@ -368,10 +368,14 @@
 
 /* ---------- Discussion Detail ---------- */
 .discussion-detail-wrapper {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
   background-color: var(--color-surface-container-low);
-  min-height: 100vh;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
+  animation: fadeIn 0.15s ease;
 }
 
 .discussion-detail-header-bar {

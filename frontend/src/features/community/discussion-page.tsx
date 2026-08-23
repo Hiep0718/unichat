@@ -282,13 +282,13 @@ const NewDiscussionModal: React.FC<NewDiscussionModalProps> = ({ workspaceId, on
 
 /* ---------- Discussion Detail ---------- */
 
-interface DiscussionDetailProps {
+export interface DiscussionDetailProps {
   workspaceId: string;
   discussion: DiscussionResponse;
   onBack: () => void;
 }
 
-const DiscussionDetail: React.FC<DiscussionDetailProps> = ({ workspaceId, discussion: initialDiscussion, onBack }) => {
+export const DiscussionDetail: React.FC<DiscussionDetailProps> = ({ workspaceId, discussion: initialDiscussion, onBack }) => {
   const [discussion, setDiscussion] = useState(initialDiscussion);
   const [replies, setReplies] = useState<ReplyResponse[]>([]);
   const [replyInput, setReplyInput] = useState('');

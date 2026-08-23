@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { FeedPostResponse, fetchFeed } from './feed-api';
 import { VoteControl } from './components/vote-control';
 import { Icon } from '../../components/icon';
+import { DiscussionDetail } from './discussion-page';
+import { getDiscussion, DiscussionResponse } from './community-api';
 import './feed-page.css';
 
 export function FeedPage() {
@@ -14,6 +16,21 @@ export function FeedPage() {
   const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const postId = searchParams.get('postId');
+  const wId = searchParams.get('workspaceId');
+  const [activeDiscussion, setActiveDiscussion] = useState<DiscussionResponse | null>(null);
+
+  useEffect(() => {
+    if (postId && wId) {
+      getDiscussion(wId, postId)
+        .then(setActiveDiscussion)
+        .catch(() => setSearchParams({}));
+    } else {
+      setActiveDiscussion(null);
+    }
+  }, [postId, wId, setSearchParams]);
 
   useEffect(() => {
     loadFeed();
@@ -41,12 +58,13 @@ export function FeedPage() {
   };
 
   const navigateToDiscussion = (workspaceId: string, discussionId: string) => {
-    navigate(`/workspaces/${workspaceId}/discussions?discussionId=${discussionId}`);
+    setSearchParams({ workspaceId, postId: discussionId });
   };
 
   return (
-    <div className="feed-page">
-      <header className="feed-page__header">
+    <div className="feed-page-wrapper">
+      <div className="feed-page">
+        <header className="feed-page__header">
         <div className="feed-page__header-top">
           <h1 className="feed-page__title">Bảng tin cộng đồng</h1>
           <div className="feed-page__search">
@@ -82,7 +100,23 @@ export function FeedPage() {
           </div>
 
           {isLoading && posts.length === 0 ? (
-          <div className="feed-page__loading">Đang tải bảng tin...</div>
+          <div className="feed-page__loading">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="skeleton-card">
+                <div className="skeleton-meta">
+                  <div className="skeleton-avatar"></div>
+                  <div className="skeleton-text short"></div>
+                </div>
+                <div className="skeleton-text title"></div>
+                <div className="skeleton-text"></div>
+                <div className="skeleton-text"></div>
+                <div className="skeleton-footer">
+                  <div className="skeleton-btn"></div>
+                  <div className="skeleton-btn"></div>
+                </div>
+              </div>
+            ))}
+          </div>
         ) : error ? (
           <div className="feed-page__error">{error}</div>
         ) : posts.length === 0 ? (
@@ -182,9 +216,29 @@ export function FeedPage() {
                 Khám phá Workspace
               </button>
             </div>
+            <div className="feed-sidebar-card">
+              <div className="feed-sidebar-card__header">
+                <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>trending_up</span>
+                <h3>Xu hướng</h3>
+              </div>
+              <ul className="feed-sidebar__trending-list">
+                <li><Icon name="tag" size={16} /> #RAG_TiengViet</li>
+                <li><Icon name="tag" size={16} /> #Llama3_Tuning</li>
+                <li><Icon name="tag" size={16} /> #Chunking_Strategy</li>
+              </ul>
+            </div>
           </div>
         </aside>
       </div>
+    </div>
+
+      {activeDiscussion && wId && (
+        <DiscussionDetail 
+          workspaceId={wId} 
+          discussion={activeDiscussion} 
+          onBack={() => setSearchParams({})} 
+        />
+      )}
     </div>
   );
 }
