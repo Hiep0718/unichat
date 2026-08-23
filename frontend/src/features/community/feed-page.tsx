@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FeedPostResponse, fetchFeed } from './feed-api';
 import { VoteControl } from './components/vote-control';
+import { Icon } from '../../components/icon';
 import './feed-page.css';
 
 export function FeedPage() {
@@ -46,7 +47,13 @@ export function FeedPage() {
   return (
     <div className="feed-page">
       <header className="feed-page__header">
-        <h1 className="feed-page__title">Bảng tin cộng đồng</h1>
+        <div className="feed-page__header-top">
+          <h1 className="feed-page__title">Bảng tin cộng đồng</h1>
+          <div className="feed-page__search">
+            <Icon name="search" size={20} />
+            <input type="text" placeholder="Tìm kiếm trong Bảng tin..." />
+          </div>
+        </div>
         <div className="feed-page__tabs">
           <button
             className={`feed-page__tab ${scope === 'JOINED' ? 'feed-page__tab--active' : ''}`}
@@ -65,6 +72,15 @@ export function FeedPage() {
 
       <div className="feed-page__layout">
         <main className="feed-page__main">
+          <div className="feed-page__create-bar" onClick={() => navigate('/workspaces')}>
+            <div className="feed-page__create-avatar">
+              <Icon name="person" size={20} />
+            </div>
+            <input className="feed-page__create-input" type="text" placeholder="Tạo bài viết..." readOnly />
+            <button className="feed-page__create-icon-btn"><Icon name="image" size={20} /></button>
+            <button className="feed-page__create-icon-btn"><Icon name="link" size={20} /></button>
+          </div>
+
           {isLoading && posts.length === 0 ? (
           <div className="feed-page__loading">Đang tải bảng tin...</div>
         ) : error ? (

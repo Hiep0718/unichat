@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 
 import { Icon } from '../../components/icon';
 import { useWorkspace } from '../workspaces/workspace-context';
@@ -27,6 +27,9 @@ const DiscussionPage: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedDiscussion, setSelectedDiscussion] = useState<DiscussionResponse | null>(null);
 
+  const [searchParams, setSearchParams] = useSearchParams();
+  const discussionIdParam = searchParams.get('discussionId');
+
   // Load discussions
   useEffect(() => {
     if (!workspaceId) return;
@@ -36,12 +39,27 @@ const DiscussionPage: React.FC = () => {
       .catch(() => setDiscussions([]));
   }, [workspaceId, activeLabel, activeSort]);
 
+  // Handle deep linking from Feed
+  useEffect(() => {
+    if (workspaceId && discussionIdParam) {
+      getDiscussion(workspaceId, discussionIdParam)
+        .then((d) => setSelectedDiscussion(d))
+        .catch(() => {
+          // If not found, just clear the param
+          setSearchParams({});
+        });
+    }
+  }, [workspaceId, discussionIdParam, setSearchParams]);
+
   if (selectedDiscussion && workspaceId) {
     return (
       <DiscussionDetail
         workspaceId={workspaceId}
         discussion={selectedDiscussion}
-        onBack={() => setSelectedDiscussion(null)}
+        onBack={() => {
+          setSelectedDiscussion(null);
+          setSearchParams({});
+        }}
       />
     );
   }
@@ -115,7 +133,10 @@ const DiscussionPage: React.FC = () => {
           <div
             key={d.id}
             className={`discussion-card ${d.pinned ? 'discussion-card__pinned' : ''}`}
-            onClick={() => setSelectedDiscussion(d)}
+            onClick={() => {
+              setSelectedDiscussion(d);
+              setSearchParams({ discussionId: d.id });
+            }}
           >
             <div className="discussion-card__meta">
               <span className="discussion-card__meta-item">
@@ -304,11 +325,12 @@ const DiscussionDetail: React.FC<DiscussionDetailProps> = ({ workspaceId, discus
   };
 
   return (
-    <div className="discussion-detail">
-      <button className="discussion-detail__back" onClick={onBack}>
-        <Icon name="arrow_back" size={18} />
-        Quay lại danh sách
-      </button>
+    <div className="discussion-detail-wrapper">
+      <div className="discussion-detail">
+        <button className="discussion-detail__back" onClick={onBack}>
+          <Icon name="arrow_back" size={18} />
+          Quay lại danh sách
+        </button>
 
       <div className="discussion-detail__post">
         <div className="discussion-detail__post-content">
@@ -389,6 +411,7 @@ const DiscussionDetail: React.FC<DiscussionDetailProps> = ({ workspaceId, discus
           {loading ? 'Đang gửi...' : 'Trả lời'}
         </button>
       </form>
+      </div>
     </div>
   );
 };
