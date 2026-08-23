@@ -274,3 +274,75 @@
   color: var(--color-on-surface);
   background: var(--color-surface-container);
 }
+
+/* Document Table Pagination Styling */
+
+.document-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-outline-variant);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.document-pagination__info {
+  font-size: 13px;
+  color: var(--color-on-surface-variant);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.document-pagination__size-select {
+  padding: 4px 8px;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  font-size: 13px;
+  color: var(--color-on-surface);
+  cursor: pointer;
+}
+
+.document-pagination__controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.document-pagination__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-on-surface);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.document-pagination__btn:hover:not(:disabled) {
+  background: var(--color-secondary-container);
+  color: var(--color-on-secondary-container);
+  border-color: var(--color-secondary);
+}
+
+.document-pagination__btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.document-pagination__page-indicator {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-on-surface);
+  padding: 0 8px;
+}

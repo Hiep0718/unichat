@@ -68,56 +68,100 @@ function hasDiagramDeclaration(code: string): boolean {
 
 /**
  * Detect and fix common mermaid syntax issues:
- * 1. Missing diagram type declaration (auto-detect flowchart vs mindmap)
- * 2. Strip citation markers [1], [2]
- * 3. Quote node labels with special characters for mindmap
+ * 1. Missing diagram type declaration (auto-detect flowchart vs mindmap vs classDiagram)
+ * 2. Strip non-mermaid header/comment lines (e.g. "3. Sơ đồ...")
+ * 3. Strip citation markers [1], [2], [1, 2], [1][2], etc.
+ * 4. Quote node labels with special characters for mindmap
  */
 function sanitizeMermaidCode(raw: string): string {
   let code = raw.trim();
 
-  // Strip citation markers like [1], [2], [1][4] everywhere
-  code = code.replace(/\s*\[\d+\]/g, '');
+  // Strip code block markers if present
+  code = code
+    .replace(/^```mermaid\s*/i, '')
+    .replace(/^```\s*/, '')
+    .replace(/```$/, '')
+    .trim();
+
+  // Strip citation markers like [1], [2], [1, 2], [1][2], [citation 1] everywhere
+  code = code.replace(/\[\d+(?:\s*,\s*\d+)*\]/g, '');
+  code = code.replace(/\[\s*\d+\s*\]/g, '');
+  code = code.replace(/\[citation:\s*\d+\]/gi, '');
+
+  // Strip non-mermaid title text lines at top (e.g. "3. Sơ đồ minh họa...")
+  const lines = code.split('\n');
+  const firstDiagramIdx = lines.findIndex((line) => {
+    const trimmed = line.trim().toLowerCase();
+    if (!trimmed) return false;
+    return (
+      DIAGRAM_KEYWORDS.some((kw) => trimmed.startsWith(kw.toLowerCase())) ||
+      /^\w+\s*[-=]+>?\s*\w+/.test(trimmed) ||
+      /^class\s+\w+/.test(trimmed) ||
+      /^root\s*\(\(/.test(trimmed)
+    );
+  });
+
+  if (firstDiagramIdx > 0) {
+    code = lines.slice(firstDiagramIdx).join('\n').trim();
+  }
+
+  // Prepend mindmap if root(( is found
+  if (/root\s*\(\(/.test(code) && !code.toLowerCase().startsWith('mindmap')) {
+    code = `mindmap\n${code}`;
+  }
+
+  // Detect UML class diagram
+  if (/^class\s+\w+/m.test(code) && !code.startsWith('classDiagram')) {
+    code = `classDiagram\n${code}`;
+  }
 
   // If no diagram declaration found, auto-detect type
   if (!hasDiagramDeclaration(code)) {
-    // Detect flowchart pattern: "A --> B" or "A --- B" or "A ==> B"
     if (/\w+\s*[-=]+>?\s*\w+/.test(code)) {
       code = `flowchart TD\n${code}`;
-    }
-    // Detect mindmap pattern: indented lines with root((...))
-    else if (/root\s*\(\(/.test(code)) {
+    } else if (/root\s*\(\(/.test(code) || /^\s{2,}\w+/m.test(code)) {
       code = `mindmap\n${code}`;
-    }
-    // Default to flowchart
-    else {
+    } else {
       code = `flowchart TD\n${code}`;
     }
   }
 
-  // For mindmap diagrams: quote labels with special characters
-  if (code.startsWith('mindmap')) {
+  // For mindmap diagrams: sanitize and quote ALL node labels properly
+  if (code.toLowerCase().startsWith('mindmap')) {
     code = code
       .split('\n')
       .map((line) => {
-        const match = line.match(/^(\s+)(.+)$/);
+        const match = line.match(/^(\s*)(.+)$/);
         if (!match) return line;
         const indent = match[1] ?? '';
-        const label = (match[2] ?? '').trim();
-        // Skip keyword lines, root lines, or already quoted
+        let label = (match[2] ?? '').trim();
+
         if (
           !label ||
-          label.startsWith('root') ||
-          label.startsWith('%%') ||
-          label.startsWith('mindmap') ||
-          label.startsWith('"')
+          label.toLowerCase().startsWith('mindmap') ||
+          label.startsWith('%%')
         ) {
           return line;
         }
-        // If label has special chars, wrap in double quotes
-        if (/[:\-–—(){}|<>#&@$%^*+=!?/\\;,.]/.test(label)) {
-          return `${indent}"${label.replace(/"/g, "'")}"`;
+
+        // Handle root node like root((Title))
+        if (label.startsWith('root((') && label.endsWith('))')) {
+          const inner = label.slice(6, -2).trim().replace(/"/g, "'");
+          return `${indent}root(("${inner}"))`;
         }
-        return line;
+
+        // Strip unclosed brackets or convert to parens
+        label = label.replace(/\[\d+\]/g, '').replace(/\[/g, '(').replace(/\]/g, ')').trim();
+
+        // If label is wrapped in quotes, unwrap first
+        if (label.startsWith('"') && label.endsWith('"')) {
+          label = label.slice(1, -1);
+        }
+
+        // Clean label: escape inner quotes into single quotes
+        label = label.replace(/"/g, "'");
+
+        return `${indent}"${label}"`;
       })
       .join('\n');
   }
@@ -128,13 +172,10 @@ function sanitizeMermaidCode(raw: string): string {
 interface MermaidDiagramProps {
   /** Raw mermaid syntax string */
   chart: string;
+  isStreaming?: boolean | undefined;
 }
 
-/**
- * Renders a Mermaid diagram from its textual syntax.
- * Features: auto-render, zoom, fullscreen toggle, error fallback.
- */
-export const MermaidDiagram: React.FC<MermaidDiagramProps> = ({ chart }) => {
+export const MermaidDiagram: React.FC<MermaidDiagramProps> = ({ chart, isStreaming }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [svgHtml, setSvgHtml] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
@@ -145,10 +186,15 @@ export const MermaidDiagram: React.FC<MermaidDiagramProps> = ({ chart }) => {
   useEffect(() => {
     let cancelled = false;
 
-    const renderDiagram = async () => {
+    const timer = setTimeout(async () => {
       try {
         const trimmed = chart.trim();
-        if (!trimmed) return;
+        if (!trimmed) {
+          if (!isStreaming && !cancelled) {
+            setError('Nội dung sơ đồ rỗng');
+          }
+          return;
+        }
 
         const sanitized = sanitizeMermaidCode(trimmed);
 
@@ -170,18 +216,18 @@ export const MermaidDiagram: React.FC<MermaidDiagramProps> = ({ chart }) => {
 
         if (!cancelled) {
           const message = err instanceof Error ? err.message : String(err);
-          setError(message);
-          setSvgHtml('');
+          if (!isStreaming) {
+            setError(message);
+          }
         }
       }
-    };
-
-    renderDiagram();
+    }, isStreaming ? 120 : 0);
 
     return () => {
       cancelled = true;
+      clearTimeout(timer);
     };
-  }, [chart]);
+  }, [chart, isStreaming]);
 
   const handleZoomIn = useCallback(() => {
     setZoom((prev) => Math.min(prev + 0.25, 3));
@@ -218,29 +264,35 @@ export const MermaidDiagram: React.FC<MermaidDiagramProps> = ({ chart }) => {
     const svgEl = containerRef.current.querySelector('svg');
     if (!svgEl) return;
 
-    const svgData = new XMLSerializer().serializeToString(svgEl);
-    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-    const url = URL.createObjectURL(svgBlob);
+    const clone = svgEl.cloneNode(true) as SVGElement;
+    if (!clone.getAttribute('xmlns')) {
+      clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    }
+
+    const bbox = svgEl.getBoundingClientRect();
+    const width = Math.max(bbox.width || 800, 400);
+    const height = Math.max(bbox.height || 600, 300);
+
+    clone.setAttribute('width', `${width}`);
+    clone.setAttribute('height', `${height}`);
+
+    const svgString = new XMLSerializer().serializeToString(clone);
+    const svgDataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgString);
 
     const img = new Image();
+    img.crossOrigin = 'anonymous';
     img.onload = () => {
-      const bbox = svgEl.getBoundingClientRect();
-      const scale = 2; // High resolution 2x
-      const width = Math.max(bbox.width || 800, 400) * scale;
-      const height = Math.max(bbox.height || 600, 300) * scale;
-
+      const scale = 2; // Crisp 2x HD rendering
       const canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
+      canvas.width = width * scale;
+      canvas.height = height * scale;
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
 
-      // Crisp background
       ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, width, height);
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.scale(scale, scale);
       ctx.drawImage(img, 0, 0, width, height);
-
-      URL.revokeObjectURL(url);
 
       const pngUrl = canvas.toDataURL('image/png');
       const link = document.createElement('a');
@@ -250,8 +302,20 @@ export const MermaidDiagram: React.FC<MermaidDiagramProps> = ({ chart }) => {
       link.click();
       document.body.removeChild(link);
     };
-    img.src = url;
+    img.onerror = (err) => {
+      console.error('Lỗi khi tải ảnh PNG sơ đồ:', err);
+    };
+    img.src = svgDataUrl;
   }, []);
+
+  const [copiedCode, setCopiedCode] = useState(false);
+
+  const handleCopyCode = useCallback(() => {
+    const sanitized = sanitizeMermaidCode(chart);
+    navigator.clipboard.writeText(sanitized);
+    setCopiedCode(true);
+    setTimeout(() => setCopiedCode(false), 2000);
+  }, [chart]);
   const viewportRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
   const isRightClickDragRef = useRef(false);
@@ -298,7 +362,7 @@ export const MermaidDiagram: React.FC<MermaidDiagramProps> = ({ chart }) => {
     }
   }, []);
 
-  if (error) {
+  if (error && !isStreaming) {
     return (
       <div className="mermaid-error">
         <div className="mermaid-error__header">
@@ -313,8 +377,7 @@ export const MermaidDiagram: React.FC<MermaidDiagramProps> = ({ chart }) => {
   if (!svgHtml) {
     return (
       <div className="mermaid-loading">
-        <div className="mermaid-loading__spinner" />
-        <span>Đang tạo sơ đồ…</span>
+        <span>Đang loading...</span>
       </div>
     );
   }
@@ -360,7 +423,16 @@ export const MermaidDiagram: React.FC<MermaidDiagramProps> = ({ chart }) => {
             >
               <span className="material-symbols-outlined">add</span>
             </button>
-            <div className="mermaid-toolbar__divider" />
+            <button
+              type="button"
+              className={`mermaid-toolbar__btn mermaid-toolbar__btn--action ${copiedCode ? 'mermaid-toolbar__btn--copied' : ''}`}
+              onClick={handleCopyCode}
+              title="Sao chép mã sơ đồ Mermaid"
+              aria-label="Sao chép mã sơ đồ Mermaid"
+            >
+              <span className="material-symbols-outlined">{copiedCode ? 'check' : 'content_copy'}</span>
+              <span className="mermaid-toolbar__btn-text">{copiedCode ? 'Đã sao chép' : 'Sao chép'}</span>
+            </button>
             <button
               type="button"
               className="mermaid-toolbar__btn mermaid-toolbar__btn--download"
