@@ -1,14 +1,14 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import {
   DocumentResponse,
   fetchWorkspaceDocuments,
   uploadWorkspaceDocuments,
   deleteWorkspaceDocument,
-  syncVectorStore,
 } from '../document-api';
 import { splitPdfFile } from '../utils/pdf-splitter';
 import { PdfSplitModal } from './pdf-split-modal';
+import { SyncVectorModal } from './sync-vector-modal';
 import { LoadingInline } from '../../../components/loading-screen';
 import './document-table.css';
 
@@ -36,9 +36,26 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [uploadingDocs, setUploadingDocs] = useState<UploadingDocument[]>([]);
-  const [syncing, setSyncing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [notificationToast, setNotificationToast] = useState<NotificationToast | null>(null);
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  const totalItems = documents.length;
+  const totalPages = Math.ceil(totalItems / pageSize) || 1;
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(Math.max(1, totalPages));
+    }
+  }, [documents.length, currentPage, totalPages]);
+
+  const paginatedDocs = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return documents.slice(start, start + pageSize);
+  }, [documents, currentPage, pageSize]);
 
   // Oversized PDF Handling States
   const [oversizedFiles, setOversizedFiles] = useState<File[]>([]);
@@ -86,7 +103,7 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
       (doc) => doc.status === 'PENDING' || doc.status === 'PROCESSING'
     );
 
-    if (!isProcessing && uploadingDocs.length === 0 && !syncing) {
+    if (!isProcessing && uploadingDocs.length === 0) {
       return;
     }
 
@@ -95,7 +112,7 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
     }, 5000);
 
     return () => clearInterval(timer);
-  }, [documents, uploadingDocs, syncing, loadDocuments]);
+  }, [documents, uploadingDocs, loadDocuments]);
 
   useEffect(() => {
     if (!notificationToast) return;
@@ -254,31 +271,10 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
     processFiles(droppedFiles);
   };
 
-  const handleSyncVector = async () => {
-    setSyncing(true);
-    setNotificationToast({
-      type: 'success',
-      title: 'Đang khởi chạy đồng bộ Vector...',
-      message: 'Hệ thống đang thực thi đồng bộ tài liệu sang Chroma Cloud trong nền.',
-    });
-    try {
-      const res = await syncVectorStore();
-      setNotificationToast({
-        type: 'success',
-        title: 'Đồng bộ Vector DB đã được khởi tạo!',
-        message: res.message || 'Tài liệu đang được tải và bóc tách vector vào Chroma Cloud.',
-      });
-      const updated = await fetchWorkspaceDocuments(workspaceId);
-      setDocuments(updated.content || []);
-    } catch (err: unknown) {
-      setNotificationToast({
-        type: 'error',
-        title: 'Lỗi đồng bộ Vector DB',
-        message: err instanceof Error ? err.message : 'Không thể thực hiện đồng bộ Vector DB',
-      });
-    } finally {
-      setSyncing(false);
-    }
+  const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
+
+  const handleSyncVector = () => {
+    setIsSyncModalOpen(true);
   };
 
   const handleDelete = async (documentId: string) => {
@@ -334,11 +330,21 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
               onClick={() => setNotificationToast(null)}
               title="Đóng thông báo"
             >
-              ×
+              &times;
             </button>
           </div>,
           document.body
         )}
+
+      <SyncVectorModal
+        isOpen={isSyncModalOpen}
+        workspaceId={workspaceId}
+        onClose={() => setIsSyncModalOpen(false)}
+        onSyncCompleted={async () => {
+          const updated = await fetchWorkspaceDocuments(workspaceId);
+          setDocuments(updated.content || []);
+        }}
+      />
 
       <div className="document-management__header">
         <div className="document-management__title-zone">
@@ -348,16 +354,12 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
           type="button"
           className="document-management__sync-btn"
           onClick={handleSyncVector}
-          disabled={syncing}
           title="Đồng bộ tất cả tài liệu đĩa sang ChromaDB Vector Store"
         >
-          <span
-            className={`material-symbols-outlined ${syncing ? 'document-management__sync-icon--spinning' : ''}`}
-            style={{ fontSize: '18px' }}
-          >
-            {syncing ? 'sync' : 'cloud_sync'}
+          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
+            cloud_sync
           </span>
-          <span>{syncing ? 'Đang đồng bộ Vector...' : 'Đồng bộ Vector DB'}</span>
+          <span>Đồng bộ Vector DB</span>
         </button>
       </div>
 
@@ -429,7 +431,7 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
               </tr>
             ))}
 
-            {documents.map((doc) => (
+            {paginatedDocs.map((doc) => (
               <tr key={doc.id}>
                 <td>{doc.originalName}</td>
                 <td>{doc.mediaType.split('/')[1]?.toUpperCase() || doc.mediaType}</td>
@@ -459,6 +461,73 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
             ))}
           </tbody>
         </table>
+
+        {documents.length > 0 && (
+          <div className="document-pagination">
+            <div className="document-pagination__info">
+              <span>
+                Hiển thị <strong>{(currentPage - 1) * pageSize + 1}</strong> -{' '}
+                <strong>{Math.min(currentPage * pageSize, totalItems)}</strong> trong tổng số{' '}
+                <strong>{totalItems}</strong> tài liệu
+              </span>
+              <select
+                className="document-pagination__size-select"
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setCurrentPage(1);
+                }}
+              >
+                <option value={5}>5 dòng / trang</option>
+                <option value={10}>10 dòng / trang</option>
+                <option value={20}>20 dòng / trang</option>
+                <option value={50}>50 dòng / trang</option>
+              </select>
+            </div>
+
+            <div className="document-pagination__controls">
+              <button
+                type="button"
+                className="document-pagination__btn"
+                onClick={() => setCurrentPage(1)}
+                disabled={currentPage === 1}
+                title="Trang đầu"
+              >
+                «
+              </button>
+              <button
+                type="button"
+                className="document-pagination__btn"
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                title="Trang trước"
+              >
+                ‹
+              </button>
+              <span className="document-pagination__page-indicator">
+                Trang {currentPage} / {totalPages}
+              </span>
+              <button
+                type="button"
+                className="document-pagination__btn"
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage >= totalPages}
+                title="Trang sau"
+              >
+                ›
+              </button>
+              <button
+                type="button"
+                className="document-pagination__btn"
+                onClick={() => setCurrentPage(totalPages)}
+                disabled={currentPage >= totalPages}
+                title="Trang cuối"
+              >
+                »
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

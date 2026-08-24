@@ -8,6 +8,8 @@ interface ChatHeaderProps {
   onNewChat?: (() => void) | undefined;
   onToggleDrawer?: (() => void) | undefined;
   hasDrawerOpen?: boolean | undefined;
+  onToggleStudio?: (() => void) | undefined;
+  isStudioOpen?: boolean | undefined;
 }
 
 export const ChatHeader: React.FC<ChatHeaderProps> = ({
@@ -17,6 +19,8 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
   onNewChat,
   onToggleDrawer,
   hasDrawerOpen,
+  onToggleStudio,
+  isStudioOpen,
 }) => {
   return (
     <header className="chat-header">
@@ -46,6 +50,26 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
           <span className="material-symbols-outlined">forum</span>
           <span>{messageCount} tin nhắn</span>
         </div>
+
+        {onToggleStudio && (
+          <button
+            type="button"
+            className={`chat-header__btn ${isStudioOpen ? 'chat-header__btn--active' : ''}`}
+            onClick={onToggleStudio}
+            title="Đóng/Mở NotebookLM Knowledge Studio"
+            style={{
+              background: isStudioOpen ? '#0284c7' : 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
+              color: '#ffffff',
+              fontWeight: 600,
+              gap: '6px',
+            }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
+              auto_awesome
+            </span>
+            <span>Studio</span>
+          </button>
+        )}
 
         <button
           type="button"

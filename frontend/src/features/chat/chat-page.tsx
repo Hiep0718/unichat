@@ -6,10 +6,13 @@ import { ChatHeader } from './components/chat-header';
 import { ChatWelcome } from './components/chat-welcome';
 import { ChatMessageItem, MessageItem } from './components/chat-message-item';
 import { ChatInputForm } from './components/chat-input-form';
-import { CitationDrawer } from './components/citation-drawer';
+import { KnowledgeStudio, SavedNote, StudioToolType } from './components/knowledge-studio';
+import { KnowledgeStudioModal } from './components/knowledge-studio-modal';
+import { SavedNoteModal } from './components/saved-note-modal';
 import { useWorkspace } from '../workspaces/workspace-context';
-import { fetchConversationDetail } from '../history/conversation-api';
-import aiAvatar from '../../assets/ai-avatar.png';
+import { fetchConversationDetail, createWorkspaceConversation } from '../history/conversation-api';
+import { fetchWorkspaceDocuments, DocumentResponse } from '../documents/document-api';
+import { fetchConversationStudioNotes, createStudioNote, deleteStudioNote } from './studio-note-api';
 import './chat-page.css';
 
 interface ChatPageProps {
@@ -48,24 +51,136 @@ export const ChatPage: React.FC<ChatPageProps> = ({
   const [searchParams] = useSearchParams();
   const workspaceContext = useWorkspace();
 
-  const targetWorkspaceId = propWorkspaceId || params.workspaceId || workspaceContext?.workspace?.id;
+  const targetWorkspaceId =
+    propWorkspaceId ||
+    params.workspaceId ||
+    workspaceContext?.workspace?.id ||
+    '';
+
+  const [conversationId, setConversationId] = useState<string | undefined>(
+    propConversationId || params.conversationId
+  );
+  const [conversationTitle, setConversationTitle] = useState<string | undefined>(undefined);
+  const [messages, setMessages] = useState<MessageItem[]>([]);
+  const [selectedCitation, setSelectedCitation] = useState<CitationItem | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(false);
+  const [workspaceDocs, setWorkspaceDocs] = useState<DocumentResponse[]>([]);
+
+  // NotebookLM Knowledge Studio Panel & Modal State
+  const [isStudioOpen, setIsStudioOpen] = useState(false);
+  const [activeRightTab, setActiveRightTab] = useState<'STUDIO' | 'CITATIONS'>('STUDIO');
+  const [savedNotes, setSavedNotes] = useState<SavedNote[]>([]);
+  const [activeStudioModal, setActiveStudioModal] = useState<StudioToolType | null>(null);
+  const [selectedNoteModal, setSelectedNoteModal] = useState<SavedNote | null>(null);
+
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesBodyRef = useRef<HTMLDivElement>(null);
+  const isNearBottomRef = useRef<boolean>(true);
+
+  const handleSelectCitation = (cit: CitationItem) => {
+    setSelectedCitation(cit);
+    setActiveRightTab('CITATIONS');
+    setIsStudioOpen(true);
+  };
+
+  const handleSaveNote = async (title: string, content: string) => {
+    const tempId = String(Date.now());
+    const newNote: SavedNote = {
+      id: tempId,
+      title,
+      content,
+      createdAt: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
+    };
+    setSavedNotes((prev) => [newNote, ...prev]);
+    setIsStudioOpen(true);
+    setActiveRightTab('STUDIO');
+
+    if (targetWorkspaceId) {
+      let activeConvId = conversationId || targetConversationId;
+      if (!activeConvId) {
+        try {
+          const newConv = await createWorkspaceConversation(targetWorkspaceId);
+          activeConvId = newConv.id;
+          setConversationId(newConv.id);
+        } catch (err) {
+          console.warn('Tạo cuộc trò chuyện mới để lưu note thất bại:', err);
+        }
+      }
+
+      if (activeConvId) {
+        try {
+          const res = await createStudioNote(targetWorkspaceId, activeConvId, {
+            noteType: title.includes('Podcast') ? 'PODCAST' : title.includes('Mindmap') ? 'MINDMAP' : 'STUDIO_NOTE',
+            title,
+            content,
+          });
+          setSavedNotes((prev) =>
+            prev.map((n) => (n.id === tempId ? { ...n, id: res.id } : n))
+          );
+        } catch (err) {
+          console.warn('Lỗi lưu ghi chú vào DB:', err);
+        }
+      }
+    }
+  };
+
+  const handleDeleteNote = async (noteId: string) => {
+    setSavedNotes((prev) => prev.filter((n) => n.id !== noteId));
+    const activeConvId = conversationId || targetConversationId;
+    if (targetWorkspaceId && activeConvId) {
+      try {
+        await deleteStudioNote(targetWorkspaceId, activeConvId, noteId);
+      } catch (err) {
+        console.warn('Lỗi xóa ghi chú khỏi DB:', err);
+      }
+    }
+  };
+
+  const scrollToBottom = (smooth = true) => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({
+        behavior: smooth ? 'smooth' : 'auto',
+        block: 'end',
+      });
+    }
+  };
+
+  const ensureMessageVisible = (messageId: string) => {
+    const element = document.querySelector(`[data-msg-id="${messageId}"]`);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      scrollToBottom(true);
+    }
+  };
+
+  const checkIsNearBottom = () => {
+    if (!messagesBodyRef.current) return true;
+    const { scrollTop, scrollHeight, clientHeight } = messagesBodyRef.current;
+    return scrollHeight - scrollTop - clientHeight < 120;
+  };
+
+  const handleMessagesScroll = () => {
+    isNearBottomRef.current = checkIsNearBottom();
+  };
+
   const targetConversationId =
     propConversationId || params.conversationId || searchParams.get('conversationId') || undefined;
 
-  const [messages, setMessages] = useState<MessageItem[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(Boolean(targetConversationId));
-  const [conversationId, setConversationId] = useState<string | undefined>(targetConversationId);
-  const [conversationTitle, setConversationTitle] = useState<string | undefined>(undefined);
-  const [selectedCitation, setSelectedCitation] = useState<CitationItem | null>(null);
-
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  const scrollToBottom = (smooth = true) => {
-    setTimeout(() => {
-      messagesEndRef.current?.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto' });
-    }, 60);
-  };
+  useEffect(() => {
+    if (targetWorkspaceId) {
+      fetchWorkspaceDocuments(targetWorkspaceId, 0, 20)
+        .then((res) => {
+          if (res?.content) {
+            setWorkspaceDocs(res.content);
+          }
+        })
+        .catch((err) => {
+          console.warn('Không thể tải danh sách tài liệu workspace:', err);
+        });
+    }
+  }, [targetWorkspaceId]);
 
   useEffect(() => {
     if (!targetWorkspaceId) {
@@ -123,14 +238,30 @@ export const ChatPage: React.FC<ChatPageProps> = ({
         .finally(() => {
           if (isMounted) {
             setInitialLoading(false);
-            scrollToBottom(false);
+            setTimeout(() => scrollToBottom(false), 50);
           }
+        });
+
+      fetchConversationStudioNotes(targetWorkspaceId, targetConversationId)
+        .then((notes) => {
+          if (!isMounted) return;
+          const mappedNotes: SavedNote[] = (notes || []).map((n) => ({
+            id: n.id,
+            title: n.title,
+            content: n.content,
+            createdAt: new Date(n.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
+          }));
+          setSavedNotes(mappedNotes);
+        })
+        .catch((err) => {
+          console.warn('Lỗi tải studio notes từ DB:', err);
         });
     } else {
       // Start fresh new conversation
       setConversationId(undefined);
       setConversationTitle(undefined);
       setMessages([]);
+      setSavedNotes([]);
       setInitialLoading(false);
     }
 
@@ -141,63 +272,98 @@ export const ChatPage: React.FC<ChatPageProps> = ({
 
   useEffect(() => {
     if (!initialLoading && messages.length > 0) {
-      scrollToBottom(true);
+      scrollToBottom(false);
     }
-  }, [messages.length, loading, initialLoading]);
+  }, [messages.length, initialLoading]);
 
   if (!targetWorkspaceId) {
     return <div className="chat-page__error">Lỗi: Không tìm thấy Workspace ID</div>;
   }
 
   const handleSendQuestion = async (userText: string, allowExternalKnowledge: boolean = true) => {
-    if (loading) return;
-    setLoading(true);
+    if (!targetWorkspaceId || loading) return;
 
-    const userMsg: MessageItem = {
-      id: Date.now().toString(),
+    const userMsgId = `user-${Date.now()}`;
+    const assistantMsgId = `asst-${Date.now()}`;
+
+    const userMessage: MessageItem = {
+      id: userMsgId,
       role: 'USER',
       content: userText,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
     };
 
-    const assistantMsgId = `${Date.now()}-assistant`;
-    const initialAssistantMsg: MessageItem = {
+    const assistantMessage: MessageItem = {
       id: assistantMsgId,
       role: 'ASSISTANT',
       content: '',
       isStreaming: true,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
     };
 
-    setMessages((prev) => [...prev, userMsg, initialAssistantMsg]);
-    scrollToBottom(true);
+    setMessages((prev) => [...prev, userMessage, assistantMessage]);
+    setLoading(true);
+
+    isNearBottomRef.current = true;
+    setTimeout(() => scrollToBottom(true), 20);
 
     let tokenBuffer = '';
     let isStreamDone = false;
     let streamHasError = false;
     let tokensReceived = false;
 
-    // Typewriter Queue Ticker (~15ms interval for smooth character rải)
-    const ticker = setInterval(() => {
+    const flushBuffer = () => {
       if (tokenBuffer.length > 0) {
-        // Take 1 to 3 characters per tick for smooth typewriter speed
-        const chunkSize = tokenBuffer.length > 30 ? 3 : 1;
+        const remaining = tokenBuffer;
+        tokenBuffer = '';
+        setMessages((prev) =>
+          prev.map((m) => (m.id === assistantMsgId ? { ...m, content: m.content + remaining } : m))
+        );
+        if (isNearBottomRef.current) {
+          scrollToBottom(false);
+        }
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        flushBuffer();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // High-performance Typewriter Queue Ticker (10ms interval with dynamic adaptive chunking)
+    const ticker = setInterval(() => {
+      if (document.hidden) {
+        flushBuffer();
+      }
+      if (tokenBuffer.length > 0) {
+        const len = tokenBuffer.length;
+        const chunkSize = len > 100 ? 20 : len > 50 ? 10 : len > 20 ? 5 : 2;
         const charSegment = tokenBuffer.slice(0, chunkSize);
         tokenBuffer = tokenBuffer.slice(chunkSize);
 
         setMessages((prev) =>
           prev.map((m) => (m.id === assistantMsgId ? { ...m, content: m.content + charSegment } : m))
         );
-        scrollToBottom(true);
+        if (isNearBottomRef.current) {
+          scrollToBottom(false);
+        }
       } else if (isStreamDone || streamHasError) {
         clearInterval(ticker);
+        flushBuffer();
         setMessages((prev) =>
           prev.map((m) => (m.id === assistantMsgId ? { ...m, isStreaming: false } : m))
         );
         setLoading(false);
-        scrollToBottom(true);
+        if (isNearBottomRef.current) {
+          scrollToBottom(false);
+        }
+        setTimeout(() => {
+          ensureMessageVisible(assistantMsgId);
+        }, 120);
       }
-    }, 15);
+    }, 10);
 
     try {
       await askWorkspaceQuestionStream(
@@ -208,6 +374,25 @@ export const ChatPage: React.FC<ChatPageProps> = ({
           allowExternalKnowledge,
         },
         {
+          onThought: (thought) => {
+            setMessages((prev) =>
+              prev.map((m) => {
+                if (m.id !== assistantMsgId) return m;
+                const existingThoughts = m.thoughts || [];
+                const alreadyHasKey = existingThoughts.some((t) => t.stepKey === thought.stepKey);
+                if (alreadyHasKey) {
+                  return {
+                    ...m,
+                    thoughts: existingThoughts.map((t) => (t.stepKey === thought.stepKey ? thought : t)),
+                  };
+                }
+                return {
+                  ...m,
+                  thoughts: [...existingThoughts, thought],
+                };
+              })
+            );
+          },
           onMetadata: (meta) => {
             tokensReceived = true;
             if (meta.conversationId && !conversationId) {
@@ -241,7 +426,13 @@ export const ChatPage: React.FC<ChatPageProps> = ({
           },
           onToken: (delta) => {
             tokensReceived = true;
-            tokenBuffer += delta;
+            if (document.hidden) {
+              setMessages((prev) =>
+                prev.map((m) => (m.id === assistantMsgId ? { ...m, content: m.content + delta } : m))
+              );
+            } else {
+              tokenBuffer += delta;
+            }
           },
           onDone: (done) => {
             if (done.conversationId && !conversationId) {
@@ -290,6 +481,9 @@ export const ChatPage: React.FC<ChatPageProps> = ({
       } else {
         isStreamDone = true;
       }
+    } finally {
+      isStreamDone = true;
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     }
   };
 
@@ -301,70 +495,87 @@ export const ChatPage: React.FC<ChatPageProps> = ({
   };
 
   return (
-    <div className={`chat-layout ${selectedCitation ? 'chat-layout--split' : ''}`}>
+    <div className={`chat-layout ${isStudioOpen ? 'chat-layout--studio-open' : ''}`}>
       <div className="chat-page">
         <ChatHeader
           workspaceName={workspaceContext?.workspace?.name}
           conversationTitle={conversationTitle}
           messageCount={messages.length}
           onNewChat={handleNewChat}
+          onToggleStudio={() => setIsStudioOpen((prev) => !prev)}
+          isStudioOpen={isStudioOpen}
           onToggleDrawer={selectedCitation ? () => setSelectedCitation(null) : undefined}
           hasDrawerOpen={Boolean(selectedCitation)}
         />
 
-        <div className="chat-page__messages-body">
-          {initialLoading ? (
-            <ChatSkeletonLoader />
-          ) : messages.length === 0 ? (
-            <ChatWelcome onSelectPrompt={handleSendQuestion} />
-          ) : (
-            <>
-              {messages.map((msg) => (
-                <ChatMessageItem
-                  key={msg.id}
-                  message={msg}
-                  onSelectCitation={(cit) => setSelectedCitation(cit)}
+        <div className="chat-page__main-content">
+          <div className="chat-page__chat-area">
+            <div
+              className="chat-page__messages-body"
+              ref={messagesBodyRef}
+              onScroll={handleMessagesScroll}
+            >
+              {initialLoading ? (
+                <ChatSkeletonLoader />
+              ) : messages.length === 0 ? (
+                <ChatWelcome
+                  workspaceName={workspaceContext?.workspace?.name}
+                  documents={workspaceDocs}
                   onSelectPrompt={handleSendQuestion}
                 />
-              ))}
-              {loading && (
-                <div className="chat-msg chat-msg--assistant chat-msg--thinking">
-                  <div className="chat-msg__avatar">
-                    <img src={aiAvatar} alt="UniChat AI Logo" className="chat-msg__ai-avatar-img" />
-                  </div>
-
-                  <div className="chat-msg__content-zone">
-                    <div className="chat-msg__sender-meta">
-                      <span className="chat-msg__sender-name">UniChat AI Assistant</span>
-                      <span className="chat-msg__model-tag">🤖 Gemini 3.5 Flash</span>
-                    </div>
-
-                    <div className="chat-msg__bubble chat-msg__bubble--thinking">
-                      <div className="chat-msg__thinking-dots">
-                        <span className="dot"></span>
-                        <span className="dot"></span>
-                        <span className="dot"></span>
-                      </div>
-                      <span className="chat-msg__thinking-text">
-                        UniChat AI đang truy xuất vector & suy luận từ kho tài liệu...
-                      </span>
-                    </div>
-                  </div>
-                </div>
+              ) : (
+                <>
+                  {messages.map((msg) => (
+                    <ChatMessageItem
+                      key={msg.id}
+                      message={msg}
+                      onSelectCitation={handleSelectCitation}
+                      onSelectPrompt={handleSendQuestion}
+                      onSaveNote={handleSaveNote}
+                    />
+                  ))}
+                </>
               )}
-            </>
-          )}
-          <div ref={messagesEndRef} style={{ height: 1, width: '100%' }} />
-        </div>
+              <div ref={messagesEndRef} style={{ height: 1, width: '100%' }} />
+            </div>
 
-        <ChatInputForm onSend={handleSendQuestion} loading={loading} />
+            <ChatInputForm onSend={handleSendQuestion} loading={loading} />
+          </div>
+
+          {isStudioOpen && (
+            <KnowledgeStudio
+              workspaceName={workspaceContext?.workspace?.name}
+              citations={messages.flatMap((m) => m.response?.citations || [])}
+              selectedCitation={selectedCitation}
+              savedNotes={savedNotes}
+              activeTab={activeRightTab}
+              onTabChange={(tab) => setActiveRightTab(tab)}
+              onSelectCitation={handleSelectCitation}
+              onSelectTool={(tool) => setActiveStudioModal(tool)}
+              onSaveNote={handleSaveNote}
+              onDeleteNote={handleDeleteNote}
+              onSelectNote={(note) => setSelectedNoteModal(note)}
+              onClosePanel={() => setIsStudioOpen(false)}
+            />
+          )}
+        </div>
       </div>
 
-      {selectedCitation && (
-        <CitationDrawer
-          workspaceId={targetWorkspaceId}
-          citation={selectedCitation}
-          onClose={() => setSelectedCitation(null)}
+      {activeStudioModal && (
+        <KnowledgeStudioModal
+          toolType={activeStudioModal}
+          workspaceName={workspaceContext?.workspace?.name}
+          onSaveNote={handleSaveNote}
+          onClose={() => setActiveStudioModal(null)}
+        />
+      )}
+
+      {selectedNoteModal && (
+        <SavedNoteModal
+          note={selectedNoteModal}
+          onClose={() => setSelectedNoteModal(null)}
+          onDeleteNote={handleDeleteNote}
+          onSendToChat={handleSendQuestion}
         />
       )}
     </div>

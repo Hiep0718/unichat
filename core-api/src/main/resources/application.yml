@@ -13,7 +13,10 @@ spring:
     password: ${POSTGRES_PASSWORD}
   flyway:
     enabled: true
+    baseline-on-migrate: true
     validate-on-migrate: false
+    out-of-order: true
+    ignore-migration-patterns: "*:missing,*:ignored"
   jpa:
     hibernate:
       ddl-auto: validate

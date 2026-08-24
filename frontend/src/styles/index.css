@@ -130,10 +130,18 @@
   box-sizing: border-box;
 }
 
+html,
+body,
+#root {
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden !important;
+  margin: 0;
+  padding: 0;
+}
+
 body {
   min-width: 320px;
-  min-height: 100vh;
-  margin: 0;
   color: var(--color-on-surface);
   background: var(--color-surface);
   font: var(--font-body-md);
