@@ -12,6 +12,7 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -84,6 +85,7 @@ public class SseChatService {
         this.clock = clock;
         this.objectMapper = objectMapper;
         this.httpClient = HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_1_1)
                 .connectTimeout(Duration.ofSeconds(10))
                 .build();
     }
@@ -145,17 +147,19 @@ public class SseChatService {
         final String[] providerModelHolder = new String[]{"gemini-2.5-flash"};
         final String[] refusalReasonHolder = new String[]{null};
 
+        boolean receivedDoneEvent = false;
+
         try {
-            Map<String, Object> aiRequestBody = Map.of(
-                    "workspaceId", workspaceId.toString(),
-                    "allowedDocumentIds", allowedDocIds,
-                    "question", request.question(),
-                    "strategyVersion", "v1.0",
-                    "requestId", requestId,
-                    "allowExternalKnowledge", request.allowExternalKnowledge() != null ? request.allowExternalKnowledge() : true
-            );
+            Map<String, Object> aiRequestBody = new HashMap<>();
+            aiRequestBody.put("workspaceId", workspaceId.toString());
+            aiRequestBody.put("allowedDocumentIds", allowedDocIds != null ? allowedDocIds : List.of());
+            aiRequestBody.put("question", request.question());
+            aiRequestBody.put("strategyVersion", "v1.0");
+            aiRequestBody.put("requestId", requestId != null ? requestId : UUID.randomUUID().toString());
+            aiRequestBody.put("allowExternalKnowledge", request.allowExternalKnowledge() != null ? request.allowExternalKnowledge() : true);
 
             String requestJson = objectMapper.writeValueAsString(aiRequestBody);
+            log.info("[SSE-STREAM] Sending request to AI Service: {} body-length={}", aiServiceUrl, requestJson.length());
 
             HttpRequest httpRequest = HttpRequest.newBuilder()
                     .uri(URI.create(aiServiceUrl + "/internal/v1/retrieval/answers/stream"))
@@ -165,6 +169,7 @@ public class SseChatService {
                     .build();
 
             HttpResponse<InputStream> httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofInputStream());
+            log.info("[SSE-STREAM] AI Service responded with HTTP {}", httpResponse.statusCode());
 
             if (httpResponse.statusCode() != 200) {
                 log.warn("AI Service SSE endpoint returned HTTP {}", httpResponse.statusCode());
@@ -176,7 +181,12 @@ public class SseChatService {
                 String line;
                 String currentEvent = null;
 
+                int lineCount = 0;
                 while ((line = reader.readLine()) != null) {
+                    lineCount++;
+                    if (lineCount <= 5 || line.startsWith("event: ")) {
+                        log.info("[SSE-STREAM] Line {}: {}", lineCount, line.length() > 120 ? line.substring(0, 120) + "..." : line);
+                    }
                     if (line.startsWith("event: ")) {
                         currentEvent = line.substring(7).trim();
                     } else if (line.startsWith("data: ")) {
@@ -215,15 +225,26 @@ public class SseChatService {
                                 emitter.send(SseEmitter.event().name("token").data(dataMap));
 
                             } else if ("done".equals(currentEvent)) {
+                                receivedDoneEvent = true;
                                 dataMap.put("conversationId", conversationId.toString());
                                 emitter.send(SseEmitter.event().name("done").data(dataMap));
                             }
                         } catch (Exception e) {
-                            log.debug("Error parsing SSE data json: {}", e.getMessage());
+                            log.error("[SSE-STREAM] Error parsing SSE data json: {}", e.getMessage(), e);
                         }
                         currentEvent = null;
                     }
                 }
+            }
+
+            if (!receivedDoneEvent) {
+                Map<String, Object> doneMap = Map.of(
+                        "messageId", requestId != null ? requestId : UUID.randomUUID().toString(),
+                        "conversationId", conversationId.toString()
+                );
+                try {
+                    emitter.send(SseEmitter.event().name("done").data(doneMap));
+                } catch (Exception ignored) {}
             }
 
             // Stream finished -> Save Assistant Message and Citations to DB
@@ -241,10 +262,11 @@ public class SseChatService {
                     citationsHolder
             );
 
+            log.info("[SSE-STREAM] Stream completed. fullText length={}, receivedDone={}", fullTextAccumulator.length(), receivedDoneEvent);
             emitter.complete();
 
         } catch (Exception e) {
-            log.error("Error streaming from AI Service: ", e);
+            log.error("[SSE-STREAM] Error streaming from AI Service: {}", e.getMessage(), e);
             sendRefusalAndComplete(emitter, conversationId, requestId, "Lỗi kết nối tới dịch vụ AI.");
         }
     }

@@ -50,8 +50,16 @@ export interface SseDonePayload {
   providerModel?: string | undefined;
 }
 
+export interface SseThoughtPayload {
+  stepIndex: number;
+  stepKey: string;
+  title: string;
+  detail: string;
+}
+
 export interface StreamQuestionCallbacks {
   onMetadata?: ((metadata: SseMetadataPayload) => void) | undefined;
+  onThought?: ((thought: SseThoughtPayload) => void) | undefined;
   onToken?: ((delta: string) => void) | undefined;
   onDone?: ((done: SseDonePayload) => void) | undefined;
   onError?: ((error: Error) => void) | undefined;
@@ -105,6 +113,7 @@ export async function askWorkspaceQuestionStream(
   const decoder = new TextDecoder('utf-8');
   let buffer = '';
   let currentEvent = '';
+  let hasEmittedDone = false;
 
   try {
     while (true) {
@@ -117,19 +126,22 @@ export async function askWorkspaceQuestionStream(
 
       for (const line of lines) {
         const trimmed = line.trim();
-        if (trimmed.startsWith('event: ')) {
-          currentEvent = trimmed.substring(7).trim();
-        } else if (trimmed.startsWith('data: ')) {
-          const dataStr = trimmed.substring(6).trim();
+        if (trimmed.startsWith('event:')) {
+          currentEvent = trimmed.substring(6).trim();
+        } else if (trimmed.startsWith('data:')) {
+          const dataStr = trimmed.substring(5).trim();
           if (!dataStr) continue;
 
           try {
             const dataObj = JSON.parse(dataStr);
             if (currentEvent === 'metadata') {
               callbacks.onMetadata?.(dataObj);
+            } else if (currentEvent === 'thought') {
+              callbacks.onThought?.(dataObj);
             } else if (currentEvent === 'token') {
               callbacks.onToken?.(dataObj.delta || '');
             } else if (currentEvent === 'done') {
+              hasEmittedDone = true;
               callbacks.onDone?.(dataObj);
             }
           } catch (e) {
@@ -138,6 +150,10 @@ export async function askWorkspaceQuestionStream(
           currentEvent = '';
         }
       }
+    }
+
+    if (!hasEmittedDone) {
+      callbacks.onDone?.({ messageId: 'done' });
     }
   } catch (err: unknown) {
     const error = err instanceof Error ? err : new Error(String(err));

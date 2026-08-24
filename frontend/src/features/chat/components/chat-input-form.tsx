@@ -96,11 +96,15 @@ export const ChatInputForm: React.FC<ChatInputFormProps> = ({ onSend, loading })
             </span>
             <button
               type="submit"
-              className={`chat-input-form__submit-btn ${input.trim() ? 'chat-input-form__submit-btn--active' : ''}`}
-              disabled={loading || !input.trim()}
+              className={`chat-input-form__submit-btn ${input.trim() || loading ? 'chat-input-form__submit-btn--active' : ''}`}
+              disabled={loading || (!input.trim() && !loading)}
             >
-              <span className="material-symbols-outlined">send</span>
-              <span>{loading ? 'Đang gửi...' : 'Gửi'}</span>
+              {loading ? (
+                <span className="chat-input-form__loading-ring" />
+              ) : (
+                <span className="material-symbols-outlined">send</span>
+              )}
+              <span>{loading ? 'Đang suy nghĩ...' : 'Gửi'}</span>
             </button>
           </div>
         </div>

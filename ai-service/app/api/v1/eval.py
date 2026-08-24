@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, BackgroundTasks, HTTPException
 from pydantic import BaseModel, Field
 
 from app.evaluation.benchmark_suite import run_full_benchmark_suite
@@ -15,12 +15,21 @@ router = APIRouter()
 store = EvaluationStore()
 
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException
+from app.services.sync_tracker import global_sync_tracker
+from app.services.vector_store import COLLECTION_V2, get_chroma_client, get_or_create_collection
 
 
 @router.post("/eval/sync-storage")
 def sync_storage_to_chroma(background_tasks: BackgroundTasks) -> dict[str, Any]:
     """Triggers asynchronous document re-ingestion & vector sync in background."""
+    if global_sync_tracker.is_syncing:
+        return {
+            "status": "ALREADY_RUNNING",
+            "message": "Quá trình đồng bộ Vector DB hiện đang được thực thi trong nền.",
+            "processed_files": global_sync_tracker.processed_files,
+            "total_chunks": global_sync_tracker.processed_chunks,
+        }
+
     background_tasks.add_task(reingest_all_from_storage)
     return {
         "status": "ACCEPTED",
@@ -28,6 +37,42 @@ def sync_storage_to_chroma(background_tasks: BackgroundTasks) -> dict[str, Any]:
         "processed_files": 0,
         "total_chunks": 0,
     }
+
+
+@router.get("/eval/sync-status")
+def get_sync_status() -> dict[str, Any]:
+    """Returns current vector sync progress and status."""
+    return global_sync_tracker.get_state()
+
+
+@router.get("/eval/vector-status")
+def get_vector_status(workspaceId: str | None = None) -> dict[str, Any]:
+    """Checks stored vector chunk count in ChromaDB for pre-flight status."""
+    try:
+        client = get_chroma_client()
+        col = get_or_create_collection(client, COLLECTION_V2)
+        total_chunks = col.count() if col else 0
+
+        workspace_chunks = 0
+        if workspaceId and col:
+            res = col.get(where={"workspace_id": workspaceId})
+            workspace_chunks = len(res.get("ids", [])) if res else 0
+
+        return {
+            "workspaceId": workspaceId,
+            "totalChunksInDb": total_chunks,
+            "workspaceChunksInDb": workspace_chunks,
+            "isVectorDbReady": (workspace_chunks > 0 or total_chunks > 0),
+            "message": f"Kho Vector DB hiện có {workspace_chunks if workspaceId else total_chunks} chunks.",
+        }
+    except Exception as e:
+        return {
+            "workspaceId": workspaceId,
+            "totalChunksInDb": 0,
+            "workspaceChunksInDb": 0,
+            "isVectorDbReady": False,
+            "message": f"Không thể kết nối ChromaDB: {e}",
+        }
 
 
 class EvalRunRequest(BaseModel):

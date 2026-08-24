@@ -289,3 +289,27 @@
 
 - Decision: Standardize academic RAG evaluation pipeline using Arize Phoenix Web UI + RAGAS framework + 120-question Golden Dataset.
   Rationale: Delivers a 100% free ($0 budget), highly credible, industry-standard evaluation dashboard (localhost:6006) for academic thesis defense, measuring Faithfulness, Context Precision, Answer Relevance, and Refusal F1-Score.
+
+## 2026-08-23 - Chat Streaming Lifecycle & Single Inline Loading Bubble
+
+- Decision: Render initial assistant loading state inline inside `ChatMessageItem` when streaming begins with empty content (`!message.content && message.isStreaming`) and remove redundant standalone loading container in `ChatPage`.
+  Rationale: Prevents duplicate assistant card placeholders on screen when sending a message while preserving a smooth transition to typewriter text when tokens arrive.
+
+- Decision: Guarantee `done` SSE signal emission on stream completion across frontend `chat-api.ts` and backend `SseChatService.java`.
+  Rationale: Ensures the UI never hangs indefinitely in a loading/thinking state if the HTTP stream connection closes without an explicit `done` event.
+
+## 2026-08-23 - Vector Sync Warning Modal & Real-Time Progress Tracker
+
+- Decision: Replace immediate background execution of "Đồng bộ Vector DB" with a pre-flight warning and confirmation modal (`SyncVectorModal`).
+  Rationale: Prevents accidental re-sync triggers, informs the user if Chroma Cloud already contains chunks (avoiding unnecessary processing), and clearly communicates CPU and performance trade-offs.
+
+- Decision: Implement thread-safe `SyncTracker` in AI Service and real-time progress bar tracking on the frontend modal.
+  Rationale: Provides users with clear percentage progress (`0-100%`), file counters (`x/y files`), current filename being processed, and stored chunk counts so they can monitor completion before initiating AI chat sessions.
+
+## 2026-08-23 - Knowledge Studio Interactive Tools Modal & DB Notes Persistence
+
+- Decision: Build dedicated interactive tools modal (`KnowledgeStudioModal`) and saved notes viewer (`SavedNoteModal`).
+  Rationale: Elevates Knowledge Studio features (Podcast, Flashcards, Quiz, Mindmap, Slide Outline, Academic Report) into spacious, thesis-grade interactive SaaS components with 3D card flips, Web Speech synthesis, Mermaid diagram controls, and full Markdown rendering.
+
+- Decision: Implement Flyway migration `V11__studio_notes.sql` and REST API controller for per-conversation notes persistence.
+  Rationale: Ensures user notes generated in Knowledge Studio are saved directly to PostgreSQL DB, auto-associated with active conversation sessions, and loaded on page reload.
