@@ -8,7 +8,7 @@ import { Icon } from '../../../components/icon';
 import { getWorkspaces } from '../../workspaces/workspace-api';
 import type { WorkspaceDto } from '../../workspaces/workspace-schema';
 import { createDiscussion } from '../community-api';
-import '../discussion-page.css';
+import '../feed-page.css';
 
 interface CreatePostModalProps {
   readonly onClose: () => void;

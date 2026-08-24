@@ -3,7 +3,7 @@
  * Used in both PostDetailPage and DiscussionPage contexts.
  */
 import { useState } from 'react';
-import './discussion-page.css';
+import '../discussion-page.css';
 
 export interface ReplyFormProps {
   readonly loading: boolean;
