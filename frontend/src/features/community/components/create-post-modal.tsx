@@ -64,6 +64,13 @@ export function CreatePostModal({ onClose, onCreated, preselectedWorkspaceId }: 
   };
 
   const selectedWs = workspaces.find((w) => w.id === selectedWsId);
+  const canMakeAnnouncement = selectedWs?.userRole === 'OWNER' || selectedWs?.userRole === 'EDITOR';
+
+  useEffect(() => {
+    if (label === 'ANNOUNCEMENT' && !canMakeAnnouncement) {
+      setLabel('DISCUSSION');
+    }
+  }, [selectedWsId, canMakeAnnouncement, label]);
 
   return (
     <div className="create-post-overlay" onClick={onClose}>
@@ -112,18 +119,21 @@ export function CreatePostModal({ onClose, onCreated, preselectedWorkspaceId }: 
             <div className="create-post-modal__field">
               <label className="create-post-modal__label">Loại bài viết</label>
               <div className="create-post-modal__label-pills">
-                {(['QUESTION', 'DISCUSSION', 'ANNOUNCEMENT'] as const).map((l) => (
-                  <button
-                    key={l}
-                    type="button"
-                    className={`create-post-modal__pill ${label === l ? 'create-post-modal__pill--active' : ''}`}
-                    onClick={() => setLabel(l)}
-                  >
-                    {l === 'QUESTION' && '❓ Câu hỏi'}
-                    {l === 'DISCUSSION' && '💬 Thảo luận'}
-                    {l === 'ANNOUNCEMENT' && '📢 Thông báo'}
-                  </button>
-                ))}
+                {(['QUESTION', 'DISCUSSION', 'ANNOUNCEMENT'] as const).map((l) => {
+                  if (l === 'ANNOUNCEMENT' && !canMakeAnnouncement) return null;
+                  return (
+                    <button
+                      key={l}
+                      type="button"
+                      className={`create-post-modal__pill ${label === l ? 'create-post-modal__pill--active' : ''}`}
+                      onClick={() => setLabel(l)}
+                    >
+                      {l === 'QUESTION' && '❓ Câu hỏi'}
+                      {l === 'DISCUSSION' && '💬 Thảo luận'}
+                      {l === 'ANNOUNCEMENT' && '📢 Thông báo'}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 

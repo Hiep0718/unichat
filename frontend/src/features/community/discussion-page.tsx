@@ -178,10 +178,19 @@ interface NewDiscussionModalProps {
 }
 
 function NewDiscussionModal({ workspaceId, onClose, onCreate }: NewDiscussionModalProps) {
+  const { canEdit } = useWorkspace();
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [label, setLabel] = useState('DISCUSSION');
   const [loading, setLoading] = useState(false);
+
+  const canMakeAnnouncement = canEdit;
+
+  useEffect(() => {
+    if (label === 'ANNOUNCEMENT' && !canMakeAnnouncement) {
+      setLabel('DISCUSSION');
+    }
+  }, [canMakeAnnouncement, label]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -213,18 +222,21 @@ function NewDiscussionModal({ workspaceId, onClose, onCreate }: NewDiscussionMod
             <div className="create-post-modal__field">
               <label className="create-post-modal__label">Loại bài viết</label>
               <div className="create-post-modal__label-pills">
-                {(['QUESTION', 'DISCUSSION', 'ANNOUNCEMENT'] as const).map((l) => (
-                  <button
-                    key={l}
-                    type="button"
-                    className={`create-post-modal__pill ${label === l ? 'create-post-modal__pill--active' : ''}`}
-                    onClick={() => setLabel(l)}
-                  >
-                    {l === 'QUESTION' && '❓ Câu hỏi'}
-                    {l === 'DISCUSSION' && '💬 Thảo luận'}
-                    {l === 'ANNOUNCEMENT' && '📢 Thông báo'}
-                  </button>
-                ))}
+                {(['QUESTION', 'DISCUSSION', 'ANNOUNCEMENT'] as const).map((l) => {
+                  if (l === 'ANNOUNCEMENT' && !canMakeAnnouncement) return null;
+                  return (
+                    <button
+                      key={l}
+                      type="button"
+                      className={`create-post-modal__pill ${label === l ? 'create-post-modal__pill--active' : ''}`}
+                      onClick={() => setLabel(l)}
+                    >
+                      {l === 'QUESTION' && '❓ Câu hỏi'}
+                      {l === 'DISCUSSION' && '💬 Thảo luận'}
+                      {l === 'ANNOUNCEMENT' && '📢 Thông báo'}
+                    </button>
+                  );
+                })}
               </div>
             </div>
             <div className="create-post-modal__field">

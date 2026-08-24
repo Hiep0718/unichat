@@ -38,7 +38,9 @@ import com.unichat.core.communitychat.domain.DiscussionRepository;
 import com.unichat.core.communitychat.domain.NewReplyEvent;
 import com.unichat.core.document.domain.DocumentRepository;
 import com.unichat.core.user.domain.UserRepository;
+import com.unichat.core.workspace.domain.WorkspaceMember;
 import com.unichat.core.workspace.domain.WorkspaceMemberRepository;
+import com.unichat.core.workspace.domain.WorkspaceRole;
 
 @Service
 @Transactional(readOnly = true)
@@ -139,9 +141,13 @@ public class DiscussionService {
 
     @Transactional
     public DiscussionResponse createDiscussion(UUID workspaceId, UUID userId, CreateDiscussionRequest request) {
-        verifyMembership(workspaceId, userId);
+        WorkspaceMember member = verifyMembership(workspaceId, userId);
 
         String label = (request.label() != null && !request.label().isBlank()) ? request.label().toUpperCase() : "DISCUSSION";
+        
+        if ("ANNOUNCEMENT".equals(label) && member.getRole() == WorkspaceRole.VIEWER) {
+            throw new AuthorizationError("Only workspace owners and editors can create announcements");
+        }
 
         Discussion discussion = new Discussion(
                 UUID.randomUUID(),
@@ -225,8 +231,8 @@ public class DiscussionService {
         return ReplyResponse.from(reply, authorName, null, null);
     }
 
-    private void verifyMembership(UUID workspaceId, UUID userId) {
-        memberRepository.findByWorkspaceIdAndUserId(workspaceId, userId)
+    private WorkspaceMember verifyMembership(UUID workspaceId, UUID userId) {
+        return memberRepository.findByWorkspaceIdAndUserId(workspaceId, userId)
                 .orElseThrow(() -> new AuthorizationError("User is not a member of this workspace"));
     }
 
