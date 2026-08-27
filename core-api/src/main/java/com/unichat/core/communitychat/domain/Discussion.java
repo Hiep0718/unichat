@@ -1,12 +1,17 @@
 package com.unichat.core.communitychat.domain;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+
+import com.unichat.core.communitychat.domain.JsonbStringListConverter;
 
 /**
  * A discussion thread within a community workspace.
@@ -48,6 +53,13 @@ public class Discussion {
 
     @Column(name = "vote_score", nullable = false)
     private int voteScore;
+
+    @Convert(converter = JsonbStringListConverter.class)
+    @Column(name = "tags", columnDefinition = "jsonb", nullable = false)
+    private List<String> tags = new ArrayList<>();
+
+    @Column(name = "accepted_reply_id")
+    private UUID acceptedReplyId;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -98,4 +110,9 @@ public class Discussion {
     public void incrementReplyCount() { this.replyCount++; }
     public int getVoteScore() { return voteScore; }
     public void adjustVoteScore(int delta) { this.voteScore += delta; }
+
+    public List<String> getTags() { return tags; }
+    public void setTags(List<String> tags) { this.tags = tags != null ? tags : new ArrayList<>(); }
+    public UUID getAcceptedReplyId() { return acceptedReplyId; }
+    public void setAcceptedReplyId(UUID acceptedReplyId) { this.acceptedReplyId = acceptedReplyId; }
 }

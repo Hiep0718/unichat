@@ -160,6 +160,14 @@ public class DiscussionService {
                 "OPEN",
                 Instant.now()
         );
+        if (request.tags() != null && !request.tags().isEmpty()) {
+            discussion.setTags(request.tags().stream()
+                    .map(String::trim)
+                    .filter(t -> !t.isBlank())
+                    .distinct()
+                    .limit(5)
+                    .toList());
+        }
         discussionRepository.save(discussion);
 
         String authorName = userRepository.findById(userId).map(u -> u.getEmail().split("@")[0]).orElse("Unknown");
@@ -229,6 +237,33 @@ public class DiscussionService {
 
         String authorName = userRepository.findById(userId).map(u -> u.getEmail().split("@")[0]).orElse("Unknown");
         return ReplyResponse.from(reply, authorName, null, null);
+    }
+
+    /**
+     * Accepts a reply as the best answer (StackOverflow-style).
+     * Only the discussion author can accept.
+     */
+    @Transactional
+    public DiscussionResponse acceptReply(UUID workspaceId, UUID discussionId,
+                                           UUID replyId, UUID userId) {
+        verifyMembership(workspaceId, userId);
+
+        Discussion discussion = discussionRepository.findById(discussionId)
+                .orElseThrow(() -> new NotFoundError("Discussion not found"));
+        if (!discussion.getAuthorId().equals(userId)) {
+            throw new AuthorizationError("Only the post author can accept an answer");
+        }
+
+        replyRepository.findById(replyId)
+                .orElseThrow(() -> new NotFoundError("Reply not found"));
+
+        discussion.setAcceptedReplyId(replyId);
+        discussion.setUpdatedAt(Instant.now());
+        discussionRepository.save(discussion);
+
+        String authorName = userRepository.findById(userId)
+                .map(u -> u.getEmail().split("@")[0]).orElse("Unknown");
+        return DiscussionResponse.from(discussion, authorName, null, null);
     }
 
     private WorkspaceMember verifyMembership(UUID workspaceId, UUID userId) {

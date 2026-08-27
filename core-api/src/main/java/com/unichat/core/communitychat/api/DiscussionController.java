@@ -10,6 +10,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -86,5 +87,18 @@ public class DiscussionController {
         UUID userId = UUID.fromString(jwt.getSubject());
         ReplyResponse reply = discussionService.addReply(workspaceId, discussionId, userId, request);
         return ResponseEntity.ok(reply);
+    }
+
+    /** Accept a reply as the best answer (StackOverflow-style). */
+    @PutMapping("/{discussionId}/accept-reply/{replyId}")
+    public ResponseEntity<DiscussionResponse> acceptReply(
+            @PathVariable UUID workspaceId,
+            @PathVariable UUID discussionId,
+            @PathVariable UUID replyId,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        UUID userId = UUID.fromString(jwt.getSubject());
+        return ResponseEntity.ok(
+                discussionService.acceptReply(workspaceId, discussionId, replyId, userId));
     }
 }
