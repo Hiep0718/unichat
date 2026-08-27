@@ -6,6 +6,7 @@ import { Link, useLocation, useParams } from 'react-router-dom';
 
 import { useAuth } from '../features/auth/auth-context';
 import { Icon } from './icon';
+import { NotificationBell } from '../features/community/notification-bell';
 import logoWhite from '../assets/logo-white.png';
 import './side-nav-bar.css';
 
@@ -29,9 +30,11 @@ export function SideNavBar() {
 
   const workspaceNavItems: readonly NavItem[] = workspaceId
     ? [
-        { icon: 'dashboard', label: 'Tổng quan', href: `/workspaces/${workspaceId}` },
+        { icon: 'forum', label: 'Thảo luận', href: `/workspaces/${workspaceId}/discussions` },
+        { icon: 'dashboard', label: 'Tổng quan', href: `/workspaces/${workspaceId}/overview` },
         { icon: 'description', label: 'Tài liệu', href: `/workspaces/${workspaceId}/documents` },
         { icon: 'chat', label: 'Trò chuyện', href: `/workspaces/${workspaceId}/chat` },
+
         { icon: 'history', label: 'Lịch sử', href: `/workspaces/${workspaceId}/conversations` },
         { icon: 'analytics', label: 'Đánh giá', href: `/workspaces/${workspaceId}/evaluation`, ownerOrEditorOnly: true },
         { icon: 'settings', label: 'Cài đặt', href: `/workspaces/${workspaceId}/settings`, ownerOrEditorOnly: true },
@@ -39,6 +42,7 @@ export function SideNavBar() {
     : [];
 
   const globalNavItems: readonly NavItem[] = [
+    { icon: 'dynamic_feed', label: 'Bảng tin', href: '/feed' },
     { icon: 'workspaces', label: 'Knowledge Spaces', href: '/workspaces' },
     { icon: 'person', label: 'Tài khoản', href: '/account' },
   ];
@@ -88,6 +92,11 @@ export function SideNavBar() {
       </div>
 
       <div className="side-nav__footer">
+        {isWorkspaceContext && (
+          <div className="side-nav__item" style={{ justifyContent: 'center' }}>
+            <NotificationBell />
+          </div>
+        )}
         {isWorkspaceContext && (
           <Link to="/workspaces?select=true" className="side-nav__item" title="Đổi Workspace">
             <Icon name="arrow_back" size={20} />

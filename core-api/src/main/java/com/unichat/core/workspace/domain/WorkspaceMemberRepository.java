@@ -20,6 +20,8 @@ public interface WorkspaceMemberRepository extends JpaRepository<WorkspaceMember
      */
     List<WorkspaceMember> findByWorkspaceIdAndStatus(UUID workspaceId, WorkspaceMemberStatus status);
 
+    List<WorkspaceMember> findByUserIdAndStatus(UUID userId, WorkspaceMemberStatus status);
+
     /**
      * Finds membership by workspace and user ID.
      */

@@ -4,7 +4,7 @@
  */
 
 import { lazy, Suspense } from 'react';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 
 import { AuthGuard, GuestGuard, AdminGuard } from '../features/auth/route-guard';
 import { AppShell } from './app-shell';
@@ -23,12 +23,16 @@ const WorkspaceOverviewPage = lazy(() =>
   })),
 );
 
+const FeedPage = lazy(() => import('../features/community/feed-page').then((m) => ({ default: m.FeedPage })));
+const PostDetailPage = lazy(() => import('../features/community/post-detail-page'));
+
 const DocumentPage = lazy(() => import('../features/documents/document-page'));
 const ChatPage = lazy(() => import('../features/chat/chat-page'));
 const ConversationListPage = lazy(() => import('../features/history/conversation-list-page'));
 const ConversationPage = lazy(() => import('../features/history/conversation-page'));
 const WorkspaceSettingsPage = lazy(() => import('../features/settings/settings-page'));
 const EvaluationPage = lazy(() => import('../features/evaluation/evaluation-page'));
+const DiscussionPage = lazy(() => import('../features/community/discussion-page'));
 
 const AccountPage = lazy(() => import('../features/account/settings-page'));
 const AdminUserPage = lazy(() => import('../features/admin/admin-user-page'));
@@ -57,6 +61,8 @@ export function AppRouter() {
 
           {/* Global Authenticated Shell Routes */}
           <Route element={<AuthGuard><AppShell /></AuthGuard>}>
+            <Route path="/feed" element={<FeedPage />} />
+            <Route path="/feed/posts/:postId" element={<PostDetailPage />} />
             <Route path="/workspaces" element={<WorkspaceListPage />} />
             <Route path="/workspaces/:workspaceId/detail" element={<WorkspaceDetailPage />} />
             <Route path="/account" element={<AccountPage />} />
@@ -64,13 +70,15 @@ export function AppRouter() {
 
           {/* Workspace Scoped Shell Routes */}
           <Route element={<AuthGuard><WorkspaceShell /></AuthGuard>}>
-            <Route path="/workspaces/:workspaceId" element={<WorkspaceOverviewPage />} />
+            <Route path="/workspaces/:workspaceId" element={<Navigate to="discussions" replace />} />
+            <Route path="/workspaces/:workspaceId/overview" element={<WorkspaceOverviewPage />} />
             <Route path="/workspaces/:workspaceId/documents" element={<DocumentPage />} />
             <Route path="/workspaces/:workspaceId/chat" element={<ChatPage />} />
             <Route path="/workspaces/:workspaceId/conversations" element={<ConversationListPage />} />
             <Route path="/workspaces/:workspaceId/conversations/:conversationId" element={<ConversationPage />} />
             <Route path="/workspaces/:workspaceId/settings" element={<WorkspaceSettingsPage />} />
             <Route path="/workspaces/:workspaceId/evaluation" element={<EvaluationPage />} />
+            <Route path="/workspaces/:workspaceId/discussions" element={<DiscussionPage />} />
           </Route>
 
           {/* Admin Routes */}

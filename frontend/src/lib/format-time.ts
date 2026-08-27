@@ -51,3 +51,23 @@ export function formatRelativeTime(isoString: string): string {
   const yyyy = date.getFullYear();
   return `${dd}/${mo}/${yyyy}`;
 }
+
+/**
+ * Formats an ISO-8601 timestamp as full Vietnamese date-time.
+ *
+ * @param isoString ISO-8601 date string from the server
+ * @returns formatted date-time string (e.g. "24/08/2026, 14:30")
+ */
+export function formatFullDateTime(isoString: string): string {
+  try {
+    return new Date(isoString).toLocaleString('vi-VN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  } catch {
+    return '';
+  }
+}
