@@ -435,6 +435,38 @@
   color: var(--color-on-surface);
 }
 
+.reply-node__action-btn--accept {
+  color: #166534;
+}
+
+.reply-node__action-btn--accept:hover {
+  background: #dcfce7;
+  color: #14532d;
+}
+
+.reply-node--accepted {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  padding: 12px;
+  border-radius: var(--radius-lg);
+  margin: 8px 0;
+}
+
+.reply-node__accepted-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font: var(--font-label-sm);
+  font-size: 10px;
+  background: #dcfce7;
+  color: #166534;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-left: 8px;
+}
+
 .reply-node__nested-form {
   margin-top: 8px;
 }

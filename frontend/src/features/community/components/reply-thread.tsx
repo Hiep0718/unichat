@@ -16,21 +16,34 @@ interface ReplyThreadProps {
   readonly repliesByParent: Map<string | null, ReplyResponse[]>;
   readonly onAddReply: (body: string, parentId?: string) => Promise<void>;
   readonly replyLoading: boolean;
+  readonly onAcceptReply?: ((replyId: string) => void) | undefined;
+  readonly acceptedReplyId?: string | null | undefined;
+  readonly isPostAuthor?: boolean | undefined;
 }
 
 /**
  * Renders a single reply node with its nested children recursively.
  */
-export function ReplyThread({ reply, repliesByParent, onAddReply, replyLoading }: ReplyThreadProps) {
+export function ReplyThread({
+  reply,
+  repliesByParent,
+  onAddReply,
+  replyLoading,
+  onAcceptReply,
+  acceptedReplyId,
+  isPostAuthor,
+}: ReplyThreadProps) {
   const children = useMemo(
     () => repliesByParent.get(reply.id) ?? [],
     [repliesByParent, reply.id],
   );
   const [showForm, setShowForm] = useState(false);
 
+  const isAccepted = acceptedReplyId === reply.id;
+
   return (
     <div className="reply-thread">
-      <div className={`reply-node ${reply.isAiAnswer ? 'reply-node--ai' : ''}`}>
+      <div className={`reply-node ${reply.isAiAnswer ? 'reply-node--ai' : ''} ${isAccepted ? 'reply-node--accepted' : ''}`}>
         <div className="reply-node__avatar">
           {reply.isAiAnswer
             ? <Icon name="smart_toy" size={16} />
@@ -43,6 +56,11 @@ export function ReplyThread({ reply, repliesByParent, onAddReply, replyLoading }
             </span>
             <span className="reply-node__dot">•</span>
             <span className="reply-node__time">{formatRelativeTime(reply.createdAt)}</span>
+            {isAccepted && (
+              <span className="reply-node__accepted-badge">
+                <Icon name="check_circle" size={14} /> Câu trả lời hay nhất
+              </span>
+            )}
           </div>
           <p className="reply-node__body">{reply.body}</p>
           <div className="reply-node__actions">
@@ -59,6 +77,14 @@ export function ReplyThread({ reply, repliesByParent, onAddReply, replyLoading }
             >
               <Icon name="reply" size={16} /> Trả lời
             </button>
+            {isPostAuthor && !isAccepted && (
+              <button
+                className="reply-node__action-btn reply-node__action-btn--accept"
+                onClick={() => onAcceptReply?.(reply.id)}
+              >
+                <Icon name="check" size={16} /> Chấp nhận
+              </button>
+            )}
           </div>
           {showForm && (
             <div className="reply-node__nested-form">
@@ -84,6 +110,9 @@ export function ReplyThread({ reply, repliesByParent, onAddReply, replyLoading }
               repliesByParent={repliesByParent}
               onAddReply={onAddReply}
               replyLoading={replyLoading}
+              onAcceptReply={onAcceptReply}
+              acceptedReplyId={acceptedReplyId}
+              isPostAuthor={isPostAuthor}
             />
           ))}
         </div>

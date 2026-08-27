@@ -1,4 +1,9 @@
+/**
+ * REST API client for the community feed, trending tags, stats, and bookmarks.
+ */
 import { fetchJson } from '../../lib/api-client';
+
+/* ---------- Types ---------- */
 
 export interface FeedPostResponse {
   id: string;
@@ -13,6 +18,9 @@ export interface FeedPostResponse {
   voteScore: number;
   replyCount: number;
   userVote: string | null;
+  tags: string[];
+  hasAcceptedAnswer: boolean;
+  isBookmarked: boolean;
   createdAt: string;
 }
 
@@ -23,11 +31,74 @@ export interface FeedPage {
   number: number;
 }
 
-export async function fetchFeed(
-  sort: 'HOT' | 'NEW' = 'HOT',
-  scope: 'ALL' | 'JOINED' = 'JOINED',
-  page = 0,
-  size = 20
-): Promise<FeedPage> {
-  return fetchJson<FeedPage>(`/feed?sort=${sort}&scope=${scope}&page=${page}&size=${size}`);
+export interface TrendingTag {
+  tag: string;
+  count: number;
+}
+
+export interface FeedStats {
+  totalPosts: number;
+}
+
+/* ---------- Feed ---------- */
+
+export type FeedSort = 'HOT' | 'NEW' | 'TOP';
+export type FeedScope = 'ALL' | 'JOINED' | 'SAVED';
+export type TopRange = 'TODAY' | 'WEEK' | 'MONTH' | 'YEAR' | 'ALL';
+
+export interface FeedParams {
+  sort?: FeedSort;
+  scope?: FeedScope;
+  q?: string | undefined;
+  tag?: string | undefined;
+  range?: TopRange | undefined;
+  page?: number;
+  size?: number;
+}
+
+export async function fetchFeed(params: FeedParams = {}): Promise<FeedPage> {
+  const sp = new URLSearchParams();
+  sp.set('sort', params.sort ?? 'HOT');
+  sp.set('scope', params.scope ?? 'JOINED');
+  sp.set('page', String(params.page ?? 0));
+  sp.set('size', String(params.size ?? 20));
+  if (params.q) sp.set('q', params.q);
+  if (params.tag) sp.set('tag', params.tag);
+  if (params.range) sp.set('range', params.range);
+  return fetchJson<FeedPage>(`/feed?${sp.toString()}`);
+}
+
+/* ---------- Trending Tags ---------- */
+
+export async function fetchTrendingTags(limit = 10): Promise<TrendingTag[]> {
+  return fetchJson<TrendingTag[]>(`/feed/trending-tags?limit=${limit}`);
+}
+
+/* ---------- Stats ---------- */
+
+export async function fetchFeedStats(): Promise<FeedStats> {
+  return fetchJson<FeedStats>('/feed/stats');
+}
+
+/* ---------- Bookmarks ---------- */
+
+export async function toggleBookmark(
+  discussionId: string
+): Promise<{ bookmarked: boolean }> {
+  return fetchJson<{ bookmarked: boolean }>(`/bookmarks/${discussionId}`, {
+    method: 'POST',
+  });
+}
+
+/* ---------- Accept Reply ---------- */
+
+export async function acceptReply(
+  workspaceId: string,
+  discussionId: string,
+  replyId: string
+): Promise<void> {
+  await fetchJson(
+    `/workspaces/${workspaceId}/discussions/${discussionId}/accept-reply/${replyId}`,
+    { method: 'PUT' }
+  );
 }

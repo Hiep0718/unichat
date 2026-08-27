@@ -22,6 +22,10 @@ export interface DiscussionResponse {
   userVote: string | null;
   authorName: string;
   authorAvatar: string | null;
+  tags: string[];
+  acceptedReplyId: string | null;
+  hasAcceptedAnswer: boolean;
+  isBookmarked: boolean;
 }
 
 export interface DiscussionPage {
@@ -78,7 +82,7 @@ export async function getDiscussion(
 
 export async function createDiscussion(
   workspaceId: string,
-  data: { title: string; body: string; label?: string },
+  data: { title: string; body: string; label?: string; tags?: string[] },
 ): Promise<DiscussionResponse> {
   return fetchJson<DiscussionResponse>(`/workspaces/${workspaceId}/discussions`, {
     method: 'POST',

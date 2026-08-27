@@ -13,6 +13,8 @@ import type { DiscussionResponse, ReplyResponse } from './community-api';
 import { VoteControl } from './components/vote-control';
 import { ReplyForm } from './components/reply-form';
 import { ReplyThread } from './components/reply-thread';
+import { useAuth } from '../auth/auth-context';
+import { toggleBookmark, acceptReply } from './feed-api';
 import './post-detail-page.css';
 
 /**
@@ -29,6 +31,7 @@ export function PostDetailPage() {
   const [loading, setLoading] = useState(true);
   const [replyLoading, setReplyLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
 
   useEffect(() => {
     if (!postId || !workspaceId) return;
@@ -57,6 +60,26 @@ export function PostDetailPage() {
       setReplies((prev) => [...prev, result]);
     } finally {
       setReplyLoading(false);
+    }
+  };
+
+  const handleAcceptReply = async (replyId: string) => {
+    if (!workspaceId || !discussion) return;
+    try {
+      await acceptReply(workspaceId, discussion.id, replyId);
+      setDiscussion(prev => prev ? { ...prev, acceptedReplyId: replyId } : null);
+    } catch {
+      /* ignore */
+    }
+  };
+
+  const handleBookmark = async () => {
+    if (!discussion) return;
+    try {
+      const res = await toggleBookmark(discussion.id);
+      setDiscussion(prev => prev ? { ...prev, isBookmarked: res.bookmarked } : null);
+    } catch {
+      /* ignore */
     }
   };
 
@@ -143,8 +166,22 @@ export function PostDetailPage() {
                   {labelName(discussion.label)}
                 </span>
               )}
+              {discussion.acceptedReplyId && (
+                <span className="post-detail__accepted-badge">
+                  <Icon name="check_circle" size={14} /> Đã giải đáp
+                </span>
+              )}
               {discussion.title}
             </h1>
+
+            {/* Tag chips */}
+            {discussion.tags?.length > 0 && (
+              <div className="post-detail__tags">
+                {discussion.tags.map(tag => (
+                  <span key={tag} className="post-detail__tag">{tag}</span>
+                ))}
+              </div>
+            )}
 
             <div className="post-detail__body">{discussion.body}</div>
 
@@ -163,6 +200,16 @@ export function PostDetailPage() {
               <span className="post-detail__action-btn">
                 <Icon name="visibility" size={18} />
                 {discussion.viewCount} Lượt xem
+              </span>
+              <span className="post-detail__action-btn">
+                <Icon name="share" size={18} /> Chia sẻ
+              </span>
+              <span
+                className={`post-detail__action-btn ${discussion.isBookmarked ? 'post-detail__action-btn--bookmarked' : ''}`}
+                onClick={handleBookmark}
+              >
+                <Icon name={discussion.isBookmarked ? 'bookmark' : 'bookmark_border'} size={18} />
+                Lưu
               </span>
             </div>
           </article>
@@ -191,6 +238,9 @@ export function PostDetailPage() {
                     repliesByParent={repliesByParent}
                     onAddReply={handleAddReply}
                     replyLoading={replyLoading}
+                    onAcceptReply={handleAcceptReply}
+                    acceptedReplyId={discussion.acceptedReplyId}
+                    isPostAuthor={user?.id === discussion.authorId}
                   />
                 ))
               )}

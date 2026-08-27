@@ -26,6 +26,8 @@ export function CreatePostModal({ onClose, onCreated, preselectedWorkspaceId }: 
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [label, setLabel] = useState('DISCUSSION');
+  const [tags, setTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [wsLoading, setWsLoading] = useState(true);
 
@@ -54,6 +56,7 @@ export function CreatePostModal({ onClose, onCreated, preselectedWorkspaceId }: 
         title: title.trim(),
         body: body.trim(),
         label,
+        tags,
       });
       onCreated(selectedWsId, result.id);
     } catch {
@@ -149,6 +152,39 @@ export function CreatePostModal({ onClose, onCreated, preselectedWorkspaceId }: 
                 required
               />
               <span className="create-post-modal__char-count">{title.length}/200</span>
+            </div>
+
+/* ---------- Tags ---------- */
+            <div className="create-post-modal__field">
+              <label className="create-post-modal__label">Thẻ (Tags) - tối đa 5 thẻ</label>
+              <div className="create-post-modal__tags-input-container" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', padding: '10px 14px', border: '1px solid var(--color-outline-variant)', borderRadius: 'var(--radius-lg)', background: 'var(--color-surface)' }}>
+                {tags.map(tag => (
+                  <span key={tag} className="create-post-modal__tag" style={{ background: 'var(--color-secondary-fixed)', color: 'var(--color-secondary)', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    {tag}
+                    <button type="button" onClick={() => setTags(tags.filter(t => t !== tag))} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex' }}><Icon name="close" size={12} /></button>
+                  </span>
+                ))}
+                {tags.length < 5 && (
+                  <input
+                    type="text"
+                    className="create-post-modal__tag-input"
+                    placeholder={tags.length === 0 ? "Nhập tag và nhấn Enter..." : ""}
+                    value={tagInput}
+                    onChange={(e) => setTagInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ',') {
+                        e.preventDefault();
+                        const val = tagInput.trim().toLowerCase();
+                        if (val && !tags.includes(val) && tags.length < 5) {
+                          setTags([...tags, val]);
+                        }
+                        setTagInput('');
+                      }
+                    }}
+                    style={{ border: 'none', background: 'transparent', outline: 'none', flex: 1, minWidth: '120px', font: 'var(--font-body-md)' }}
+                  />
+                )}
+              </div>
             </div>
 
             {/* Body */}
