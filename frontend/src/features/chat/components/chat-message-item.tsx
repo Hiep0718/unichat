@@ -348,9 +348,11 @@ const ThoughtsAccordion: React.FC<ThoughtsAccordionProps> = ({
             ? 'psychology'
             : t.stepKey === 'RETRIEVAL'
               ? 'manage_search'
-              : t.stepKey === 'SYNTHESIS'
-                ? 'auto_awesome'
-                : 'verified',
+              : t.stepKey === 'COMPACTION'
+                ? 'compress'
+                : t.stepKey === 'SYNTHESIS'
+                  ? 'auto_awesome'
+                  : 'verified',
         title: t.title,
         detail: t.detail,
       }));

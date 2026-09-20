@@ -818,3 +818,54 @@
   max-height: 380px;
   overflow: auto;
 }
+
+/* ── Inline CitationDrawer Adaptation (inside 360px panel) ── */
+.unichat-citation-detail-inline {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  animation: citation-detail-fade-in 0.2s ease;
+}
+
+@keyframes citation-detail-fade-in {
+  from { opacity: 0; transform: translateX(8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.unichat-citation-detail-inline .unichat-back-btn {
+  margin-bottom: 0;
+}
+
+/* Override CitationDrawer fixed width for inline rendering */
+.unichat-citation-detail-inline .citation-drawer {
+  width: 100%;
+  height: auto;
+  flex: 1;
+  border-left: none;
+  box-shadow: none;
+  animation: none;
+  border-radius: var(--radius-lg, 12px);
+  border: 1px solid var(--color-outline-variant, #e2e8f0);
+  overflow-y: auto;
+}
+
+.unichat-citation-detail-inline .citation-drawer__header {
+  height: 40px;
+  padding: 0 8px 0 12px;
+  border-radius: var(--radius-lg, 12px) var(--radius-lg, 12px) 0 0;
+}
+
+.unichat-citation-detail-inline .citation-drawer__filename {
+  font-size: 12px;
+  max-width: 100px;
+}
+
+.unichat-citation-detail-inline .citation-drawer__body {
+  padding: 10px;
+}
+
+.unichat-citation-detail-inline .citation-drawer__iframe {
+  min-height: 300px;
+}
+

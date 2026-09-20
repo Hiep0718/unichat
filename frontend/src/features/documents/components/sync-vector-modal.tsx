@@ -133,6 +133,7 @@ export const SyncVectorModal: React.FC<SyncVectorModalProps> = ({
             Hủy bỏ
           </button>
           <button type="button" className="btn btn--warning" onClick={handleStartSync}>
+            <span className="material-symbols-outlined sync-btn-icon">sync</span>
             {isReady ? 'Vẫn đồng bộ lại' : 'Bắt đầu đồng bộ'}
           </button>
         </div>
@@ -203,6 +204,7 @@ export const SyncVectorModal: React.FC<SyncVectorModalProps> = ({
             onSyncCompleted?.();
           }}
         >
+          <span className="material-symbols-outlined sync-btn-icon">check_circle</span>
           Hoàn tất & Đóng
         </button>
       </div>
@@ -218,7 +220,7 @@ export const SyncVectorModal: React.FC<SyncVectorModalProps> = ({
             Quản lý Đồng bộ Vector DB (Chroma Cloud)
           </h2>
           <button type="button" className="modal-close-btn" onClick={onClose} aria-label="Đóng">
-            &times;
+            <span className="material-symbols-outlined">close</span>
           </button>
         </div>
 
