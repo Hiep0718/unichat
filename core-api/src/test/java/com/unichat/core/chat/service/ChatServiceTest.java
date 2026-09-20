@@ -41,6 +41,8 @@ class ChatServiceTest {
     private ConversationRepository conversationRepository;
     private MessageRepository messageRepository;
     private com.unichat.core.chat.domain.CitationHistoryRepository citationHistoryRepository;
+    private CitationExtractor citationExtractor;
+    private ConversationHistoryBuilder conversationHistoryBuilder;
     private com.unichat.core.shared.config.ServiceTokenIssuer serviceTokenIssuer;
     private ChatService chatService;
 
@@ -52,8 +54,13 @@ class ChatServiceTest {
         conversationRepository = mock(ConversationRepository.class);
         messageRepository = mock(MessageRepository.class);
         citationHistoryRepository = mock(com.unichat.core.chat.domain.CitationHistoryRepository.class);
+        citationExtractor = mock(CitationExtractor.class);
+        conversationHistoryBuilder = mock(ConversationHistoryBuilder.class);
         serviceTokenIssuer = mock(com.unichat.core.shared.config.ServiceTokenIssuer.class);
         org.mockito.Mockito.when(serviceTokenIssuer.issueToken()).thenReturn("Bearer test-token");
+        org.mockito.Mockito.when(conversationHistoryBuilder.buildHistoryPayload(any())).thenReturn(List.of());
+        org.mockito.Mockito.when(conversationHistoryBuilder.buildAiRequestBody(any(), any(), any(), any(), any(Boolean.class), any(), any()))
+                .thenReturn(new java.util.HashMap<>());
         chatService = new ChatService(
                 workspaceRepository,
                 workspaceMemberRepository,
@@ -61,6 +68,8 @@ class ChatServiceTest {
                 conversationRepository,
                 messageRepository,
                 citationHistoryRepository,
+                citationExtractor,
+                conversationHistoryBuilder,
                 serviceTokenIssuer,
                 Clock.systemUTC()
         );
