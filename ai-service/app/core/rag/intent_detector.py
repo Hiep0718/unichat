@@ -110,7 +110,7 @@ def _load_rules() -> list[tuple[IntentEnum, str, str, list[str]]]:
     return fallback_rules
 
 
-def detect_intent(question: str) -> IntentResult:
+def detect_intent(question: str, has_conversation_context: bool = False) -> IntentResult:
     config_hash = get_config_hash()
     if not (3 <= len(question.strip()) <= 2000):
         return IntentResult(IntentEnum.OUT_OF_SCOPE, "RULE_INVALID_LENGTH", 1.0, question.strip(), config_hash)
@@ -119,8 +119,10 @@ def detect_intent(question: str) -> IntentResult:
     shadow_text = remove_vietnamese_accent(normalized)
 
     # Check for ambiguous context-dependent pronouns (requires CLARIFY before retrieval)
-    if re.search(r"^(cai do|no|thang do|cho do|cho nay) (la gi|nhu the nao)$", shadow_text):
-        return IntentResult(IntentEnum.CLARIFY, "RULE_AMBIGUOUS_PRONOUN", 0.95, normalized, config_hash)
+    # Bypass ambiguous pronoun CLARIFY when conversation history provides context
+    if not has_conversation_context:
+        if re.search(r"^(cai do|no|thang do|cho do|cho nay) (la gi|nhu the nao)$", shadow_text):
+            return IntentResult(IntentEnum.CLARIFY, "RULE_AMBIGUOUS_PRONOUN", 0.95, normalized, config_hash)
 
     rules = _load_rules()
     for intent, rule_id, pattern, negative_patterns in rules:
