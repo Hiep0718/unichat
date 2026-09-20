@@ -327,3 +327,39 @@
 
 - Decision: Implement Flyway migration `V11__studio_notes.sql` and REST API controller for per-conversation notes persistence.
   Rationale: Ensures user notes generated in Knowledge Studio are saved directly to PostgreSQL DB, auto-associated with active conversation sessions, and loaded on page reload.
+
+## 2026-09-20 - Short-term Conversation Memory & Context Window Compaction (ADR-021)
+
+- Decision: Implement short-term session conversation memory (up to 10 raw message pairs + compacted summary) for AI RAG questioning, without touching long-term user profile persistence.
+  Rationale: Empowers multi-turn conversational coherence for iterative student research questions ("Giải thích OOP", "Ví dụ về nó") within the scope of P0 without violating ADR-001 boundaries.
+
+- Decision: Trigger compaction at AI Service when conversation tokens reach 80% of budget (8,500 tokens), using ~2 chars/token ratio for Vietnamese mixed text.
+  Rationale: AI Service understands token budgets and LLM prompt mechanics best; compacts old messages into a concise summary while preserving referents for ambiguous pronouns.
+
+- Decision: Store compacted summary in `conversations.summary` and `summary_version` using optimistic locking (`WHERE id = :id AND summary_version = :expectedVersion`).
+  Rationale: Ensures concurrency safety and avoids race conditions when multiple queries complete in parallel for the same conversation session.
+
+- Decision: Bypass `RULE_AMBIGUOUS_PRONOUN` CLARIFY rule in `intent_detector.py` when `has_conversation_context=True`.
+  Rationale: When previous conversation turns exist, pronouns like "nó là gì", "cái đó là gì" are referential to previous context rather than ambiguous standalone questions.
+
+- Decision: Extract duplicate system prompts from `stream_provider.py` and `llm_provider.py` into shared `prompt_builder.py`.
+  Rationale: Eliminates ~50 lines of duplicate prompt text and guarantees prompt consistency between streaming and non-streaming responses.
+
+## 2026-09-20 - Conversation Memory Stabilization & Concurrency Review
+
+- Decision: Add `@Transactional` on `ConversationHistoryBuilder.persistSummary` and `clearAutomatically = true, flushAutomatically = true` on `ConversationRepository.updateSummary`.
+  Rationale: Prevents `TransactionRequiredException` when persisting summary from asynchronous streaming threads in `SseChatService`, and prevents Hibernate 1st-level cache stale overwrite during commit.
+- Decision: Slice `conv_messages` to last 10 messages when `conversation_summary` is already present, and order SSE thought events chronologically.
+  Rationale: Prevents redundant context token explosion and repetitive re-compaction loops on every single turn once a conversation exceeds 20 messages, and ensures frontend visual thought steps are sequential: INTENT (1) -> RETRIEVAL (2) -> COMPACTION (3, optional) -> SYNTHESIS (4) -> GENERATION (5).
+
+## 2026-09-20 - Playwright E2E Automation Suite 05 (Conversation Memory & Compaction)
+
+- Decision: Create dedicated Playwright test suite `automation-tests/specs/05-conversation-memory-compaction.spec.ts`.
+  Rationale: Provides comprehensive automated end-to-end verification for multi-turn conversation flow, pronoun resolution continuity, real-time COMPACTION thought event streaming, NotebookLM Thoughts Accordion rendering, and subsequent turns with compacted summary retention.
+- Decision: Guard `setDiscussions` against undefined `page.content` in `discussion-page.tsx` and streamline sidebar chat navigation in `04-chat-rag-interface.spec.ts`.
+  ## 2026-09-20 - Master E2E Lifecycle & Edge Cases Automation Suite (Suite 06)
+
+- Decision: Create `automation-tests/specs/06-master-conversation-compaction-lifecycle.spec.ts` covering 4 continuous multi-turn interactions, cold start, pronoun resolution, context compaction trigger, working memory continuity, inline LaTeX math, Java code block syntax highlighting, clipboard copying, citation chip inspection, and citation drawer interaction.
+  Rationale: Fulfills rigorous thesis-level E2E coverage and provides a long-running recorded test demonstrating all phases of ADR-021 without skipping any interactive UI element or edge case.
+- Decision: Configure Playwright video capture with smooth delays (`waitForTimeout`) at critical UX moments (drawer open, thought accordion expansion, compaction badge display).
+  Rationale: Generates clear, high-definition video artifacts (`video.webm`) suitable for presentation, defense demos, and automated CI regression verification.
