@@ -14,4 +14,12 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
      * Finds messages by conversation ID ordered by creation time.
      */
     List<Message> findByConversationIdOrderByCreatedAtAsc(UUID conversationId);
+
+    /**
+     * Loads the most recent messages for a conversation (DESC order).
+     *
+     * <p>Used by {@code ConversationHistoryBuilder} to load last N messages efficiently
+     * without loading entire conversation history into memory.</p>
+     */
+    List<Message> findTop20ByConversationIdOrderByCreatedAtDesc(UUID conversationId);
 }
