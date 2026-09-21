@@ -9,7 +9,7 @@
 | Nhánh | `feat/knowledge-gap-escalation` |
 | Ngày lập kế hoạch | 2026-09-21 |
 | Hạn hoàn thành | ~2026-11-21 (2 tháng) |
-| Trạng thái | Đang thực hiện — Giai đoạn 5/8 xong, chuẩn bị sang 6–7 |
+| Trạng thái | Đang thực hiện — Giai đoạn 6–7 đã code xong, chờ kiểm thử thủ công |
 | Tài liệu liên quan | `docs/implementation_plan.md` (nâng cấp RAG — phần của Nguyễn Thanh Hiệp) |
 
 ---
@@ -51,7 +51,7 @@ Hệ quả áp dụng cho các tính năng AI về sau: muốn giới hạn AI c
 | 1–2 | Lấy nhóm làm trung tâm | 2 tuần | ✅ Xong |
 | 3–4 | Bài viết theo phong cách Workplace | 2 tuần | ✅ Xong |
 | 5 | Tích hợp AI vào cộng đồng | 1 tuần | ✅ Xong |
-| 6–7 | Work Chat | 2 tuần | ⬜ Chưa bắt đầu |
+| 6–7 | Work Chat | 2 tuần | ✅ Đã code xong |
 | 8 | Kiểm thử, hoàn thiện, viết luận văn | 1 tuần | ⬜ Chưa bắt đầu |
 
 Giai đoạn 1–4 hoàn thành sớm hơn dự kiến (trong ngày 2026-09-21), nên lịch còn dư thời gian đệm so với hạn 2026-11-21.
@@ -95,7 +95,7 @@ Chuyển trọng tâm từ "bảng tin toàn hệ thống" sang "nhóm", đúng 
 
 **④ Tìm kiếm hợp nhất.** `GET /api/v1/search` trả về cả bài viết lẫn tài liệu trong mọi nhóm người dùng tham gia. Phạm vi lấy từ danh sách thành viên trên server, **không có tham số workspace nào để client nới rộng**. Hai loại kết quả để riêng thành hai mục chứ không trộn vào một bảng xếp hạng — chúng không so sánh được với nhau, và người đang tìm tệp thì muốn thấy tệp, không phải tệp bị xếp dưới ba bài thảo luận có nhắc tới nó. Tài liệu chỉ khớp theo **tên tệp**: tìm trong nội dung tài liệu là việc của RAG, làm lại bằng SQL ở đây chỉ cho ra câu trả lời tệ hơn bằng một đường thứ hai.
 
-### Giai đoạn 6–7 — Work Chat ⬜
+### Giai đoạn 6–7 — Work Chat ✅ (đã code, chờ kiểm thử thủ công)
 
 Nhắn tin trực tiếp giữa các thành viên. Cần lưu ý: **phải làm lại từ đầu.**
 
@@ -109,6 +109,16 @@ Phạm vi được giữ hẹp có chủ đích, để kịp hạn:
 - Trạng thái trực tuyến lưu trong bộ nhớ tiến trình.
 
 Giới hạn cần nêu rõ trong luận văn: vì trạng thái nằm trong bộ nhớ, thiết kế này chưa mở rộng ra nhiều tiến trình được. Đây là đánh đổi có ý thức theo thời hạn, không phải thiếu sót.
+
+**Đã triển khai (3 chặng):**
+
+1. *Lưu trữ và phân quyền* — bảng `direct_conversations` / `direct_messages` (V22), chỉ nhắn được với người **cùng nhóm**, hai người lưu theo thứ tự cố định để một cặp chỉ có một cuộc trò chuyện.
+2. *Realtime* — STOMP qua WebSocket, xác thực ở **CONNECT frame** (trình duyệt không đặt được header cho handshake), chỉ dùng user destination nên không ai nghe được hàng đợi của người khác. Đẩy tin **sau khi commit**.
+3. *Giao diện* — trang `/work-chat`: danh sách trò chuyện, khung tin nhắn, chọn người nhắn. Mất kết nối thì báo "đang kết nối lại", **vẫn gửi được** vì gửi đi qua REST chứ không qua socket.
+
+**Phụ thuộc mới:** `spring-boot-starter-websocket` (version theo parent BOM) và `@stomp/stompjs@7.3.0` (không kéo theo gói nào).
+
+**Chưa làm:** chưa chạy thử thật hai người nhắn cho nhau — việc đó cần hai tài khoản đăng nhập, mà tôi không tạo dữ liệu thử trên cơ sở dữ liệu chung. Cần bạn kiểm thử thủ công.
 
 ### Giai đoạn 8 — Kiểm thử, hoàn thiện, viết luận văn ⬜
 

@@ -27,6 +27,7 @@ interface NavItem {
 const GLOBAL_ITEMS: readonly NavItem[] = [
   { icon: 'dynamic_feed', label: 'Bảng tin', href: '/feed' },
   { icon: 'workspaces', label: 'Tất cả nhóm', href: '/workspaces' },
+  { icon: 'chat', label: 'Tin nhắn', href: '/work-chat' },
   { icon: 'person', label: 'Tài khoản', href: '/account' },
 ];
 

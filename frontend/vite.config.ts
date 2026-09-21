@@ -11,6 +11,13 @@ export default defineConfig({
         target: 'http://127.0.0.1:8082',
         changeOrigin: true,
       },
+      // Work Chat's STOMP socket. `ws: true` is what makes the dev server
+      // forward the upgrade rather than answering it as a plain request.
+      '/ws': {
+        target: 'http://127.0.0.1:8082',
+        ws: true,
+        changeOrigin: true,
+      },
     },
   },
   test: {

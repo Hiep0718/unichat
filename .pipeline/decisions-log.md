@@ -441,3 +441,21 @@
 
 - Decision: The presence endpoint returns only the caller's contacts who are online, not everyone online.
   Rationale: Otherwise it becomes a way to watch people the caller shares no group with.
+
+## 2026-09-22 - Work Chat, User Interface
+
+- Decision: Added `@stomp/stompjs@7.3.0`, pinned exactly, flagged before installing.
+  Rationale: A STOMP client is needed to read the queue the backend publishes to. Hand-rolling frame encoding, heartbeats and reconnection is where subtle bugs live, and this package has no transitive dependencies at all, so the cost is one file's worth of code rather than a tree.
+
+- Decision: Sending goes over REST; the socket only delivers.
+  Rationale: The socket is a convenience, not the source of truth. A page that cannot connect still sends, still loads history, and shows an unobtrusive "reconnecting" line rather than blocking the composer.
+
+- Decision: Keep the draft when a send fails.
+  Rationale: Clearing the box on failure loses what the person wrote, which is worse than the failure itself.
+
+- Decision: Read the push handler from a ref, assigned in an effect rather than during render.
+  Rationale: Capturing the handler would reconnect the socket on every new callback identity, tearing it down constantly; mutating a ref while rendering is not safe under concurrent rendering.
+
+- Note: `npm audit` reports two pre-existing high-severity advisories in `react-router-dom` 7.18.1 (RSC-mode CSRF bypass), fixed in 7.18.4. Not introduced here and not upgraded mid-feature; it belongs in the phase 8 cleanup.
+
+- Not yet verified: two real users exchanging a message over the socket. That needs two signed-in accounts, and test users were deliberately not created in the shared development database.
