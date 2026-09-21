@@ -8,6 +8,7 @@
 import { useEffect, useState } from 'react';
 
 import { Icon } from '../../../components/icon';
+import { AttachmentSummary } from './attachment-summary';
 import { fetchAttachmentObjectUrl } from '../community-api';
 import type { PostAttachment } from '../community-api';
 import './post-attachments.css';
@@ -76,21 +77,24 @@ export function PostAttachments({
         <ul className="post-attachments__files">
           {documents.map((doc) => (
             <li key={doc.id} className="post-attachments__file">
-              <Icon name="description" size={20} />
-              <span className="post-attachments__file-meta">
-                <span className="post-attachments__file-name">{doc.originalName}</span>
-                <span className="post-attachments__file-sub">
-                  {formatBytes(doc.byteSize)}
-                  {' · '}
-                  {doc.documentId ? (
-                    <span className="post-attachments__ready">
-                      <Icon name="auto_awesome" size={13} /> Trợ lý AI đọc được
-                    </span>
-                  ) : (
-                    'Chỉ tải xuống'
-                  )}
+              <div className="post-attachments__file-row">
+                <Icon name="description" size={20} />
+                <span className="post-attachments__file-meta">
+                  <span className="post-attachments__file-name">{doc.originalName}</span>
+                  <span className="post-attachments__file-sub">
+                    {formatBytes(doc.byteSize)}
+                    {' · '}
+                    {doc.documentId ? (
+                      <span className="post-attachments__ready">
+                        <Icon name="auto_awesome" size={13} /> Trợ lý AI đọc được
+                      </span>
+                    ) : (
+                      'Chỉ tải xuống'
+                    )}
+                  </span>
                 </span>
-              </span>
+              </div>
+              <AttachmentSummary attachment={doc} />
             </li>
           ))}
         </ul>

@@ -357,3 +357,17 @@
   Rationale: Flyway's schema history on the shared dev database already recorded version 16 as `V16__conversation_summary.sql` — a teammate's migration applied directly, not present in this working tree. With `validate-on-migrate: false`, Flyway trusts the version number alone, so it treated version 16 as done and silently skipped this branch's script: `post_attachments`, `discussions.edited_at` and the `DELETED` status value were never created, surfacing only later as a Hibernate schema-validation failure. Verified that no Java code and no later migration (V17–V19) references the file by version number before renaming it.
 
 - Note: both were found by starting Core API end-to-end against the real development database. `mvnw clean test` passed throughout and could not have caught either, since neither Flyway nor schema validation runs in the unit suite.
+
+## 2026-09-21 - AI Summaries For Document Attachments
+
+- Decision: Trigger summarisation from the existing RabbitMQ ingestion callback via a `DocumentProcessedEvent`, rather than adding an AI Service endpoint.
+  Rationale: `/retrieval/answers` already takes `allowedDocumentIds`. Passing exactly one id makes the answer a summary of that file alone, so the feature needed no AI Service change and no coordination with the teammate who owns that service.
+
+- Decision: Store the summary on `post_attachments` with a four-value `summary_state`, rather than posting it as a reply in the thread.
+  Rationale: The summary belongs with the file, not in the conversation; a post with three attachments would otherwise produce three assistant comments. The states separate "still coming" from "never coming" — a member's contribution sits at PENDING until an owner approves it, and an image is NOT_APPLICABLE rather than merely unsummarised.
+
+- Decision: A refusal is never stored as a summary; the attachment is marked UNAVAILABLE instead.
+  Rationale: Storing `refusalReason` in the summary field would render the assistant's apology where the reader expects the document's contents.
+
+- Decision: Extract `AiRetrievalClient` from `AiReplyService`.
+  Rationale: Two features now call the same endpoint with the same service token and timeouts; duplicating that in both would let them drift apart.

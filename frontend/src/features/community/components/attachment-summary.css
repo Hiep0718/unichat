@@ -1,0 +1,50 @@
+.attachment-summary {
+  margin-top: 8px;
+}
+
+.attachment-summary__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border: none;
+  border-radius: var(--radius-default);
+  background: transparent;
+  color: var(--color-primary);
+  font: var(--font-label-sm);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.attachment-summary__toggle:hover {
+  background: var(--color-surface-container-high);
+}
+
+.attachment-summary__text {
+  margin: 4px 0 0;
+  padding: 10px 12px;
+  border-left: 3px solid var(--color-primary-fixed);
+  border-radius: 0 var(--radius-default) var(--radius-default) 0;
+  background: var(--color-surface-container-low);
+  color: var(--color-on-surface);
+  font: var(--font-body-md);
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+
+/* A state line, not a summary: kept quiet so it never reads as content. */
+.attachment-summary__note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 0 0;
+  color: var(--color-on-surface-variant);
+  font: var(--font-label-sm);
+}
+
+.attachment-summary__note--muted {
+  opacity: 0.75;
+}

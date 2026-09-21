@@ -27,12 +27,15 @@ import org.slf4j.LoggerFactory;
 
 import com.unichat.core.common.error.AuthorizationError;
 import com.unichat.core.common.error.ConflictError;
+import org.springframework.context.ApplicationEventPublisher;
+
 import com.unichat.core.common.error.NotFoundError;
 import com.unichat.core.common.error.ValidationError;
 import com.unichat.core.document.api.DocumentResponse;
 import com.unichat.core.document.api.IngestionJobResponse;
 import com.unichat.core.document.domain.Document;
 import com.unichat.core.document.domain.DocumentRepository;
+import com.unichat.core.document.domain.DocumentProcessedEvent;
 import com.unichat.core.document.domain.DocumentStatus;
 import com.unichat.core.document.messaging.DocumentIngestionMessage;
 import com.unichat.core.document.messaging.DocumentIngestionProducer;
@@ -75,6 +78,7 @@ public class DocumentService {
     private final StoragePort storagePort;
     private final DocumentIngestionProducer ingestionProducer;
     private final UserRepository userRepository;
+    private final ApplicationEventPublisher eventPublisher;
     private final Clock clock;
 
     public DocumentService(
@@ -85,6 +89,7 @@ public class DocumentService {
             StoragePort storagePort,
             DocumentIngestionProducer ingestionProducer,
             UserRepository userRepository,
+            ApplicationEventPublisher eventPublisher,
             Clock clock) {
         this.documentRepository = documentRepository;
         this.workspaceRepository = workspaceRepository;
@@ -93,6 +98,7 @@ public class DocumentService {
         this.storagePort = storagePort;
         this.ingestionProducer = ingestionProducer;
         this.userRepository = userRepository;
+        this.eventPublisher = eventPublisher;
         this.clock = clock;
     }
 
@@ -394,6 +400,12 @@ public class DocumentService {
         document.setUpdatedAt(Instant.now(clock));
         documentRepository.save(document);
         log.info("Updated document {} status to {} with {} chunks", documentId, newStatus, chunkCount);
+
+        // Only a processed document has content to read; a failed one has none.
+        if (newStatus == DocumentStatus.PROCESSED) {
+            eventPublisher.publishEvent(
+                    new DocumentProcessedEvent(documentId, document.getWorkspaceId()));
+        }
     }
 
     private WorkspaceMember validateAccess(UUID userId, UUID workspaceId, WorkspaceRole minRole) {

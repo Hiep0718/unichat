@@ -45,6 +45,9 @@ export interface MentionableMember {
 /** What an attachment is for. Only DOCUMENT files reach the AI assistant. */
 export type AttachmentKind = 'IMAGE' | 'DOCUMENT';
 
+/** How far the assistant's summary of a document attachment has got. */
+export type SummaryState = 'NOT_APPLICABLE' | 'PENDING' | 'READY' | 'UNAVAILABLE';
+
 export interface PostAttachment {
   id: string;
   kind: AttachmentKind;
@@ -53,6 +56,9 @@ export interface PostAttachment {
   byteSize: number;
   /** Set once the file entered the group library, so the assistant can cite it. */
   documentId: string | null;
+  /** The assistant's summary; null unless `summaryState` is READY. */
+  aiSummary: string | null;
+  summaryState: SummaryState;
 }
 
 export interface DiscussionResponse {

@@ -1,6 +1,5 @@
 package com.unichat.core.communitychat.service;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,23 +8,12 @@ import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
 
 import com.unichat.core.communitychat.domain.AiMentionEvent;
 import com.unichat.core.communitychat.domain.Discussion;
@@ -35,7 +23,6 @@ import com.unichat.core.communitychat.domain.DiscussionRepository;
 import com.unichat.core.communitychat.domain.ReplyCitation;
 import com.unichat.core.document.domain.Document;
 import com.unichat.core.document.domain.DocumentRepository;
-import com.unichat.core.shared.config.ServiceTokenIssuer;
 
 /**
  * Answers {@code @AI} mentions inside a discussion thread.
@@ -56,11 +43,7 @@ public class AiReplyService {
     public static final String ASSISTANT_DISPLAY_NAME = "Trợ lý AI";
 
     private static final Logger log = LoggerFactory.getLogger(AiReplyService.class);
-    private static final ParameterizedTypeReference<Map<String, Object>> MAP_BODY =
-            new ParameterizedTypeReference<>() {};
 
-    private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(5);
-    private static final Duration READ_TIMEOUT = Duration.ofSeconds(90);
     private static final int MAX_CITATIONS = 8;
     private static final int EXCERPT_LIMIT = 500;
     private static final int SHORT_QUESTION = 10;
@@ -71,46 +54,16 @@ public class AiReplyService {
     private final DocumentRepository documentRepository;
     private final DiscussionRepository discussionRepository;
     private final DiscussionReplyRepository replyRepository;
-    private final ServiceTokenIssuer serviceTokenIssuer;
-    private final RestTemplate restTemplate;
+    private final AiRetrievalClient retrievalClient;
 
-    @Value("${unichat.ai-service.url:http://localhost:8001}")
-    private String aiServiceUrl;
-
-    // Two constructors exist (the second lets a test swap the transport), so
-    // Spring needs telling which one to autowire instead of falling back to a
-    // no-arg constructor that does not exist.
-    @Autowired
     public AiReplyService(DocumentRepository documentRepository,
                           DiscussionRepository discussionRepository,
                           DiscussionReplyRepository replyRepository,
-                          ServiceTokenIssuer serviceTokenIssuer) {
-        this(documentRepository, discussionRepository, replyRepository,
-                serviceTokenIssuer, timeBoundedRestTemplate());
-    }
-
-    /** Lets a test supply its own transport instead of reaching the network. */
-    AiReplyService(DocumentRepository documentRepository,
-                   DiscussionRepository discussionRepository,
-                   DiscussionReplyRepository replyRepository,
-                   ServiceTokenIssuer serviceTokenIssuer,
-                   RestTemplate restTemplate) {
+                          AiRetrievalClient retrievalClient) {
         this.documentRepository = documentRepository;
         this.discussionRepository = discussionRepository;
         this.replyRepository = replyRepository;
-        this.serviceTokenIssuer = serviceTokenIssuer;
-        this.restTemplate = restTemplate;
-    }
-
-    /**
-     * Without explicit timeouts a stalled AI Service holds the worker thread open
-     * indefinitely; the read budget covers a slow model, not a dead one.
-     */
-    private static RestTemplate timeBoundedRestTemplate() {
-        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setConnectTimeout(CONNECT_TIMEOUT);
-        factory.setReadTimeout(READ_TIMEOUT);
-        return new RestTemplate(factory);
+        this.retrievalClient = retrievalClient;
     }
 
     /**
@@ -127,7 +80,10 @@ public class AiReplyService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void onAiMention(AiMentionEvent event) {
         UUID traceId = UUID.randomUUID();
-        Map<String, Object> answer = askAiService(event, traceId);
+        List<UUID> allowed =
+                documentRepository.findAllowedDocumentIdsForWorkspaces(List.of(event.workspaceId()));
+        Map<String, Object> answer = retrievalClient.ask(
+                event.workspaceId(), allowed, questionOf(event), traceId);
 
         DiscussionReply reply = new DiscussionReply(
                 UUID.randomUUID(),
@@ -155,41 +111,6 @@ public class AiReplyService {
         discussion.incrementReplyCount();
         discussion.setUpdatedAt(Instant.now());
         discussionRepository.save(discussion);
-    }
-
-    /**
-     * Asks the AI Service, passing the document ids this workspace has approved.
-     *
-     * @return the response body, or a refusal-shaped map when the call fails
-     */
-    private Map<String, Object> askAiService(AiMentionEvent event, UUID traceId) {
-        List<String> allowedDocumentIds = documentRepository
-                .findAllowedDocumentIdsForWorkspaces(List.of(event.workspaceId()))
-                .stream().map(UUID::toString).toList();
-
-        Map<String, Object> body = Map.of(
-                "workspaceId", event.workspaceId().toString(),
-                "allowedDocumentIds", allowedDocumentIds,
-                "question", questionOf(event),
-                "strategyVersion", "v1.0",
-                "requestId", traceId.toString());
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set(HttpHeaders.AUTHORIZATION, serviceTokenIssuer.issueToken());
-
-        try {
-            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
-                    aiServiceUrl + "/internal/v1/retrieval/answers",
-                    HttpMethod.POST, new HttpEntity<>(body, headers), MAP_BODY);
-            return response.getBody() != null ? response.getBody() : Map.of();
-        } catch (RestClientException e) {
-            // Nothing upstream is still waiting on this thread, so the failure is
-            // logged here and told to the reader as the reply itself.
-            log.error("AI Service call failed for discussion {} (trace {})",
-                    event.discussionId(), traceId, e);
-            return Map.of("refusalReason", UNAVAILABLE);
-        }
     }
 
     /** Strips the handle and, for a terse reply, restores the post's topic. */

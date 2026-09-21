@@ -65,6 +65,7 @@ class DocumentServiceTest {
                 storagePort,
                 ingestionProducer,
                 userRepository,
+                mock(org.springframework.context.ApplicationEventPublisher.class),
                 java.time.Clock.systemUTC()
         );
     }

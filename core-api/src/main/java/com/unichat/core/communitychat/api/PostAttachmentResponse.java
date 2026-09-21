@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import com.unichat.core.communitychat.domain.AttachmentKind;
 import com.unichat.core.communitychat.domain.PostAttachment;
+import com.unichat.core.communitychat.domain.SummaryState;
 
 /**
  * An attachment as returned to clients.
@@ -18,7 +19,11 @@ public record PostAttachmentResponse(
         String mediaType,
         long byteSize,
         /** Document library entry, present when the AI assistant can cite it. */
-        UUID documentId
+        UUID documentId,
+        /** Assistant's summary of the document; null unless state is READY. */
+        String aiSummary,
+        /** Lets the UI tell "still coming" apart from "never coming". */
+        SummaryState summaryState
 ) {
     public static PostAttachmentResponse from(PostAttachment attachment) {
         return new PostAttachmentResponse(
@@ -27,7 +32,9 @@ public record PostAttachmentResponse(
                 attachment.getOriginalName(),
                 attachment.getMediaType(),
                 attachment.getByteSize(),
-                attachment.getDocumentId()
+                attachment.getDocumentId(),
+                attachment.getAiSummary(),
+                attachment.getSummaryState()
         );
     }
 }

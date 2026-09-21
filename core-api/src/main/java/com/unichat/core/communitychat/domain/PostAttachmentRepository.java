@@ -16,4 +16,10 @@ public interface PostAttachmentRepository extends JpaRepository<PostAttachment, 
     List<PostAttachment> findByDiscussionIdInOrderByCreatedAtAsc(List<UUID> discussionIds);
 
     Optional<PostAttachment> findByIdAndDiscussionId(UUID id, UUID discussionId);
+
+    /**
+     * Attachments backed by one library document. The same file posted to two
+     * threads is deduplicated into a single document, so this returns a list.
+     */
+    List<PostAttachment> findByDocumentId(UUID documentId);
 }

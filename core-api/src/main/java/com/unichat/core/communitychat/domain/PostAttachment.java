@@ -55,6 +55,14 @@ public class PostAttachment {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
+    /** Assistant's summary of the document, null until one is produced. */
+    @Column(name = "ai_summary")
+    private String aiSummary;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "summary_state", nullable = false)
+    private SummaryState summaryState = SummaryState.PENDING;
+
     protected PostAttachment() {}
 
     public PostAttachment(UUID id, UUID discussionId, AttachmentKind kind, String storageKey,
@@ -70,6 +78,10 @@ public class PostAttachment {
         this.documentId = documentId;
         this.uploadedBy = uploadedBy;
         this.createdAt = createdAt;
+        // An image is never retrieved, so it is not merely un-summarised yet.
+        this.summaryState = kind == AttachmentKind.IMAGE
+                ? SummaryState.NOT_APPLICABLE
+                : SummaryState.PENDING;
     }
 
     public UUID getId() {
@@ -110,5 +122,24 @@ public class PostAttachment {
 
     public Instant getCreatedAt() {
         return createdAt;
+    }
+
+    public String getAiSummary() {
+        return aiSummary;
+    }
+
+    public SummaryState getSummaryState() {
+        return summaryState;
+    }
+
+    /** Records a summary the assistant produced for this document. */
+    public void attachSummary(String summary) {
+        this.aiSummary = summary;
+        this.summaryState = SummaryState.READY;
+    }
+
+    /** Marks that no summary is coming, so the UI stops promising one. */
+    public void markSummaryUnavailable() {
+        this.summaryState = SummaryState.UNAVAILABLE;
     }
 }

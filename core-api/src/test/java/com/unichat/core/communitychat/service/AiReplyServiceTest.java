@@ -66,9 +66,10 @@ class AiReplyServiceTest {
 
         RestTemplate restTemplate = new RestTemplate();
         aiService = MockRestServiceServer.bindTo(restTemplate).build();
+        AiRetrievalClient retrievalClient = new AiRetrievalClient(tokenIssuer, restTemplate);
+        ReflectionTestUtils.setField(retrievalClient, "aiServiceUrl", "http://ai.test");
         service = new AiReplyService(documentRepository, discussionRepository,
-                replyRepository, tokenIssuer, restTemplate);
-        ReflectionTestUtils.setField(service, "aiServiceUrl", "http://ai.test");
+                replyRepository, retrievalClient);
 
         when(documentRepository.findAllowedDocumentIdsForWorkspaces(List.of(workspaceId)))
                 .thenReturn(List.of(documentId));
