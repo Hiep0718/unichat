@@ -13,6 +13,8 @@ import {
   deleteDiscussion,
   fetchReplies,
   getDiscussion,
+  markPostRead,
+  setPostPinned,
   updateDiscussion,
 } from './community-api';
 import type { DiscussionResponse, ReplyResponse } from './community-api';
@@ -23,9 +25,11 @@ import { ReactionBar } from './components/reaction-bar';
 import { PostAttachments } from './components/post-attachments';
 import { PostEditForm } from './components/post-edit-form';
 import { PostOwnerMenu } from './components/post-owner-menu';
+import { PostReaders } from './components/post-readers';
 import { ReplyForm } from './components/reply-form';
 import { ReplyThread } from './components/reply-thread';
 import { useAuth } from '../auth/auth-context';
+import { useWorkspace as useWorkspaceQuery } from '../workspaces/workspace-hooks';
 import { toggleBookmark, acceptReply } from './feed-api';
 import './post-detail-page.css';
 
@@ -39,6 +43,8 @@ export function PostDetailPage() {
   const navigate = useNavigate();
 
   const [discussion, setDiscussion] = useState<DiscussionResponse | null>(null);
+  const [readToken, setReadToken] = useState(0);
+  const { data: workspaceDetails } = useWorkspaceQuery(workspaceId ?? '');
   const [replies, setReplies] = useState<ReplyResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [replyLoading, setReplyLoading] = useState(false);
@@ -64,6 +70,17 @@ export function PostDetailPage() {
       .catch(() => setError('Không thể tải bài viết. Vui lòng thử lại.'))
       .finally(() => setLoading(false));
   }, [postId, workspaceId]);
+
+  // Opening the post counts as reading it. Recorded after the post loads so a
+  // failed load never registers a false read.
+  useEffect(() => {
+    if (!postId || !workspaceId || !discussion) return;
+    markPostRead(workspaceId, postId)
+      .then(() => setReadToken((token) => token + 1))
+      .catch(() => {
+        // Read receipts are supplementary; the post still works without them.
+      });
+  }, [postId, workspaceId, discussion?.id]);
 
   const handleAddReply = async (body: string, parentId?: string) => {
     if (!workspaceId || !discussion) return;
@@ -116,6 +133,15 @@ export function PostDetailPage() {
     }
   };
 
+  const handleTogglePin = async () => {
+    if (!workspaceId || !discussion) return;
+    try {
+      setDiscussion(await setPostPinned(workspaceId, discussion.id, !discussion.pinned));
+    } catch (err: unknown) {
+      setEditError(err instanceof Error ? err.message : 'Không đổi được trạng thái ghim');
+    }
+  };
+
   const handleBookmark = async () => {
     if (!discussion) return;
     try {
@@ -149,6 +175,10 @@ export function PostDetailPage() {
   );
 
   const isAuthor = Boolean(user?.id && discussion && user.id === discussion.authorId);
+  // This route sits outside the workspace shell, so the caller's role comes
+  // from the workspace query rather than a context.
+  const canModerate =
+    workspaceDetails?.userRole === 'OWNER' || workspaceDetails?.userRole === 'EDITOR';
 
   const labelName = (l: string | null) => {
     if (!l) return '';
@@ -295,7 +325,27 @@ export function PostDetailPage() {
                 <Icon name={discussion.isBookmarked ? 'bookmark' : 'bookmark_border'} size={17} />
                 {discussion.isBookmarked ? 'Đã lưu' : 'Lưu'}
               </button>
+
+              {canModerate && (
+                <button
+                  type="button"
+                  className={`post-detail__action-btn ${discussion.pinned ? 'post-detail__action-btn--pinned' : ''}`}
+                  onClick={handleTogglePin}
+                  aria-pressed={discussion.pinned}
+                >
+                  <Icon name={discussion.pinned ? 'push_pin' : 'keep'} size={17} />
+                  {discussion.pinned ? 'Bỏ ghim' : 'Ghim'}
+                </button>
+              )}
             </div>
+
+            {workspaceId && (
+              <PostReaders
+                workspaceId={workspaceId}
+                discussionId={discussion.id}
+                reloadToken={readToken}
+              />
+            )}
           </article>
 
           {/* Reply input */}

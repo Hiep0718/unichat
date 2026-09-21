@@ -26,14 +26,22 @@ const DiscussionPage: React.FC = () => {
   const [activeLabel, setActiveLabel] = useState<string>('ALL');
   const [activeSort, setActiveSort] = useState<'HOT' | 'NEW'>('NEW');
   const [showModal, setShowModal] = useState(false);
+  const [searchInput, setSearchInput] = useState('');
+  const [query, setQuery] = useState('');
+
+  // Debounce the search box so typing does not fire a request per keystroke.
+  useEffect(() => {
+    const timer = setTimeout(() => setQuery(searchInput.trim()), 300);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
 
   useEffect(() => {
     if (!workspaceId) return;
     const label = activeLabel === 'ALL' ? undefined : activeLabel;
-    fetchDiscussions(workspaceId, 0, 20, label, activeSort)
+    fetchDiscussions(workspaceId, 0, 20, label, activeSort, query || undefined)
       .then((page) => setDiscussions(page.content))
       .catch(() => setDiscussions([]));
-  }, [workspaceId, activeLabel, activeSort]);
+  }, [workspaceId, activeLabel, activeSort, query]);
 
   const navigateToPost = (discussionId: string) => {
     navigate(`/feed/posts/${discussionId}?workspaceId=${workspaceId}`);
@@ -53,6 +61,17 @@ const DiscussionPage: React.FC = () => {
     <div className="disc-list">
       {/* Rendered as the "Bài viết" tab of the group page, which already carries
           the group name, so only the controls remain here. */}
+      <div className="disc-list__search">
+        <Icon name="search" size={18} />
+        <input
+          type="search"
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          placeholder="Tìm trong nhóm này..."
+          aria-label="Tìm bài viết trong nhóm"
+        />
+      </div>
+
       <div className="disc-list__header">
         <div className="disc-list__controls">
           {LABELS.map((l) => (
@@ -133,6 +152,11 @@ function DiscussionCard({ discussion: d, labelName, onClick }: DiscussionCardPro
         </span>
       </div>
       <h3 className="disc-card__title">
+        {d.pinned && (
+          <span className="disc-card__pin" title="Bài viết được ghim">
+            <Icon name="push_pin" size={14} /> Đã ghim
+          </span>
+        )}
         {d.label && (
           <span className={`disc-card__label disc-card__label--${d.label.toLowerCase()}`}>
             {labelName(d.label)}

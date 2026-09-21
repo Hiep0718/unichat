@@ -1,0 +1,82 @@
+.post-readers {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-outline-variant);
+}
+
+.post-readers__summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 10px;
+  border: none;
+  border-radius: var(--radius-lg);
+  background: transparent;
+  color: var(--color-on-surface-variant);
+  font: var(--font-label-md);
+  cursor: pointer;
+}
+
+.post-readers__summary:disabled {
+  cursor: default;
+}
+
+.post-readers__summary:hover:not(:disabled) {
+  background: var(--color-surface-container-high);
+  color: var(--color-on-surface);
+}
+
+.post-readers__summary strong {
+  color: var(--color-on-surface);
+  font-variant-numeric: tabular-nums;
+}
+
+.post-readers__detail {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 16px;
+  margin-top: 10px;
+  padding: 14px 16px;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-container-low);
+}
+
+.post-readers__heading {
+  margin: 0 0 8px;
+  font: var(--font-label-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-on-surface-variant);
+}
+
+/* The people who still need to see it are the point of this panel. */
+.post-readers__heading--pending {
+  color: var(--color-on-tertiary-fixed-variant);
+}
+
+.post-readers__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.post-readers__list li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font: var(--font-body-sm);
+  color: var(--color-on-surface);
+}
+
+.post-readers__time {
+  font: var(--font-label-sm);
+  color: var(--color-on-surface-variant);
+  white-space: nowrap;
+}

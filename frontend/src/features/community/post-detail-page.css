@@ -576,3 +576,10 @@
   font-style: italic;
   color: var(--color-on-surface-variant);
 }
+
+/* A pinned post claims the top of its group. */
+.post-detail__action-btn--pinned {
+  border-color: transparent;
+  background: var(--color-tertiary-fixed);
+  color: var(--color-on-tertiary-fixed-variant);
+}

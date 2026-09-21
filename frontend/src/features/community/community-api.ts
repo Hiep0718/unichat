@@ -16,6 +16,26 @@ export interface ReactionSummary {
   myReaction: ReactionType | null;
 }
 
+/** Someone who has, or has not, opened a post. */
+export interface PostReader {
+  userId: string;
+  handle: string;
+  /** Null for a member who has not opened it yet. */
+  readAt: string | null;
+}
+
+/**
+ * Who has opened a post. Names are present only for owners and editors; other
+ * members see the counts alone.
+ */
+export interface PostReadSummary {
+  readCount: number;
+  memberCount: number;
+  hasRead: boolean;
+  readers: PostReader[];
+  notYetRead: PostReader[];
+}
+
 /** A member the composer can suggest when someone types `@`. */
 export interface MentionableMember {
   userId: string;
@@ -94,16 +114,24 @@ export interface NotificationResponse {
 
 /* ---------- Discussions ---------- */
 
+/**
+ * Lists posts in one group.
+ *
+ * @param query optional full-text search across title and body
+ */
 export async function fetchDiscussions(
   workspaceId: string,
   page = 0,
   size = 20,
   label?: string,
-  sort = 'NEW'
+  sort = 'NEW',
+  query?: string,
 ): Promise<DiscussionPage> {
-  const labelParam = label ? `&label=${label}` : '';
+  const params = new URLSearchParams({ page: String(page), size: String(size), sort });
+  if (label) params.set('label', label);
+  if (query) params.set('q', query);
   return fetchJson<DiscussionPage>(
-    `/workspaces/${workspaceId}/discussions?page=${page}&size=${size}&sort=${sort}${labelParam}`,
+    `/workspaces/${workspaceId}/discussions?${params.toString()}`,
   );
 }
 
@@ -139,6 +167,36 @@ export async function deleteDiscussion(workspaceId: string, discussionId: string
   await fetchJson<void>(`/workspaces/${workspaceId}/discussions/${discussionId}`, {
     method: 'DELETE',
   });
+}
+
+/** Pins or unpins a post. Owners and editors only. */
+export async function setPostPinned(
+  workspaceId: string,
+  discussionId: string,
+  pinned: boolean,
+): Promise<DiscussionResponse> {
+  return fetchJson<DiscussionResponse>(
+    `/workspaces/${workspaceId}/discussions/${discussionId}/pinned?pinned=${pinned}`,
+    { method: 'PUT' },
+  );
+}
+
+/* ---------- Read receipts ---------- */
+
+/** Records that the current user opened a post. Safe to call repeatedly. */
+export async function markPostRead(workspaceId: string, discussionId: string): Promise<void> {
+  await fetchJson<void>(`/workspaces/${workspaceId}/discussions/${discussionId}/read`, {
+    method: 'POST',
+  });
+}
+
+export async function fetchPostReaders(
+  workspaceId: string,
+  discussionId: string,
+): Promise<PostReadSummary> {
+  return fetchJson<PostReadSummary>(
+    `/workspaces/${workspaceId}/discussions/${discussionId}/readers`,
+  );
 }
 
 /* ---------- Attachments ---------- */
