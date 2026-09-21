@@ -318,6 +318,53 @@ export async function addReply(
   });
 }
 
+/* ---------- Unified search ---------- */
+
+/** A post matching a search, from any group the caller belongs to. */
+export interface PostHit {
+  id: string;
+  workspaceId: string;
+  workspaceName: string;
+  title: string;
+  snippet: string;
+  replyCount: number;
+  resolved: boolean;
+  createdAt: string;
+}
+
+/** A library document matching a search. */
+export interface DocumentHit {
+  id: string;
+  workspaceId: string;
+  workspaceName: string;
+  originalName: string;
+  mediaType: string;
+  byteSize: number;
+  /** Whether the assistant can cite it, which the file name does not say. */
+  readableByAi: boolean;
+  createdAt: string;
+}
+
+export interface SearchResults {
+  posts: PostHit[];
+  documents: DocumentHit[];
+}
+
+/**
+ * Searches posts and documents at once.
+ *
+ * Scope comes from the caller's memberships on the server, so there is no
+ * workspace parameter a client could widen.
+ */
+export async function fetchSearchResults(
+  query: string,
+  limit = 10,
+): Promise<SearchResults> {
+  return fetchJson<SearchResults>(
+    `/search?q=${encodeURIComponent(query)}&limit=${limit}`,
+  );
+}
+
 /* ---------- Compose suggestions ---------- */
 
 /** An existing post offered while a draft is being typed. */

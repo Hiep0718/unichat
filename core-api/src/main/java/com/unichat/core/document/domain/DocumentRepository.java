@@ -45,6 +45,24 @@ public interface DocumentRepository extends JpaRepository<Document, UUID> {
     List<UUID> findAllowedDocumentIdsForWorkspaces(@Param("workspaceIds") List<UUID> workspaceIds);
 
     /**
+     * Finds documents by name across several workspaces, for unified search.
+     *
+     * <p>Matches on the uploaded file name rather than the contents: searching
+     * inside documents is what retrieval is for, and duplicating it here with
+     * SQL would give a worse answer by a second route. DELETING rows are
+     * excluded so a document being removed never appears in results.
+     *
+     * @param workspaceIds the groups the caller belongs to; never widened here
+     */
+    @Query("SELECT d FROM Document d WHERE d.workspaceId IN :workspaceIds "
+            + "AND d.status <> 'DELETING' "
+            + "AND LOWER(d.originalName) LIKE LOWER(CONCAT('%', :q, '%')) "
+            + "ORDER BY d.createdAt DESC")
+    Page<Document> searchByNameInWorkspaces(@Param("workspaceIds") List<UUID> workspaceIds,
+                                            @Param("q") String q,
+                                            Pageable pageable);
+
+    /**
      * Lists member contributions awaiting an owner/editor decision.
      *
      * @param workspaceId workspace being moderated

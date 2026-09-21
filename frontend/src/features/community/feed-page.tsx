@@ -23,6 +23,7 @@ import {
 import { CreatePostModal } from './components/create-post-modal';
 import { FeedCard } from './components/feed-card';
 import { FeedSidebar } from './components/feed-sidebar';
+import { SearchResults } from './components/search-results';
 import './feed-page.css';
 
 /** Task-oriented views, in the order a member is most likely to need them. */
@@ -66,6 +67,11 @@ export function FeedPage() {
   }, [searchInput]);
 
   useEffect(() => {
+    // While a search is running, unified results replace the feed list, so
+    // fetching the feed would be a request nobody reads.
+    if (query.trim().length >= 2) {
+      return;
+    }
     const controller = new AbortController();
     setIsLoading(true);
     setError(null);
@@ -110,6 +116,10 @@ export function FeedPage() {
       setError('Không lưu được bài viết. Vui lòng thử lại.');
     }
   };
+
+  // A query switches the main column to unified results: posts alone would
+  // hide any matching document, which is the whole point of searching here.
+  const isSearching = query.trim().length >= 2;
 
   const openPost = (workspaceId: string, postId: string) =>
     navigate(`/feed/posts/${postId}?workspaceId=${workspaceId}`);
@@ -171,6 +181,14 @@ export function FeedPage() {
             </button>
           </header>
 
+          {isSearching ? (
+            <SearchResults
+              query={query}
+              onOpenPost={openPost}
+              onOpenDocuments={(wsId) => navigate(`/workspaces/${wsId}/documents`)}
+            />
+          ) : (
+            <>
           <div className="feed-page__views" role="tablist">
             {VIEWS.map((v) => (
               <button
@@ -213,8 +231,10 @@ export function FeedPage() {
             onBookmark={handleBookmark}
             onAsk={() => setShowCreate(true)}
           />
+          </>
+          )}
 
-          {totalPages > 1 && (
+          {!isSearching && totalPages > 1 && (
             <nav className="feed-page__pager" aria-label="Phân trang">
               <button type="button" disabled={page === 0} onClick={() => setPage((p) => p - 1)}>
                 <Icon name="chevron_left" size={18} /> Trước

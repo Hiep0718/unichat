@@ -385,3 +385,20 @@
 
 - Decision: Give the compose modal a separate `onOpenExisting` callback instead of reusing `onCreated`.
   Rationale: Opening a suggested post creates nothing. Both existing callers happened to only navigate, so reuse would have worked today, but `onCreated` also refreshes feed statistics and any future caller would reasonably treat it as "a post now exists".
+
+## 2026-09-22 - One Search Across Posts And Documents
+
+- Decision: Scope the search to the caller's active memberships, resolved on the server, with no workspace parameter in the request.
+  Rationale: A workspace id in the query string is an id a client can substitute. Deriving scope from membership means the endpoint cannot be widened from outside, and matches the rule the rest of the product follows: the Core API decides what may be read.
+
+- Decision: Return posts and documents as two lists rather than one ranked list.
+  Rationale: They are not comparable. Someone searching for a file wants to see files, not a file ranked below three discussions that happen to mention it.
+
+- Decision: Match documents on file name only, not contents.
+  Rationale: Searching inside documents is what retrieval already does, with embeddings and a re-ranker. Reimplementing it in SQL would produce a worse answer by a second route, and the two would disagree.
+
+- Decision: Report per document whether the assistant can read it, using the same `PROCESSED` rule retrieval applies.
+  Rationale: A file name does not say whether a contribution was approved, and that is exactly what someone deciding whether to ask the assistant needs to know.
+
+- Decision: A query of two characters or more replaces the feed list with unified results, and the feed fetch is skipped while it does.
+  Rationale: Filtering the feed would hide any matching document, which is the whole point of searching. Fetching a feed nobody renders is a wasted request, and the pager belongs to the feed rather than to search results.

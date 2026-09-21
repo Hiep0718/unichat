@@ -9,7 +9,7 @@
 | Nhánh | `feat/knowledge-gap-escalation` |
 | Ngày lập kế hoạch | 2026-09-21 |
 | Hạn hoàn thành | ~2026-11-21 (2 tháng) |
-| Trạng thái | Đang thực hiện — Giai đoạn 5/8 (3/4 mục) |
+| Trạng thái | Đang thực hiện — Giai đoạn 5/8 xong, chuẩn bị sang 6–7 |
 | Tài liệu liên quan | `docs/implementation_plan.md` (nâng cấp RAG — phần của Nguyễn Thanh Hiệp) |
 
 ---
@@ -50,7 +50,7 @@ Hệ quả áp dụng cho các tính năng AI về sau: muốn giới hạn AI c
 |---|---|---|---|
 | 1–2 | Lấy nhóm làm trung tâm | 2 tuần | ✅ Xong |
 | 3–4 | Bài viết theo phong cách Workplace | 2 tuần | ✅ Xong |
-| 5 | Tích hợp AI vào cộng đồng | 1 tuần | 🔄 Đang làm (3/4 mục) |
+| 5 | Tích hợp AI vào cộng đồng | 1 tuần | ✅ Xong |
 | 6–7 | Work Chat | 2 tuần | ⬜ Chưa bắt đầu |
 | 8 | Kiểm thử, hoàn thiện, viết luận văn | 1 tuần | ⬜ Chưa bắt đầu |
 
@@ -78,14 +78,14 @@ Chuyển trọng tâm từ "bảng tin toàn hệ thống" sang "nhóm", đúng 
 - Nhắc tên (`@`) với gợi ý thành viên, kèm thông báo cho người được nhắc.
 - Ghim bài, theo dõi ai đã đọc, tìm kiếm trong phạm vi nhóm.
 
-### Giai đoạn 5 — Tích hợp AI vào cộng đồng 🔄
+### Giai đoạn 5 — Tích hợp AI vào cộng đồng ✅
 
 | Mục | Nội dung | Ước tính | Trạng thái |
 |---|---|---|---|
 | ① | `@AI` trả lời trong bình luận, kèm trích dẫn | 2 ngày | ✅ Xong |
 | ② | Đăng bài kèm tệp → AI tóm tắt tài liệu | 2 ngày | ✅ Xong |
 | ③ | Gợi ý khi soạn bài | 1 ngày | ✅ Xong |
-| ④ | Tìm kiếm hợp nhất (bài viết + tài liệu) | 2 ngày | ⬜ Chưa |
+| ④ | Tìm kiếm hợp nhất (bài viết + tài liệu) | 2 ngày | ✅ Xong |
 
 **① `@AI` kèm trích dẫn.** Sửa `DiscussionService`: mã cũ chỉ đọc trường `answer` và vứt bỏ `citations`, đồng thời gán câu trả lời của AI cho chính người hỏi. Nay trợ lý đăng bài bằng một tài khoản hệ thống riêng (khoá đăng nhập), giữ lại trích dẫn để người đọc kiểm chứng được, và ghi `retrieval_trace_id` (cột có từ V8, trước nay chưa từng dùng).
 
@@ -93,7 +93,7 @@ Chuyển trọng tâm từ "bảng tin toàn hệ thống" sang "nhóm", đúng 
 
 **③ Gợi ý khi soạn bài.** Khi người dùng gõ tiêu đề, hệ thống tìm các bài tương tự trong nhóm (debounce 300 ms, một câu truy vấn có đánh chỉ mục, **không** gọi AI Service), ưu tiên hiện bài đã có lời giải lên trước. Đồng thời cho biết nhóm có bao nhiêu tài liệu đã duyệt để người dùng biết trợ lý AI có đủ nguồn trả lời hay chưa. Bấm vào gợi ý sẽ mở bài cũ thay vì đăng bài mới.
 
-**④ Tìm kiếm hợp nhất.** Một ô tìm kiếm trả về cả bài viết lẫn tài liệu, thay vì bắt người dùng nhớ nội dung mình cần nằm ở khu vực nào.
+**④ Tìm kiếm hợp nhất.** `GET /api/v1/search` trả về cả bài viết lẫn tài liệu trong mọi nhóm người dùng tham gia. Phạm vi lấy từ danh sách thành viên trên server, **không có tham số workspace nào để client nới rộng**. Hai loại kết quả để riêng thành hai mục chứ không trộn vào một bảng xếp hạng — chúng không so sánh được với nhau, và người đang tìm tệp thì muốn thấy tệp, không phải tệp bị xếp dưới ba bài thảo luận có nhắc tới nó. Tài liệu chỉ khớp theo **tên tệp**: tìm trong nội dung tài liệu là việc của RAG, làm lại bằng SQL ở đây chỉ cho ra câu trả lời tệ hơn bằng một đường thứ hai.
 
 ### Giai đoạn 6–7 — Work Chat ⬜
 
