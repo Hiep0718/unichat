@@ -38,8 +38,10 @@ import com.unichat.core.communitychat.domain.DiscussionRepository;
 import com.unichat.core.communitychat.domain.NewReplyEvent;
 import com.unichat.core.document.domain.DocumentRepository;
 import com.unichat.core.user.domain.UserRepository;
+import com.unichat.core.workspace.domain.Workspace;
 import com.unichat.core.workspace.domain.WorkspaceMember;
 import com.unichat.core.workspace.domain.WorkspaceMemberRepository;
+import com.unichat.core.workspace.domain.WorkspaceRepository;
 import com.unichat.core.workspace.domain.WorkspaceRole;
 
 @Service
@@ -53,6 +55,7 @@ public class DiscussionService {
     private final WorkspaceMemberRepository memberRepository;
     private final UserRepository userRepository;
     private final DocumentRepository documentRepository;
+    private final WorkspaceRepository workspaceRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final RestTemplate restTemplate;
     private final ReactionRepository reactionRepository;
@@ -65,8 +68,10 @@ public class DiscussionService {
                              WorkspaceMemberRepository memberRepository,
                              UserRepository userRepository,
                              DocumentRepository documentRepository,
+                             WorkspaceRepository workspaceRepository,
                              ApplicationEventPublisher eventPublisher,
                              ReactionRepository reactionRepository) {
+        this.workspaceRepository = workspaceRepository;
         this.discussionRepository = discussionRepository;
         this.replyRepository = replyRepository;
         this.memberRepository = memberRepository;
@@ -135,8 +140,11 @@ public class DiscussionService {
                 
         String userVote = reactionRepository.findByUserIdAndTargetTypeAndTargetId(userId, "DISCUSSION", discussionId)
                 .map(Reaction::getReactionType).orElse(null);
-                
-        return DiscussionResponse.from(discussion, authorName, null, userVote);
+
+        String workspaceName = workspaceRepository.findById(workspaceId)
+                .map(Workspace::getName).orElse(null);
+
+        return DiscussionResponse.from(discussion, workspaceName, authorName, null, userVote);
     }
 
     @Transactional
@@ -254,8 +262,14 @@ public class DiscussionService {
             throw new AuthorizationError("Only the post author can accept an answer");
         }
 
-        replyRepository.findById(replyId)
+        DiscussionReply reply = replyRepository.findById(replyId)
                 .orElseThrow(() -> new NotFoundError("Reply not found"));
+
+        // Without this check any reply id can be accepted, including one from
+        // another discussion or another workspace entirely.
+        if (!reply.getDiscussionId().equals(discussionId)) {
+            throw new AuthorizationError("Reply does not belong to this discussion");
+        }
 
         discussion.setAcceptedReplyId(replyId);
         discussion.setUpdatedAt(Instant.now());

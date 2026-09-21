@@ -8,6 +8,7 @@ import { fetchJson } from '../../lib/api-client';
 export interface DiscussionResponse {
   id: string;
   workspaceId: string;
+  workspaceName: string | null;
   authorId: string;
   title: string;
   body: string;

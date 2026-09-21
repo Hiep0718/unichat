@@ -5,13 +5,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-
-import com.unichat.core.communitychat.domain.JsonbStringListConverter;
 
 /**
  * A discussion thread within a community workspace.
@@ -54,7 +54,14 @@ public class Discussion {
     @Column(name = "vote_score", nullable = false)
     private int voteScore;
 
-    @Convert(converter = JsonbStringListConverter.class)
+    /**
+     * Mapped with Hibernate's native JSON support rather than a string
+     * converter: an {@code AttributeConverter} binds the value as {@code
+     * varchar}, and PostgreSQL refuses to cast varchar to jsonb, which failed
+     * every insert with "column tags is of type jsonb but expression is of type
+     * character varying".
+     */
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "tags", columnDefinition = "jsonb", nullable = false)
     private List<String> tags = new ArrayList<>();
 
