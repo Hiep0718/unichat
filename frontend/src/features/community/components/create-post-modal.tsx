@@ -2,13 +2,13 @@
  * Create Post Modal with workspace selector (Reddit-style).
  * Used on FeedPage to create a new discussion across any joined workspace.
  */
-import { useState, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { Icon } from '../../../components/icon';
 import { getWorkspaces } from '../../workspaces/workspace-api';
 import type { WorkspaceDto } from '../../workspaces/workspace-schema';
 import { ApiError } from '../../../lib/api-client';
-import { createDiscussion } from '../community-api';
+import { createDiscussion, uploadPostAttachment } from '../community-api';
 import './create-post-modal.css';
 
 interface CreatePostModalProps {
@@ -48,6 +48,10 @@ export function CreatePostModal({
   const [loading, setLoading] = useState(false);
   const [wsLoading, setWsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
+  const [uploadingName, setUploadingName] = useState<string | null>(null);
+  const [uploadPercent, setUploadPercent] = useState(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setWsLoading(true);
@@ -77,6 +81,14 @@ export function CreatePostModal({
         label,
         tags,
       });
+
+      // Attachments need the post id, so they are uploaded once it exists.
+      // A failure here must not lose the post that was already created.
+      for (const file of files) {
+        setUploadingName(file.name);
+        await uploadPostAttachment(selectedWsId, result.id, file, setUploadPercent);
+      }
+
       onCreated(selectedWsId, result.id);
     } catch (err: unknown) {
       // Surfacing the failure matters: silently swallowing it made the modal
@@ -222,6 +234,60 @@ export function CreatePostModal({
               />
             </div>
           </div>
+          <div className="create-post-modal__attachments">
+            <button
+              type="button"
+              className="create-post-modal__attach-btn"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={loading}
+            >
+              <Icon name="attach_file" size={17} />
+              Đính kèm ảnh hoặc tài liệu
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept=".png,.jpg,.jpeg,.webp,.gif,.pdf,.docx,.txt"
+              style={{ display: 'none' }}
+              onChange={(e) => {
+                setFiles((prev) => [...prev, ...Array.from(e.target.files ?? [])]);
+                e.target.value = '';
+              }}
+            />
+
+            {files.length > 0 && (
+              <ul className="create-post-modal__file-list">
+                {files.map((file, index) => (
+                  <li key={`${file.name}-${index}`}>
+                    <Icon
+                      name={file.type.startsWith('image/') ? 'image' : 'description'}
+                      size={16}
+                    />
+                    <span className="create-post-modal__file-name">{file.name}</span>
+                    {uploadingName === file.name ? (
+                      <span className="create-post-modal__file-progress">{uploadPercent}%</span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setFiles((prev) => prev.filter((_, i) => i !== index))}
+                        aria-label={`Bỏ ${file.name}`}
+                        disabled={loading}
+                      >
+                        <Icon name="close" size={14} />
+                      </button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            <p className="create-post-modal__attach-hint">
+              Tài liệu PDF, DOCX, TXT sẽ vào thư viện của nhóm để trợ lý AI đọc được.
+              Ảnh chỉ hiển thị trong bài viết.
+            </p>
+          </div>
+
           {error && (
             <div className="create-post-modal__error" role="alert">
               <Icon name="error_outline" size={18} />

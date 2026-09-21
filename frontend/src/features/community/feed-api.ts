@@ -2,6 +2,7 @@
  * REST API client for the community feed, trending tags, stats, and bookmarks.
  */
 import { fetchJson } from '../../lib/api-client';
+import type { PostAttachment } from './community-api';
 
 /* ---------- Types ---------- */
 
@@ -22,6 +23,7 @@ export interface FeedPostResponse {
   hasAcceptedAnswer: boolean;
   isBookmarked: boolean;
   createdAt: string;
+  attachments: PostAttachment[];
 }
 
 export interface FeedPage {

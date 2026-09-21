@@ -1,9 +1,22 @@
 /**
  * REST API client for discussions, reactions, and notifications.
  */
-import { fetchJson } from '../../lib/api-client';
+import { fetchJson, getAccessToken } from '../../lib/api-client';
 
 /* ---------- Types ---------- */
+
+/** What an attachment is for. Only DOCUMENT files reach the AI assistant. */
+export type AttachmentKind = 'IMAGE' | 'DOCUMENT';
+
+export interface PostAttachment {
+  id: string;
+  kind: AttachmentKind;
+  originalName: string;
+  mediaType: string;
+  byteSize: number;
+  /** Set once the file entered the group library, so the assistant can cite it. */
+  documentId: string | null;
+}
 
 export interface DiscussionResponse {
   id: string;
@@ -19,6 +32,8 @@ export interface DiscussionResponse {
   replyCount: number;
   createdAt: string;
   updatedAt: string;
+  /** Set once the author edited the post. */
+  editedAt: string | null;
   voteScore: number;
   userVote: string | null;
   authorName: string;
@@ -27,6 +42,7 @@ export interface DiscussionResponse {
   acceptedReplyId: string | null;
   hasAcceptedAnswer: boolean;
   isBookmarked: boolean;
+  attachments: PostAttachment[];
 }
 
 export interface DiscussionPage {
@@ -89,6 +105,110 @@ export async function createDiscussion(
     method: 'POST',
     body: JSON.stringify(data),
   });
+}
+
+export async function updateDiscussion(
+  workspaceId: string,
+  discussionId: string,
+  data: { title: string; body: string; tags?: string[] },
+): Promise<DiscussionResponse> {
+  return fetchJson<DiscussionResponse>(`/workspaces/${workspaceId}/discussions/${discussionId}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteDiscussion(workspaceId: string, discussionId: string): Promise<void> {
+  await fetchJson<void>(`/workspaces/${workspaceId}/discussions/${discussionId}`, {
+    method: 'DELETE',
+  });
+}
+
+/* ---------- Attachments ---------- */
+
+/**
+ * Uploads one attachment to a post.
+ *
+ * Uses XHR rather than fetch so the composer can show upload progress.
+ */
+export function uploadPostAttachment(
+  workspaceId: string,
+  discussionId: string,
+  file: File,
+  onProgress?: (percent: number) => void,
+): Promise<PostAttachment> {
+  const formData = new FormData();
+  formData.append('file', file);
+  const token = getAccessToken();
+
+  return new Promise<PostAttachment>((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `/api/v1/workspaces/${workspaceId}/discussions/${discussionId}/attachments`);
+    if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+
+    if (xhr.upload && onProgress) {
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          onProgress(Math.round((event.loaded / event.total) * 100));
+        }
+      };
+    }
+
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          resolve(JSON.parse(xhr.responseText) as PostAttachment);
+        } catch {
+          reject(new Error('Phản hồi từ máy chủ không hợp lệ'));
+        }
+        return;
+      }
+      try {
+        const problem = JSON.parse(xhr.responseText);
+        reject(new Error(problem.detail || problem.title || 'Tải tệp đính kèm thất bại'));
+      } catch {
+        reject(new Error(`Tải tệp đính kèm thất bại (HTTP ${xhr.status})`));
+      }
+    };
+
+    xhr.onerror = () => reject(new Error('Lỗi kết nối khi tải tệp đính kèm'));
+    xhr.send(formData);
+  });
+}
+
+export async function deletePostAttachment(
+  workspaceId: string,
+  discussionId: string,
+  attachmentId: string,
+): Promise<void> {
+  await fetchJson<void>(
+    `/workspaces/${workspaceId}/discussions/${discussionId}/attachments/${attachmentId}`,
+    { method: 'DELETE' },
+  );
+}
+
+/**
+ * Fetches attachment bytes as an object URL.
+ *
+ * The endpoint requires a bearer token, which an `<img src>` cannot send, so
+ * the bytes are fetched here and handed over as a blob URL. Callers must revoke
+ * the URL when done.
+ */
+export async function fetchAttachmentObjectUrl(
+  workspaceId: string,
+  discussionId: string,
+  attachmentId: string,
+): Promise<string> {
+  const token = getAccessToken();
+  const response = await fetch(
+    `/api/v1/workspaces/${workspaceId}/discussions/${discussionId}/attachments/${attachmentId}/content`,
+    { headers: token ? { Authorization: `Bearer ${token}` } : {} },
+  );
+
+  if (!response.ok) {
+    throw new Error(`Không tải được tệp đính kèm (HTTP ${response.status})`);
+  }
+  return URL.createObjectURL(await response.blob());
 }
 
 export async function fetchReplies(workspaceId: string, discussionId: string): Promise<ReplyResponse[]> {

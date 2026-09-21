@@ -569,3 +569,10 @@
   font: var(--font-label-md);
   color: var(--color-on-surface-variant);
 }
+
+/* Marks a post the author has revised. */
+.post-detail__edited {
+  font: var(--font-label-sm);
+  font-style: italic;
+  color: var(--color-on-surface-variant);
+}

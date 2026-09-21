@@ -10,11 +10,20 @@ import remarkGfm from 'remark-gfm';
 
 import { Icon } from '../../components/icon';
 import { formatRelativeTime, formatFullDateTime } from '../../lib/format-time';
-import { getDiscussion, fetchReplies, addReply } from './community-api';
+import {
+  addReply,
+  deleteDiscussion,
+  fetchReplies,
+  getDiscussion,
+  updateDiscussion,
+} from './community-api';
 import type { DiscussionResponse, ReplyResponse } from './community-api';
 import { AnswerStatusBadge } from './components/answer-status';
 import { EntityAvatar } from '../../components/entity-avatar';
 import { HelpfulButton } from './components/helpful-button';
+import { PostAttachments } from './components/post-attachments';
+import { PostEditForm } from './components/post-edit-form';
+import { PostOwnerMenu } from './components/post-owner-menu';
 import { ReplyForm } from './components/reply-form';
 import { ReplyThread } from './components/reply-thread';
 import { useAuth } from '../auth/auth-context';
@@ -35,6 +44,9 @@ export function PostDetailPage() {
   const [loading, setLoading] = useState(true);
   const [replyLoading, setReplyLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -77,6 +89,34 @@ export function PostDetailPage() {
     }
   };
 
+  const handleUpdate = async (values: { title: string; body: string }) => {
+    if (!workspaceId || !discussion) return;
+    setSaving(true);
+    setEditError(null);
+    try {
+      const updated = await updateDiscussion(workspaceId, discussion.id, {
+        ...values,
+        tags: discussion.tags ?? [],
+      });
+      setDiscussion(updated);
+      setIsEditing(false);
+    } catch (err: unknown) {
+      setEditError(err instanceof Error ? err.message : 'Không lưu được thay đổi');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!workspaceId || !discussion) return;
+    try {
+      await deleteDiscussion(workspaceId, discussion.id);
+      navigate('/feed');
+    } catch (err: unknown) {
+      setEditError(err instanceof Error ? err.message : 'Không xoá được bài viết');
+    }
+  };
+
   const handleBookmark = async () => {
     if (!discussion) return;
     try {
@@ -108,6 +148,8 @@ export function PostDetailPage() {
   const rootReplies = (repliesByParent.get(null) ?? []).filter(
     (r) => r.id !== acceptedReply?.id,
   );
+
+  const isAuthor = Boolean(user?.id && discussion && user.id === discussion.authorId);
 
   const labelName = (l: string | null) => {
     if (!l) return '';
@@ -172,16 +214,39 @@ export function PostDetailPage() {
                 replyCount={discussion.replyCount}
                 hasAcceptedAnswer={Boolean(discussion.acceptedReplyId)}
               />
+              {discussion.editedAt && (
+                <span className="post-detail__edited">đã chỉnh sửa</span>
+              )}
+              <PostOwnerMenu
+                canEdit={isAuthor}
+                canDelete={isAuthor}
+                onEdit={() => setIsEditing(true)}
+                onDelete={handleDelete}
+              />
             </div>
 
-            <h1 className="post-detail__title">
-              {discussion.label && (
-                <span className={`post-detail__label post-detail__label--${discussion.label.toLowerCase()}`}>
-                  {labelName(discussion.label)}
-                </span>
-              )}
-              {discussion.title}
-            </h1>
+            {isEditing ? (
+              <PostEditForm
+                initialTitle={discussion.title}
+                initialBody={discussion.body}
+                saving={saving}
+                error={editError}
+                onCancel={() => {
+                  setIsEditing(false);
+                  setEditError(null);
+                }}
+                onSave={handleUpdate}
+              />
+            ) : (
+              <h1 className="post-detail__title">
+                {discussion.label && (
+                  <span className={`post-detail__label post-detail__label--${discussion.label.toLowerCase()}`}>
+                    {labelName(discussion.label)}
+                  </span>
+                )}
+                {discussion.title}
+              </h1>
+            )}
 
             {/* Tag chips */}
             {discussion.tags?.length > 0 && (
@@ -192,9 +257,21 @@ export function PostDetailPage() {
               </div>
             )}
 
-            <div className="post-detail__body">
-              <Markdown remarkPlugins={[remarkGfm]}>{discussion.body}</Markdown>
-            </div>
+            {!isEditing && (
+              <>
+                <div className="post-detail__body">
+                  <Markdown remarkPlugins={[remarkGfm]}>{discussion.body}</Markdown>
+                </div>
+
+                {workspaceId && (
+                  <PostAttachments
+                    workspaceId={workspaceId}
+                    discussionId={discussion.id}
+                    attachments={discussion.attachments ?? []}
+                  />
+                )}
+              </>
+            )}
 
             <div className="post-detail__actions">
               <HelpfulButton

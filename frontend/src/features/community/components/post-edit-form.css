@@ -1,0 +1,88 @@
+.post-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.post-edit__label {
+  font: var(--font-label-md);
+  font-weight: 600;
+  color: var(--color-on-surface);
+}
+
+.post-edit__input,
+.post-edit__textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  color: var(--color-on-surface);
+  font: var(--font-body-md);
+  box-sizing: border-box;
+}
+
+.post-edit__textarea {
+  min-height: 180px;
+  resize: vertical;
+  line-height: 1.6;
+  font-family: inherit;
+}
+
+.post-edit__input:focus,
+.post-edit__textarea:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -1px;
+}
+
+.post-edit__count {
+  align-self: flex-end;
+  font: var(--font-label-sm);
+  color: var(--color-on-surface-variant);
+}
+
+.post-edit__error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 9px 12px;
+  border-radius: var(--radius-lg);
+  background: var(--color-error-container);
+  color: var(--color-on-error-container);
+  font: var(--font-body-sm);
+}
+
+.post-edit__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.post-edit__cancel,
+.post-edit__save {
+  padding: 9px 18px;
+  border-radius: var(--radius-full);
+  font: var(--font-label-md);
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.post-edit__cancel {
+  border: 1px solid var(--color-outline-variant);
+  background: var(--color-surface);
+  color: var(--color-on-surface);
+}
+
+.post-edit__save {
+  border: none;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.post-edit__save:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
