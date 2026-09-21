@@ -7,29 +7,47 @@ import { useState, useEffect } from 'react';
 import { Icon } from '../../../components/icon';
 import { getWorkspaces } from '../../workspaces/workspace-api';
 import type { WorkspaceDto } from '../../workspaces/workspace-schema';
+import { ApiError } from '../../../lib/api-client';
 import { createDiscussion } from '../community-api';
-import '../feed-page.css';
+import './create-post-modal.css';
 
 interface CreatePostModalProps {
   readonly onClose: () => void;
   readonly onCreated: (workspaceId: string, discussionId: string) => void;
   readonly preselectedWorkspaceId?: string;
+  /** Pre-filled title, e.g. when escalating an unanswered question from chat. */
+  readonly initialTitle?: string;
+  /** Pre-filled body. */
+  readonly initialBody?: string;
+  /** Pre-selected post label. Defaults to DISCUSSION. */
+  readonly initialLabel?: string;
+  /** Overrides the modal heading to match the originating flow. */
+  readonly heading?: string;
 }
 
 /**
  * Renders a full-screen modal for creating a new community post.
  * Fetches the user's joined workspaces for the workspace dropdown.
  */
-export function CreatePostModal({ onClose, onCreated, preselectedWorkspaceId }: CreatePostModalProps) {
+export function CreatePostModal({
+  onClose,
+  onCreated,
+  preselectedWorkspaceId,
+  initialTitle,
+  initialBody,
+  initialLabel,
+  heading,
+}: CreatePostModalProps) {
   const [workspaces, setWorkspaces] = useState<WorkspaceDto[]>([]);
   const [selectedWsId, setSelectedWsId] = useState(preselectedWorkspaceId ?? '');
-  const [title, setTitle] = useState('');
-  const [body, setBody] = useState('');
-  const [label, setLabel] = useState('DISCUSSION');
+  const [title, setTitle] = useState(initialTitle ?? '');
+  const [body, setBody] = useState(initialBody ?? '');
+  const [label, setLabel] = useState(initialLabel ?? 'DISCUSSION');
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [wsLoading, setWsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setWsLoading(true);
@@ -51,6 +69,7 @@ export function CreatePostModal({ onClose, onCreated, preselectedWorkspaceId }: 
     e.preventDefault();
     if (!title.trim() || !body.trim() || !selectedWsId) return;
     setLoading(true);
+    setError(null);
     try {
       const result = await createDiscussion(selectedWsId, {
         title: title.trim(),
@@ -59,8 +78,12 @@ export function CreatePostModal({ onClose, onCreated, preselectedWorkspaceId }: 
         tags,
       });
       onCreated(selectedWsId, result.id);
-    } catch {
-      /* toast error would go here */
+    } catch (err: unknown) {
+      // Surfacing the failure matters: silently swallowing it made the modal
+      // look like it had done nothing at all.
+      const detail = err instanceof Error ? err.message : 'Không rõ nguyên nhân';
+      const status = err instanceof ApiError ? ` (HTTP ${err.status})` : '';
+      setError(`Đăng bài thất bại${status}: ${detail}`);
     } finally {
       setLoading(false);
     }
@@ -79,7 +102,7 @@ export function CreatePostModal({ onClose, onCreated, preselectedWorkspaceId }: 
     <div className="create-post-overlay" onClick={onClose}>
       <div className="create-post-modal" onClick={(e) => e.stopPropagation()}>
         <div className="create-post-modal__header">
-          <h2 className="create-post-modal__title">Tạo bài viết mới</h2>
+          <h2 className="create-post-modal__title">{heading ?? 'Tạo bài viết mới'}</h2>
           <button className="create-post-modal__close" onClick={onClose}>
             <Icon name="close" size={20} />
           </button>
@@ -154,7 +177,7 @@ export function CreatePostModal({ onClose, onCreated, preselectedWorkspaceId }: 
               <span className="create-post-modal__char-count">{title.length}/200</span>
             </div>
 
-/* ---------- Tags ---------- */
+            {/* ---------- Tags ---------- */}
             <div className="create-post-modal__field">
               <label className="create-post-modal__label">Thẻ (Tags) - tối đa 5 thẻ</label>
               <div className="create-post-modal__tags-input-container" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', padding: '10px 14px', border: '1px solid var(--color-outline-variant)', borderRadius: 'var(--radius-lg)', background: 'var(--color-surface)' }}>
@@ -199,6 +222,13 @@ export function CreatePostModal({ onClose, onCreated, preselectedWorkspaceId }: 
               />
             </div>
           </div>
+          {error && (
+            <div className="create-post-modal__error" role="alert">
+              <Icon name="error_outline" size={18} />
+              <span>{error}</span>
+            </div>
+          )}
+
           <div className="create-post-modal__footer">
             <button type="button" className="create-post-modal__cancel-btn" onClick={onClose}>
               Hủy
