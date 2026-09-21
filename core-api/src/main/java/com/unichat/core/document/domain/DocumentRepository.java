@@ -43,5 +43,19 @@ public interface DocumentRepository extends JpaRepository<Document, UUID> {
      */
     @Query("SELECT d.id FROM Document d WHERE d.workspaceId IN :workspaceIds AND d.status = 'PROCESSED'")
     List<UUID> findAllowedDocumentIdsForWorkspaces(@Param("workspaceIds") List<UUID> workspaceIds);
+
+    /**
+     * Lists member contributions awaiting an owner/editor decision.
+     *
+     * @param workspaceId workspace being moderated
+     * @param pageable    pagination parameters
+     */
+    Page<Document> findByWorkspaceIdAndStatusOrderByCreatedAtDesc(
+            UUID workspaceId, DocumentStatus status, Pageable pageable);
+
+    /**
+     * Counts contributions awaiting a decision, for the moderation badge.
+     */
+    long countByWorkspaceIdAndStatus(UUID workspaceId, DocumentStatus status);
 }
 

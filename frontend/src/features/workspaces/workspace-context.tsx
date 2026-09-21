@@ -18,7 +18,13 @@ interface WorkspaceContextState {
   readonly workspace: WorkspaceDetails | null;
   readonly role: WorkspaceRole;
   readonly isOwner: boolean;
+  /** May manage workspace content directly: OWNER and EDITOR. */
   readonly canEdit: boolean;
+  /**
+   * May contribute documents. Every active member can, but a contribution from
+   * someone without {@link canEdit} stays out of retrieval until approved.
+   */
+  readonly canContribute: boolean;
 }
 
 const WorkspaceContext = createContext<WorkspaceContextState | null>(null);
@@ -33,12 +39,16 @@ export function WorkspaceProvider({ workspace, children }: WorkspaceProviderProp
     const role = workspace.role || 'VIEWER';
     const isOwner = role === 'OWNER';
     const canEdit = role === 'OWNER' || role === 'EDITOR';
+    // Non-members reach this provider with no role at all; only actual members
+    // may contribute, otherwise the upload would fail server-side.
+    const canContribute = Boolean(workspace.role);
 
     return {
       workspace,
       role,
       isOwner,
       canEdit,
+      canContribute,
     };
   }, [workspace]);
 

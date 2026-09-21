@@ -1,0 +1,37 @@
+/* Pending-approval indicator on a side-nav item.
+ *
+ * The side nav is collapsed to icons by default and expands on hover, so the
+ * badge has two forms: a bare dot over the icon while collapsed, and the full
+ * count pill once there is room for it. */
+
+.pending-badge {
+  position: absolute;
+  top: 7px;
+  right: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 9px;
+  height: 9px;
+  min-width: 0;
+  padding: 0;
+  border-radius: 50%;
+  background: var(--color-error);
+  color: #ffffff;
+  /* Collapses the number without removing it from the accessibility tree. */
+  font-size: 0;
+  font-weight: 700;
+  line-height: 1;
+  transition: width 0.2s ease, height 0.2s ease, font-size 0.2s ease;
+}
+
+.side-nav:hover .pending-badge {
+  position: static;
+  margin-left: auto;
+  width: auto;
+  height: 20px;
+  min-width: 20px;
+  padding: 0 7px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+}

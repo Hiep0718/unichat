@@ -2,6 +2,7 @@ package com.unichat.core.document.api;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -27,6 +29,8 @@ import org.springframework.web.multipart.MultipartFile;
 import com.unichat.core.common.error.ValidationError;
 import com.unichat.core.document.service.DocumentService;
 import com.unichat.core.shared.idempotency.IdempotencyService;
+
+import jakarta.validation.Valid;
 
 /**
  * REST controller for document upload, ingestion tracking, and lifecycle operations.
@@ -58,6 +62,61 @@ public class DocumentController {
     }
 
     /**
+     * Lists member contributions awaiting an approval decision.
+     */
+    @GetMapping("/pending-approval")
+    public ResponseEntity<Page<DocumentResponse>> getPendingApprovals(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable("workspaceId") UUID workspaceId,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "20") int size) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        Pageable pageable = PageRequest.of(page, Math.min(size, 100));
+        return ResponseEntity.ok(documentService.getPendingApprovals(userId, workspaceId, pageable));
+    }
+
+    /**
+     * Returns the number of contributions awaiting a decision, for the badge.
+     */
+    @GetMapping("/pending-approval/count")
+    public ResponseEntity<Map<String, Long>> countPendingApprovals(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable("workspaceId") UUID workspaceId) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        long count = documentService.countPendingApprovals(userId, workspaceId);
+        return ResponseEntity.ok(Map.of("pendingCount", count));
+    }
+
+    /**
+     * Approves a contributed document, releasing it into the ingestion pipeline.
+     */
+    @PostMapping("/{documentId}/approve")
+    public ResponseEntity<DocumentResponse> approveDocument(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable("workspaceId") UUID workspaceId,
+            @PathVariable("documentId") UUID documentId,
+            @RequestHeader(value = "X-Request-Id", required = false) String requestId) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        String correlationId = requestId != null ? requestId : UUID.randomUUID().toString();
+        return ResponseEntity.ok(
+                documentService.approveDocument(userId, workspaceId, documentId, correlationId));
+    }
+
+    /**
+     * Declines a contributed document, keeping it out of retrieval permanently.
+     */
+    @PostMapping("/{documentId}/reject")
+    public ResponseEntity<DocumentResponse> rejectDocument(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable("workspaceId") UUID workspaceId,
+            @PathVariable("documentId") UUID documentId,
+            @Valid @RequestBody RejectDocumentRequest request) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        return ResponseEntity.ok(
+                documentService.rejectDocument(userId, workspaceId, documentId, request.reason()));
+    }
+
+    /**
      * Uploads document(s) (PDF, DOCX, TXT) to workspace and triggers async ingestion via RabbitMQ.
      * Supports single file ('file') or batch multi-file upload ('files').
      */
@@ -67,6 +126,8 @@ public class DocumentController {
             @PathVariable("workspaceId") UUID workspaceId,
             @RequestPart(value = "file", required = false) MultipartFile file,
             @RequestPart(value = "files", required = false) MultipartFile[] files,
+            @RequestParam(value = "contributionSummary", required = false) String contributionSummary,
+            @RequestParam(value = "contributionReason", required = false) String contributionReason,
             @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
             @RequestHeader(value = "X-Request-Id", required = false, defaultValue = "") String requestId) {
         UUID userId = UUID.fromString(jwt.getSubject());
@@ -98,15 +159,19 @@ public class DocumentController {
             }
 
             Object result = (uploadList.size() == 1 && file != null)
-                    ? documentService.uploadDocument(userId, workspaceId, file, requestId)
-                    : documentService.uploadDocuments(userId, workspaceId, uploadList, requestId);
+                    ? documentService.uploadDocument(userId, workspaceId, file, requestId,
+                            contributionSummary, contributionReason)
+                    : documentService.uploadDocuments(userId, workspaceId, uploadList, requestId,
+                            contributionSummary, contributionReason);
             idempotencyService.saveRecord(actorId, routeKey, idempotencyKey, currentHash, 202, result);
             return ResponseEntity.status(HttpStatus.ACCEPTED).body(result);
         }
 
         Object result = (uploadList.size() == 1 && file != null)
-                ? documentService.uploadDocument(userId, workspaceId, file, requestId)
-                : documentService.uploadDocuments(userId, workspaceId, uploadList, requestId);
+                ? documentService.uploadDocument(userId, workspaceId, file, requestId,
+                        contributionSummary, contributionReason)
+                : documentService.uploadDocuments(userId, workspaceId, uploadList, requestId,
+                        contributionSummary, contributionReason);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(result);
     }
 

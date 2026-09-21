@@ -60,6 +60,29 @@ public class Document {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
+    /** Member who contributed the document. */
+    @Column(name = "uploaded_by")
+    private UUID uploadedBy;
+
+    /** Owner or editor who approved the contribution, null while pending. */
+    @Column(name = "approved_by")
+    private UUID approvedBy;
+
+    @Column(name = "approved_at")
+    private Instant approvedAt;
+
+    /** Reason shown to the contributor when a contribution is declined. */
+    @Column(name = "rejection_reason", length = 500)
+    private String rejectionReason;
+
+    /** What the contributed document contains, written by the contributor. */
+    @Column(name = "contribution_summary", length = 500)
+    private String contributionSummary;
+
+    /** Why the workspace needs it, written by the contributor. */
+    @Column(name = "contribution_reason", length = 1000)
+    private String contributionReason;
+
     public Document() {}
 
     public Document(
@@ -71,7 +94,9 @@ public class Document {
             long byteSize,
             String sha256,
             DocumentStatus status,
+            UUID uploadedBy,
             Instant createdAt) {
+        this.uploadedBy = uploadedBy;
         this.id = id;
         this.workspaceId = workspaceId;
         this.storageKey = storageKey;
@@ -158,5 +183,67 @@ public class Document {
 
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public UUID getUploadedBy() {
+        return uploadedBy;
+    }
+
+    public UUID getApprovedBy() {
+        return approvedBy;
+    }
+
+    public Instant getApprovedAt() {
+        return approvedAt;
+    }
+
+    public String getRejectionReason() {
+        return rejectionReason;
+    }
+
+    public String getContributionSummary() {
+        return contributionSummary;
+    }
+
+    public String getContributionReason() {
+        return contributionReason;
+    }
+
+    /**
+     * Records what the contributor said about the document at upload time.
+     *
+     * @param summary what the document contains
+     * @param reason  why the workspace needs it
+     */
+    public void describeContribution(String summary, String reason) {
+        this.contributionSummary = summary;
+        this.contributionReason = reason;
+    }
+
+    /**
+     * Marks a contributed document as approved so it can enter ingestion.
+     *
+     * @param approverId owner or editor who approved it
+     * @param approvedAt approval timestamp
+     */
+    public void approve(UUID approverId, Instant approvedAt) {
+        this.status = DocumentStatus.PENDING;
+        this.approvedBy = approverId;
+        this.approvedAt = approvedAt;
+        this.rejectionReason = null;
+    }
+
+    /**
+     * Declines a contributed document, keeping it out of retrieval permanently.
+     *
+     * @param approverId owner or editor who declined it
+     * @param reason     explanation shown to the contributor
+     * @param decidedAt  decision timestamp
+     */
+    public void reject(UUID approverId, String reason, Instant decidedAt) {
+        this.status = DocumentStatus.REJECTED;
+        this.approvedBy = approverId;
+        this.approvedAt = decidedAt;
+        this.rejectionReason = reason;
     }
 }

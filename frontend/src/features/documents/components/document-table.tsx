@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import {
+  ContributionContext,
   DocumentResponse,
   fetchWorkspaceDocuments,
   uploadWorkspaceDocuments,
   deleteWorkspaceDocument,
 } from '../document-api';
 import { splitPdfFile } from '../utils/pdf-splitter';
+import { ContributionModal } from './contribution-modal';
 import { PdfSplitModal } from './pdf-split-modal';
 import { SyncVectorModal } from './sync-vector-modal';
 import { LoadingInline } from '../../../components/loading-screen';
@@ -14,7 +16,20 @@ import './document-table.css';
 
 interface DocumentTableProps {
   workspaceId: string;
+  /** May manage existing documents (delete). OWNER and EDITOR only. */
   canEdit: boolean;
+  /**
+   * May upload. Every active member can contribute; a contribution from a
+   * member without {@link canEdit} is held for approval before the AI can use it.
+   * Defaults to {@link canEdit} so existing call sites keep their behaviour.
+   */
+  canContribute?: boolean;
+  /**
+   * Bump to force a reload from outside — the approval queue changes document
+   * statuses, and this table keeps its own local copy rather than sharing the
+   * React Query cache.
+   */
+  reloadToken?: number;
 }
 
 interface UploadingDocument {
@@ -31,13 +46,20 @@ interface NotificationToast {
   message: string;
 }
 
-export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEdit }) => {
+export const DocumentTable: React.FC<DocumentTableProps> = ({
+  workspaceId,
+  canEdit,
+  canContribute = canEdit,
+  reloadToken = 0,
+}) => {
   const [documents, setDocuments] = useState<DocumentResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [uploadingDocs, setUploadingDocs] = useState<UploadingDocument[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [notificationToast, setNotificationToast] = useState<NotificationToast | null>(null);
+  // Files waiting for the contributor to describe them before upload starts.
+  const [pendingContribution, setPendingContribution] = useState<File[] | null>(null);
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -96,7 +118,7 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
     return () => {
       isMounted = false;
     };
-  }, [workspaceId]);
+  }, [workspaceId, reloadToken]);
 
   useEffect(() => {
     const isProcessing = documents.some(
@@ -122,7 +144,7 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
     return () => clearTimeout(timer);
   }, [notificationToast]);
 
-  const uploadBatchFiles = async (targetFiles: File[]) => {
+  const uploadBatchFiles = async (targetFiles: File[], contribution?: ContributionContext) => {
     if (targetFiles.length === 0) return;
 
     const initialUploading: UploadingDocument[] = targetFiles.map((file, idx) => ({
@@ -144,11 +166,16 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
     }, 150);
 
     try {
-      await uploadWorkspaceDocuments(workspaceId, targetFiles, (fileIdx, percent) => {
-        setUploadingDocs((prev) =>
-          prev.map((doc, idx) => (idx === fileIdx ? { ...doc, progress: Math.max(doc.progress, percent) } : doc))
-        );
-      });
+      await uploadWorkspaceDocuments(
+        workspaceId,
+        targetFiles,
+        (fileIdx, percent) => {
+          setUploadingDocs((prev) =>
+            prev.map((doc, idx) => (idx === fileIdx ? { ...doc, progress: Math.max(doc.progress, percent) } : doc))
+          );
+        },
+        contribution
+      );
 
       clearInterval(progressInterval);
       setUploadingDocs((prev) => prev.map((doc) => ({ ...doc, progress: 100 })));
@@ -212,8 +239,20 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
     }
 
     if (validFiles.length > 0) {
-      await uploadBatchFiles(validFiles);
+      await startUpload(validFiles);
     }
+  };
+
+  /**
+   * Members who cannot publish directly must explain the contribution first;
+   * owners and editors upload straight away.
+   */
+  const startUpload = async (targetFiles: File[]) => {
+    if (!canEdit) {
+      setPendingContribution(targetFiles);
+      return;
+    }
+    await uploadBatchFiles(targetFiles);
   };
 
   const handleConfirmSplit = async () => {
@@ -235,7 +274,7 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
       setSplitProgressText(null);
 
       if (splitFiles.length > 0) {
-        await uploadBatchFiles(splitFiles);
+        await startUpload(splitFiles);
       }
     } catch (err: unknown) {
       setIsSplittingPdf(false);
@@ -300,6 +339,21 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
 
   return (
     <div className="document-management">
+      {pendingContribution && (
+        <ContributionModal
+          files={pendingContribution}
+          onCancel={() => {
+            setPendingContribution(null);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+          }}
+          onConfirm={(context) => {
+            const files = pendingContribution;
+            setPendingContribution(null);
+            void uploadBatchFiles(files, context);
+          }}
+        />
+      )}
+
       {oversizedFiles.length > 0 && (
         <PdfSplitModal
           files={oversizedFiles}
@@ -365,7 +419,7 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
 
       {error && <div style={{ color: '#ef4444', fontSize: '14px', marginBottom: '1rem' }}>{error}</div>}
 
-      {canEdit && (
+      {canContribute && (
         <div
           className={`document-upload-zone ${isDragging ? 'document-upload-zone--dragging' : ''}`}
           onClick={() => !isUploading && fileInputRef.current?.click()}
@@ -389,7 +443,9 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
               : 'Nhấp hoặc kéo thả nhiều tệp PDF, DOCX, TXT để tải lên cùng lúc'}
           </div>
           <div className="document-upload-zone__subtitle">
-            Hỗ trợ upload hàng loạt tệp • Dung lượng tối đa 20 MiB/tệp
+            {canEdit
+              ? 'Hỗ trợ upload hàng loạt tệp • Dung lượng tối đa 20 MiB/tệp'
+              : 'Đóng góp của bạn sẽ được chủ Workspace duyệt trước khi AI sử dụng • Tối đa 20 MiB/tệp'}
           </div>
         </div>
       )}
@@ -439,7 +495,11 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
                 <td>
                   <span className={`document-badge document-badge--${doc.status.toLowerCase()}`}>
                     <span className="document-badge__icon">
-                      {doc.status === 'PROCESSED' ? '✓' : doc.status === 'FAILED' ? '✕' : '⏳'}
+                      {doc.status === 'PROCESSED'
+                        ? '✓'
+                        : doc.status === 'FAILED' || doc.status === 'REJECTED'
+                        ? '✕'
+                        : '⏳'}
                     </span>
                     {doc.status === 'PROCESSED'
                       ? 'Vector DB Ready'
@@ -447,6 +507,10 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({ workspaceId, canEd
                       ? 'Tách Vector...'
                       : doc.status === 'FAILED'
                       ? 'Lỗi Vector'
+                      : doc.status === 'PENDING_APPROVAL'
+                      ? 'Chờ duyệt'
+                      : doc.status === 'REJECTED'
+                      ? 'Bị từ chối'
                       : 'Chưa nạp Vector'}
                   </span>
                 </td>

@@ -141,6 +141,8 @@
 }
 
 .side-nav__item {
+  /* Anchors the pending-approval dot while the nav is collapsed. */
+  position: relative;
   display: flex;
   align-items: center;
   gap: 14px;

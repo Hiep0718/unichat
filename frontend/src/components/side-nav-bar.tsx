@@ -7,6 +7,7 @@ import { Link, useLocation, useParams } from 'react-router-dom';
 import { useAuth } from '../features/auth/auth-context';
 import { Icon } from './icon';
 import { NotificationBell } from '../features/community/notification-bell';
+import { PendingApprovalBadge } from '../features/documents/components/pending-approval-badge';
 import logoWhite from '../assets/logo-white.png';
 import './side-nav-bar.css';
 
@@ -15,6 +16,8 @@ interface NavItem {
   readonly label: string;
   readonly href: string;
   readonly ownerOrEditorOnly?: boolean;
+  /** Shows how many contributed documents are waiting for approval. */
+  readonly showPendingApprovals?: boolean;
 }
 
 /**
@@ -32,7 +35,12 @@ export function SideNavBar() {
     ? [
         { icon: 'forum', label: 'Thảo luận', href: `/workspaces/${workspaceId}/discussions` },
         { icon: 'dashboard', label: 'Tổng quan', href: `/workspaces/${workspaceId}/overview` },
-        { icon: 'description', label: 'Tài liệu', href: `/workspaces/${workspaceId}/documents` },
+        {
+          icon: 'description',
+          label: 'Tài liệu',
+          href: `/workspaces/${workspaceId}/documents`,
+          showPendingApprovals: true,
+        },
         { icon: 'chat', label: 'Trò chuyện', href: `/workspaces/${workspaceId}/chat` },
 
         { icon: 'history', label: 'Lịch sử', href: `/workspaces/${workspaceId}/conversations` },
@@ -86,6 +94,7 @@ export function SideNavBar() {
             >
               <Icon name={item.icon} size={20} />
               <span className="side-nav__label">{item.label}</span>
+              {item.showPendingApprovals && <PendingApprovalBadge />}
             </Link>
           );
         })}

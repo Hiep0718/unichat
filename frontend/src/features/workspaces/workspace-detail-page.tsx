@@ -8,6 +8,7 @@ import { useParams } from 'react-router-dom';
 
 import { Icon } from '../../components/icon';
 import { DocumentTable } from '../documents/document-table';
+import { PendingApprovalTab } from '../documents/components/pending-approval-tab';
 import { useDocuments, useDeleteDocument } from '../documents/document-hooks';
 import { MemberTable } from '../members';
 import { OverviewTab } from './components/overview-tab';
@@ -23,10 +24,14 @@ import './workspace-detail-page.css';
 const TABS = [
   { id: 'overview', label: 'Tổng quan', icon: 'dashboard' },
   { id: 'documents', label: 'Tài liệu', icon: 'description' },
+  { id: 'pending', label: 'Chờ duyệt', icon: 'inventory' },
   { id: 'chat', label: 'Trò chuyện', icon: 'chat' },
   { id: 'members', label: 'Thành viên', icon: 'group' },
   { id: 'settings', label: 'Cài đặt', icon: 'settings' },
 ] as const;
+
+/** Roles allowed to approve contributed documents into the knowledge base. */
+const MODERATOR_ROLES = ['OWNER', 'EDITOR'];
 
 type TabId = (typeof TABS)[number]['id'];
 
@@ -166,6 +171,13 @@ function TabContent({
       return <OverviewTab workspace={workspace} isLoading={wsLoading} />;
     case 'documents':
       return <DocumentsTab workspaceId={workspaceId} />;
+    case 'pending':
+      return (
+        <PendingApprovalTab
+          workspaceId={workspaceId}
+          canModerate={MODERATOR_ROLES.includes(workspace?.userRole ?? '')}
+        />
+      );
     case 'chat':
       return <TabPlaceholder icon="chat" title="Trò chuyện" />;
     case 'members':
