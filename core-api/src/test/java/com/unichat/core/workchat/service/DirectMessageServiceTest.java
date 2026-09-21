@@ -61,7 +61,8 @@ class DirectMessageServiceTest {
         contactDirectory = mock(ContactDirectory.class);
         userRepository = mock(UserRepository.class);
         service = new DirectMessageService(conversationRepository, messageRepository,
-                contactDirectory, userRepository, clock);
+                contactDirectory, userRepository,
+                mock(org.springframework.context.ApplicationEventPublisher.class), clock);
 
         // Built before stubbing the repositories: creating a mock inside a
         // when(...) argument leaves the outer stubbing unfinished.

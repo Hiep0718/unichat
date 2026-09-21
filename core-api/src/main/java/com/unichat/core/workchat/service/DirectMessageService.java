@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ import com.unichat.core.workchat.domain.DirectConversation;
 import com.unichat.core.workchat.domain.DirectConversationRepository;
 import com.unichat.core.workchat.domain.DirectMessage;
 import com.unichat.core.workchat.domain.DirectMessageRepository;
+import com.unichat.core.workchat.domain.DirectMessageSentEvent;
 
 /**
  * One-to-one messaging between people who share a group.
@@ -46,17 +48,20 @@ public class DirectMessageService {
     private final DirectMessageRepository messageRepository;
     private final ContactDirectory contactDirectory;
     private final UserRepository userRepository;
+    private final ApplicationEventPublisher eventPublisher;
     private final Clock clock;
 
     public DirectMessageService(DirectConversationRepository conversationRepository,
                                 DirectMessageRepository messageRepository,
                                 ContactDirectory contactDirectory,
                                 UserRepository userRepository,
+                                ApplicationEventPublisher eventPublisher,
                                 Clock clock) {
         this.conversationRepository = conversationRepository;
         this.messageRepository = messageRepository;
         this.contactDirectory = contactDirectory;
         this.userRepository = userRepository;
+        this.eventPublisher = eventPublisher;
         this.clock = clock;
     }
 
@@ -143,7 +148,12 @@ public class DirectMessageService {
         conversation.setLastMessageAt(now);
         conversationRepository.save(conversation);
 
-        return MessageResponse.from(message, displayNameOf(callerId), callerId);
+        MessageResponse response = MessageResponse.from(message, displayNameOf(callerId), callerId);
+        // Delivery is someone else's job; this service stays free of the broker
+        // so it keeps working, and keeps being testable, without one.
+        eventPublisher.publishEvent(
+                new DirectMessageSentEvent(conversation.otherThan(callerId), response));
+        return response;
     }
 
     /**

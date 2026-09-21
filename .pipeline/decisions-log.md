@@ -421,3 +421,23 @@
   Rationale: The conversation list sorts by recent activity on every load; reading it from the messages table would mean a join or a subquery per row for a value that changes once per message.
 
 - Scope held deliberately narrow for the deadline: one-to-one, text only, no attachments and no group threads. Adding either later needs a schema change rather than a flag, which is the honest signal that they were not designed for.
+
+## 2026-09-22 - Work Chat, Realtime Delivery
+
+- Decision: Added `spring-boot-starter-websocket`, flagged to the user before doing so per the standards on unapproved packages.
+  Rationale: Realtime delivery needs it, and the plan the supervisor approved names WebSocket/STOMP. It is a first-party Spring Boot starter whose version comes from the parent BOM (spring-websocket 7.0.8), so it stays pinned with the rest of the framework.
+
+- Decision: Authenticate on the STOMP CONNECT frame rather than at the HTTP handshake, and permit `/ws/work-chat/**` in the security chain.
+  Rationale: A browser cannot set an Authorization header on a WebSocket handshake. The handshake is therefore open — verified returning 101 — but a connection that never sends a valid CONNECT cannot subscribe or send anything. Only CONNECT is inspected: a SEND must not be able to re-authenticate itself as someone else mid-connection, which is covered by a test.
+
+- Decision: Deliver only to user destinations (`/user/queue/messages`), with the principal named by user id.
+  Rationale: Spring routes user destinations by principal name, so a subscriber receives their own queue and cannot name someone else's. Every message here belongs to exactly one recipient, so there is no topic for anyone else to subscribe to at all.
+
+- Decision: Broadcast from a `DirectMessageSentEvent` handled after commit, rather than pushing from the service that saves the message.
+  Rationale: Pushing a message whose transaction then rolled back would show the recipient something that does not exist, and nothing later would take it away. It also keeps the service free of the broker, so it works and stays testable without one.
+
+- Decision: Track presence in process memory, counting sessions per user rather than flagging.
+  Rationale: Presence is disposable — a stale dot costs a moment of confusion, not data. Counting sessions means someone with two tabs open does not appear offline when they close one. The limitation to state in the thesis: with more than one instance, each reports only the clients connected to itself.
+
+- Decision: The presence endpoint returns only the caller's contacts who are online, not everyone online.
+  Rationale: Otherwise it becomes a way to watch people the caller shares no group with.

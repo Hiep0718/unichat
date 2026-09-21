@@ -1,6 +1,7 @@
 package com.unichat.core.workchat.api;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.unichat.core.workchat.service.ContactDirectory;
 import com.unichat.core.workchat.service.DirectMessageService;
+import com.unichat.core.workchat.ws.PresenceTracker;
 
 import jakarta.validation.Valid;
 
@@ -32,11 +34,29 @@ public class WorkChatController {
 
     private final DirectMessageService messageService;
     private final ContactDirectory contactDirectory;
+    private final PresenceTracker presenceTracker;
 
     public WorkChatController(DirectMessageService messageService,
-                              ContactDirectory contactDirectory) {
+                              ContactDirectory contactDirectory,
+                              PresenceTracker presenceTracker) {
         this.messageService = messageService;
         this.contactDirectory = contactDirectory;
+        this.presenceTracker = presenceTracker;
+    }
+
+    /**
+     * Who among the caller's contacts is connected right now.
+     *
+     * <p>Restricted to contacts rather than returning everyone online, so this
+     * cannot be used to watch people the caller shares no group with.
+     */
+    @GetMapping("/presence")
+    public ResponseEntity<Set<UUID>> presence(@AuthenticationPrincipal Jwt jwt) {
+        Set<UUID> online = presenceTracker.onlineUsers();
+        return ResponseEntity.ok(contactDirectory.listContacts(callerOf(jwt)).stream()
+                .map(ContactSummary::userId)
+                .filter(online::contains)
+                .collect(java.util.stream.Collectors.toSet()));
     }
 
     /** People the caller may start a conversation with. */
