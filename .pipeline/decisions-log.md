@@ -371,3 +371,17 @@
 
 - Decision: Extract `AiRetrievalClient` from `AiReplyService`.
   Rationale: Two features now call the same endpoint with the same service token and timeouts; duplicating that in both would let them drift apart.
+
+## 2026-09-21 - Duplicate Detection While Composing A Post
+
+- Decision: Search existing posts as the title is typed, debounced at 300 ms, using the existing indexed full-text query and never calling the AI Service.
+  Rationale: A group where the same question is asked five times is one where nobody finds the answer the sixth time. Keeping it to one indexed query is what makes it safe to run on every keystroke; a retrieval call per keystroke would be both slow and wasteful.
+
+- Decision: Sort suggestions so posts with an accepted answer come first.
+  Rationale: A resolved thread ends the reader's search; a merely related one does not.
+
+- Decision: Report the count of approved documents alongside the suggestions.
+  Rationale: It answers, cheaply and honestly, whether the assistant has anything to read in this group. It deliberately does not claim the answer exists — only that there is something to search.
+
+- Decision: Give the compose modal a separate `onOpenExisting` callback instead of reusing `onCreated`.
+  Rationale: Opening a suggested post creates nothing. Both existing callers happened to only navigate, so reuse would have worked today, but `onCreated` also refreshes feed statistics and any future caller would reasonably treat it as "a post now exists".

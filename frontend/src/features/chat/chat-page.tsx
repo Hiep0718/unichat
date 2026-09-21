@@ -664,6 +664,10 @@ export const ChatPage: React.FC<ChatPageProps> = ({
             setCommunityDraft(null);
             navigate(`/feed/posts/${discussionId}?workspaceId=${wsId}`);
           }}
+          onOpenExisting={(wsId, discussionId) => {
+            setCommunityDraft(null);
+            navigate(`/feed/posts/${discussionId}?workspaceId=${wsId}`);
+          }}
         />
       )}
 

@@ -9,12 +9,18 @@ import { getWorkspaces } from '../../workspaces/workspace-api';
 import type { WorkspaceDto } from '../../workspaces/workspace-schema';
 import { ApiError } from '../../../lib/api-client';
 import { createDiscussion, uploadPostAttachment } from '../community-api';
+import { ComposeSuggestions } from './compose-suggestions';
 import { MentionTextarea } from './mention-textarea';
 import './create-post-modal.css';
 
 interface CreatePostModalProps {
   readonly onClose: () => void;
   readonly onCreated: (workspaceId: string, discussionId: string) => void;
+  /**
+   * Opens an existing post the composer suggested. Distinct from `onCreated`:
+   * nothing was posted, so a caller must not treat it as a new post.
+   */
+  readonly onOpenExisting: (workspaceId: string, discussionId: string) => void;
   readonly preselectedWorkspaceId?: string;
   /** Pre-filled title, e.g. when escalating an unanswered question from chat. */
   readonly initialTitle?: string;
@@ -33,6 +39,7 @@ interface CreatePostModalProps {
 export function CreatePostModal({
   onClose,
   onCreated,
+  onOpenExisting,
   preselectedWorkspaceId,
   initialTitle,
   initialBody,
@@ -188,6 +195,13 @@ export function CreatePostModal({
                 required
               />
               <span className="create-post-modal__char-count">{title.length}/200</span>
+              {selectedWsId && (
+                <ComposeSuggestions
+                  workspaceId={selectedWsId}
+                  draft={title}
+                  onOpenPost={(discussionId) => onOpenExisting(selectedWsId, discussionId)}
+                />
+              )}
             </div>
 
             {/* ---------- Tags ---------- */}

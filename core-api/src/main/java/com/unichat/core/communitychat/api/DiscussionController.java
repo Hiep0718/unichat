@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.unichat.core.communitychat.service.ComposeSuggestionService;
 import com.unichat.core.communitychat.service.DiscussionService;
 import com.unichat.core.communitychat.service.PostAttachmentService;
 import com.unichat.core.communitychat.service.PostReadService;
@@ -39,13 +40,30 @@ public class DiscussionController {
     private final DiscussionService discussionService;
     private final PostAttachmentService attachmentService;
     private final PostReadService readService;
+    private final ComposeSuggestionService suggestionService;
 
     public DiscussionController(DiscussionService discussionService,
                                 PostAttachmentService attachmentService,
-                                PostReadService readService) {
+                                PostReadService readService,
+                                ComposeSuggestionService suggestionService) {
         this.discussionService = discussionService;
         this.attachmentService = attachmentService;
         this.readService = readService;
+        this.suggestionService = suggestionService;
+    }
+
+    /**
+     * Existing posts matching a draft, so a question already answered here is
+     * not asked again. Called as the composer types, so it stays a single
+     * indexed query and never reaches the AI Service.
+     */
+    @GetMapping("/suggestions")
+    public ResponseEntity<ComposeSuggestion> suggestions(
+            @PathVariable UUID workspaceId,
+            @RequestParam(required = false) String q,
+            @AuthenticationPrincipal Jwt jwt) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        return ResponseEntity.ok(suggestionService.suggest(workspaceId, userId, q));
     }
 
     /** Records that the caller opened a post, for announcement read receipts. */

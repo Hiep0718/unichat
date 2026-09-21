@@ -251,6 +251,10 @@ export function FeedPage() {
             loadSidebar();
             openPost(wsId, postId);
           }}
+          onOpenExisting={(wsId, postId) => {
+            setShowCreate(false);
+            openPost(wsId, postId);
+          }}
         />
       )}
     </div>

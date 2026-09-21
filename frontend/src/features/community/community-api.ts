@@ -318,6 +318,39 @@ export async function addReply(
   });
 }
 
+/* ---------- Compose suggestions ---------- */
+
+/** An existing post offered while a draft is being typed. */
+export interface SimilarPost {
+  id: string;
+  title: string;
+  replyCount: number;
+  /** An accepted answer, which is what makes it worth following. */
+  resolved: boolean;
+  createdAt: string;
+}
+
+export interface ComposeSuggestion {
+  similarPosts: SimilarPost[];
+  /** Documents the assistant is allowed to read in this group. */
+  documentCount: number;
+}
+
+/**
+ * Posts matching a draft, plus how much the assistant has to read here.
+ *
+ * Backed by one indexed query, so it is safe to call as the composer types.
+ */
+export async function fetchComposeSuggestions(
+  workspaceId: string,
+  draft: string,
+): Promise<ComposeSuggestion> {
+  const query = encodeURIComponent(draft);
+  return fetchJson<ComposeSuggestion>(
+    `/workspaces/${workspaceId}/discussions/suggestions?q=${query}`,
+  );
+}
+
 /* ---------- Reactions ---------- */
 
 /**
