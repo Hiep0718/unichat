@@ -59,8 +59,15 @@ def get_candidate_gemini_models() -> list[str]:
     if env_model:
         models.append(env_model)
 
-    # 2. Backup candidate models (verified working list)
-    backups = ["gemini-3.5-flash", "gemini-2.5-flash", "gemini-flash-latest", "gemini-flash-lite-latest"]
+    # 2. Backup candidate models (verified active project models)
+    backups = [
+        "gemini-3.5-flash",
+        "gemini-3.5-flash-lite",
+        "gemini-3.8-flash",
+        "gemini-2.5-flash",
+        "gemini-flash-latest",
+        "gemini-flash-lite-latest",
+    ]
     for b in backups:
         if b not in models:
             models.append(b)
@@ -79,6 +86,7 @@ def generate_rag_answer(
     allow_external_knowledge: bool = True,
     conversation_history: list[dict[str, str]] | None = None,
     conversation_summary: str | None = None,
+    single_source_warning: bool = False,
 ) -> dict[str, Any]:
     context_blocks = []
     citations = []
@@ -137,7 +145,9 @@ def generate_rag_answer(
         conversation_prompt = build_conversation_prompt(conv_context)
 
     context_str = "\n\n".join(context_blocks)
-    base_system_prompt = build_system_prompt(allow_external_knowledge)
+    base_system_prompt = build_system_prompt(
+        allow_external_knowledge, single_source_warning=single_source_warning
+    )
 
     sections = [base_system_prompt]
     if conversation_prompt and conversation_prompt.strip():

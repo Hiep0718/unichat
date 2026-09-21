@@ -126,6 +126,8 @@ public class ChatService {
         String refusalCode = (String) aiResponse.get("refusalCode");
         String refusalReason = (String) aiResponse.get("refusalReason");
         Double evidenceScore = aiResponse.get("evidenceScore") instanceof Number n ? n.doubleValue() : null;
+        Boolean singleSourceWarning = aiResponse.get("singleSourceWarning") instanceof Boolean b ? b : null;
+        String warningMessage = (String) aiResponse.get("warningMessage");
 
         String assistantContent = answerText != null ? answerText : (refusalReason != null ? refusalReason : "Không có câu trả lời");
         String providerModel = (String) aiResponse.getOrDefault("provider", "gemini-2.5-flash");
@@ -164,7 +166,9 @@ public class ChatService {
                 citations,
                 refusalCode,
                 requestId,
-                evidenceScore
+                evidenceScore,
+                singleSourceWarning,
+                warningMessage
         );
     }
 
