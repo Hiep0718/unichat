@@ -21,6 +21,8 @@ export interface QuestionResponse {
   refusalReason?: string | null | undefined;
   providerModel?: string | null | undefined;
   evidenceScore?: number | null | undefined;
+  singleSourceWarning?: boolean | undefined;
+  warningMessage?: string | null | undefined;
   requestId: string;
 }
 
@@ -40,6 +42,8 @@ export interface SseMetadataPayload {
   refusalReason?: string | null | undefined;
   providerModel?: string | undefined;
   evidenceScore?: number | null | undefined;
+  singleSourceWarning?: boolean | undefined;
+  warningMessage?: string | null | undefined;
   requestId?: string | undefined;
 }
 

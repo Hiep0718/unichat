@@ -706,6 +706,23 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
                   {Math.round(response.evidenceScore * 100)}%
                 </span>
               )}
+              {response.singleSourceWarning && (
+                <span
+                  className="chat-badge chat-badge--warning"
+                  title={response.warningMessage || "Chỉ thu thập từ 1 nguồn tài liệu, nên kiểm chứng lại"}
+                  style={{
+                    backgroundColor: 'rgba(234, 179, 8, 0.15)',
+                    color: '#eab308',
+                    border: '1px solid rgba(234, 179, 8, 0.3)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                  }}
+                >
+                  <span className="material-symbols-outlined chat-badge__icon" style={{ fontSize: '13px', color: '#eab308' }}>warning</span>
+                  Nên kiểm chứng lại (1 nguồn)
+                </span>
+              )}
             </div>
           )}
         </div>
