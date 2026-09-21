@@ -363,3 +363,31 @@
   Rationale: Fulfills rigorous thesis-level E2E coverage and provides a long-running recorded test demonstrating all phases of ADR-021 without skipping any interactive UI element or edge case.
 - Decision: Configure Playwright video capture with smooth delays (`waitForTimeout`) at critical UX moments (drawer open, thought accordion expansion, compaction badge display).
   Rationale: Generates clear, high-definition video artifacts (`video.webm`) suitable for presentation, defense demos, and automated CI regression verification.
+
+## 2026-09-21 - Flyway Migration Version Alignment (V16 Conversation Summary)
+
+- Decision: Renumber `V12__conversation_summary.sql` to `V16__conversation_summary.sql`.
+  Rationale: The remote database schema on Supabase had already executed migrations up to version 15 (including prior V12 `remove_mock_seed_data` on 2026-08-27 and V13-V15). Flyway skipped the new migration because version 12 was marked as already applied in `flyway_schema_history`, causing Hibernate schema validation to fail with `missing column [summary] in table [conversations]`. Renumbering to V16 allowed Flyway to apply the DDL alteration cleanly and Hibernate to validate successfully.
+
+## 2026-09-21 - RAG Benchmark 120 Questions Automation Suite & Evaluation Engine
+
+- Decision: Build an automated Playwright benchmark test suite (`07-rag-benchmark-120.spec.ts`) executing 120 curated questions across 3 production workspaces ("Quản lý dự án", "Lập trình hướng đối tượng", "MongoDB Basic", 40 questions each) covering 6 intent categories (DEFINITION, FACT, COMPARISON, SUMMARY, REASONING, OUT_OF_SCOPE).
+  Rationale: Enables reproducible, automated thesis-grade evaluation directly through the real UI chat interface without manual scoring errors, evaluating both strict retrieval and hybrid generation.
+
+- Decision: Implement A/B comparative evaluation (Strict Document-Only vs Hybrid RAG + AI Expansion) within the same suite, producing unified comparison metrics.
+  Rationale: Strict mode accurately evaluates knowledge retrieval fidelity and refusal accuracy on out-of-scope questions, while Hybrid mode measures model knowledge augmentation; comparing both gives an objective benchmark of UniChat's adaptive retrieval.
+
+- Decision: Implement incremental checkpointing (`checkpoints/checkpoint-<mode>-<workspace>.json`) every 10 questions and session context reset (`startNewChat()`) every 10 questions.
+  Rationale: Prevents token accumulation drift during long test sequences and guarantees that network drops or rate limit interruptions can resume from the last completed question rather than restarting all 120 queries.
+
+- Decision: Automatically record HD video (`.webm`) for all runs into `reports/benchmark/videos/` and capture screenshot artifacts for all `OUT_OF_SCOPE` questions in `reports/benchmark/screenshots/`.
+  Rationale: Provides incontrovertible visual evidence for thesis defense, audits, and performance documentation.
+
+## 2026-09-21 - Evidence Gate Threshold Adaptation (`min_source_groups = 1`) With Single-Source Warning Label
+
+- Decision: Adjust `min_source_groups = 1` for `COMPARISON`, `SUMMARY`, and `REASONING` intents in `ai-service/app/core/rag/strategy_selector.py` while adding mandatory `single_source_warning` metadata and warning badges across the full stack.
+  Rationale: Analysis of benchmark failures revealed that 41 questions (25 Strict, 16 Hybrid) were falsely refused (`EVIDENCE_INSUFFICIENT`) because relevant knowledge was located inside a single uploaded syllabus/document in workspaces with few files. Requiring 2 or 3 distinct files was overly restrictive for single-document workspaces.
+- Decision: Mandate a visible UI warning badge `⚠️ Nên kiểm chứng lại (1 nguồn)` and an in-response blockquote disclaimer whenever an answer is generated from only a single document source (`unique_sources == 1`).
+  Rationale: Balances high retrieval recall with responsible AI safety: users receive complete answers while being explicitly cautioned that comparative or summary data lacks multi-document cross-validation.
+
+

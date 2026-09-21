@@ -28,7 +28,20 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
+    {
+      name: 'benchmark',
+      testMatch: /07-rag-benchmark/,
+      timeout: 7_200_000, // 2 hours per test
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 1440, height: 900 },
+        video: 'on',
+        screenshot: 'on',
+        trace: 'on',
+      },
+    },
   ],
+  globalTimeout: 14_400_000, // 4 hours for full benchmark suite
   webServer: {
     command: 'npm run dev --prefix ../frontend',
     url: 'http://localhost:5173',
