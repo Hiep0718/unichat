@@ -25,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.unichat.core.communitychat.service.DiscussionService;
 import com.unichat.core.communitychat.service.PostAttachmentService;
+import com.unichat.core.communitychat.service.PostReadService;
 
 import jakarta.validation.Valid;
 
@@ -32,13 +33,54 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/v1/workspaces/{workspaceId}/discussions")
 public class DiscussionController {
 
+    /** Matches the pagination ceiling required by the engineering standards. */
+    private static final int MAX_PAGE_SIZE = 100;
+
     private final DiscussionService discussionService;
     private final PostAttachmentService attachmentService;
+    private final PostReadService readService;
 
     public DiscussionController(DiscussionService discussionService,
-                                PostAttachmentService attachmentService) {
+                                PostAttachmentService attachmentService,
+                                PostReadService readService) {
         this.discussionService = discussionService;
         this.attachmentService = attachmentService;
+        this.readService = readService;
+    }
+
+    /** Records that the caller opened a post, for announcement read receipts. */
+    @PostMapping("/{discussionId}/read")
+    public ResponseEntity<Void> markRead(
+            @PathVariable UUID workspaceId,
+            @PathVariable UUID discussionId,
+            @AuthenticationPrincipal Jwt jwt) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        readService.markRead(workspaceId, discussionId, userId);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Who has opened a post. Counts for everyone, names for owners and editors.
+     */
+    @GetMapping("/{discussionId}/readers")
+    public ResponseEntity<PostReadSummary> getReaders(
+            @PathVariable UUID workspaceId,
+            @PathVariable UUID discussionId,
+            @AuthenticationPrincipal Jwt jwt) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        return ResponseEntity.ok(readService.summarise(workspaceId, discussionId, userId));
+    }
+
+    /** Pins or unpins a post. Owners and editors only. */
+    @PutMapping("/{discussionId}/pinned")
+    public ResponseEntity<DiscussionResponse> setPinned(
+            @PathVariable UUID workspaceId,
+            @PathVariable UUID discussionId,
+            @RequestParam boolean pinned,
+            @AuthenticationPrincipal Jwt jwt) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        return ResponseEntity.ok(
+                discussionService.setPinned(workspaceId, discussionId, userId, pinned));
     }
 
     @GetMapping
@@ -46,12 +88,15 @@ public class DiscussionController {
             @PathVariable UUID workspaceId,
             @RequestParam(required = false) String label,
             @RequestParam(defaultValue = "NEW") String sort,
+            @RequestParam(required = false) String q,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @AuthenticationPrincipal Jwt jwt) {
-        
+
         UUID userId = UUID.fromString(jwt.getSubject());
-        Page<DiscussionResponse> discussions = discussionService.listDiscussions(workspaceId, userId, label, sort, page, size);
+        int safeSize = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
+        Page<DiscussionResponse> discussions = discussionService.listDiscussions(
+                workspaceId, userId, label, sort, q, Math.max(page, 0), safeSize);
         return ResponseEntity.ok(discussions);
     }
 
@@ -100,7 +145,6 @@ public class DiscussionController {
         return ResponseEntity.ok(reply);
     }
 
-    /** Accept a reply as the best answer (StackOverflow-style). */
     /**
      * Members the composer can suggest for a mention. Available to any member,
      * unlike the full roster.

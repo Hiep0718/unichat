@@ -97,30 +97,31 @@ public class DiscussionService {
         this.restTemplate = new RestTemplate();
     }
 
-    public Page<DiscussionResponse> listDiscussions(UUID workspaceId, UUID userId, String label, String sort, int page, int size) {
+    /**
+     * Lists posts in one group.
+     *
+     * @param query optional full-text search across title and body
+     */
+    public Page<DiscussionResponse> listDiscussions(UUID workspaceId, UUID userId, String label,
+                                                    String sort, String query, int page, int size) {
         verifyMembership(workspaceId, userId);
-        
-        PageRequest pageRequest;
-        if ("HOT".equalsIgnoreCase(sort)) {
-            pageRequest = PageRequest.of(page, size);
-        } else if ("TOP".equalsIgnoreCase(sort)) {
-            pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "voteScore", "createdAt"));
-        } else { // NEW default
-            pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        }
+
+        // Queries carrying their own ORDER BY must not receive a second one.
+        boolean selfOrdered = query != null && !query.isBlank();
+        PageRequest pageRequest = selfOrdered || "HOT".equalsIgnoreCase(sort) || "TOP".equalsIgnoreCase(sort)
+                ? PageRequest.of(page, size)
+                : PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
 
         Page<Discussion> result;
-        
-        if (label != null && !label.isBlank()) {
+
+        if (selfOrdered) {
+            result = discussionRepository.searchByKeyword(List.of(workspaceId), query.trim(), pageRequest);
+        } else if (label != null && !label.isBlank()) {
             result = discussionRepository.findByWorkspaceIdAndLabel(workspaceId, label, pageRequest);
+        } else if ("HOT".equalsIgnoreCase(sort) || "TOP".equalsIgnoreCase(sort)) {
+            result = discussionRepository.findByWorkspaceIdOrderByVoteScoreDescCreatedAtDesc(workspaceId, pageRequest);
         } else {
-            if ("HOT".equalsIgnoreCase(sort)) {
-                result = discussionRepository.findByWorkspaceIdOrderByVoteScoreDescCreatedAtDesc(workspaceId, pageRequest);
-            } else if ("TOP".equalsIgnoreCase(sort)) {
-                result = discussionRepository.findByWorkspaceIdOrderByVoteScoreDescCreatedAtDesc(workspaceId, pageRequest); // Can optimize further later
-            } else {
-                result = discussionRepository.findByWorkspaceIdOrderByCreatedAtDesc(workspaceId, pageRequest);
-            }
+            result = discussionRepository.findByWorkspaceIdOrderByCreatedAtDesc(workspaceId, pageRequest);
         }
 
         List<UUID> discussionIds = result.getContent().stream().map(Discussion::getId).toList();
@@ -190,6 +191,26 @@ public class DiscussionService {
 
         String authorName = userRepository.findById(userId).map(u -> u.getEmail().split("@")[0]).orElse("Unknown");
         return DiscussionResponse.from(discussion, authorName, null);
+    }
+
+    /**
+     * Pins or unpins a post so it sorts to the top of its group. Restricted to
+     * owners and editors: pinning claims the group's attention.
+     */
+    @Transactional
+    public DiscussionResponse setPinned(UUID workspaceId, UUID discussionId, UUID userId, boolean pinned) {
+        WorkspaceMember member = verifyMembership(workspaceId, userId);
+        if (!WorkspaceRole.OWNER.equals(member.getRole())
+                && !WorkspaceRole.EDITOR.equals(member.getRole())) {
+            throw new AuthorizationError("Chỉ chủ sở hữu và người biên tập mới được ghim bài viết");
+        }
+
+        Discussion discussion = requirePost(workspaceId, discussionId);
+        discussion.setPinned(pinned);
+        discussion.setUpdatedAt(Instant.now());
+        discussionRepository.save(discussion);
+
+        return toResponse(workspaceId, discussion, userId);
     }
 
     /**
