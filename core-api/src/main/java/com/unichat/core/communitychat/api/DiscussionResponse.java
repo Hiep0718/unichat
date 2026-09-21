@@ -24,32 +24,36 @@ public record DiscussionResponse(
         int replyCount,
         Instant createdAt,
         Instant updatedAt,
+        /** Set once the author has edited the post, null otherwise. */
+        Instant editedAt,
         int voteScore,
         String userVote,
         String authorName,
         String authorAvatar,
         List<String> tags,
-        UUID acceptedReplyId
+        UUID acceptedReplyId,
+        List<PostAttachmentResponse> attachments
 ) {
     public static DiscussionResponse from(Discussion d, String authorName, String authorAvatar, String userVote) {
-        return from(d, null, authorName, authorAvatar, userVote);
+        return from(d, null, authorName, authorAvatar, userVote, List.of());
     }
 
     /**
-     * Maps a discussion including the workspace it belongs to.
+     * Maps a discussion including the workspace it belongs to and its files.
      *
      * @param workspaceName owning workspace name, null when not resolved
+     * @param attachments   files attached to the post, never null
      */
     public static DiscussionResponse from(Discussion d, String workspaceName, String authorName,
-                                          String authorAvatar, String userVote) {
+                                          String authorAvatar, String userVote,
+                                          List<PostAttachmentResponse> attachments) {
         return new DiscussionResponse(
                 d.getId(), d.getWorkspaceId(), workspaceName, d.getAuthorId(), d.getTitle(),
                 d.getBody(), d.getLabel(), d.isPinned(), d.getStatus(),
                 d.getViewCount(), d.getReplyCount(), d.getCreatedAt(), d.getUpdatedAt(),
-                d.getVoteScore(), userVote,
+                d.getEditedAt(), d.getVoteScore(), userVote,
                 authorName, authorAvatar,
-                d.getTags(), d.getAcceptedReplyId()
+                d.getTags(), d.getAcceptedReplyId(), attachments
         );
     }
 }
-

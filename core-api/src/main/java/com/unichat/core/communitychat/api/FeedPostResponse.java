@@ -23,6 +23,8 @@ public record FeedPostResponse(
     List<String> tags,
     boolean hasAcceptedAnswer,
     boolean isBookmarked,
-    Instant createdAt
+    Instant createdAt,
+    /** Files attached to the post, so the card can preview images. */
+    List<PostAttachmentResponse> attachments
 ) {}
 

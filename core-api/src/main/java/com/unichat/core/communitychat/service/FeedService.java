@@ -18,6 +18,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.unichat.core.communitychat.api.FeedPostResponse;
+import com.unichat.core.communitychat.api.PostAttachmentResponse;
 import com.unichat.core.communitychat.domain.Bookmark;
 import com.unichat.core.communitychat.domain.BookmarkRepository;
 import com.unichat.core.communitychat.domain.Discussion;
@@ -52,13 +53,16 @@ public class FeedService {
     private final UserRepository userRepository;
     private final ReactionRepository reactionRepository;
     private final BookmarkRepository bookmarkRepository;
+    private final PostAttachmentService attachmentService;
 
     public FeedService(DiscussionRepository discussionRepository,
                        WorkspaceMemberRepository memberRepository,
                        WorkspaceRepository workspaceRepository,
                        UserRepository userRepository,
                        ReactionRepository reactionRepository,
-                       BookmarkRepository bookmarkRepository) {
+                       BookmarkRepository bookmarkRepository,
+                       PostAttachmentService attachmentService) {
+        this.attachmentService = attachmentService;
         this.discussionRepository = discussionRepository;
         this.memberRepository = memberRepository;
         this.workspaceRepository = workspaceRepository;
@@ -226,6 +230,9 @@ public class FeedService {
                 .stream()
                 .collect(Collectors.toMap(u -> u.getId(), u -> u.getEmail().split("@")[0]));
 
+        Map<UUID, List<PostAttachmentResponse>> attachments =
+                attachmentService.listForAll(discussionIds);
+
         return result.map(d -> {
             String wsName = workspaceNames.getOrDefault(d.getWorkspaceId(), "Unknown");
             String authorName = authorNames.getOrDefault(d.getAuthorId(), "Unknown");
@@ -239,7 +246,8 @@ public class FeedService {
                     d.getTags(),
                     d.getAcceptedReplyId() != null,
                     bookmarkedIds.contains(d.getId()),
-                    d.getCreatedAt()
+                    d.getCreatedAt(),
+                    attachments.getOrDefault(d.getId(), List.of())
             );
         });
     }

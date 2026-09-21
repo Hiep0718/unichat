@@ -74,6 +74,10 @@ public class Discussion {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
+    /** Set the first time the author edits the post, so the UI can mark it. */
+    @Column(name = "edited_at")
+    private Instant editedAt;
+
     public Discussion() {}
 
     public Discussion(UUID id, UUID workspaceId, UUID authorId, String title, String body, 
@@ -112,6 +116,27 @@ public class Discussion {
     public void setPinned(boolean pinned) { this.pinned = pinned; }
     public void setStatus(String status) { this.status = status; }
     public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
+
+    public Instant getEditedAt() { return editedAt; }
+
+    /**
+     * Applies an author's edit to the post body and metadata.
+     *
+     * @param now edit timestamp, recorded so the UI can show "đã chỉnh sửa"
+     */
+    public void applyEdit(String title, String body, List<String> tags, Instant now) {
+        this.title = title;
+        this.body = body;
+        this.tags = tags != null ? tags : new ArrayList<>();
+        this.editedAt = now;
+        this.updatedAt = now;
+    }
+
+    /** Soft delete: the row stays for referential integrity, listings drop it. */
+    public void markDeleted(Instant now) {
+        this.status = "DELETED";
+        this.updatedAt = now;
+    }
     
     public void incrementViewCount() { this.viewCount++; }
     public void incrementReplyCount() { this.replyCount++; }
