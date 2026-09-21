@@ -402,3 +402,22 @@
 
 - Decision: A query of two characters or more replaces the feed list with unified results, and the feed fetch is skipped while it does.
   Rationale: Filtering the feed would hide any matching document, which is the whole point of searching. Fetching a feed nobody renders is a wasted request, and the pager belongs to the feed rather than to search results.
+
+## 2026-09-22 - Work Chat, Persistence And Authorization
+
+- Decision: Messaging is allowed only between people who share a group, decided in a separate `ContactDirectory`.
+  Rationale: On a campus platform, everyone being reachable by every stranger is a way to be harassed rather than a feature, and a shared group is the relationship the product already models. Keeping the rule in one class means the service asks it rather than each call site re-deriving who counts as a contact. The assistant account is excluded explicitly: it is not a person anyone can message.
+
+- Decision: Store the two participants in a fixed order (`participant_low < participant_high`) rather than as starter and recipient.
+  Rationale: Without the ordering, (a,b) and (b,a) are two rows, so the same pair would get two conversations depending on who opened first and the unique constraint would not prevent it. Enforced by a CHECK in the schema and by making `DirectConversation.between` the only way to construct one.
+
+- Decision: A conversation the caller does not belong to returns the same "not found" as one that does not exist.
+  Rationale: A conversation id is a UUID a caller can present. Distinguishing the two answers would confirm to a stranger that a given conversation exists.
+
+- Decision: Unread counts exclude the caller's own messages.
+  Rationale: Otherwise every thread the caller has spoken in carries an unread badge for its own author.
+
+- Decision: Denormalise `last_message_at` onto the conversation.
+  Rationale: The conversation list sorts by recent activity on every load; reading it from the messages table would mean a join or a subquery per row for a value that changes once per message.
+
+- Scope held deliberately narrow for the deadline: one-to-one, text only, no attachments and no group threads. Adding either later needs a schema change rather than a flag, which is the honest signal that they were not designed for.
