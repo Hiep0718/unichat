@@ -13,7 +13,7 @@ import { formatRelativeTime, formatFullDateTime } from '../../lib/format-time';
 import { getDiscussion, fetchReplies, addReply } from './community-api';
 import type { DiscussionResponse, ReplyResponse } from './community-api';
 import { AnswerStatusBadge } from './components/answer-status';
-import { EntityAvatar } from './components/entity-avatar';
+import { EntityAvatar } from '../../components/entity-avatar';
 import { HelpfulButton } from './components/helpful-button';
 import { ReplyForm } from './components/reply-form';
 import { ReplyThread } from './components/reply-thread';

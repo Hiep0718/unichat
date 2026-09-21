@@ -51,11 +51,9 @@ const DiscussionPage: React.FC = () => {
 
   return (
     <div className="disc-list">
+      {/* Rendered as the "Bài viết" tab of the group page, which already carries
+          the group name, so only the controls remain here. */}
       <div className="disc-list__header">
-        <h1 className="disc-list__title">
-          <Icon name="forum" size={28} className="disc-list__title-icon" />
-          Thảo luận
-        </h1>
         <div className="disc-list__controls">
           {LABELS.map((l) => (
             <button

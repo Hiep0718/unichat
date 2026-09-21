@@ -65,8 +65,8 @@ export const RefusalCard: React.FC<RefusalCardProps> = ({
           <div className="refusal-card__escalation-text">
             <span className="material-symbols-outlined refusal-card__escalation-icon">lightbulb</span>
             <span>
-              Thông tin này có thể chưa nằm trong tài liệu nào. Hãy hỏi các thành viên
-              khác — câu trả lời được duyệt sẽ trở thành nguồn tri thức mới cho Workspace.
+              Thông tin này có thể chưa nằm trong tệp nào của nhóm. Hãy hỏi các thành
+              viên khác, hoặc bổ sung tệp còn thiếu vào nhóm.
             </span>
           </div>
           <button

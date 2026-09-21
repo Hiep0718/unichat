@@ -23,6 +23,21 @@
   padding-top: 2px;
 }
 
+/* Non-question posts show a plain comment count instead of a resolution state. */
+.feed-card__replies {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 44px;
+  padding: 8px 0;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-container-high);
+  color: var(--color-on-surface-variant);
+  font: var(--font-label-sm);
+  font-weight: 700;
+}
+
 .feed-card__main {
   min-width: 0;
   display: flex;

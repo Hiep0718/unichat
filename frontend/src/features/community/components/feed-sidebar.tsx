@@ -74,8 +74,8 @@ export function FeedSidebar({
           Cách hoạt động
         </h3>
         <p className="feed-sidebar__body">
-          Khi tài liệu chưa đủ căn cứ để AI trả lời, câu hỏi được đưa lên đây.
-          Câu trả lời được chấp nhận sẽ trở thành nguồn tri thức mới cho Workspace.
+          Bảng tin gom bài viết từ các nhóm bạn tham gia. Khi tệp của nhóm chưa đủ
+          căn cứ để trợ lý AI trả lời, bạn có thể đưa câu hỏi ra hỏi mọi người.
         </p>
         <button
           type="button"

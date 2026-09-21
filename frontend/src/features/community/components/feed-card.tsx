@@ -9,7 +9,7 @@ import { Icon } from '../../../components/icon';
 import { formatRelativeTime } from '../../../lib/format-time';
 import type { FeedPostResponse } from '../feed-api';
 import { AnswerStatusBadge } from './answer-status';
-import { EntityAvatar } from './entity-avatar';
+import { EntityAvatar } from '../../../components/entity-avatar';
 import './feed-card.css';
 
 interface FeedCardProps {
@@ -40,15 +40,25 @@ function toPlainPreview(body: string): string {
 
 export function FeedCard({ post, onOpen, onNavigate, onTagClick, onBookmark }: FeedCardProps) {
   const preview = toPlainPreview(post.body);
+  // Resolution state only means something for questions; an announcement is
+  // never "unanswered".
+  const isQuestion = post.label === 'QUESTION';
 
   return (
     <article className="feed-card">
       <div className="feed-card__rail">
-        <AnswerStatusBadge
-          replyCount={post.replyCount}
-          hasAcceptedAnswer={post.hasAcceptedAnswer}
-          compact
-        />
+        {isQuestion ? (
+          <AnswerStatusBadge
+            replyCount={post.replyCount}
+            hasAcceptedAnswer={post.hasAcceptedAnswer}
+            compact
+          />
+        ) : (
+          <span className="feed-card__replies" title={`${post.replyCount} bình luận`}>
+            <Icon name="chat_bubble_outline" size={18} />
+            {post.replyCount}
+          </span>
+        )}
       </div>
 
       <div className="feed-card__main">

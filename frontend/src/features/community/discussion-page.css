@@ -3,11 +3,10 @@
    Design: Academic Precision (DESIGN.md)
    ========================================================================== */
 
-/* ---------- Discussion List ---------- */
+/* ---------- Discussion List ----------
+   Rendered inside the group page, which owns the page padding and width. */
 .disc-list {
-  padding: 24px;
   max-width: 900px;
-  margin: 0 auto;
 }
 
 .disc-list__header {

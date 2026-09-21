@@ -138,6 +138,34 @@
   flex-direction: column;
   gap: 6px;
   flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Section label ("Nhóm"). Hidden while the rail is collapsed, where a divider
+   carries the grouping instead. */
+.side-nav__section {
+  margin: 14px 0 2px 14px;
+  font: var(--font-label-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-on-surface-variant);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.22s ease 0.04s, visibility 0.22s;
+}
+
+.side-nav:hover .side-nav__section {
+  opacity: 1;
+  visibility: visible;
+}
+
+.side-nav:not(:hover) .side-nav__section {
+  margin: 10px 12px;
+  height: 1px;
+  background: var(--color-outline-variant);
+  font-size: 0;
 }
 
 .side-nav__item {
