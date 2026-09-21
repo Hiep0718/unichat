@@ -40,8 +40,17 @@ async function login() {
 
 async function main() {
   console.log('=== STARTING RE-BENCHMARK FOR EVIDENCE GATE REFUSED QUESTIONS ===');
-  const token = await login();
-  console.log('Successfully logged in.');
+  let token = await login();
+  let tokenExpiresAt = Date.now() + 12 * 60 * 1000;
+
+  async function getValidToken() {
+    if (Date.now() > tokenExpiresAt) {
+      console.log('Refreshing expired JWT token...');
+      token = await login();
+      tokenExpiresAt = Date.now() + 12 * 60 * 1000;
+    }
+    return token;
+  }
 
   const checkpointFiles = fs
     .readdirSync(CHECKPOINT_DIR)
@@ -67,13 +76,14 @@ async function main() {
         const startTime = Date.now();
 
         try {
-          const res = await fetch(
+          const currentToken = await getValidToken();
+          let res = await fetch(
             `http://localhost:8082/api/v1/workspaces/${workspaceId}/questions`,
             {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
+                Authorization: `Bearer ${currentToken}`,
               },
               body: JSON.stringify({
                 question: item.question,
@@ -81,6 +91,26 @@ async function main() {
               }),
             }
           );
+
+          if (res.status === 401) {
+            console.log('Encountered 401, re-logging in...');
+            token = await login();
+            tokenExpiresAt = Date.now() + 12 * 60 * 1000;
+            res = await fetch(
+              `http://localhost:8082/api/v1/workspaces/${workspaceId}/questions`,
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                  question: item.question,
+                  allowExternalKnowledge: item.ragMode === 'hybrid',
+                }),
+              }
+            );
+          }
 
           const latencyMs = Date.now() - startTime;
           const data = await res.json();
