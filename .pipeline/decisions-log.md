@@ -327,3 +327,23 @@
 
 - Decision: Implement Flyway migration `V11__studio_notes.sql` and REST API controller for per-conversation notes persistence.
   Rationale: Ensures user notes generated in Knowledge Studio are saved directly to PostgreSQL DB, auto-associated with active conversation sessions, and loaded on page reload.
+
+## 2026-09-21 - @AI Replies Keep Their Citations And Their Own Identity
+
+- Decision: Post assistant replies as a dedicated system account (`00000000-0000-0000-0000-0000000000a1`, `assistant@unichat.system`, status `LOCKED`, unusable password hash) instead of reusing the asking member's id.
+  Rationale: The thread previously showed a student answering their own question. The account is locked and has no usable credential, so it can never sign in; migration `V19` also repoints the AI replies created before this change.
+
+- Decision: Persist the AI Service `citations` array on `discussion_replies.citations` (JSONB) and resolve each `documentId` to its uploaded file name in the Core API.
+  Rationale: The previous code read only `answer` and dropped the sources, leaving a grounded-looking answer a reader could not verify. The AI Service knows ids, not the names the group uploaded documents under, so the name is resolved where the library lives.
+
+- Decision: Trigger the answer from an `AiMentionEvent` handled with `@TransactionalEventListener(AFTER_COMMIT)` + `@Async`, replacing `CompletableFuture.runAsync` with no transaction.
+  Rationale: The assistant's reply hangs off the triggering reply via `parent_reply_id`, so that row must be committed first; the old code could also save outside any transaction.
+
+- Decision: Send the internal service token and explicit connect/read timeouts on the AI Service call, and record `retrieval_trace_id` on the reply.
+  Rationale: The discussion path was calling the internal endpoint without an `Authorization` header (unlike `ChatService`) and with an unbounded `RestTemplate`; the trace column has existed since `V8` and was never written, so an answer could not be traced back to its retrieval run.
+
+- Decision: Poll for the assistant's reply on the post page (2 s, up to 60 s) and show a pending line.
+  Rationale: The answer is written seconds after the comment. Without this the reader sees nothing until a manual reload and assumes the assistant ignored them.
+
+- Decision: Mark `AiReplyService`'s injectable constructor with `@Autowired`.
+  Rationale: The class carries a second, package-private constructor so a test can supply a `MockRestServiceServer`-bound `RestTemplate` instead of reaching the network. With two constructors and neither annotated, Spring falls back to a no-arg constructor that does not exist and fails bean creation at startup — a trap `mvn test` cannot catch, since only a real context refresh exercises it.

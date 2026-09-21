@@ -8,6 +8,7 @@ import { Icon } from '../../../components/icon';
 import { formatRelativeTime } from '../../../lib/format-time';
 import { MentionText } from './mention-text';
 import { ReactionBar } from './reaction-bar';
+import { ReplyCitations } from './reply-citations';
 import { ReplyForm } from './reply-form';
 import type { ReplyResponse } from '../community-api';
 import '../discussion-page.css';
@@ -55,9 +56,7 @@ export function ReplyThread({
         </div>
         <div className="reply-node__content">
           <div className="reply-node__meta">
-            <span className="reply-node__author">
-              {reply.isAiAnswer ? 'UniChat AI' : reply.authorName}
-            </span>
+            <span className="reply-node__author">{reply.authorName}</span>
             <span className="reply-node__dot">•</span>
             <span className="reply-node__time">{formatRelativeTime(reply.createdAt)}</span>
             {isAccepted && (
@@ -69,6 +68,7 @@ export function ReplyThread({
           <div className="reply-node__body">
             <MentionText>{reply.body}</MentionText>
           </div>
+          <ReplyCitations citations={reply.citations ?? []} />
           <div className="reply-node__actions">
             <ReactionBar
               targetType="DISCUSSION_REPLY"

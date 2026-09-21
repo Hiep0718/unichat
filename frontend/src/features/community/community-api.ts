@@ -89,6 +89,15 @@ export interface DiscussionPage {
   number: number;
 }
 
+/** A source the assistant drew on, stored alongside its reply. */
+export interface ReplyCitation {
+  citationId: string;
+  documentId: string | null;
+  fileName: string;
+  locator: string | null;
+  excerpt: string;
+}
+
 export interface ReplyResponse {
   id: string;
   discussionId: string;
@@ -101,6 +110,8 @@ export interface ReplyResponse {
   reactions: ReactionSummary;
   authorName: string;
   authorAvatar: string | null;
+  /** Empty for a human reply. */
+  citations: ReplyCitation[];
 }
 
 export interface NotificationResponse {

@@ -1,0 +1,81 @@
+.reply-citations {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-container-low);
+}
+
+.reply-citations__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-on-surface-variant);
+  font: var(--font-label-sm);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.reply-citations__list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.reply-citations__chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-default);
+  background: var(--color-surface-container);
+  color: var(--color-on-surface);
+  font: var(--font-label-md);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.reply-citations__chip:hover {
+  border-color: var(--color-outline-variant);
+  background: var(--color-surface-container-high);
+}
+
+.reply-citations__index {
+  flex-shrink: 0;
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+/* The file name is the part worth reading, so it takes the slack and truncates
+   before the locator does. */
+.reply-citations__file {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.reply-citations__locator {
+  flex-shrink: 0;
+  color: var(--color-on-surface-variant);
+  font: var(--font-label-sm);
+}
+
+.reply-citations__excerpt {
+  margin: 6px 0 2px;
+  padding: 8px 10px;
+  border-left: 3px solid var(--color-primary-fixed);
+  border-radius: 0 var(--radius-default) var(--radius-default) 0;
+  background: var(--color-surface-container);
+  color: var(--color-on-surface-variant);
+  font: var(--font-body-md);
+  line-height: 1.6;
+  white-space: pre-wrap;
+}

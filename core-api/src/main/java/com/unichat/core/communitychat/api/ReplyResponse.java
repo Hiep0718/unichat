@@ -1,9 +1,11 @@
 package com.unichat.core.communitychat.api;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 import com.unichat.core.communitychat.domain.DiscussionReply;
+import com.unichat.core.communitychat.domain.ReplyCitation;
 
 public record ReplyResponse(
         UUID id,
@@ -17,7 +19,9 @@ public record ReplyResponse(
         String authorName,
         String authorAvatar,
         /** Counts per reaction type plus the caller's own choice. */
-        ReactionSummary reactions
+        ReactionSummary reactions,
+        /** Sources behind an AI answer; empty for a human reply. */
+        List<ReplyCitation> citations
 ) {
     public static ReplyResponse from(DiscussionReply r, String authorName, String authorAvatar,
                                      ReactionSummary reactions) {
@@ -26,7 +30,8 @@ public record ReplyResponse(
                 r.getParentReplyId(), r.isAiAnswer(), r.getCreatedAt(),
                 r.getVoteScore(),
                 authorName, authorAvatar,
-                reactions == null ? ReactionSummary.empty() : reactions
+                reactions == null ? ReactionSummary.empty() : reactions,
+                r.getCitations()
         );
     }
 }

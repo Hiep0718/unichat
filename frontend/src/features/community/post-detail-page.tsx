@@ -8,6 +8,7 @@ import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 
 import { Icon } from '../../components/icon';
 import { formatRelativeTime, formatFullDateTime } from '../../lib/format-time';
+import { mentionsAi } from './await-ai-reply';
 import {
   addReply,
   deleteDiscussion,
@@ -26,9 +27,11 @@ import { PostAttachments } from './components/post-attachments';
 import { PostEditForm } from './components/post-edit-form';
 import { PostOwnerMenu } from './components/post-owner-menu';
 import { PostReaders } from './components/post-readers';
+import { ReplyCitations } from './components/reply-citations';
 import { ReplyForm } from './components/reply-form';
 import { ReplyThread } from './components/reply-thread';
 import { useAuth } from '../auth/auth-context';
+import { useAiReplyWatch } from './use-ai-reply-watch';
 import { useWorkspace as useWorkspaceQuery } from '../workspaces/workspace-hooks';
 import { toggleBookmark, acceptReply } from './feed-api';
 import './post-detail-page.css';
@@ -48,6 +51,9 @@ export function PostDetailPage() {
   const [replies, setReplies] = useState<ReplyResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [replyLoading, setReplyLoading] = useState(false);
+  const aiReply = useAiReplyWatch(workspaceId, discussion?.id, (answer) =>
+    setReplies((prev) =>
+      prev.some((reply) => reply.id === answer.id) ? prev : [...prev, answer]));
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -90,6 +96,9 @@ export function PostDetailPage() {
       if (parentId) payload.parentReplyId = parentId;
       const result = await addReply(workspaceId, discussion.id, payload);
       setReplies((prev) => [...prev, result]);
+      if (mentionsAi(body)) {
+        aiReply.watch(result.id);
+      }
     } finally {
       setReplyLoading(false);
     }
@@ -369,7 +378,7 @@ export function PostDetailPage() {
                   size={22}
                   shape="circle"
                 />
-                <strong>{acceptedReply.isAiAnswer ? 'UniChat AI' : acceptedReply.authorName}</strong>
+                <strong>{acceptedReply.authorName}</strong>
                 <span className="post-detail__dot">•</span>
                 <time dateTime={acceptedReply.createdAt}>
                   {formatRelativeTime(acceptedReply.createdAt)}
@@ -378,6 +387,7 @@ export function PostDetailPage() {
               <div className="accepted-answer__body">
                 <MentionText>{acceptedReply.body}</MentionText>
               </div>
+              <ReplyCitations citations={acceptedReply.citations ?? []} />
               <ReactionBar
                 targetType="DISCUSSION_REPLY"
                 targetId={acceptedReply.id}
@@ -391,6 +401,12 @@ export function PostDetailPage() {
             <h2 className="post-detail__comments-title">
               {acceptedReply ? `${replies.length - 1} bình luận khác` : `${replies.length} bình luận`}
             </h2>
+            {(aiReply.pending || aiReply.error) && (
+              <p className="post-detail__ai-pending" role="status">
+                <Icon name={aiReply.pending ? 'smart_toy' : 'error_outline'} size={16} />
+                {aiReply.pending ? 'Trợ lý AI đang đọc tài liệu của nhóm...' : aiReply.error}
+              </p>
+            )}
             <div className="post-detail__comments-list">
               {rootReplies.length === 0 ? (
                 <div className="post-detail__no-comments">

@@ -4,26 +4,16 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-
-import com.unichat.core.communitychat.domain.Reaction;
-import com.unichat.core.communitychat.domain.ReactionRepository;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
 import com.unichat.core.common.error.AuthorizationError;
 import com.unichat.core.common.error.NotFoundError;
@@ -35,13 +25,13 @@ import com.unichat.core.communitychat.api.PostAttachmentResponse;
 import com.unichat.core.communitychat.api.ReactionSummary;
 import com.unichat.core.communitychat.api.UpdateDiscussionRequest;
 import com.unichat.core.communitychat.api.ReplyResponse;
+import com.unichat.core.communitychat.domain.AiMentionEvent;
 import com.unichat.core.communitychat.domain.Discussion;
 import com.unichat.core.communitychat.domain.DiscussionReply;
 import com.unichat.core.communitychat.domain.DiscussionReplyRepository;
 import com.unichat.core.communitychat.domain.DiscussionRepository;
 import com.unichat.core.communitychat.domain.MentionEvent;
 import com.unichat.core.communitychat.domain.NewReplyEvent;
-import com.unichat.core.document.domain.DocumentRepository;
 import com.unichat.core.user.domain.UserRepository;
 import com.unichat.core.workspace.domain.Workspace;
 import com.unichat.core.workspace.domain.WorkspaceMember;
@@ -60,26 +50,18 @@ public class DiscussionService {
     private final DiscussionReplyRepository replyRepository;
     private final WorkspaceMemberRepository memberRepository;
     private final UserRepository userRepository;
-    private final DocumentRepository documentRepository;
     private final WorkspaceRepository workspaceRepository;
     private final ApplicationEventPublisher eventPublisher;
-    private final RestTemplate restTemplate;
-    private final ReactionRepository reactionRepository;
     private final PostAttachmentService attachmentService;
     private final MentionResolver mentionResolver;
     private final ReactionService reactionService;
-
-    @Value("${unichat.ai-service.url:http://localhost:8001}")
-    private String aiServiceUrl;
 
     public DiscussionService(DiscussionRepository discussionRepository,
                              DiscussionReplyRepository replyRepository,
                              WorkspaceMemberRepository memberRepository,
                              UserRepository userRepository,
-                             DocumentRepository documentRepository,
                              WorkspaceRepository workspaceRepository,
                              ApplicationEventPublisher eventPublisher,
-                             ReactionRepository reactionRepository,
                              PostAttachmentService attachmentService,
                              MentionResolver mentionResolver,
                              ReactionService reactionService) {
@@ -91,10 +73,7 @@ public class DiscussionService {
         this.replyRepository = replyRepository;
         this.memberRepository = memberRepository;
         this.userRepository = userRepository;
-        this.documentRepository = documentRepository;
         this.eventPublisher = eventPublisher;
-        this.reactionRepository = reactionRepository;
-        this.restTemplate = new RestTemplate();
     }
 
     /**
@@ -258,7 +237,7 @@ public class DiscussionService {
         return replies.stream()
                 .map(r -> ReplyResponse.from(
                         r,
-                        authorNames.getOrDefault(r.getAuthorId(), "Unknown"),
+                        displayName(r.getAuthorId(), authorNames),
                         null,
                         reactions.getOrDefault(r.getId(), ReactionSummary.empty())))
                 .collect(Collectors.toList());
@@ -298,7 +277,11 @@ public class DiscussionService {
         publishMentions(workspaceId, discussionId, reply.getId(), userId, request.body());
 
         if (request.body().toLowerCase().contains("@ai")) {
-            triggerAiResponseAsync(workspaceId, discussion, reply);
+            // Answered after this transaction commits: the assistant's reply hangs
+            // off this one, so its row has to exist first.
+            eventPublisher.publishEvent(new AiMentionEvent(
+                    workspaceId, discussionId, reply.getId(),
+                    discussion.getTitle(), request.body()));
         }
 
         String authorName = userRepository.findById(userId).map(u -> u.getEmail().split("@")[0]).orElse("Unknown");
@@ -431,53 +414,14 @@ public class DiscussionService {
                 attachmentService.listFor(discussion.getId()), reactions);
     }
 
-    private void triggerAiResponseAsync(UUID workspaceId, Discussion discussion, DiscussionReply triggerReply) {
-        CompletableFuture.runAsync(() -> {
-            try {
-                List<UUID> allowedDocUuids = documentRepository.findAllowedDocumentIdsForWorkspaces(List.of(workspaceId));
-                List<String> allowedDocIds = allowedDocUuids.stream().map(UUID::toString).toList();
-
-                String question = triggerReply.getBody().replaceAll("(?i)@ai\\b", "").trim();
-                // Contextualize question with discussion title if it's too short
-                if (question.length() < 10) {
-                    question = "Trong chủ đề '" + discussion.getTitle() + "', " + question;
-                }
-
-                Map<String, Object> aiRequest = Map.of(
-                        "workspaceId", workspaceId.toString(),
-                        "allowedDocumentIds", allowedDocIds,
-                        "question", question,
-                        "strategyVersion", "v1.0",
-                        "requestId", UUID.randomUUID().toString()
-                );
-
-                HttpHeaders headers = new HttpHeaders();
-                headers.setContentType(MediaType.APPLICATION_JSON);
-                HttpEntity<Map<String, Object>> entity = new HttpEntity<>(aiRequest, headers);
-
-                ResponseEntity<Map> responseEntity = restTemplate.postForEntity(
-                        aiServiceUrl + "/internal/v1/retrieval/answers", entity, Map.class);
-                
-                Map<String, Object> aiResponse = (responseEntity.getBody() != null) ? responseEntity.getBody() : Map.of();
-                String answerText = (String) aiResponse.get("answer");
-                String assistantContent = answerText != null ? answerText : "Không có câu trả lời";
-
-                DiscussionReply aiReply = new DiscussionReply(
-                        UUID.randomUUID(),
-                        discussion.getId(),
-                        triggerReply.getAuthorId(), // Fallback user ID
-                        assistantContent,
-                        triggerReply.getId(),
-                        true,
-                        Instant.now()
-                );
-                
-                // In a real app we need a programmatic transaction here
-                replyRepository.save(aiReply);
-
-            } catch (Exception e) {
-                log.error("Failed to generate AI response in discussion", e);
-            }
-        });
+    /**
+     * The assistant posts under a system account, so show it by its role rather
+     * than by the local part of {@code assistant@unichat.system}.
+     */
+    private static String displayName(UUID authorId, Map<UUID, String> names) {
+        if (AiReplyService.ASSISTANT_USER_ID.equals(authorId)) {
+            return AiReplyService.ASSISTANT_DISPLAY_NAME;
+        }
+        return names.getOrDefault(authorId, "Unknown");
     }
 }

@@ -583,3 +583,18 @@
   background: var(--color-tertiary-fixed);
   color: var(--color-on-tertiary-fixed-variant);
 }
+
+/* The assistant answers a few seconds after the comment, so the thread says so
+   instead of looking like nothing happened. */
+.post-detail__ai-pending {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  border: 1px dashed var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-container-low);
+  color: var(--color-on-surface-variant);
+  font: var(--font-label-md);
+}

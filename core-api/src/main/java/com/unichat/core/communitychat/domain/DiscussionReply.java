@@ -1,7 +1,12 @@
 package com.unichat.core.communitychat.domain;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -40,6 +45,21 @@ public class DiscussionReply {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
+    /** Links an AI reply back to the retrieval run that produced it. */
+    @Column(name = "retrieval_trace_id")
+    private UUID retrievalTraceId;
+
+    /**
+     * Sources behind an AI reply, empty for a human one.
+     *
+     * <p>Mapped with Hibernate's native JSON support rather than a converter:
+     * an AttributeConverter binds the value as varchar, which PostgreSQL
+     * refuses to cast to jsonb.
+     */
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "citations", columnDefinition = "jsonb", nullable = false)
+    private List<ReplyCitation> citations = new ArrayList<>();
+
     public DiscussionReply() {}
 
     public DiscussionReply(UUID id, UUID discussionId, UUID authorId, String body, 
@@ -65,4 +85,15 @@ public class DiscussionReply {
     
     public void setBody(String body) { this.body = body; }
     public void adjustVoteScore(int delta) { this.voteScore += delta; }
+
+    public UUID getRetrievalTraceId() { return retrievalTraceId; }
+
+    public void setRetrievalTraceId(UUID retrievalTraceId) { this.retrievalTraceId = retrievalTraceId; }
+
+    public List<ReplyCitation> getCitations() { return citations; }
+
+    /** Records the sources an AI answer drew on. */
+    public void setCitations(List<ReplyCitation> citations) {
+        this.citations = citations != null ? citations : new ArrayList<>();
+    }
 }
