@@ -30,6 +30,7 @@ import com.unichat.core.common.error.NotFoundError;
 import com.unichat.core.communitychat.api.CreateDiscussionRequest;
 import com.unichat.core.communitychat.api.CreateReplyRequest;
 import com.unichat.core.communitychat.api.DiscussionResponse;
+import com.unichat.core.communitychat.api.MentionableMember;
 import com.unichat.core.communitychat.api.PostAttachmentResponse;
 import com.unichat.core.communitychat.api.UpdateDiscussionRequest;
 import com.unichat.core.communitychat.api.ReplyResponse;
@@ -37,6 +38,7 @@ import com.unichat.core.communitychat.domain.Discussion;
 import com.unichat.core.communitychat.domain.DiscussionReply;
 import com.unichat.core.communitychat.domain.DiscussionReplyRepository;
 import com.unichat.core.communitychat.domain.DiscussionRepository;
+import com.unichat.core.communitychat.domain.MentionEvent;
 import com.unichat.core.communitychat.domain.NewReplyEvent;
 import com.unichat.core.document.domain.DocumentRepository;
 import com.unichat.core.user.domain.UserRepository;
@@ -63,6 +65,7 @@ public class DiscussionService {
     private final RestTemplate restTemplate;
     private final ReactionRepository reactionRepository;
     private final PostAttachmentService attachmentService;
+    private final MentionResolver mentionResolver;
 
     @Value("${unichat.ai-service.url:http://localhost:8001}")
     private String aiServiceUrl;
@@ -75,7 +78,9 @@ public class DiscussionService {
                              WorkspaceRepository workspaceRepository,
                              ApplicationEventPublisher eventPublisher,
                              ReactionRepository reactionRepository,
-                             PostAttachmentService attachmentService) {
+                             PostAttachmentService attachmentService,
+                             MentionResolver mentionResolver) {
+        this.mentionResolver = mentionResolver;
         this.attachmentService = attachmentService;
         this.workspaceRepository = workspaceRepository;
         this.discussionRepository = discussionRepository;
@@ -176,9 +181,33 @@ public class DiscussionService {
                     .toList());
         }
         discussionRepository.save(discussion);
+        publishMentions(workspaceId, discussion.getId(), null, userId, request.body());
 
         String authorName = userRepository.findById(userId).map(u -> u.getEmail().split("@")[0]).orElse("Unknown");
         return DiscussionResponse.from(discussion, authorName, null, null);
+    }
+
+    /**
+     * Members the composer may suggest for a mention. Membership is verified
+     * first, so the roster never leaks to someone outside the group.
+     */
+    public List<MentionableMember> listMentionableMembers(UUID workspaceId, UUID userId) {
+        verifyMembership(workspaceId, userId);
+        return mentionResolver.listMentionable(workspaceId);
+    }
+
+    /**
+     * Notifies anyone the text names. Resolution is scoped to active workspace
+     * members, so a mention never reaches someone who cannot open the post.
+     */
+    private void publishMentions(UUID workspaceId, UUID discussionId, UUID replyId,
+                                 UUID authorId, String text) {
+        List<UUID> mentioned = mentionResolver.resolve(workspaceId, text, authorId);
+        if (mentioned.isEmpty()) {
+            return;
+        }
+        eventPublisher.publishEvent(
+                new MentionEvent(workspaceId, discussionId, replyId, authorId, mentioned));
     }
 
     public List<ReplyResponse> getReplies(UUID workspaceId, UUID discussionId, UUID userId) {
@@ -237,6 +266,7 @@ public class DiscussionService {
         eventPublisher.publishEvent(new NewReplyEvent(
                 workspaceId, discussionId, userId, discussion.getAuthorId(), reply.getId()
         ));
+        publishMentions(workspaceId, discussionId, reply.getId(), userId, request.body());
 
         if (request.body().toLowerCase().contains("@ai")) {
             triggerAiResponseAsync(workspaceId, discussion, reply);
@@ -306,6 +336,7 @@ public class DiscussionService {
 
         discussion.applyEdit(request.title(), request.body(), normaliseTags(request.tags()), Instant.now());
         discussionRepository.save(discussion);
+        publishMentions(workspaceId, discussionId, null, userId, request.body());
 
         return toResponse(workspaceId, discussion, userId);
     }

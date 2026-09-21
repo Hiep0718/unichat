@@ -101,6 +101,18 @@ public class DiscussionController {
     }
 
     /** Accept a reply as the best answer (StackOverflow-style). */
+    /**
+     * Members the composer can suggest for a mention. Available to any member,
+     * unlike the full roster.
+     */
+    @GetMapping("/mentionable-members")
+    public ResponseEntity<List<MentionableMember>> getMentionableMembers(
+            @PathVariable UUID workspaceId,
+            @AuthenticationPrincipal Jwt jwt) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        return ResponseEntity.ok(discussionService.listMentionableMembers(workspaceId, userId));
+    }
+
     /** Edits a post. Author only; the label stays fixed at creation. */
     @PutMapping("/{discussionId}")
     public ResponseEntity<DiscussionResponse> updateDiscussion(

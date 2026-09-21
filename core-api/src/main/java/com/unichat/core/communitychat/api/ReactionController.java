@@ -24,13 +24,16 @@ public class ReactionController {
         this.reactionService = reactionService;
     }
 
+    /**
+     * Applies a reaction and returns the target's new summary, so the client
+     * can render exact counts instead of guessing them locally.
+     */
     @PostMapping
-    public ResponseEntity<Void> toggleReaction(
+    public ResponseEntity<ReactionSummary> toggleReaction(
             @Valid @RequestBody ReactionRequest request,
             @AuthenticationPrincipal Jwt jwt) {
-        
+
         UUID userId = UUID.fromString(jwt.getSubject());
-        reactionService.toggleReaction(userId, request);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(reactionService.toggleReaction(userId, request));
     }
 }
