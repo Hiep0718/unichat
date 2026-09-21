@@ -6,10 +6,13 @@
 -- remaining DOWNVOTE rows are dropped rather than migrated, since there is no
 -- longer a negative reaction to map them onto.
 
+-- The old CHECK constraint only allows UPVOTE/DOWNVOTE/HELPFUL, so it must be
+-- dropped before any row is set to LIKE, not after.
+ALTER TABLE reactions DROP CONSTRAINT IF EXISTS reactions_reaction_type_check;
+
 DELETE FROM reactions WHERE reaction_type = 'DOWNVOTE';
 UPDATE reactions SET reaction_type = 'LIKE' WHERE reaction_type IN ('UPVOTE', 'HELPFUL');
 
-ALTER TABLE reactions DROP CONSTRAINT IF EXISTS reactions_reaction_type_check;
 ALTER TABLE reactions ADD CONSTRAINT reactions_reaction_type_check
     CHECK (reaction_type IN ('LIKE', 'LOVE', 'INSIGHTFUL', 'CELEBRATE'));
 

@@ -347,3 +347,13 @@
 
 - Decision: Mark `AiReplyService`'s injectable constructor with `@Autowired`.
   Rationale: The class carries a second, package-private constructor so a test can supply a `MockRestServiceServer`-bound `RestTemplate` instead of reaching the network. With two constructors and neither annotated, Spring falls back to a no-arg constructor that does not exist and fails bean creation at startup — a trap `mvn test` cannot catch, since only a real context refresh exercises it.
+
+## 2026-09-21 - Unblocking Migrations V17 And V16 On The Shared Dev Database
+
+- Decision: Drop the old `reactions_reaction_type_check` constraint before the data migration in `V17`, not after it.
+  Rationale: The script set rows to `LIKE` while the constraint from `V8` still allowed only `UPVOTE`/`DOWNVOTE`/`HELPFUL`, so the `UPDATE` violated the very constraint it was about to replace. Postgres rolls a failed script back whole, so `V17` had never applied on any database since it was written, and the app could not start.
+
+- Decision: Renumber `V16__post_attachments.sql` to `V20__post_attachments.sql`.
+  Rationale: Flyway's schema history on the shared dev database already recorded version 16 as `V16__conversation_summary.sql` — a teammate's migration applied directly, not present in this working tree. With `validate-on-migrate: false`, Flyway trusts the version number alone, so it treated version 16 as done and silently skipped this branch's script: `post_attachments`, `discussions.edited_at` and the `DELETED` status value were never created, surfacing only later as a Hibernate schema-validation failure. Verified that no Java code and no later migration (V17–V19) references the file by version number before renaming it.
+
+- Note: both were found by starting Core API end-to-end against the real development database. `mvnw clean test` passed throughout and could not have caught either, since neither Flyway nor schema validation runs in the unit suite.
