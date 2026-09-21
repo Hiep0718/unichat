@@ -62,12 +62,14 @@ export function regenerateReport() {
 
   console.log('Successfully regenerated benchmark report:');
   if (strictMetrics) {
-    console.log(`  Strict Decision Accuracy: ${(strictMetrics.decisionAccuracy * 100).toFixed(1)}% (${strictMetrics.totalQuestions - strictMetrics.decisionMismatches}/${strictMetrics.totalQuestions})`);
-    console.log(`  Strict Keyword Score:     ${(strictMetrics.meanKeywordScore * 100).toFixed(1)}%`);
+    const correct = Math.round(strictMetrics.decisionAccuracy * strictMetrics.totalQuestions);
+    console.log(`  Strict Decision Accuracy: ${(strictMetrics.decisionAccuracy * 100).toFixed(1)}% (${correct}/${strictMetrics.totalQuestions})`);
+    console.log(`  Strict Keyword Score:     ${(strictMetrics.avgKeywordHitRate * 100).toFixed(1)}%`);
   }
   if (hybridMetrics) {
-    console.log(`  Hybrid Decision Accuracy: ${(hybridMetrics.decisionAccuracy * 100).toFixed(1)}% (${hybridMetrics.totalQuestions - hybridMetrics.decisionMismatches}/${hybridMetrics.totalQuestions})`);
-    console.log(`  Hybrid Keyword Score:     ${(hybridMetrics.meanKeywordScore * 100).toFixed(1)}%`);
+    const correct = Math.round(hybridMetrics.decisionAccuracy * hybridMetrics.totalQuestions);
+    console.log(`  Hybrid Decision Accuracy: ${(hybridMetrics.decisionAccuracy * 100).toFixed(1)}% (${correct}/${hybridMetrics.totalQuestions})`);
+    console.log(`  Hybrid Keyword Score:     ${(hybridMetrics.avgKeywordHitRate * 100).toFixed(1)}%`);
   }
 }
 
