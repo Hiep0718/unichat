@@ -38,11 +38,18 @@ export interface TrendingTag {
 
 export interface FeedStats {
   totalPosts: number;
+  /** Questions with no accepted answer yet — the actionable number. */
+  unansweredCount: number;
 }
 
 /* ---------- Feed ---------- */
 
-export type FeedSort = 'HOT' | 'NEW' | 'TOP';
+/**
+ * Task-oriented views. Replaced Reddit's HOT/TOP ranking, which needs a scale
+ * this product does not have and hid the only signal that matters: whether a
+ * question still needs an answer.
+ */
+export type FeedSort = 'UNANSWERED' | 'NEW' | 'MINE';
 export type FeedScope = 'ALL' | 'JOINED' | 'SAVED';
 export type TopRange = 'TODAY' | 'WEEK' | 'MONTH' | 'YEAR' | 'ALL';
 
@@ -58,7 +65,7 @@ export interface FeedParams {
 
 export async function fetchFeed(params: FeedParams = {}): Promise<FeedPage> {
   const sp = new URLSearchParams();
-  sp.set('sort', params.sort ?? 'HOT');
+  sp.set('sort', params.sort ?? 'NEW');
   sp.set('scope', params.scope ?? 'JOINED');
   sp.set('page', String(params.page ?? 0));
   sp.set('size', String(params.size ?? 20));

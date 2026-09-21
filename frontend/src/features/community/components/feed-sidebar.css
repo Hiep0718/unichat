@@ -1,0 +1,149 @@
+.feed-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  position: sticky;
+  top: 20px;
+  align-self: start;
+}
+
+/* Unanswered count leads the sidebar: it is the one number worth acting on. */
+.feed-sidebar__cta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-xl);
+  background: var(--color-tertiary-fixed);
+  color: var(--color-on-tertiary-fixed-variant);
+  font: var(--font-body-md);
+  text-align: left;
+  cursor: pointer;
+  transition: filter var(--transition-fast);
+}
+
+.feed-sidebar__cta:hover {
+  filter: brightness(0.97);
+}
+
+.feed-sidebar__cta-icon {
+  display: inline-flex;
+}
+
+.feed-sidebar__cta-text {
+  flex: 1;
+  line-height: 1.35;
+}
+
+.feed-sidebar__cta-text strong {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.feed-sidebar__card {
+  padding: 16px;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface-container-lowest);
+}
+
+.feed-sidebar__card--muted {
+  background: var(--color-surface-container-low);
+}
+
+.feed-sidebar__heading {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 12px;
+  font: var(--font-label-md);
+  font-weight: 700;
+  color: var(--color-on-surface);
+}
+
+.feed-sidebar__tags {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.feed-sidebar__tag {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 10px;
+  border: none;
+  border-radius: var(--radius-lg);
+  background: transparent;
+  font: var(--font-body-sm);
+  color: var(--color-on-surface-variant);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.feed-sidebar__tag:hover {
+  background: var(--color-surface-container-high);
+  color: var(--color-on-surface);
+}
+
+.feed-sidebar__tag--active {
+  background: var(--color-secondary-fixed);
+  color: var(--color-on-secondary-fixed-variant);
+  font-weight: 600;
+}
+
+.feed-sidebar__tag-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.feed-sidebar__tag-count {
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.7;
+}
+
+.feed-sidebar__body {
+  margin: 0 0 12px;
+  font: var(--font-body-sm);
+  line-height: 1.6;
+  color: var(--color-on-surface-variant);
+}
+
+.feed-sidebar__empty {
+  margin: 0;
+  font: var(--font-body-sm);
+  color: var(--color-on-surface-variant);
+}
+
+.feed-sidebar__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: none;
+  background: none;
+  font: var(--font-label-md);
+  font-weight: 600;
+  color: var(--color-primary);
+  cursor: pointer;
+}
+
+.feed-sidebar__link:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 1100px) {
+  .feed-sidebar {
+    display: none;
+  }
+}

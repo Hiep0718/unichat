@@ -22,6 +22,9 @@ import com.unichat.core.communitychat.service.FeedService;
 @RequestMapping("/api/v1/feed")
 public class FeedController {
 
+    /** Matches the pagination ceiling required by the engineering standards. */
+    private static final int MAX_PAGE_SIZE = 100;
+
     private final FeedService feedService;
 
     public FeedController(FeedService feedService) {
@@ -41,20 +44,25 @@ public class FeedController {
             @AuthenticationPrincipal Jwt jwt) {
 
         UUID userId = UUID.fromString(jwt.getSubject());
+        // Cap the page size so a crafted request cannot pull the whole table.
+        int safeSize = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
         return ResponseEntity.ok(
-                feedService.getFeed(userId, sort, scope, q, tag, range, page, size));
+                feedService.getFeed(userId, sort, scope, q, tag, range, Math.max(page, 0), safeSize));
     }
 
     /** Trending tags — top tags by frequency in the last 7 days. */
     @GetMapping("/trending-tags")
     public ResponseEntity<List<Map<String, Object>>> getTrendingTags(
-            @RequestParam(defaultValue = "10") int limit) {
-        return ResponseEntity.ok(feedService.getTrendingTags(limit));
+            @RequestParam(defaultValue = "10") int limit,
+            @AuthenticationPrincipal Jwt jwt) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        return ResponseEntity.ok(feedService.getTrendingTags(userId, Math.min(limit, 50)));
     }
 
     /** Community statistics for sidebar display. */
     @GetMapping("/stats")
-    public ResponseEntity<Map<String, Object>> getStats() {
-        return ResponseEntity.ok(feedService.getStats());
+    public ResponseEntity<Map<String, Object>> getStats(@AuthenticationPrincipal Jwt jwt) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        return ResponseEntity.ok(feedService.getStats(userId));
     }
 }

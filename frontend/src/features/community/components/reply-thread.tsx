@@ -3,10 +3,12 @@
  * Renders a reply with its nested children via recursive tree.
  */
 import { useState, useMemo } from 'react';
+import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 import { Icon } from '../../../components/icon';
 import { formatRelativeTime } from '../../../lib/format-time';
-import { VoteControl } from './vote-control';
+import { HelpfulButton } from './helpful-button';
 import { ReplyForm } from './reply-form';
 import type { ReplyResponse } from '../community-api';
 import '../discussion-page.css';
@@ -62,14 +64,16 @@ export function ReplyThread({
               </span>
             )}
           </div>
-          <p className="reply-node__body">{reply.body}</p>
+          <div className="reply-node__body">
+            <Markdown remarkPlugins={[remarkGfm]}>{reply.body}</Markdown>
+          </div>
           <div className="reply-node__actions">
-            <VoteControl
+            <HelpfulButton
               targetType="DISCUSSION_REPLY"
               targetId={reply.id}
               initialScore={reply.voteScore}
               initialVote={reply.userVote}
-              orientation="horizontal"
+              compact
             />
             <button
               className="reply-node__action-btn"

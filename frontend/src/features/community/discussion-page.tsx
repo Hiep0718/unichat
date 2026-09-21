@@ -9,7 +9,10 @@ import { Icon } from '../../components/icon';
 import { formatRelativeTime } from '../../lib/format-time';
 import { useWorkspace } from '../workspaces/workspace-context';
 import { fetchDiscussions, DiscussionResponse, createDiscussion } from './community-api';
-import { VoteControl } from './components/vote-control';
+import { HelpfulButton } from './components/helpful-button';
+// This page's own modal reuses the create-post styles, which used to arrive via
+// feed-page.css; they now live with the component that owns them.
+import './components/create-post-modal.css';
 import './discussion-page.css';
 
 const LABELS = ['ALL', 'QUESTION', 'DISCUSSION', 'ANNOUNCEMENT'] as const;
@@ -141,12 +144,12 @@ function DiscussionCard({ discussion: d, labelName, onClick }: DiscussionCardPro
       </h3>
       <p className="disc-card__excerpt">{d.body}</p>
       <div className="disc-card__footer">
-        <VoteControl
+        <HelpfulButton
           targetType="DISCUSSION"
           targetId={d.id}
           initialScore={d.voteScore}
           initialVote={d.userVote}
-          orientation="horizontal"
+          compact
         />
         <span className="disc-card__action-btn">
           <Icon name="chat_bubble_outline" size={16} /> {d.replyCount} Bình luận

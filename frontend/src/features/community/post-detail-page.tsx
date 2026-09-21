@@ -5,12 +5,16 @@
  */
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
+import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 import { Icon } from '../../components/icon';
 import { formatRelativeTime, formatFullDateTime } from '../../lib/format-time';
 import { getDiscussion, fetchReplies, addReply } from './community-api';
 import type { DiscussionResponse, ReplyResponse } from './community-api';
-import { VoteControl } from './components/vote-control';
+import { AnswerStatusBadge } from './components/answer-status';
+import { EntityAvatar } from './components/entity-avatar';
+import { HelpfulButton } from './components/helpful-button';
 import { ReplyForm } from './components/reply-form';
 import { ReplyThread } from './components/reply-thread';
 import { useAuth } from '../auth/auth-context';
@@ -94,7 +98,16 @@ export function PostDetailPage() {
     return map;
   }, [replies]);
 
-  const rootReplies = repliesByParent.get(null) ?? [];
+  // The accepted answer is lifted out of the thread and pinned above it, so a
+  // reader gets the resolution without scanning every comment.
+  const acceptedReply = useMemo(
+    () => replies.find((r) => r.id === discussion?.acceptedReplyId) ?? null,
+    [replies, discussion?.acceptedReplyId],
+  );
+
+  const rootReplies = (repliesByParent.get(null) ?? []).filter(
+    (r) => r.id !== acceptedReply?.id,
+  );
 
   const labelName = (l: string | null) => {
     if (!l) return '';
@@ -136,17 +149,14 @@ export function PostDetailPage() {
           {/* Post card */}
           <article className="post-detail__article">
             <div className="post-detail__post-meta">
-              <img
-                src={`https://api.dicebear.com/7.x/identicon/svg?seed=${workspaceId}`}
-                alt="workspace"
-                className="post-detail__ws-avatar"
-              />
-              <span
+              <button
+                type="button"
                 className="post-detail__ws-name"
                 onClick={() => navigate(`/workspaces/${workspaceId}/discussions`)}
               >
-                w/{discussion.authorName}
-              </span>
+                <EntityAvatar name={discussion.workspaceName ?? 'Workspace'} size={20} />
+                {discussion.workspaceName ?? 'Workspace'}
+              </button>
               <span className="post-detail__dot">•</span>
               <span className="post-detail__author">
                 Đăng bởi {discussion.authorName}
@@ -158,17 +168,16 @@ export function PostDetailPage() {
               >
                 {formatRelativeTime(discussion.createdAt)}
               </time>
+              <AnswerStatusBadge
+                replyCount={discussion.replyCount}
+                hasAcceptedAnswer={Boolean(discussion.acceptedReplyId)}
+              />
             </div>
 
             <h1 className="post-detail__title">
               {discussion.label && (
                 <span className={`post-detail__label post-detail__label--${discussion.label.toLowerCase()}`}>
                   {labelName(discussion.label)}
-                </span>
-              )}
-              {discussion.acceptedReplyId && (
-                <span className="post-detail__accepted-badge">
-                  <Icon name="check_circle" size={14} /> Đã giải đáp
                 </span>
               )}
               {discussion.title}
@@ -183,34 +192,34 @@ export function PostDetailPage() {
               </div>
             )}
 
-            <div className="post-detail__body">{discussion.body}</div>
+            <div className="post-detail__body">
+              <Markdown remarkPlugins={[remarkGfm]}>{discussion.body}</Markdown>
+            </div>
 
             <div className="post-detail__actions">
-              <VoteControl
+              <HelpfulButton
                 targetType="DISCUSSION"
                 targetId={discussion.id}
                 initialScore={discussion.voteScore}
                 initialVote={discussion.userVote}
-                orientation="horizontal"
               />
-              <span className="post-detail__action-btn">
-                <Icon name="chat_bubble" size={18} />
-                {discussion.replyCount} Bình luận
+              <span className="post-detail__stat">
+                <Icon name="chat_bubble" size={17} />
+                {discussion.replyCount} bình luận
               </span>
-              <span className="post-detail__action-btn">
-                <Icon name="visibility" size={18} />
-                {discussion.viewCount} Lượt xem
+              <span className="post-detail__stat">
+                <Icon name="visibility" size={17} />
+                {discussion.viewCount} lượt xem
               </span>
-              <span className="post-detail__action-btn">
-                <Icon name="share" size={18} /> Chia sẻ
-              </span>
-              <span
+              <button
+                type="button"
                 className={`post-detail__action-btn ${discussion.isBookmarked ? 'post-detail__action-btn--bookmarked' : ''}`}
                 onClick={handleBookmark}
+                aria-pressed={discussion.isBookmarked}
               >
-                <Icon name={discussion.isBookmarked ? 'bookmark' : 'bookmark_border'} size={18} />
-                Lưu
-              </span>
+                <Icon name={discussion.isBookmarked ? 'bookmark' : 'bookmark_border'} size={17} />
+                {discussion.isBookmarked ? 'Đã lưu' : 'Lưu'}
+              </button>
             </div>
           </article>
 
@@ -219,10 +228,40 @@ export function PostDetailPage() {
             <ReplyForm loading={replyLoading} onSubmit={(b) => handleAddReply(b)} />
           </div>
 
+          {acceptedReply && (
+            <section className="accepted-answer" aria-label="Câu trả lời được chấp nhận">
+              <h2 className="accepted-answer__header">
+                <Icon name="check_circle" size={18} />
+                Câu trả lời được chấp nhận
+              </h2>
+              <div className="accepted-answer__meta">
+                <EntityAvatar
+                  name={acceptedReply.isAiAnswer ? 'AI' : acceptedReply.authorName}
+                  size={22}
+                  shape="circle"
+                />
+                <strong>{acceptedReply.isAiAnswer ? 'UniChat AI' : acceptedReply.authorName}</strong>
+                <span className="post-detail__dot">•</span>
+                <time dateTime={acceptedReply.createdAt}>
+                  {formatRelativeTime(acceptedReply.createdAt)}
+                </time>
+              </div>
+              <div className="accepted-answer__body">
+                <Markdown remarkPlugins={[remarkGfm]}>{acceptedReply.body}</Markdown>
+              </div>
+              <HelpfulButton
+                targetType="DISCUSSION_REPLY"
+                targetId={acceptedReply.id}
+                initialScore={acceptedReply.voteScore}
+                initialVote={acceptedReply.userVote}
+              />
+            </section>
+          )}
+
           {/* Comment thread */}
           <section className="post-detail__comments">
             <h2 className="post-detail__comments-title">
-              {replies.length} Bình luận
+              {acceptedReply ? `${replies.length - 1} bình luận khác` : `${replies.length} bình luận`}
             </h2>
             <div className="post-detail__comments-list">
               {rootReplies.length === 0 ? (

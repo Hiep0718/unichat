@@ -65,14 +65,14 @@
   flex-wrap: wrap;
 }
 
-.post-detail__ws-avatar {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
 .post-detail__ws-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
   font-weight: 600;
   color: var(--color-on-surface);
   cursor: pointer;
@@ -107,27 +107,123 @@
   margin-top: 4px;
 }
 
+/* One colour per meaning, matching the feed card. */
 .post-detail__label--question {
-  background: #dbeafe;
-  color: #1e40af;
+  background: var(--color-secondary-fixed);
+  color: var(--color-on-secondary-fixed-variant);
 }
 
 .post-detail__label--discussion {
-  background: #e0e7ff;
-  color: #4338ca;
+  background: var(--color-surface-container-high);
+  color: var(--color-on-surface-variant);
 }
 
 .post-detail__label--announcement {
-  background: #fef3c7;
-  color: #92400e;
+  background: var(--color-tertiary-fixed);
+  color: var(--color-on-tertiary-fixed-variant);
 }
 
 .post-detail__body {
   font: var(--font-body-lg);
   color: var(--color-on-surface);
   line-height: 1.7;
-  white-space: pre-wrap;
   margin-bottom: 20px;
+}
+
+/* Markdown output — the body is authored in Markdown, including posts the
+   chat escalation composes automatically. */
+.post-detail__body > :first-child {
+  margin-top: 0;
+}
+
+.post-detail__body > :last-child {
+  margin-bottom: 0;
+}
+
+.post-detail__body p {
+  margin: 0 0 12px;
+}
+
+.post-detail__body ul,
+.post-detail__body ol {
+  margin: 0 0 12px;
+  padding-left: 24px;
+}
+
+.post-detail__body li {
+  margin-bottom: 4px;
+}
+
+.post-detail__body blockquote {
+  margin: 0 0 12px;
+  padding: 10px 16px;
+  border-left: 3px solid var(--color-outline-variant);
+  background: var(--color-surface-container-low);
+  border-radius: var(--radius-md);
+  color: var(--color-on-surface-variant);
+  font-size: 0.95em;
+}
+
+.post-detail__body blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+.post-detail__body code {
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-container-high);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9em;
+}
+
+.post-detail__body pre {
+  margin: 0 0 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-container-high);
+  overflow-x: auto;
+}
+
+.post-detail__body pre code {
+  padding: 0;
+  background: none;
+}
+
+.post-detail__body h1,
+.post-detail__body h2,
+.post-detail__body h3,
+.post-detail__body h4 {
+  margin: 16px 0 8px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.post-detail__body h1 { font-size: 1.35em; }
+.post-detail__body h2 { font-size: 1.2em; }
+.post-detail__body h3 { font-size: 1.08em; }
+.post-detail__body h4 { font-size: 1em; }
+
+.post-detail__body a {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.post-detail__body table {
+  width: 100%;
+  margin-bottom: 12px;
+  border-collapse: collapse;
+  font-size: 0.95em;
+}
+
+.post-detail__body th,
+.post-detail__body td {
+  padding: 6px 10px;
+  border: 1px solid var(--color-outline-variant);
+  text-align: left;
+}
+
+.post-detail__body img {
+  max-width: 100%;
 }
 
 .post-detail__actions {
@@ -139,16 +235,27 @@
 }
 
 .post-detail__action-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 6px 14px;
+  border: 1px solid var(--color-outline-variant);
   border-radius: var(--radius-full);
-  background: var(--color-surface-container);
+  background: transparent;
   color: var(--color-on-surface-variant);
   font: var(--font-label-md);
-  cursor: default;
-  transition: background var(--transition-fast);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.post-detail__action-btn:hover {
+  background: var(--color-surface-container-high);
+  color: var(--color-on-surface);
+}
+
+.post-detail__actions {
+  flex-wrap: wrap;
 }
 
 /* ---------- Tags & Badges ---------- */
@@ -393,4 +500,72 @@
     width: 100%;
     position: static;
   }
+}
+
+/* ---------- Accepted answer ----------
+   Lifted out of the comment thread and pinned above it: a reader who only
+   wants the resolution should not have to scan every comment. */
+.accepted-answer {
+  margin: 20px 0;
+  padding: 18px 20px;
+  border: 1px solid #86efac;
+  border-left: 4px solid #16a34a;
+  border-radius: var(--radius-xl);
+  background: #f0fdf4;
+}
+
+.accepted-answer__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  font: var(--font-label-md);
+  font-weight: 700;
+  color: #15803d;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.accepted-answer__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  font: var(--font-label-sm);
+  color: var(--color-on-surface-variant);
+}
+
+.accepted-answer__meta strong {
+  color: var(--color-on-surface);
+}
+
+.accepted-answer__body {
+  font: var(--font-body-md);
+  line-height: 1.65;
+  color: var(--color-on-surface);
+  margin-bottom: 12px;
+}
+
+.accepted-answer__body > :first-child { margin-top: 0; }
+.accepted-answer__body > :last-child { margin-bottom: 0; }
+
+.accepted-answer__body p {
+  margin: 0 0 10px;
+}
+
+.accepted-answer__body code {
+  padding: 2px 5px;
+  border-radius: var(--radius-sm);
+  background: rgba(22, 163, 74, 0.12);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9em;
+}
+
+/* Plain counters next to the action buttons. */
+.post-detail__stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: var(--font-label-md);
+  color: var(--color-on-surface-variant);
 }

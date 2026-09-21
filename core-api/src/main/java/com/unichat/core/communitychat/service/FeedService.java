@@ -14,6 +14,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.unichat.core.communitychat.api.FeedPostResponse;
 import com.unichat.core.communitychat.domain.Bookmark;
 import com.unichat.core.communitychat.domain.BookmarkRepository;
@@ -36,6 +39,12 @@ import com.unichat.core.workspace.domain.WorkspaceVisibility;
 @Service
 @Transactional(readOnly = true)
 public class FeedService {
+
+    /** Sort modes whose queries already contain an ORDER BY clause. */
+    private static final Set<String> SELF_ORDERED_SORTS =
+            Set.of("HOT", "TOP", "UNANSWERED", "MINE");
+
+    private static final ObjectMapper TAG_MAPPER = new ObjectMapper();
 
     private final DiscussionRepository discussionRepository;
     private final WorkspaceMemberRepository memberRepository;
@@ -71,16 +80,21 @@ public class FeedService {
 
         PageRequest pageRequest = buildPageRequest(sort, page, size);
         Page<Discussion> result = executeQuery(
-                workspaceIds, sort, query, tag, range, pageRequest);
+                userId, workspaceIds, sort, scope, query, tag, range, pageRequest);
 
         return mapToResponse(result, userId);
     }
 
     /**
-     * Returns trending tags (top N by frequency in the last 7 days).
+     * Returns trending tags (top N by frequency in the last 7 days), restricted
+     * to workspaces the user belongs to so private tags are not exposed.
      */
-    public List<Map<String, Object>> getTrendingTags(int limit) {
-        return discussionRepository.findTrendingTags(limit).stream()
+    public List<Map<String, Object>> getTrendingTags(UUID userId, int limit) {
+        List<UUID> workspaceIds = resolveWorkspaceIds(userId, "JOINED");
+        if (workspaceIds.isEmpty()) {
+            return List.of();
+        }
+        return discussionRepository.findTrendingTags(workspaceIds, limit).stream()
                 .map(row -> Map.<String, Object>of(
                         "tag", (String) row[0],
                         "count", ((Number) row[1]).longValue()))
@@ -88,11 +102,18 @@ public class FeedService {
     }
 
     /**
-     * Returns community statistics for the sidebar.
+     * Returns counts for the feed sidebar, scoped to the user's workspaces.
      */
-    public Map<String, Object> getStats() {
-        long totalPosts = discussionRepository.count();
-        return Map.of("totalPosts", totalPosts);
+    public Map<String, Object> getStats(UUID userId) {
+        List<UUID> workspaceIds = resolveWorkspaceIds(userId, "JOINED");
+        if (workspaceIds.isEmpty()) {
+            return Map.of("totalPosts", 0L, "unansweredCount", 0L);
+        }
+        long totalPosts = discussionRepository
+                .findByWorkspaceIdInOrderByCreatedAtDesc(workspaceIds, PageRequest.of(0, 1))
+                .getTotalElements();
+        long unanswered = discussionRepository.countUnanswered(workspaceIds);
+        return Map.of("totalPosts", totalPosts, "unansweredCount", unanswered);
     }
 
     /* ---------- Private helpers ---------- */
@@ -114,21 +135,32 @@ public class FeedService {
     }
 
     private PageRequest buildPageRequest(String sort, int page, int size) {
-        if ("HOT".equalsIgnoreCase(sort) || "TOP".equalsIgnoreCase(sort)) {
+        // Native queries carry their own ORDER BY; adding a Sort would append a
+        // second, conflicting clause.
+        if (SELF_ORDERED_SORTS.contains(sort == null ? "" : sort.toUpperCase())) {
             return PageRequest.of(page, size);
         }
         return PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
     }
 
-    private Page<Discussion> executeQuery(List<UUID> wsIds, String sort,
+    private Page<Discussion> executeQuery(UUID userId, List<UUID> wsIds, String sort, String scope,
                                            String query, String tag, String range,
                                            PageRequest pageRequest) {
         if (query != null && !query.isBlank()) {
             return discussionRepository.searchByKeyword(wsIds, query.trim(), pageRequest);
         }
         if (tag != null && !tag.isBlank()) {
-            String jsonTag = "[\"" + tag.trim() + "\"]";
-            return discussionRepository.findByTag(wsIds, jsonTag, pageRequest);
+            return discussionRepository.findByTag(wsIds, toJsonTagArray(tag), pageRequest);
+        }
+        if ("SAVED".equalsIgnoreCase(scope)) {
+            return discussionRepository.findBookmarked(userId, wsIds, pageRequest);
+        }
+        if ("UNANSWERED".equalsIgnoreCase(sort)) {
+            return discussionRepository.findUnanswered(wsIds, pageRequest);
+        }
+        if ("MINE".equalsIgnoreCase(sort)) {
+            return discussionRepository
+                    .findByWorkspaceIdInAndAuthorIdOrderByCreatedAtDesc(wsIds, userId, pageRequest);
         }
         if ("TOP".equalsIgnoreCase(sort)) {
             Instant since = resolveSince(range);
@@ -140,6 +172,19 @@ public class FeedService {
         }
         return discussionRepository
                 .findByWorkspaceIdInOrderByCreatedAtDesc(wsIds, pageRequest);
+    }
+
+    /**
+     * Serialises a tag into a one-element JSON array for the {@code @>} operator.
+     * Built with Jackson rather than string concatenation: a tag containing a
+     * quote would otherwise produce invalid JSON and fail the cast.
+     */
+    private String toJsonTagArray(String tag) {
+        try {
+            return TAG_MAPPER.writeValueAsString(List.of(tag.trim()));
+        } catch (JsonProcessingException e) {
+            throw new IllegalArgumentException("Thẻ không hợp lệ", e);
+        }
     }
 
     private Instant resolveSince(String range) {
@@ -167,11 +212,23 @@ public class FeedService {
                 .map(Bookmark::getDiscussionId)
                 .collect(Collectors.toSet());
 
+        // Batch the workspace and author lookups: doing them inside the map
+        // meant two extra queries per post.
+        Map<UUID, String> workspaceNames = workspaceRepository
+                .findAllById(result.getContent().stream()
+                        .map(Discussion::getWorkspaceId).distinct().toList())
+                .stream()
+                .collect(Collectors.toMap(Workspace::getId, Workspace::getName));
+
+        Map<UUID, String> authorNames = userRepository
+                .findAllById(result.getContent().stream()
+                        .map(Discussion::getAuthorId).distinct().toList())
+                .stream()
+                .collect(Collectors.toMap(u -> u.getId(), u -> u.getEmail().split("@")[0]));
+
         return result.map(d -> {
-            String wsName = workspaceRepository.findById(d.getWorkspaceId())
-                    .map(Workspace::getName).orElse("Unknown");
-            String authorName = userRepository.findById(d.getAuthorId())
-                    .map(u -> u.getEmail().split("@")[0]).orElse("Unknown");
+            String wsName = workspaceNames.getOrDefault(d.getWorkspaceId(), "Unknown");
+            String authorName = authorNames.getOrDefault(d.getAuthorId(), "Unknown");
 
             return new FeedPostResponse(
                     d.getId(), d.getWorkspaceId(), wsName,
