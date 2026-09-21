@@ -19,7 +19,8 @@ public record FeedPostResponse(
     String label,
     int voteScore,
     int replyCount,
-    String userVote,
+    /** Counts per reaction type plus the caller's own choice. */
+    ReactionSummary reactions,
     List<String> tags,
     boolean hasAcceptedAnswer,
     boolean isBookmarked,

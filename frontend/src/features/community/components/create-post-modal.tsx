@@ -9,6 +9,7 @@ import { getWorkspaces } from '../../workspaces/workspace-api';
 import type { WorkspaceDto } from '../../workspaces/workspace-schema';
 import { ApiError } from '../../../lib/api-client';
 import { createDiscussion, uploadPostAttachment } from '../community-api';
+import { MentionTextarea } from './mention-textarea';
 import './create-post-modal.css';
 
 interface CreatePostModalProps {
@@ -225,11 +226,13 @@ export function CreatePostModal({
             {/* Body */}
             <div className="create-post-modal__field">
               <label className="create-post-modal__label">Nội dung</label>
-              <textarea
+              <MentionTextarea
+                workspaceId={selectedWsId}
                 className="create-post-modal__textarea"
                 value={body}
-                onChange={(e) => setBody(e.target.value)}
-                placeholder="Viết nội dung bài thảo luận... (Gõ @AI để yêu cầu AI trả lời)"
+                onChange={setBody}
+                placeholder="Viết nội dung... (@AI để hỏi trợ lý, @tên để nhắc thành viên)"
+                rows={6}
                 required
               />
             </div>

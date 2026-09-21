@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.unichat.core.communitychat.api.FeedPostResponse;
 import com.unichat.core.communitychat.api.PostAttachmentResponse;
+import com.unichat.core.communitychat.api.ReactionSummary;
 import com.unichat.core.communitychat.domain.Bookmark;
 import com.unichat.core.communitychat.domain.BookmarkRepository;
 import com.unichat.core.communitychat.domain.Discussion;
@@ -54,6 +55,7 @@ public class FeedService {
     private final ReactionRepository reactionRepository;
     private final BookmarkRepository bookmarkRepository;
     private final PostAttachmentService attachmentService;
+    private final ReactionService reactionService;
 
     public FeedService(DiscussionRepository discussionRepository,
                        WorkspaceMemberRepository memberRepository,
@@ -61,7 +63,9 @@ public class FeedService {
                        UserRepository userRepository,
                        ReactionRepository reactionRepository,
                        BookmarkRepository bookmarkRepository,
-                       PostAttachmentService attachmentService) {
+                       PostAttachmentService attachmentService,
+                       ReactionService reactionService) {
+        this.reactionService = reactionService;
         this.attachmentService = attachmentService;
         this.discussionRepository = discussionRepository;
         this.memberRepository = memberRepository;
@@ -205,10 +209,8 @@ public class FeedService {
         List<UUID> discussionIds = result.getContent().stream()
                 .map(Discussion::getId).toList();
 
-        Map<UUID, String> userVotes = reactionRepository
-                .findByUserIdAndTargetTypeAndTargetIdIn(userId, "DISCUSSION", discussionIds)
-                .stream()
-                .collect(Collectors.toMap(Reaction::getTargetId, Reaction::getReactionType));
+        Map<UUID, ReactionSummary> reactions =
+                reactionService.summariseAll("DISCUSSION", discussionIds, userId);
 
         Set<UUID> bookmarkedIds = bookmarkRepository
                 .findByUserIdAndDiscussionIdIn(userId, discussionIds)
@@ -242,7 +244,7 @@ public class FeedService {
                     d.getAuthorId(), authorName, null,
                     d.getTitle(), d.getBody(), d.getLabel(),
                     d.getVoteScore(), d.getReplyCount(),
-                    userVotes.get(d.getId()),
+                    reactions.getOrDefault(d.getId(), ReactionSummary.empty()),
                     d.getTags(),
                     d.getAcceptedReplyId() != null,
                     bookmarkedIds.contains(d.getId()),

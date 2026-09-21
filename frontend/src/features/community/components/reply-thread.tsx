@@ -3,12 +3,11 @@
  * Renders a reply with its nested children via recursive tree.
  */
 import { useState, useMemo } from 'react';
-import Markdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 
 import { Icon } from '../../../components/icon';
 import { formatRelativeTime } from '../../../lib/format-time';
-import { HelpfulButton } from './helpful-button';
+import { MentionText } from './mention-text';
+import { ReactionBar } from './reaction-bar';
 import { ReplyForm } from './reply-form';
 import type { ReplyResponse } from '../community-api';
 import '../discussion-page.css';
@@ -21,6 +20,8 @@ interface ReplyThreadProps {
   readonly onAcceptReply?: ((replyId: string) => void) | undefined;
   readonly acceptedReplyId?: string | null | undefined;
   readonly isPostAuthor?: boolean | undefined;
+  /** Enables member suggestions in the nested reply form. */
+  readonly workspaceId?: string | null | undefined;
 }
 
 /**
@@ -34,6 +35,7 @@ export function ReplyThread({
   onAcceptReply,
   acceptedReplyId,
   isPostAuthor,
+  workspaceId,
 }: ReplyThreadProps) {
   const children = useMemo(
     () => repliesByParent.get(reply.id) ?? [],
@@ -65,14 +67,13 @@ export function ReplyThread({
             )}
           </div>
           <div className="reply-node__body">
-            <Markdown remarkPlugins={[remarkGfm]}>{reply.body}</Markdown>
+            <MentionText>{reply.body}</MentionText>
           </div>
           <div className="reply-node__actions">
-            <HelpfulButton
+            <ReactionBar
               targetType="DISCUSSION_REPLY"
               targetId={reply.id}
-              initialScore={reply.voteScore}
-              initialVote={reply.userVote}
+              summary={reply.reactions}
               compact
             />
             <button
@@ -99,6 +100,7 @@ export function ReplyThread({
                   setShowForm(false);
                 }}
                 onCancel={() => setShowForm(false)}
+                workspaceId={workspaceId}
                 autoFocus
               />
             </div>
@@ -117,6 +119,7 @@ export function ReplyThread({
               onAcceptReply={onAcceptReply}
               acceptedReplyId={acceptedReplyId}
               isPostAuthor={isPostAuthor}
+              workspaceId={workspaceId}
             />
           ))}
         </div>

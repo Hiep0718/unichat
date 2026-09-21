@@ -2,7 +2,7 @@
  * REST API client for the community feed, trending tags, stats, and bookmarks.
  */
 import { fetchJson } from '../../lib/api-client';
-import type { PostAttachment } from './community-api';
+import type { PostAttachment, ReactionSummary } from './community-api';
 
 /* ---------- Types ---------- */
 
@@ -18,7 +18,7 @@ export interface FeedPostResponse {
   label: 'QUESTION' | 'DISCUSSION' | 'ANNOUNCEMENT';
   voteScore: number;
   replyCount: number;
-  userVote: string | null;
+  reactions: ReactionSummary;
   tags: string[];
   hasAcceptedAnswer: boolean;
   isBookmarked: boolean;

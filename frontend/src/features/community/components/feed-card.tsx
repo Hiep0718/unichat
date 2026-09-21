@@ -9,6 +9,7 @@ import { Icon } from '../../../components/icon';
 import { formatRelativeTime } from '../../../lib/format-time';
 import type { FeedPostResponse } from '../feed-api';
 import { AnswerStatusBadge } from './answer-status';
+import { ReactionBar } from './reaction-bar';
 import { PostAttachments } from './post-attachments';
 import { EntityAvatar } from '../../../components/entity-avatar';
 import './feed-card.css';
@@ -112,6 +113,15 @@ export function FeedCard({ post, onOpen, onNavigate, onTagClick, onBookmark }: F
             ))}
           </div>
         )}
+
+        <div className="feed-card__reactions">
+          <ReactionBar
+            targetType="DISCUSSION"
+            targetId={post.id}
+            summary={post.reactions}
+            compact
+          />
+        </div>
       </div>
 
       <button

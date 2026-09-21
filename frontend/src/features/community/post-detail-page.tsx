@@ -5,8 +5,6 @@
  */
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
-import Markdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 
 import { Icon } from '../../components/icon';
 import { formatRelativeTime, formatFullDateTime } from '../../lib/format-time';
@@ -19,8 +17,9 @@ import {
 } from './community-api';
 import type { DiscussionResponse, ReplyResponse } from './community-api';
 import { AnswerStatusBadge } from './components/answer-status';
+import { MentionText } from './components/mention-text';
 import { EntityAvatar } from '../../components/entity-avatar';
-import { HelpfulButton } from './components/helpful-button';
+import { ReactionBar } from './components/reaction-bar';
 import { PostAttachments } from './components/post-attachments';
 import { PostEditForm } from './components/post-edit-form';
 import { PostOwnerMenu } from './components/post-owner-menu';
@@ -260,7 +259,7 @@ export function PostDetailPage() {
             {!isEditing && (
               <>
                 <div className="post-detail__body">
-                  <Markdown remarkPlugins={[remarkGfm]}>{discussion.body}</Markdown>
+                  <MentionText>{discussion.body}</MentionText>
                 </div>
 
                 {workspaceId && (
@@ -274,11 +273,10 @@ export function PostDetailPage() {
             )}
 
             <div className="post-detail__actions">
-              <HelpfulButton
+              <ReactionBar
                 targetType="DISCUSSION"
                 targetId={discussion.id}
-                initialScore={discussion.voteScore}
-                initialVote={discussion.userVote}
+                summary={discussion.reactions}
               />
               <span className="post-detail__stat">
                 <Icon name="chat_bubble" size={17} />
@@ -302,7 +300,11 @@ export function PostDetailPage() {
 
           {/* Reply input */}
           <div className="post-detail__reply-box">
-            <ReplyForm loading={replyLoading} onSubmit={(b) => handleAddReply(b)} />
+            <ReplyForm
+              loading={replyLoading}
+              onSubmit={(b) => handleAddReply(b)}
+              workspaceId={workspaceId}
+            />
           </div>
 
           {acceptedReply && (
@@ -324,13 +326,12 @@ export function PostDetailPage() {
                 </time>
               </div>
               <div className="accepted-answer__body">
-                <Markdown remarkPlugins={[remarkGfm]}>{acceptedReply.body}</Markdown>
+                <MentionText>{acceptedReply.body}</MentionText>
               </div>
-              <HelpfulButton
+              <ReactionBar
                 targetType="DISCUSSION_REPLY"
                 targetId={acceptedReply.id}
-                initialScore={acceptedReply.voteScore}
-                initialVote={acceptedReply.userVote}
+                summary={acceptedReply.reactions}
               />
             </section>
           )}
@@ -357,6 +358,7 @@ export function PostDetailPage() {
                     onAcceptReply={handleAcceptReply}
                     acceptedReplyId={discussion.acceptedReplyId}
                     isPostAuthor={user?.id === discussion.authorId}
+                    workspaceId={workspaceId}
                   />
                 ))
               )}

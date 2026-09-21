@@ -9,7 +9,7 @@ import { Icon } from '../../components/icon';
 import { formatRelativeTime } from '../../lib/format-time';
 import { useWorkspace } from '../workspaces/workspace-context';
 import { fetchDiscussions, DiscussionResponse, createDiscussion } from './community-api';
-import { HelpfulButton } from './components/helpful-button';
+import { ReactionBar } from './components/reaction-bar';
 // This page's own modal reuses the create-post styles, which used to arrive via
 // feed-page.css; they now live with the component that owns them.
 import './components/create-post-modal.css';
@@ -142,11 +142,10 @@ function DiscussionCard({ discussion: d, labelName, onClick }: DiscussionCardPro
       </h3>
       <p className="disc-card__excerpt">{d.body}</p>
       <div className="disc-card__footer">
-        <HelpfulButton
+        <ReactionBar
           targetType="DISCUSSION"
           targetId={d.id}
-          initialScore={d.voteScore}
-          initialVote={d.userVote}
+          summary={d.reactions}
           compact
         />
         <span className="disc-card__action-btn">

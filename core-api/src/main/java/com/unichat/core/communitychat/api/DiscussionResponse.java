@@ -27,15 +27,16 @@ public record DiscussionResponse(
         /** Set once the author has edited the post, null otherwise. */
         Instant editedAt,
         int voteScore,
-        String userVote,
         String authorName,
         String authorAvatar,
         List<String> tags,
         UUID acceptedReplyId,
-        List<PostAttachmentResponse> attachments
+        List<PostAttachmentResponse> attachments,
+        /** Counts per reaction type plus the caller's own choice. */
+        ReactionSummary reactions
 ) {
-    public static DiscussionResponse from(Discussion d, String authorName, String authorAvatar, String userVote) {
-        return from(d, null, authorName, authorAvatar, userVote, List.of());
+    public static DiscussionResponse from(Discussion d, String authorName, String authorAvatar) {
+        return from(d, null, authorName, authorAvatar, List.of(), ReactionSummary.empty());
     }
 
     /**
@@ -43,17 +44,20 @@ public record DiscussionResponse(
      *
      * @param workspaceName owning workspace name, null when not resolved
      * @param attachments   files attached to the post, never null
+     * @param reactions     reaction counts, never null
      */
     public static DiscussionResponse from(Discussion d, String workspaceName, String authorName,
-                                          String authorAvatar, String userVote,
-                                          List<PostAttachmentResponse> attachments) {
+                                          String authorAvatar,
+                                          List<PostAttachmentResponse> attachments,
+                                          ReactionSummary reactions) {
         return new DiscussionResponse(
                 d.getId(), d.getWorkspaceId(), workspaceName, d.getAuthorId(), d.getTitle(),
                 d.getBody(), d.getLabel(), d.isPinned(), d.getStatus(),
                 d.getViewCount(), d.getReplyCount(), d.getCreatedAt(), d.getUpdatedAt(),
-                d.getEditedAt(), d.getVoteScore(), userVote,
+                d.getEditedAt(), d.getVoteScore(),
                 authorName, authorAvatar,
-                d.getTags(), d.getAcceptedReplyId(), attachments
+                d.getTags(), d.getAcceptedReplyId(), attachments,
+                reactions == null ? ReactionSummary.empty() : reactions
         );
     }
 }

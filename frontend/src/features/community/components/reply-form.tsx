@@ -3,6 +3,8 @@
  * Used in both PostDetailPage and DiscussionPage contexts.
  */
 import { useState } from 'react';
+
+import { MentionTextarea } from './mention-textarea';
 import '../discussion-page.css';
 
 export interface ReplyFormProps {
@@ -11,6 +13,8 @@ export interface ReplyFormProps {
   readonly onCancel?: () => void;
   readonly autoFocus?: boolean;
   readonly placeholder?: string;
+  /** Enables member suggestions when the writer types `@`. */
+  readonly workspaceId?: string | null | undefined;
 }
 
 /**
@@ -21,7 +25,8 @@ export function ReplyForm({
   onSubmit,
   onCancel,
   autoFocus,
-  placeholder = 'Viết bình luận... (Gõ @AI để yêu cầu AI trả lời)',
+  placeholder = 'Viết bình luận... (@AI để hỏi trợ lý, @tên để nhắc thành viên)',
+  workspaceId,
 }: ReplyFormProps) {
   const [replyInput, setReplyInput] = useState('');
 
@@ -34,10 +39,11 @@ export function ReplyForm({
 
   return (
     <form className="reply-form" onSubmit={handleSubmit}>
-      <textarea
+      <MentionTextarea
+        workspaceId={workspaceId}
         className="reply-form__input"
         value={replyInput}
-        onChange={(e) => setReplyInput(e.target.value)}
+        onChange={setReplyInput}
         placeholder={placeholder}
         rows={3}
         autoFocus={autoFocus}

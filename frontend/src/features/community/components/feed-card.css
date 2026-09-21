@@ -209,3 +209,7 @@
     width: 36px;
   }
 }
+
+.feed-card__reactions {
+  margin-top: 4px;
+}

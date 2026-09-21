@@ -5,6 +5,23 @@ import { fetchJson, getAccessToken } from '../../lib/api-client';
 
 /* ---------- Types ---------- */
 
+/** The reactions a member can leave. All of them are positive. */
+export type ReactionType = 'LIKE' | 'LOVE' | 'INSIGHTFUL' | 'CELEBRATE';
+
+export interface ReactionSummary {
+  /** Counts keyed by type, omitting types nobody used. */
+  counts: Partial<Record<ReactionType, number>>;
+  total: number;
+  /** The current user's reaction, null when they left none. */
+  myReaction: ReactionType | null;
+}
+
+/** A member the composer can suggest when someone types `@`. */
+export interface MentionableMember {
+  userId: string;
+  handle: string;
+}
+
 /** What an attachment is for. Only DOCUMENT files reach the AI assistant. */
 export type AttachmentKind = 'IMAGE' | 'DOCUMENT';
 
@@ -35,7 +52,7 @@ export interface DiscussionResponse {
   /** Set once the author edited the post. */
   editedAt: string | null;
   voteScore: number;
-  userVote: string | null;
+  reactions: ReactionSummary;
   authorName: string;
   authorAvatar: string | null;
   tags: string[];
@@ -61,7 +78,7 @@ export interface ReplyResponse {
   isAiAnswer: boolean;
   createdAt: string;
   voteScore: number;
-  userVote: string | null;
+  reactions: ReactionSummary;
   authorName: string;
   authorAvatar: string | null;
 }
@@ -228,15 +245,28 @@ export async function addReply(
 
 /* ---------- Reactions ---------- */
 
+/**
+ * Applies a reaction and returns the target's new summary, so the caller
+ * renders the stored counts instead of guessing them.
+ */
 export async function toggleReaction(data: {
-  targetType: string;
+  targetType: 'DISCUSSION' | 'DISCUSSION_REPLY';
   targetId: string;
-  reactionType: string;
-}): Promise<void> {
-  await fetchJson<void>('/reactions', {
+  reactionType: ReactionType;
+}): Promise<ReactionSummary> {
+  return fetchJson<ReactionSummary>('/reactions', {
     method: 'POST',
     body: JSON.stringify(data),
   });
+}
+
+/** Members the composer may suggest when someone types `@`. */
+export async function fetchMentionableMembers(
+  workspaceId: string,
+): Promise<MentionableMember[]> {
+  return fetchJson<MentionableMember[]>(
+    `/workspaces/${workspaceId}/discussions/mentionable-members`,
+  );
 }
 
 /* ---------- Notifications ---------- */

@@ -32,6 +32,7 @@ import com.unichat.core.communitychat.api.CreateReplyRequest;
 import com.unichat.core.communitychat.api.DiscussionResponse;
 import com.unichat.core.communitychat.api.MentionableMember;
 import com.unichat.core.communitychat.api.PostAttachmentResponse;
+import com.unichat.core.communitychat.api.ReactionSummary;
 import com.unichat.core.communitychat.api.UpdateDiscussionRequest;
 import com.unichat.core.communitychat.api.ReplyResponse;
 import com.unichat.core.communitychat.domain.Discussion;
@@ -66,6 +67,7 @@ public class DiscussionService {
     private final ReactionRepository reactionRepository;
     private final PostAttachmentService attachmentService;
     private final MentionResolver mentionResolver;
+    private final ReactionService reactionService;
 
     @Value("${unichat.ai-service.url:http://localhost:8001}")
     private String aiServiceUrl;
@@ -79,7 +81,9 @@ public class DiscussionService {
                              ApplicationEventPublisher eventPublisher,
                              ReactionRepository reactionRepository,
                              PostAttachmentService attachmentService,
-                             MentionResolver mentionResolver) {
+                             MentionResolver mentionResolver,
+                             ReactionService reactionService) {
+        this.reactionService = reactionService;
         this.mentionResolver = mentionResolver;
         this.attachmentService = attachmentService;
         this.workspaceRepository = workspaceRepository;
@@ -120,23 +124,24 @@ public class DiscussionService {
         }
 
         List<UUID> discussionIds = result.getContent().stream().map(Discussion::getId).toList();
-        Map<UUID, String> userVotes = reactionRepository.findByUserIdAndTargetTypeAndTargetIdIn(userId, "DISCUSSION", discussionIds)
-                .stream().collect(Collectors.toMap(Reaction::getTargetId, Reaction::getReactionType));
 
-        // Batch the author and attachment lookups rather than querying per post.
+        // Batch the author, attachment and reaction lookups rather than
+        // querying per post.
         Map<UUID, String> authorNames = userRepository
                 .findAllById(result.getContent().stream().map(Discussion::getAuthorId).distinct().toList())
                 .stream()
                 .collect(Collectors.toMap(u -> u.getId(), u -> u.getEmail().split("@")[0]));
         Map<UUID, List<PostAttachmentResponse>> attachments = attachmentService.listForAll(discussionIds);
+        Map<UUID, ReactionSummary> reactions =
+                reactionService.summariseAll("DISCUSSION", discussionIds, userId);
 
         return result.map(d -> DiscussionResponse.from(
                 d,
                 null,
                 authorNames.getOrDefault(d.getAuthorId(), "Unknown"),
                 null,
-                userVotes.get(d.getId()),
-                attachments.getOrDefault(d.getId(), List.of())));
+                attachments.getOrDefault(d.getId(), List.of()),
+                reactions.getOrDefault(d.getId(), ReactionSummary.empty())));
     }
 
     @Transactional
@@ -184,7 +189,7 @@ public class DiscussionService {
         publishMentions(workspaceId, discussion.getId(), null, userId, request.body());
 
         String authorName = userRepository.findById(userId).map(u -> u.getEmail().split("@")[0]).orElse("Unknown");
-        return DiscussionResponse.from(discussion, authorName, null, null);
+        return DiscussionResponse.from(discussion, authorName, null);
     }
 
     /**
@@ -222,16 +227,19 @@ public class DiscussionService {
         List<DiscussionReply> replies = replyRepository.findByDiscussionIdOrderByCreatedAtAsc(discussionId);
         List<UUID> replyIds = replies.stream().map(DiscussionReply::getId).toList();
         
-        Map<UUID, String> userVotes = reactionRepository.findByUserIdAndTargetTypeAndTargetIdIn(userId, "DISCUSSION_REPLY", replyIds)
-                .stream().collect(Collectors.toMap(Reaction::getTargetId, Reaction::getReactionType));
+        Map<UUID, ReactionSummary> reactions =
+                reactionService.summariseAll("DISCUSSION_REPLY", replyIds, userId);
+        Map<UUID, String> authorNames = userRepository
+                .findAllById(replies.stream().map(DiscussionReply::getAuthorId).distinct().toList())
+                .stream()
+                .collect(Collectors.toMap(u -> u.getId(), u -> u.getEmail().split("@")[0]));
 
         return replies.stream()
-                .map(r -> {
-                    String authorName = userRepository.findById(r.getAuthorId())
-                            .map(u -> u.getEmail().split("@")[0])
-                            .orElse("Unknown");
-                    return ReplyResponse.from(r, authorName, null, userVotes.get(r.getId()));
-                })
+                .map(r -> ReplyResponse.from(
+                        r,
+                        authorNames.getOrDefault(r.getAuthorId(), "Unknown"),
+                        null,
+                        reactions.getOrDefault(r.getId(), ReactionSummary.empty())))
                 .collect(Collectors.toList());
     }
 
@@ -273,7 +281,7 @@ public class DiscussionService {
         }
 
         String authorName = userRepository.findById(userId).map(u -> u.getEmail().split("@")[0]).orElse("Unknown");
-        return ReplyResponse.from(reply, authorName, null, null);
+        return ReplyResponse.from(reply, authorName, null, ReactionSummary.empty());
     }
 
     /**
@@ -306,7 +314,7 @@ public class DiscussionService {
 
         String authorName = userRepository.findById(userId)
                 .map(u -> u.getEmail().split("@")[0]).orElse("Unknown");
-        return DiscussionResponse.from(discussion, authorName, null, null);
+        return DiscussionResponse.from(discussion, authorName, null);
     }
 
     /**
@@ -388,18 +396,18 @@ public class DiscussionService {
                 .toList();
     }
 
-    /** Builds the full response for one post, including author and attachments. */
+    /** Builds the full response for one post: author, attachments, reactions. */
     private DiscussionResponse toResponse(UUID workspaceId, Discussion discussion, UUID userId) {
         String authorName = userRepository.findById(discussion.getAuthorId())
                 .map(u -> u.getEmail().split("@")[0]).orElse("Unknown");
         String workspaceName = workspaceRepository.findById(workspaceId)
                 .map(Workspace::getName).orElse(null);
-        String userVote = reactionRepository
-                .findByUserIdAndTargetTypeAndTargetId(userId, "DISCUSSION", discussion.getId())
-                .map(Reaction::getReactionType).orElse(null);
+        ReactionSummary reactions = reactionService
+                .summariseAll("DISCUSSION", List.of(discussion.getId()), userId)
+                .getOrDefault(discussion.getId(), ReactionSummary.empty());
 
-        return DiscussionResponse.from(discussion, workspaceName, authorName, null, userVote,
-                attachmentService.listFor(discussion.getId()));
+        return DiscussionResponse.from(discussion, workspaceName, authorName, null,
+                attachmentService.listFor(discussion.getId()), reactions);
     }
 
     private void triggerAiResponseAsync(UUID workspaceId, Discussion discussion, DiscussionReply triggerReply) {
