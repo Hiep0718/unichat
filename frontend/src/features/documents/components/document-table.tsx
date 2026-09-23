@@ -443,8 +443,10 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({
               : 'Nhấp hoặc kéo thả nhiều tệp PDF, DOCX, TXT để tải lên cùng lúc'}
           </div>
           <div className="document-upload-zone__subtitle">
+            {/* An editor needs to know what the pipeline can take; a contributor
+                needs to know their file waits for approval first. */}
             {canEdit
-              ? 'Hỗ trợ upload hàng loạt tệp • Dung lượng tối đa 20 MiB/tệp'
+              ? 'Hỗ trợ upload hàng loạt (PDF, DOCX, TXT) • Tự động chia nhỏ PDF > 20 MB (15 trang/tệp) • Đồng bộ Vector DB tự động'
               : 'Đóng góp của bạn sẽ được chủ Workspace duyệt trước khi AI sử dụng • Tối đa 20 MiB/tệp'}
           </div>
         </div>

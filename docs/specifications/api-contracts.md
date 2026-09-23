@@ -126,11 +126,12 @@ Mọi route yêu cầu service JWT gắn method/path/body hash/idempotency key, 
 | POST | /ingestions | Extract, chunk, embed một document |
 | DELETE | /documents/{documentId}/vectors | Xóa vector idempotent |
 | POST | /retrieval/answers | Adaptive retrieval + generation |
+| POST | /retrieval/answers/stream | Streaming SSE Adaptive retrieval + generation |
 | POST | /evaluations | Chạy một case đã khóa config |
 | GET | /health/live | Liveness, không kiểm dependency |
 | GET | /health/ready | Readiness của Chroma/model/provider config |
 
-Retrieval request bắt buộc workspaceId, allowedDocumentIds, question, strategyVersion và requestId. AI Service từ chối nếu allowlist rỗng, bodyHash sai hoặc replay jti.
+Retrieval request bắt buộc workspaceId, allowedDocumentIds, question, strategyVersion và requestId. Hỗ trợ tùy chọn `conversationHistory` (tối đa 20 tin nhắn gần nhất) và `conversationSummary` (tóm tắt đã compact, tối đa 5000 ký tự) cho short-term conversation memory (ADR-021). Response trả thêm `compactedSummary` khi xảy ra compaction. AI Service từ chối nếu allowlist rỗng, bodyHash sai hoặc replay jti.
 
 ## 9. Problem Details
 

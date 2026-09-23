@@ -10,7 +10,7 @@ describe('App', () => {
 
     // Assert
     // First it shows the suspense fallback
-    expect(screen.getByText('Đang tải...')).toBeInTheDocument();
+    expect(screen.getByText(/Đang kết nối giao diện/i)).toBeInTheDocument();
 
     // Then it should eventually render the landing page hero section
     const heading = await screen.findByRole('heading', { 

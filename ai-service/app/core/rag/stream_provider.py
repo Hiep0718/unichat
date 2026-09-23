@@ -16,52 +16,22 @@ from google import genai
 from google.genai import types
 
 from app.core.rag.citation_validator import validate_citations
+from app.core.rag.conversation_memory import (
+    ConversationContext,
+    ConversationMessage,
+    acompact_conversation,
+    build_conversation_prompt,
+    check_compaction_needed,
+)
 from app.core.rag.llm_provider import (
     MAX_SINGLE_CHUNK_CHARS,
     get_candidate_gemini_models,
     get_gemini_api_keys,
 )
+from app.core.rag.prompt_builder import build_rag_prompt, build_system_prompt
 from app.core.rag.retrieval_engine import RetrievedChunkCandidate
 
 logger = logging.getLogger(__name__)
-
-
-def build_system_prompt(allow_external_knowledge: bool = True) -> str:
-    """Build system prompt for NotebookLM-grade RAG answer generation."""
-    if allow_external_knowledge:
-        return (
-            "Bạn là chuyên gia AI tri thức cao cấp UniChat (được thiết kế để phân tích và suy luận tri thức sâu sắc như NotebookLM).\n"
-            "NGUYÊN TẮC SUY LUẬN & TRÌNH BÀY (CHẾ ĐỘ TỔNG HỢP TRI THỨC NÂNG CAO):\n"
-            "1. TỔNG HỢP TRI THỨC TOÀN DIỆN & HỢP NHẤT: Nhìn nhận toàn bộ các tài liệu trích xuất dưới đây như MỘT KHO TRI THỨC HOÀN CHỈNH. "
-            "Nhiệm vụ của bạn là kết hợp các dữ kiện trích xuất và tư duy logic chuyên môn để tạo nên câu trả lời sâu sắc, bài bản, chuyên nghiệp và đầy đủ giá trị học thuật nhất.\n"
-            "2. GÁN TRÍCH DẪN TỰ NHIÊN: Đặt các chỉ số trích dẫn [1], [2] ngay tại vị trí trích xuất sự thật từ tài liệu. "
-            "TUYỆT ĐỐI KHÔNG chia tách văn bản thành các mục nhân tạo như 'Theo tài liệu' hay 'Giải thích mở rộng ngoài tài liệu'. "
-            "Hãy hòa quyện tri thức từ tài liệu và khả năng phân tích nâng cao thành MỘT CÂU TRẢ LỜI ĐỒNG NHẤT, MẠCH LẠC VÀ SẮC NÉI.\n"
-            "3. CẤU TRÚC BÀI VIẾT BÀI BẢN & CHI TIẾT (NotebookLM Style):\n"
-            "   - Sử dụng các tiêu đề rõ ràng (### 1. Tổng quan & Khái niệm cốt lõi, ### 2. Phân tích chi tiết & Các trụ cột chính, ### 3. Ví dụ & Ứng dụng thực tế).\n"
-            "   - Phân tích sâu ĐIỀU KIỆN, NGUYÊN NHÂN, TÁC ĐỘNG và HỆ QUẢ (ví dụ: Bảo mật dữ liệu qua Encapsulation/Validation, Khả năng bảo trì qua Loose Coupling/Implementation Hiding).\n"
-            "   - Đưa ra ví dụ minh họa trực quan, đoạn mã nguồn ngắn gọn (Java, Python, SQL...) có chú thích rõ ràng khi trả lời các câu hỏi kỹ thuật.\n"
-            "4. ĐỊNH DẠNG CÔNG THỨC TOÁN HỌC (KaTeX):\n"
-            "   - Ký hiệu cùng dòng dùng cặp dấu đô-la đơn: $ký_hiệu$.\n"
-            "   - Công thức nổi bật dùng cặp dấu đô-la đôi trên dòng riêng: $$công_thức$$.\n"
-            "5. SƠ ĐỒ TRỰC QUAN SINH ĐỘNG (MERMAID): Khi vẽ sơ đồ quy trình, kiến trúc, phân cấp hay mối quan hệ: "
-            "TUYỆT ĐỐI KHÔNG dùng ký tự văn bản thô ASCII. BẮT BUỘC 100% sử dụng khối code ```mermaid. "
-            "Gán icon Emoji (🔒, ⚙️, ⚡, 🏗️, 📊...) vào đầu nhãn node và bọc tên node trong ngoặc kép A[\"🔒 Tên Node\"].\n"
-            "6. GỢI Ý TIẾP THEO: Kết thúc bằng đường phân cách '\\n\\n---\\n\\n' và mỗi gợi ý BẮT BUỘC nằm ở một dòng riêng bắt đầu bằng '- ' như sau:\n\n"
-            "---\n\n"
-            "### 💡 Gợi ý câu hỏi & bước tiếp theo:\n"
-            "- Câu hỏi gợi ý 1 liên quan tới chủ đề trên\n"
-            "- Câu hỏi gợi ý 2 mở rộng câu hỏi trên\n"
-            "- Câu hỏi gợi ý 3 ứng dụng thực tế\n"
-        )
-    return (
-        "Bạn là chuyên gia AI tri thức cao cấp UniChat.\n"
-        "NGUYÊN TẮC SUY LUẬN (CHỈ DỰA TRÊN TÀI LIỆU NỘI BỘ):\n"
-        "1. CHỈ sử dụng thông tin có trong các tài liệu được cung cấp dưới đây.\n"
-        "2. Kèm số thứ tự trích dẫn [1], [2] cho mọi thông tin trích xuất.\n"
-        "3. Trình bày sắc nét, cấu trúc bài bản, mạch lạc.\n"
-        "4. GỢI Ý TIẾP THEO: Cuối câu trả lời BẮT BUỘC tạo phân cách '---\\n\\n### 💡 Gợi ý câu hỏi & bước tiếp theo:' kèm 3 gợi ý dạng '- '."
-    )
 
 
 def format_sse(event: str, data: dict[str, Any]) -> str:
@@ -78,6 +48,8 @@ async def generate_rag_answer_stream(
     allowed_document_ids: list[str] | None = None,
     allow_external_knowledge: bool = True,
     evidence_score: float | None = None,
+    conversation_history: list[dict[str, str]] | None = None,
+    conversation_summary: str | None = None,
 ) -> AsyncGenerator[str, None]:
     """Async generator yielding SSE formatted strings for streaming RAG answers."""
     context_blocks = []
@@ -117,11 +89,7 @@ async def generate_rag_answer_stream(
         })
         return
 
-    context_str = "\n\n".join(context_blocks)
-    system_prompt = build_system_prompt(allow_external_knowledge)
-    full_prompt = f"{system_prompt}\n\n--- TÀI LIỆU KHỞI THỦY ---\n{context_str}\n\nCÂU HỎI: {question}"
-
-    # Real-time RAG Pipeline Execution Thought Events
+    # 1. Real-time RAG Pipeline Execution Thought Events (Initial steps)
     yield format_sse("thought", {
         "stepIndex": 1,
         "stepKey": "INTENT",
@@ -136,8 +104,47 @@ async def generate_rag_answer_stream(
         "detail": f"Đã quét kho tài liệu Vector DB, bóc tách thành công {len(citations)} trích dẫn tri thức có điểm tương đồng cao nhất.",
     })
 
+    compacted_summary: str | None = None
+    conversation_prompt: str | None = None
+
+    if conversation_history or conversation_summary:
+        raw_messages = [
+            ConversationMessage(role=m.get("role", "user"), content=m.get("content", ""))
+            for m in (conversation_history or [])
+            if m.get("content")
+        ]
+        # When summary already exists, keep most recent turns as uncompacted window
+        conv_messages = raw_messages[-10:] if conversation_summary else raw_messages
+        conv_context = ConversationContext(
+            summary=conversation_summary,
+            recent_messages=conv_messages,
+        )
+
+        if check_compaction_needed(conv_context):
+            yield format_sse("thought", {
+                "stepIndex": 3,
+                "stepKey": "COMPACTION",
+                "title": "Compacting Conversation Context",
+                "detail": "Đang tóm tắt lịch sử hội thoại để tối ưu ngữ cảnh...",
+            })
+            try:
+                compacted_summary = await acompact_conversation(
+                    conv_messages,
+                    existing_summary=conversation_summary,
+                )
+                conv_context.summary = compacted_summary
+                conv_context.recent_messages = conv_messages[-4:]
+            except Exception as comp_err:
+                logger.warning("Compaction failed in streaming provider: %s", comp_err)
+
+        conversation_prompt = build_conversation_prompt(conv_context)
+
+    context_str = "\n\n".join(context_blocks)
+    system_prompt = build_system_prompt(allow_external_knowledge)
+    full_prompt = build_rag_prompt(system_prompt, context_str, question, conversation_prompt)
+
     yield format_sse("thought", {
-        "stepIndex": 3,
+        "stepIndex": 4 if compacted_summary else 3,
         "stepKey": "SYNTHESIS",
         "title": "Synthesizing Key Concepts",
         "detail": f"Đang hợp nhất {len(candidates)} khối bằng chứng trích dẫn và truyền sang Gemini LLM để tổng hợp bài viết chuyên sâu...",
@@ -197,12 +204,12 @@ async def generate_rag_answer_stream(
                 for chunk in stream:
                     if not metadata_sent:
                         yield format_sse("thought", {
-                            "stepIndex": 4,
+                            "stepIndex": 5 if compacted_summary else 4,
                             "stepKey": "GENERATION",
                             "title": "Verifying Citations & Formatting Output",
                             "detail": f"Đã xác thực trích dẫn [1], [2], đang stream trực tiếp câu trả lời và định dạng sơ đồ Mermaid...",
                         })
-                        yield format_sse("metadata", {
+                        meta_payload: dict[str, Any] = {
                             "decision": "ANSWER",
                             "intent": intent,
                             "strategyVersion": strategy_version,
@@ -210,7 +217,10 @@ async def generate_rag_answer_stream(
                             "evidenceScore": evidence_score,
                             "providerModel": used_model_name,
                             "requestId": request_id,
-                        })
+                        }
+                        if compacted_summary:
+                            meta_payload["compactedSummary"] = compacted_summary
+                        yield format_sse("metadata", meta_payload)
                         metadata_sent = True
 
                     if chunk.text:

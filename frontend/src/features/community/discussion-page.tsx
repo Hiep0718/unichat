@@ -38,8 +38,10 @@ const DiscussionPage: React.FC = () => {
   useEffect(() => {
     if (!workspaceId) return;
     const label = activeLabel === 'ALL' ? undefined : activeLabel;
+    // Keeps this branch's in-group search argument, and main's guard against
+    // a response without a content array.
     fetchDiscussions(workspaceId, 0, 20, label, activeSort, query || undefined)
-      .then((page) => setDiscussions(page.content))
+      .then((page) => setDiscussions(page?.content ?? []))
       .catch(() => setDiscussions([]));
   }, [workspaceId, activeLabel, activeSort, query]);
 

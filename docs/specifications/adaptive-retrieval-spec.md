@@ -47,7 +47,7 @@ OUT_OF_SCOPE chỉ áp dụng khi yêu cầu rõ ràng nằm ngoài năng lực.
 - Luật nằm trong tệp YAML có strategyVersion, ruleId, priority, patterns và negativePatterns.
 - Mỗi pattern phải có unit test tiếng Việt có dấu, không dấu và trường hợp phủ định.
 - Câu so sánh thiếu một trong hai đối tượng trả CLARIFY trước truy hồi.
-- Câu quá ngắn, đại từ không xác định hoặc phụ thuộc ngữ cảnh chưa có trả CLARIFY.
+- Câu quá ngắn, đại từ không xác định hoặc phụ thuộc ngữ cảnh trả CLARIFY (trừ khi có conversation history/summary cung cấp đối tượng tham chiếu — theo ADR-021).
 - FACT là fallback duy nhất; mọi fallback phải có ruleId FACT_DEFAULT.
 - Confidence là mức luật cố định theo cấu hình, không được diễn giải như xác suất mô hình.
 

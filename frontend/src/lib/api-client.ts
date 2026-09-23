@@ -3,7 +3,15 @@
  * Token storage is managed externally via registerTokenAccessor (ADR-005).
  */
 
-const API_BASE = '/api/v1';
+export function getApiBaseUrl(): string {
+  const customBase = import.meta.env.VITE_API_BASE_URL as string | undefined;
+  if (customBase) {
+    return customBase.endsWith('/') ? customBase.slice(0, -1) : customBase;
+  }
+  return '';
+}
+
+const API_BASE = `${getApiBaseUrl()}/api/v1`;
 
 /** Registered accessor — getter for current in-memory token. */
 let getToken: () => string | null = () => null;

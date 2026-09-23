@@ -626,6 +626,7 @@ export const ChatPage: React.FC<ChatPageProps> = ({
 
           {isStudioOpen && (
             <KnowledgeStudio
+              workspaceId={targetWorkspaceId}
               workspaceName={workspaceContext?.workspace?.name}
               citations={messages.flatMap((m) => m.response?.citations || [])}
               selectedCitation={selectedCitation}
@@ -633,7 +634,11 @@ export const ChatPage: React.FC<ChatPageProps> = ({
               activeTab={activeRightTab}
               onTabChange={(tab) => setActiveRightTab(tab)}
               onSelectCitation={handleSelectCitation}
-              onSelectTool={(tool) => setActiveStudioModal(tool)}
+              onClearSelectedCitation={() => setSelectedCitation(null)}
+              onSelectTool={(tool) => {
+                setSelectedCitation(null);
+                setActiveStudioModal(tool);
+              }}
               onSaveNote={handleSaveNote}
               onDeleteNote={handleDeleteNote}
               onSelectNote={(note) => setSelectedNoteModal(note)}
@@ -647,6 +652,12 @@ export const ChatPage: React.FC<ChatPageProps> = ({
         <KnowledgeStudioModal
           toolType={activeStudioModal}
           workspaceName={workspaceContext?.workspace?.name}
+          answerContent={messages
+            .filter((m) => m.role === 'ASSISTANT' && m.content)
+            .slice(-3)
+            .map((m) => m.content)
+            .join('\n\n')}
+          citations={messages.flatMap((m) => m.response?.citations || [])}
           onSaveNote={handleSaveNote}
           onClose={() => setActiveStudioModal(null)}
         />

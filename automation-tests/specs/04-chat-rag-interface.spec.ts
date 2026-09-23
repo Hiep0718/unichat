@@ -90,10 +90,10 @@ test.describe('Automation Suite 04 — RAG Chat Interface & Workspace Quản lý
     await expect(workspaceCard).toBeVisible({ timeout: 10000 });
     await workspaceCard.click();
 
-    // 4. Click AI Chat Hub card in workspace overview
-    const chatHubBtn = page.locator('.ws-hub-card', { hasText: 'Hỏi đáp Tri thức AI' }).first();
-    await expect(chatHubBtn).toBeVisible({ timeout: 10000 });
-    await chatHubBtn.click();
+    // 4. Click Chat nav item in sidebar
+    const chatNavBtn = page.locator('.side-nav__item', { hasText: 'Trò chuyện' }).first();
+    await expect(chatNavBtn).toBeVisible({ timeout: 10000 });
+    await chatNavBtn.click();
 
     // 5. Verify Chat input field renders in Chat UI
     const chatInput = page.locator('.chat-input-form__field');
@@ -199,10 +199,10 @@ test.describe('Automation Suite 04 — RAG Chat Interface & Workspace Quản lý
     await expect(workspaceCard).toBeVisible({ timeout: 10000 });
     await workspaceCard.click();
 
-    // 3. Click AI Chat Hub card
-    const chatHubBtn = page.locator('.ws-hub-card', { hasText: 'Hỏi đáp Tri thức AI' }).first();
-    await expect(chatHubBtn).toBeVisible({ timeout: 10000 });
-    await chatHubBtn.click();
+    // 3. Click Chat nav item in sidebar
+    const chatNavBtn = page.locator('.side-nav__item', { hasText: 'Trò chuyện' }).first();
+    await expect(chatNavBtn).toBeVisible({ timeout: 10000 });
+    await chatNavBtn.click();
 
     // 4. Fill question in chat input and submit
     const chatInput = page.locator('.chat-input-form__field');
