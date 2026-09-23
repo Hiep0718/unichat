@@ -28,7 +28,7 @@ const DiscussionPage: React.FC = () => {
     if (!workspaceId) return;
     const label = activeLabel === 'ALL' ? undefined : activeLabel;
     fetchDiscussions(workspaceId, 0, 20, label, activeSort)
-      .then((page) => setDiscussions(page.content))
+      .then((page) => setDiscussions(page?.content || []))
       .catch(() => setDiscussions([]));
   }, [workspaceId, activeLabel, activeSort]);
 

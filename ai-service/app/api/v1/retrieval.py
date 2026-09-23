@@ -25,6 +25,16 @@ class RetrievalAnswerRequest(BaseModel):
     strategyVersion: str | None = Field("v1.0", description="RAG strategy version")
     requestId: str | None = Field(None, description="Correlation request ID")
     allowExternalKnowledge: bool | None = Field(True, description="Allow AI external knowledge expansion when documents lack details")
+    conversationHistory: list[dict[str, str]] | None = Field(
+        None,
+        description="Recent conversation messages [{role, content}]",
+        max_length=20,
+    )
+    conversationSummary: str | None = Field(
+        None,
+        max_length=5000,
+        description="Compacted summary of older conversation messages",
+    )
 
 
 class CitationItem(BaseModel):
@@ -46,6 +56,7 @@ class RetrievalAnswerResponse(BaseModel):
     refusalCode: str | None = None
     refusalReason: str | None = None
     requestId: str | None = None
+    compactedSummary: str | None = None
 
 
 @router.post("/retrieval/answers", response_model=RetrievalAnswerResponse)
@@ -81,7 +92,8 @@ def get_retrieval_answer(
         )
 
     # 1. Intent detection
-    intent_res = detect_intent(request.question)
+    has_context = bool(request.conversationHistory or request.conversationSummary)
+    intent_res = detect_intent(request.question, has_conversation_context=has_context)
 
     # 1b. Check for CLARIFY intent
     if intent_res.intent == IntentEnum.CLARIFY:
@@ -163,6 +175,8 @@ def get_retrieval_answer(
         candidates,
         allowed_document_ids=request.allowedDocumentIds,
         allow_external_knowledge=request.allowExternalKnowledge if request.allowExternalKnowledge is not None else True,
+        conversation_history=request.conversationHistory,
+        conversation_summary=request.conversationSummary,
     )
 
     if rag_res.get("validationFailed"):
@@ -231,6 +245,7 @@ def get_retrieval_answer(
         answer=rag_res.get("answer"),
         citations=citations,
         requestId=req_id,
+        compactedSummary=rag_res.get("compactedSummary"),
     )
 
 
@@ -261,7 +276,8 @@ def get_retrieval_answer_stream(
             })
             return
 
-        intent_res = detect_intent(request.question)
+        has_context = bool(request.conversationHistory or request.conversationSummary)
+        intent_res = detect_intent(request.question, has_conversation_context=has_context)
         if intent_res.intent == IntentEnum.CLARIFY:
             yield format_sse("metadata", {
                 "decision": DecisionEnum.CLARIFY.value,
@@ -323,6 +339,8 @@ def get_retrieval_answer_stream(
             allowed_document_ids=request.allowedDocumentIds,
             allow_external_knowledge=allow_ext,
             evidence_score=gate_res.evidence_score,
+            conversation_history=request.conversationHistory,
+            conversation_summary=request.conversationSummary,
         ):
             yield sse_event
 

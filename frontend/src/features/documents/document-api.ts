@@ -5,7 +5,7 @@
  * @see api-contracts.md §4 (Tài liệu)
  */
 
-import { fetchJson, getAccessToken } from '../../lib/api-client';
+import { fetchJson, getAccessToken, getApiBaseUrl } from '../../lib/api-client';
 
 export type DocumentStatus = 'PENDING' | 'PROCESSING' | 'PROCESSED' | 'FAILED' | 'DELETING';
 
@@ -60,7 +60,8 @@ export async function uploadWorkspaceDocument(
 
   return new Promise<IngestionJobResponse>((resolve, reject) => {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', `/api/v1/workspaces/${workspaceId}/documents`);
+    const baseUrl = getApiBaseUrl();
+    xhr.open('POST', `${baseUrl}/api/v1/workspaces/${workspaceId}/documents`);
 
     if (token) {
       xhr.setRequestHeader('Authorization', `Bearer ${token}`);

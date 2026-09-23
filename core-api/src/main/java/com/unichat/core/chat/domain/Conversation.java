@@ -88,4 +88,26 @@ public class Conversation {
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
     }
+
+    @Column(name = "summary", columnDefinition = "TEXT")
+    private String summary;
+
+    @Column(name = "summary_version", nullable = false)
+    private int summaryVersion = 0;
+
+    public String getSummary() {
+        return summary;
+    }
+
+    public void setSummary(String summary) {
+        this.summary = summary;
+    }
+
+    public int getSummaryVersion() {
+        return summaryVersion;
+    }
+
+    public void setSummaryVersion(int summaryVersion) {
+        this.summaryVersion = summaryVersion;
+    }
 }

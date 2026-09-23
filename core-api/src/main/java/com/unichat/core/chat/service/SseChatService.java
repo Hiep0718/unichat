@@ -12,7 +12,6 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -57,6 +56,8 @@ public class SseChatService {
     private final ConversationRepository conversationRepository;
     private final MessageRepository messageRepository;
     private final CitationHistoryRepository citationHistoryRepository;
+    private final CitationExtractor citationExtractor;
+    private final ConversationHistoryBuilder conversationHistoryBuilder;
     private final ServiceTokenIssuer serviceTokenIssuer;
     private final Clock clock;
     private final ObjectMapper objectMapper;
@@ -72,6 +73,8 @@ public class SseChatService {
             ConversationRepository conversationRepository,
             MessageRepository messageRepository,
             CitationHistoryRepository citationHistoryRepository,
+            CitationExtractor citationExtractor,
+            ConversationHistoryBuilder conversationHistoryBuilder,
             ServiceTokenIssuer serviceTokenIssuer,
             Clock clock,
             ObjectMapper objectMapper) {
@@ -81,6 +84,8 @@ public class SseChatService {
         this.conversationRepository = conversationRepository;
         this.messageRepository = messageRepository;
         this.citationHistoryRepository = citationHistoryRepository;
+        this.citationExtractor = citationExtractor;
+        this.conversationHistoryBuilder = conversationHistoryBuilder;
         this.serviceTokenIssuer = serviceTokenIssuer;
         this.clock = clock;
         this.objectMapper = objectMapper;
@@ -110,6 +115,11 @@ public class SseChatService {
             conversationRepository.save(conversation);
         }
 
+        // Build conversation history and load summary before saving new user message
+        List<Map<String, String>> conversationHistory = conversationHistoryBuilder.buildHistoryPayload(conversation.getId());
+        String conversationSummary = conversationHistoryBuilder.getSummary(conversation);
+        final int summaryVersion = conversation.getSummaryVersion();
+
         // 2. Save User Message
         Message userMessage = new Message(UuidGenerator.generateV7(), conversation.getId(), "USER", request.question(), null, null, null, now);
         messageRepository.save(userMessage);
@@ -126,7 +136,8 @@ public class SseChatService {
 
         // 5. Asynchronously connect to AI Service SSE streaming endpoint & pipe events
         CompletableFuture.runAsync(() -> streamFromAiService(
-                emitter, workspaceId, allowedDocIds, request, effectiveRequestId, conversationId
+                emitter, workspaceId, allowedDocIds, request, effectiveRequestId, conversationId,
+                conversationHistory, conversationSummary, summaryVersion
         ));
 
         return emitter;
@@ -138,7 +149,10 @@ public class SseChatService {
             List<String> allowedDocIds,
             AskQuestionRequest request,
             String requestId,
-            UUID conversationId) {
+            UUID conversationId,
+            List<Map<String, String>> conversationHistory,
+            String conversationSummary,
+            int summaryVersion) {
 
         StringBuilder fullTextAccumulator = new StringBuilder();
         final List<Object> citationsHolder = new ArrayList<>();
@@ -146,30 +160,15 @@ public class SseChatService {
         final String[] refusalCodeHolder = new String[]{null};
         final String[] providerModelHolder = new String[]{"gemini-2.5-flash"};
         final String[] refusalReasonHolder = new String[]{null};
+        final String[] compactedSummaryHolder = new String[]{null};
 
         boolean receivedDoneEvent = false;
 
         try {
-            Map<String, Object> aiRequestBody = new HashMap<>();
-            aiRequestBody.put("workspaceId", workspaceId.toString());
-            aiRequestBody.put("allowedDocumentIds", allowedDocIds != null ? allowedDocIds : List.of());
-            aiRequestBody.put("question", request.question());
-            aiRequestBody.put("strategyVersion", "v1.0");
-            aiRequestBody.put("requestId", requestId != null ? requestId : UUID.randomUUID().toString());
-            aiRequestBody.put("allowExternalKnowledge", request.allowExternalKnowledge() != null ? request.allowExternalKnowledge() : true);
-
-            String requestJson = objectMapper.writeValueAsString(aiRequestBody);
-            log.info("[SSE-STREAM] Sending request to AI Service: {} body-length={}", aiServiceUrl, requestJson.length());
-
-            HttpRequest httpRequest = HttpRequest.newBuilder()
-                    .uri(URI.create(aiServiceUrl + "/internal/v1/retrieval/answers/stream"))
-                    .header("Content-Type", "application/json")
-                    .header("Authorization", serviceTokenIssuer.issueToken())
-                    .POST(HttpRequest.BodyPublishers.ofString(requestJson))
-                    .build();
-
-            HttpResponse<InputStream> httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofInputStream());
-            log.info("[SSE-STREAM] AI Service responded with HTTP {}", httpResponse.statusCode());
+            String requestJson = buildAndSerializeAiRequest(
+                    workspaceId, allowedDocIds, request, requestId, conversationHistory, conversationSummary
+            );
+            HttpResponse<InputStream> httpResponse = sendAiRequest(requestJson);
 
             if (httpResponse.statusCode() != 200) {
                 log.warn("AI Service SSE endpoint returned HTTP {}", httpResponse.statusCode());
@@ -177,98 +176,150 @@ public class SseChatService {
                 return;
             }
 
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(httpResponse.body(), StandardCharsets.UTF_8))) {
-                String line;
-                String currentEvent = null;
-
-                int lineCount = 0;
-                while ((line = reader.readLine()) != null) {
-                    lineCount++;
-                    if (lineCount <= 5 || line.startsWith("event: ")) {
-                        log.info("[SSE-STREAM] Line {}: {}", lineCount, line.length() > 120 ? line.substring(0, 120) + "..." : line);
-                    }
-                    if (line.startsWith("event: ")) {
-                        currentEvent = line.substring(7).trim();
-                    } else if (line.startsWith("data: ")) {
-                        String dataJson = line.substring(6).trim();
-                        if (dataJson.isEmpty()) continue;
-
-                        try {
-                            Map<String, Object> dataMap = objectMapper.readValue(dataJson, new TypeReference<Map<String, Object>>() {});
-
-                            if ("metadata".equals(currentEvent)) {
-                                // Inject conversationId into metadata event for frontend reference
-                                dataMap.put("conversationId", conversationId.toString());
-
-                                if (dataMap.get("citations") instanceof List<?> cList) {
-                                    citationsHolder.addAll(cList);
-                                }
-                                if (dataMap.get("intent") != null) {
-                                    intentHolder[0] = dataMap.get("intent").toString();
-                                }
-                                if (dataMap.get("providerModel") != null) {
-                                    providerModelHolder[0] = dataMap.get("providerModel").toString();
-                                }
-                                if (dataMap.get("refusalCode") != null) {
-                                    refusalCodeHolder[0] = dataMap.get("refusalCode").toString();
-                                }
-                                if (dataMap.get("refusalReason") != null) {
-                                    refusalReasonHolder[0] = dataMap.get("refusalReason").toString();
-                                }
-
-                                emitter.send(SseEmitter.event().name("metadata").data(dataMap));
-
-                            } else if ("token".equals(currentEvent)) {
-                                String delta = dataMap.get("delta") != null ? dataMap.get("delta").toString() : "";
-                                fullTextAccumulator.append(delta);
-
-                                emitter.send(SseEmitter.event().name("token").data(dataMap));
-
-                            } else if ("done".equals(currentEvent)) {
-                                receivedDoneEvent = true;
-                                dataMap.put("conversationId", conversationId.toString());
-                                emitter.send(SseEmitter.event().name("done").data(dataMap));
-                            }
-                        } catch (Exception e) {
-                            log.error("[SSE-STREAM] Error parsing SSE data json: {}", e.getMessage(), e);
-                        }
-                        currentEvent = null;
-                    }
-                }
-            }
-
-            if (!receivedDoneEvent) {
-                Map<String, Object> doneMap = Map.of(
-                        "messageId", requestId != null ? requestId : UUID.randomUUID().toString(),
-                        "conversationId", conversationId.toString()
-                );
-                try {
-                    emitter.send(SseEmitter.event().name("done").data(doneMap));
-                } catch (Exception ignored) {}
-            }
-
-            // Stream finished -> Save Assistant Message and Citations to DB
-            String finalAnswer = fullTextAccumulator.toString();
-            String assistantContent = !finalAnswer.isBlank() ? finalAnswer :
-                    (refusalReasonHolder[0] != null ? refusalReasonHolder[0] : "Không có câu trả lời");
-
-            saveAssistantMessageAndCitations(
-                    conversationId,
-                    workspaceId,
-                    assistantContent,
-                    intentHolder[0],
-                    refusalCodeHolder[0],
-                    providerModelHolder[0],
-                    citationsHolder
+            receivedDoneEvent = parseAndForwardSseEvents(
+                    httpResponse, emitter, conversationId,
+                    fullTextAccumulator, citationsHolder, intentHolder,
+                    refusalCodeHolder, providerModelHolder, refusalReasonHolder,
+                    compactedSummaryHolder
             );
 
-            log.info("[SSE-STREAM] Stream completed. fullText length={}, receivedDone={}", fullTextAccumulator.length(), receivedDoneEvent);
+            if (!receivedDoneEvent) {
+                sendFallbackDoneEvent(emitter, requestId, conversationId);
+            }
+
+            persistStreamResult(conversationId, workspaceId, fullTextAccumulator,
+                    intentHolder[0], refusalCodeHolder[0], providerModelHolder[0],
+                    refusalReasonHolder[0], citationsHolder,
+                    compactedSummaryHolder[0], summaryVersion);
+
+            log.info("[SSE-STREAM] Stream completed. fullText length={}, receivedDone={}",
+                    fullTextAccumulator.length(), receivedDoneEvent);
             emitter.complete();
 
         } catch (Exception e) {
             log.error("[SSE-STREAM] Error streaming from AI Service: {}", e.getMessage(), e);
             sendRefusalAndComplete(emitter, conversationId, requestId, "Lỗi kết nối tới dịch vụ AI.");
         }
+    }
+
+    private String buildAndSerializeAiRequest(UUID workspaceId, List<String> allowedDocIds,
+                                               AskQuestionRequest request, String requestId,
+                                               List<Map<String, String>> conversationHistory,
+                                               String conversationSummary) throws Exception {
+        Map<String, Object> body = conversationHistoryBuilder.buildAiRequestBody(
+                workspaceId, allowedDocIds, request.question(), requestId,
+                request.allowExternalKnowledge() != null ? request.allowExternalKnowledge() : true,
+                conversationHistory, conversationSummary
+        );
+        String requestJson = objectMapper.writeValueAsString(body);
+        log.info("[SSE-STREAM] Sending request to AI Service: {} body-length={}", aiServiceUrl, requestJson.length());
+        return requestJson;
+    }
+
+    private HttpResponse<InputStream> sendAiRequest(String requestJson) throws Exception {
+        HttpRequest httpRequest = HttpRequest.newBuilder()
+                .uri(URI.create(aiServiceUrl + "/internal/v1/retrieval/answers/stream"))
+                .header("Content-Type", "application/json")
+                .header("Authorization", serviceTokenIssuer.issueToken())
+                .POST(HttpRequest.BodyPublishers.ofString(requestJson))
+                .build();
+
+        HttpResponse<InputStream> httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofInputStream());
+        log.info("[SSE-STREAM] AI Service responded with HTTP {}", httpResponse.statusCode());
+        return httpResponse;
+    }
+
+    private boolean parseAndForwardSseEvents(
+            HttpResponse<InputStream> httpResponse, SseEmitter emitter, UUID conversationId,
+            StringBuilder fullTextAccumulator, List<Object> citationsHolder,
+            String[] intentHolder, String[] refusalCodeHolder,
+            String[] providerModelHolder, String[] refusalReasonHolder,
+            String[] compactedSummaryHolder) throws Exception {
+
+        boolean receivedDoneEvent = false;
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(httpResponse.body(), StandardCharsets.UTF_8))) {
+            String line;
+            String currentEvent = null;
+            int lineCount = 0;
+
+            while ((line = reader.readLine()) != null) {
+                lineCount++;
+                if (lineCount <= 5 || line.startsWith("event: ")) {
+                    log.info("[SSE-STREAM] Line {}: {}", lineCount, line.length() > 120 ? line.substring(0, 120) + "..." : line);
+                }
+                if (line.startsWith("event: ")) {
+                    currentEvent = line.substring(7).trim();
+                } else if (line.startsWith("data: ")) {
+                    String dataJson = line.substring(6).trim();
+                    if (dataJson.isEmpty()) continue;
+
+                    try {
+                        Map<String, Object> dataMap = objectMapper.readValue(dataJson, new TypeReference<Map<String, Object>>() {});
+
+                        if ("metadata".equals(currentEvent)) {
+                            handleMetadataEvent(dataMap, emitter, conversationId, citationsHolder,
+                                    intentHolder, providerModelHolder, refusalCodeHolder, refusalReasonHolder,
+                                    compactedSummaryHolder);
+                        } else if ("token".equals(currentEvent)) {
+                            String delta = dataMap.get("delta") != null ? dataMap.get("delta").toString() : "";
+                            fullTextAccumulator.append(delta);
+                            emitter.send(SseEmitter.event().name("token").data(dataMap));
+                        } else if ("done".equals(currentEvent)) {
+                            receivedDoneEvent = true;
+                            dataMap.put("conversationId", conversationId.toString());
+                            emitter.send(SseEmitter.event().name("done").data(dataMap));
+                        } else if (currentEvent != null) {
+                            // Forward all other event types (thought, etc.) transparently
+                            emitter.send(SseEmitter.event().name(currentEvent).data(dataMap));
+                        }
+                    } catch (Exception e) {
+                        log.error("[SSE-STREAM] Error parsing SSE data json: {}", e.getMessage(), e);
+                    }
+                    currentEvent = null;
+                }
+            }
+        }
+        return receivedDoneEvent;
+    }
+
+    private void handleMetadataEvent(Map<String, Object> dataMap, SseEmitter emitter, UUID conversationId,
+                                      List<Object> citationsHolder, String[] intentHolder,
+                                      String[] providerModelHolder, String[] refusalCodeHolder,
+                                      String[] refusalReasonHolder,
+                                      String[] compactedSummaryHolder) throws Exception {
+        dataMap.put("conversationId", conversationId.toString());
+
+        if (dataMap.get("citations") instanceof List<?> cList) {
+            citationsHolder.addAll(cList);
+        }
+        if (dataMap.get("intent") != null) {
+            intentHolder[0] = dataMap.get("intent").toString();
+        }
+        if (dataMap.get("providerModel") != null) {
+            providerModelHolder[0] = dataMap.get("providerModel").toString();
+        }
+        if (dataMap.get("refusalCode") != null) {
+            refusalCodeHolder[0] = dataMap.get("refusalCode").toString();
+        }
+        if (dataMap.get("refusalReason") != null) {
+            refusalReasonHolder[0] = dataMap.get("refusalReason").toString();
+        }
+        if (dataMap.get("compactedSummary") != null) {
+            compactedSummaryHolder[0] = dataMap.get("compactedSummary").toString();
+        }
+
+        emitter.send(SseEmitter.event().name("metadata").data(dataMap));
+    }
+
+    private void sendFallbackDoneEvent(SseEmitter emitter, String requestId, UUID conversationId) {
+        Map<String, Object> doneMap = Map.of(
+                "messageId", requestId != null ? requestId : UUID.randomUUID().toString(),
+                "conversationId", conversationId.toString()
+        );
+        try {
+            emitter.send(SseEmitter.event().name("done").data(doneMap));
+        } catch (Exception ignored) {}
     }
 
     private void sendRefusalAndComplete(SseEmitter emitter, UUID conversationId, String requestId, String reason) {
@@ -284,51 +335,53 @@ public class SseChatService {
             );
             emitter.send(SseEmitter.event().name("metadata").data(meta));
             emitter.send(SseEmitter.event().name("done").data(Map.of("messageId", requestId, "conversationId", conversationId.toString())));
-            saveAssistantMessageAndCitations(conversationId, null, reason, "UNKNOWN", "PROVIDER_UNAVAILABLE", "provider-unavailable", List.of());
+            persistStreamResult(conversationId, null, new StringBuilder(reason),
+                    "UNKNOWN", "PROVIDER_UNAVAILABLE", "provider-unavailable", null, List.of(),
+                    null, 0);
             emitter.complete();
         } catch (Exception ignored) {
             emitter.completeWithError(ignored);
         }
     }
 
-    private void saveAssistantMessageAndCitations(
-            UUID conversationId,
-            UUID workspaceId,
-            String assistantContent,
-            String intent,
-            String refusalCode,
-            String providerModel,
-            List<Object> citationsObj) {
+    private void persistStreamResult(UUID conversationId, UUID workspaceId,
+                                      StringBuilder fullTextAccumulator, String intent,
+                                      String refusalCode, String providerModel,
+                                      String refusalReason, List<Object> citationsObj,
+                                      String compactedSummary, int summaryVersion) {
         try {
             Instant now = Instant.now(clock);
-            UUID assistantMessageId = UuidGenerator.generateV7();
+            String finalAnswer = fullTextAccumulator.toString();
+            String assistantContent = !finalAnswer.isBlank() ? finalAnswer
+                    : (refusalReason != null ? refusalReason : "Không có câu trả lời");
 
+            UUID assistantMessageId = UuidGenerator.generateV7();
             Message assistantMessage = new Message(
                     assistantMessageId, conversationId, "ASSISTANT", assistantContent, intent, refusalCode, providerModel, now
             );
             messageRepository.save(assistantMessage);
 
-            conversationRepository.findById(conversationId).ifPresent(c -> {
-                c.setUpdatedAt(now);
-                conversationRepository.save(c);
-            });
+            boolean summaryPersisted = false;
+            if (compactedSummary != null && !compactedSummary.isBlank()) {
+                summaryPersisted = conversationHistoryBuilder.persistSummary(conversationId, compactedSummary, summaryVersion);
+            }
+            if (!summaryPersisted) {
+                conversationRepository.findById(conversationId).ifPresent(c -> {
+                    c.setUpdatedAt(now);
+                    conversationRepository.save(c);
+                });
+            }
 
             if (workspaceId != null && citationsObj != null && !citationsObj.isEmpty()) {
-                List<CitationResponse> citations = extractCitations(citationsObj, workspaceId);
+                List<CitationResponse> citations = citationExtractor.extract(citationsObj, workspaceId);
                 int ordinal = 1;
                 for (CitationResponse c : citations) {
                     UUID docId = c.documentId() != null ? c.documentId() : UuidGenerator.generateV7();
                     CitationHistory ch = new CitationHistory(
-                            UuidGenerator.generateV7(),
-                            assistantMessageId,
-                            docId,
-                            "chunk-" + ordinal,
-                            c.fileName() != null ? c.fileName() : "Tài liệu",
-                            "LOCATOR",
-                            c.locator() != null ? c.locator() : "",
-                            c.excerpt() != null ? c.excerpt() : "",
-                            String.valueOf(c.score()),
-                            ordinal++
+                            UuidGenerator.generateV7(), assistantMessageId, docId,
+                            "chunk-" + ordinal, c.fileName() != null ? c.fileName() : "Tài liệu",
+                            "LOCATOR", c.locator() != null ? c.locator() : "",
+                            c.excerpt() != null ? c.excerpt() : "", String.valueOf(c.score()), ordinal++
                     );
                     citationHistoryRepository.save(ch);
                 }
@@ -344,50 +397,5 @@ public class SseChatService {
 
         workspaceMemberRepository.findByWorkspaceIdAndUserIdAndStatus(workspaceId, userId, WorkspaceMemberStatus.ACTIVE)
                 .orElseThrow(() -> new NotFoundError("Workspace không tồn tại"));
-    }
-
-    @SuppressWarnings("unchecked")
-    private List<CitationResponse> extractCitations(Object citationsObj, UUID workspaceId) {
-        List<CitationResponse> result = new ArrayList<>();
-        List<com.unichat.core.document.domain.Document> wsDocs = documentRepository
-                .findByWorkspaceIdExcludingDeleting(workspaceId, org.springframework.data.domain.PageRequest.of(0, 10))
-                .getContent();
-
-        if (citationsObj instanceof List<?> list) {
-            int idx = 0;
-            for (Object item : list) {
-                if (item instanceof Map<?, ?> rawMap) {
-                    try {
-                        String docIdStr = rawMap.get("documentId") != null ? rawMap.get("documentId").toString() : null;
-                        UUID docId = docIdStr != null ? UUID.fromString(docIdStr) : null;
-                        String fileName = null;
-                        if (rawMap.get("fileName") != null) fileName = rawMap.get("fileName").toString();
-                        else if (rawMap.get("documentName") != null) fileName = rawMap.get("documentName").toString();
-                        else if (rawMap.get("originalName") != null) fileName = rawMap.get("originalName").toString();
-
-                        if ((fileName == null || fileName.isBlank() || "Tài liệu".equals(fileName) || "Tài liệu tham khảo".equals(fileName))) {
-                            if (docId != null) {
-                                fileName = documentRepository.findById(docId)
-                                        .map(com.unichat.core.document.domain.Document::getOriginalName)
-                                        .orElse(null);
-                            }
-                            if ((fileName == null || fileName.isBlank()) && !wsDocs.isEmpty()) {
-                                fileName = wsDocs.get(idx % wsDocs.size()).getOriginalName();
-                            }
-                        }
-                        if (fileName == null || fileName.isBlank()) {
-                            fileName = "Tài liệu tham khảo";
-                        }
-
-                        String locator = rawMap.get("locator") != null ? rawMap.get("locator").toString() : "";
-                        String excerpt = rawMap.get("excerpt") != null ? rawMap.get("excerpt").toString() : "";
-                        double score = rawMap.get("score") instanceof Number n ? n.doubleValue() : 0.75;
-                        result.add(new CitationResponse(docId, fileName, locator, excerpt, score));
-                        idx++;
-                    } catch (Exception ignored) {}
-                }
-            }
-        }
-        return result;
     }
 }

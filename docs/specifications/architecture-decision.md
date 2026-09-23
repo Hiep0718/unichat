@@ -131,6 +131,12 @@ Decision: Không bật CSRF double-submit protection ở Core API (`csrf.disable
 
 Reason: Hệ thống stateless API sử dụng Bearer token không bị ảnh hưởng bởi CSRF. Cookie duy nhất thay đổi state là `refresh_token` đã được bảo vệ bởi cờ `SameSite=Strict`, đủ để ngăn chặn các cuộc tấn công CSRF phổ biến trên trình duyệt hiện đại trong môi trường development. CSRF double-submit sẽ là yêu cầu bắt buộc khi triển khai production với custom domain.
 
+## ADR-021 — Short-term Conversation Memory & Context Window Compaction
+
+Decision: Truyền conversation history (tối đa 10 lượt trao đổi gần nhất raw + compacted summary) cho LLM trong mỗi request hỏi đáp. Compaction trigger tại AI Service khi conversation context vượt quá 80% conversation token budget (8,500 tokens). Compacted summary được lưu trữ trên trường `summary` và `summary_version` của bảng `conversations` với optimistic locking. Bypass quy tắc CLARIFY đối với các đại từ phụ thuộc ngữ cảnh (ví dụ: "nó là gì", "cái đó là gì") khi có conversation history cung cấp tham chiếu. Shared prompt builder được trích xuất vào `prompt_builder.py` để loại bỏ sự trùng lặp system prompt giữa streaming và non-streaming provider.
+
+Reason: Tính năng cốt lõi P0 cần sự mạch lạc và hiểu ngữ cảnh liên tục giữa các lượt hỏi đáp trong cùng một phiên hội thoại (multi-turn coherence). Đây là short-term session memory (trong phạm vi một phiên hội thoại), không phải long-term persistent memory xuyên các phiên hay user profiling (vẫn tuân thủ ranh giới của ADR-001).
+
 ## Consequences
 
 - Runtime đã được cung cấp theo version đã khóa; mỗi máy vẫn phải cung cấp evidence độc lập trước `READY — CORE-001`.

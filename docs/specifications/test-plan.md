@@ -107,6 +107,8 @@ MSW mock toàn bộ Core API trong unit/component test. Playwright chạy với 
 9. ADMIN lock user → refresh/access tiếp theo bị chặn.
 10. Chạy evaluation → xem metric/config hash.
 11. Keyboard-only qua login/workspace/documents/chat/citation.
+12. Multi-turn conversation & Context Compaction: hỏi câu tiếp nối với đại từ ("nó là gì"), kích hoạt compaction khi vượt ngưỡng, hiển thị thought step COMPACTION trên Thoughts accordion và duy trì working memory (ADR-021).
+13. Master Long-Running Conversation Lifecycle & Edge Cases (Suite 06): kiểm thử toàn bộ 4 lượt hội thoại (cold start, đại từ mơ hồ, kích hoạt nén context khi token vượt budget 80%, working memory summary, tra cứu citation chip & citation drawer, render công thức toán LaTeX & code block Java syntax highlight, copy câu trả lời, không mất trạng thái 8 tin nhắn trong DOM).
 
 ## 8. Research evaluation
 

@@ -1,4 +1,4 @@
-import { fetchJson, getAccessToken } from '../../lib/api-client';
+import { fetchJson, getAccessToken, getApiBaseUrl } from '../../lib/api-client';
 
 export interface CitationItem {
   citationId?: string | undefined;
@@ -88,7 +88,8 @@ export async function askWorkspaceQuestionStream(
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`/api/v1/workspaces/${workspaceId}/questions/stream`, {
+  const baseUrl = getApiBaseUrl();
+  const response = await fetch(`${baseUrl}/api/v1/workspaces/${workspaceId}/questions/stream`, {
     method: 'POST',
     headers,
     body: JSON.stringify(payload),

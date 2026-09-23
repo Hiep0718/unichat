@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react';
 import { CitationItem } from '../chat-api';
+import { CitationDrawer } from './citation-drawer';
 import './knowledge-studio.css';
 
 export interface SavedNote {
@@ -12,6 +13,7 @@ export interface SavedNote {
 export type StudioToolType = 'PODCAST' | 'FLASHCARDS' | 'QUIZ' | 'MINDMAP' | 'SLIDES' | 'REPORT';
 
 interface KnowledgeStudioProps {
+  workspaceId?: string | undefined;
   workspaceName?: string | undefined;
   citations?: CitationItem[] | undefined;
   selectedCitation?: CitationItem | null | undefined;
@@ -19,6 +21,7 @@ interface KnowledgeStudioProps {
   activeTab: 'STUDIO' | 'CITATIONS';
   onTabChange: (tab: 'STUDIO' | 'CITATIONS') => void;
   onSelectCitation?: ((citation: CitationItem) => void) | undefined;
+  onClearSelectedCitation?: (() => void) | undefined;
   onSelectTool: (toolType: StudioToolType) => void;
   onSaveNote?: ((title: string, content: string) => void) | undefined;
   onDeleteNote?: ((noteId: string) => void) | undefined;
@@ -27,6 +30,7 @@ interface KnowledgeStudioProps {
 }
 
 export const KnowledgeStudio: React.FC<KnowledgeStudioProps> = ({
+  workspaceId,
   workspaceName: _workspaceName = 'Kho tri thức',
   citations = [],
   selectedCitation = null,
@@ -34,6 +38,7 @@ export const KnowledgeStudio: React.FC<KnowledgeStudioProps> = ({
   activeTab,
   onTabChange,
   onSelectCitation,
+  onClearSelectedCitation,
   onSelectTool,
   onDeleteNote,
   onSelectNote,
@@ -250,46 +255,65 @@ export const KnowledgeStudio: React.FC<KnowledgeStudioProps> = ({
       {/* TAB 2: CITATION & RAG SOURCE INSPECTOR */}
       {activeTab === 'CITATIONS' && (
         <div className="unichat-studio-body">
-          <div className="unichat-section-title">
-            <span className="material-symbols-outlined">verified</span>
-            <span>BẰNG CHỨNG & DẪN CHỨNG RAG</span>
-          </div>
-
-          {citations.length === 0 ? (
-            <div className="unichat-notes-empty">
-              <span className="material-symbols-outlined">find_in_page</span>
-              <p>Chưa có trích dẫn nào. Hãy gửi câu hỏi hoặc nhấp vào ký hiệu [1], [2] trong tin nhắn AI.</p>
+          {/* Detail View: CitationDrawer inline */}
+          {selectedCitation ? (
+            <div className="unichat-citation-detail-inline">
+              <button
+                type="button"
+                className="unichat-back-btn"
+                onClick={() => onClearSelectedCitation?.()}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>arrow_back</span>
+                <span>Quay lại danh sách ({citations.length})</span>
+              </button>
+              <CitationDrawer
+                workspaceId={workspaceId}
+                citation={selectedCitation}
+                onClose={() => onClearSelectedCitation?.()}
+              />
             </div>
           ) : (
-            <div className="unichat-citations-list">
-              {citations.map((c, idx) => {
-                const isSelected = selectedCitation?.citationId === c.citationId || (!selectedCitation && idx === 0);
-                return (
-                  <div
-                    key={c.citationId || idx}
-                    className={`unichat-citation-card ${isSelected ? 'unichat-citation-card--selected' : ''}`}
-                    onClick={() => onSelectCitation?.(c)}
-                  >
-                    <div className="unichat-citation-card__top">
-                      <span className="unichat-citation-card__badge">[{c.citationId || idx + 1}]</span>
-                      <span className="unichat-citation-card__filename" title={c.fileName || c.documentId}>
-                        {c.fileName || c.documentId}
-                      </span>
-                      <span className="unichat-citation-card__score">
-                        {Math.round(c.score * 100)}%
-                      </span>
-                    </div>
+            /* List View: Citation cards */
+            <>
+              <div className="unichat-section-title">
+                <span className="material-symbols-outlined">verified</span>
+                <span>BẰNG CHỨNG & DẪN CHỨNG RAG</span>
+              </div>
 
-                    <div className="unichat-citation-card__locator">
-                      <span className="material-symbols-outlined">place</span>
-                      <span>{c.locator || 'Trang / Đoạn văn'}</span>
-                    </div>
+              {citations.length === 0 ? (
+                <div className="unichat-notes-empty">
+                  <span className="material-symbols-outlined">find_in_page</span>
+                  <p>Chưa có trích dẫn nào. Hãy gửi câu hỏi hoặc nhấp vào ký hiệu [1], [2] trong tin nhắn AI.</p>
+                </div>
+              ) : (
+                <div className="unichat-citations-list">
+                  {citations.map((c, idx) => (
+                    <div
+                      key={c.citationId || idx}
+                      className="unichat-citation-card"
+                      onClick={() => onSelectCitation?.(c)}
+                    >
+                      <div className="unichat-citation-card__top">
+                        <span className="unichat-citation-card__badge">[{c.citationId || idx + 1}]</span>
+                        <span className="unichat-citation-card__filename" title={c.fileName || c.documentId}>
+                          {c.fileName || c.documentId}
+                        </span>
+                        <span className="unichat-citation-card__score">
+                          {Math.round(c.score * 100)}%
+                        </span>
+                      </div>
 
-                    <p className="unichat-citation-card__excerpt">"{c.excerpt}"</p>
-                  </div>
-                );
-              })}
-            </div>
+                      <div className="unichat-citation-card__locator">
+                        <span className="material-symbols-outlined">place</span>
+                        <span>{c.locator || 'Trang / Đoạn văn'}</span>
+                      </div>
+
+                      <p className="unichat-citation-card__excerpt">"{c.excerpt}"</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </div>
       )}

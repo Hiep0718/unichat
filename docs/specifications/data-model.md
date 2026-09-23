@@ -29,7 +29,7 @@
 | workspaces | id, ownerId, name, description, visibility, cloudAllowed, permissionVersion, version | name 3–100; PRIVATE/SHARED/PUBLIC; owner luôn có membership OWNER |
 | workspace_members | workspaceId, userId, role, status, invitedById | PK(workspaceId,userId); role OWNER/EDITOR/VIEWER; status ACTIVE/REVOKED |
 | documents | id, workspaceId, storageKey, originalName, mediaType, byteSize, sha256, status, ingestionVersion, pageOrBlockCount, version | storageKey unique; status PENDING/PROCESSING/PROCESSED/FAILED/DELETING |
-| conversations | id, workspaceId, userId, title, status | user chỉ truy cập conversation của mình và Workspace còn quyền |
+| conversations | id, workspaceId, userId, title, status, summary, summaryVersion | user chỉ truy cập conversation của mình và Workspace còn quyền; summary cập nhật qua optimistic locking trên summaryVersion (ADR-021) |
 | messages | id, conversationId, role, content, intent, refusalCode, providerModel, promptVersion, createdAt | role USER/ASSISTANT; content giữ Unicode; assistant có trace |
 | citation_history | id, messageId, documentId, chunkId, fileName, locatorType, locatorValue, excerpt, contentHash, ordinal, redactedAt | unique(messageId,ordinal); excerpt được redact khi xóa tài liệu |
 | retrieval_traces | id, messageId, requestId, strategyVersion, ruleId, intent, confidence, evidenceScore, decision, provider, latencyMs, promptTokens, configHash | requestId unique; decision ANSWER/CLARIFY/REFUSE |
@@ -87,6 +87,7 @@ Embedding model: intfloat/multilingual-e5-base revision d128750597153bb5987e10b1
 - Upload tạo document PENDING và resource_job INGEST trong cùng transaction.
 - Worker claim job bằng FOR UPDATE SKIP LOCKED và lease.
 - Ask lưu user message, assistant message, citation và trace theo transaction sau reauthorization.
+- Conversation summary cập nhật bất đồng bộ hoặc sau khi stream/generate với optimistic locking (WHERE id = :id AND summary_version = :expectedVersion).
 - Delete saga idempotent; document DELETING bị loại khỏi retrieval ngay lập tức.
 
 ## 8. Retention
