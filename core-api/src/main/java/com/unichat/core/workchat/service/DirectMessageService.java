@@ -235,7 +235,7 @@ public class DirectMessageService {
     }
 
     private static String displayName(User user) {
-        return user.getEmail().split("@")[0];
+        return user.getDisplayName();
     }
 
     /** Enough of the message to recognise the thread, not to read it. */

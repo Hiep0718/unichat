@@ -122,6 +122,7 @@ export function LoginForm() {
             setToken(mockJwt, {
               id: '123e4567-e89b-12d3-a456-426614174000',
               email: 'dev@unichat.io',
+              displayName: 'dev',
               systemRole: 'USER',
               status: 'ACTIVE',
             });

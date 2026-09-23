@@ -269,6 +269,8 @@ class DirectMessageServiceTest {
         User user = mock(User.class);
         when(user.getId()).thenReturn(id);
         when(user.getEmail()).thenReturn(email);
+        // Names come from the stored display name now, not from the email.
+        when(user.getDisplayName()).thenReturn(email.split("@")[0]);
         return user;
     }
 }

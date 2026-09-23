@@ -22,6 +22,8 @@ export interface AuthResponse {
 export interface UserResponse {
   id: string;
   email: string;
+  /** The name others see; the @mention handle stays derived from the email. */
+  displayName: string;
   systemRole: 'USER' | 'ADMIN';
   status: 'ACTIVE' | 'LOCKED';
   createdAt: string;
@@ -55,6 +57,14 @@ export const authApi = {
   getMe: (): Promise<UserResponse> => {
     return fetchJson('/users/me', {
       method: 'GET',
+    });
+  },
+
+  /** Renames the caller. Does not affect how they are mentioned. */
+  updateProfile: (displayName: string): Promise<UserResponse> => {
+    return fetchJson('/users/me', {
+      method: 'PATCH',
+      body: JSON.stringify({ displayName }),
     });
   },
 

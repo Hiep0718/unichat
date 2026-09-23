@@ -459,3 +459,30 @@
 - Note: `npm audit` reports two pre-existing high-severity advisories in `react-router-dom` 7.18.1 (RSC-mode CSRF bypass), fixed in 7.18.4. Not introduced here and not upgraded mid-feature; it belongs in the phase 8 cleanup.
 
 - Not yet verified: two real users exchanging a message over the socket. That needs two signed-in accounts, and test users were deliberately not created in the shared development database.
+
+## 2026-09-23 - Feed And Work Chat Redesign (Direction B)
+
+- Decision: Added a `--ws-*` surface scale rather than retuning the existing Material tokens.
+  Rationale: Retuning `--color-*` would restyle every screen at once, including ones not reviewed (documents, workspaces, AI chat, admin). The new scale is applied to the feed and Work Chat first; the rest keep the old look until they are moved deliberately.
+
+- Decision: Cards separate by elevation, not by a 1px outline.
+  Rationale: With a border on every card, sidebar and input, nothing stands out and the whole page reads as a wireframe.
+
+- Decision: Dropped the 44px status rail from the feed card; resolution state is a chip in the header row.
+  Rationale: The rail cost a column of width to display one number, and squeezed the title — the part a reader actually scans.
+
+- Decision: Replaced `--color-primary-fixed` (#dce1ff) as the active/state colour with the navy `#1e3a8a`.
+  Rationale: The lavender is washed out, gives weak contrast for text placed on it, and makes the product look like nobody chose a colour.
+
+- Fixed while here: `.work-chat` used `height: calc(100vh - 64px)`, subtracting a top bar the shell does not have — it has only a left rail — so the page fell 64px short. Introduced with Work Chat's UI, not by this redesign.
+
+## 2026-09-23 - A Display Name Separate From The Email
+
+- Decision: Added `users.display_name`, backfilled from the email local part, and replaced all ten sites that derived a name with `split("@")[0]`.
+  Rationale: Every name in the product was a piece of the member's email address, shown to everyone in their groups. Besides reading as unfinished, it leaks the local part of an address. Backfilling to exactly what was displayed before means nothing changes visually until someone chooses a name.
+
+- Decision: The `@mention` handle stays derived from the email and is NOT the display name.
+  Rationale: A handle has to be unique, which the unique index on lower(email) already guarantees; display names are free text, so two members may share one and `@lan` would be ambiguous. This is the Slack split between username and display name.
+
+- Decision: Removed the "Trợ lý AI" name override in `DiscussionService` now that migration V23 stores that name on the assistant's row.
+  Rationale: Keeping both would leave two sources of truth for the same string.

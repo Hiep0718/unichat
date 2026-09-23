@@ -13,6 +13,8 @@ import com.unichat.core.user.domain.UserStatus;
 public record UserResponse(
         UUID id,
         String email,
+        /** The name others see, chosen by the member. */
+        String displayName,
         SystemRole systemRole,
         UserStatus status,
         Instant createdAt
@@ -21,6 +23,7 @@ public record UserResponse(
         return new UserResponse(
                 u.getId(),
                 u.getEmail(),
+                u.getDisplayName(),
                 u.getSystemRole(),
                 u.getStatus(),
                 u.getCreatedAt()

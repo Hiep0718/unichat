@@ -48,6 +48,16 @@ public class UserController {
     /**
      * Changes the password of the authenticated user.
      */
+    /** Renames the caller. The mention handle is unaffected. */
+    @PatchMapping("/users/me")
+    public ResponseEntity<UserResponse> updateProfile(
+            @jakarta.validation.Valid @org.springframework.web.bind.annotation.RequestBody
+            UpdateProfileRequest request,
+            @AuthenticationPrincipal Jwt jwt) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        return ResponseEntity.ok(userService.updateProfile(userId, request));
+    }
+
     @PatchMapping("/users/me/password")
     public ResponseEntity<Void> changePassword(
             @AuthenticationPrincipal org.springframework.security.oauth2.jwt.Jwt jwt,

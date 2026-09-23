@@ -22,6 +22,8 @@ import { authApi } from './api/auth-api';
 interface UserProfile {
   readonly id: string;
   readonly email: string;
+  /** The name others see; distinct from the @mention handle. */
+  readonly displayName: string;
   readonly systemRole: 'USER' | 'ADMIN';
   readonly status: 'ACTIVE' | 'LOCKED';
 }
@@ -97,6 +99,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           setUserState({
             id: profile.id,
             email: profile.email,
+            displayName: profile.displayName,
             systemRole: profile.systemRole,
             status: profile.status,
           });

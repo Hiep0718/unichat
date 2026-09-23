@@ -409,3 +409,38 @@
     margin-left: var(--sidebar-width);
   }
 }
+
+/* The one editable field on the profile tab, so the control sits beside it
+   rather than in a form-wide footer. */
+.account-form__row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.account-form__row .account-form__input {
+  flex: 1;
+  min-width: 0;
+}
+
+.account-form__save {
+  flex-shrink: 0;
+  padding: 10px 18px;
+  border: none;
+  border-radius: var(--radius-lg);
+  background: var(--ws-accent);
+  color: var(--ws-accent-ink);
+  font: var(--font-label-md);
+  font-weight: 700;
+  cursor: pointer;
+  transition: filter var(--transition-fast);
+}
+
+.account-form__save:hover:not(:disabled) {
+  filter: brightness(1.15);
+}
+
+.account-form__save:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { Icon } from '../../components/icon';
 import { authApi } from '../auth/api/auth-api';
@@ -111,11 +111,39 @@ function TabContent({ activeTab }: { readonly activeTab: TabId }) {
 
 /* ─── Profile Section ────────────────────────────────────── */
 
-/** Displays user profile info (email, system role). */
+/** Displays and edits the caller's profile. */
 function ProfileSection() {
+  const queryClient = useQueryClient();
+  const { setUser } = useAuth();
   const { data: userProfile, isLoading } = useQuery({
     queryKey: ['userProfile'],
     queryFn: authApi.getMe,
+  });
+
+  const [draftName, setDraftName] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
+
+  // Null means "not edited yet", so the field follows the loaded profile until
+  // the member actually types something.
+  const name = draftName ?? userProfile?.displayName ?? '';
+  const changed = userProfile != null && name.trim() !== userProfile.displayName;
+
+  const rename = useMutation({
+    mutationFn: (value: string) => authApi.updateProfile(value),
+    onSuccess: (updated) => {
+      setDraftName(null);
+      setSaved(true);
+      queryClient.setQueryData(['userProfile'], updated);
+      // The name is shown all over the app from auth state, so it has to be
+      // refreshed there too rather than only in this form.
+      setUser({
+        id: updated.id,
+        email: updated.email,
+        displayName: updated.displayName,
+        systemRole: updated.systemRole,
+        status: updated.status,
+      });
+    },
   });
 
   return (
@@ -129,6 +157,46 @@ function ProfileSection() {
           <p>Đang tải hồ sơ...</p>
         ) : (
           <div className="account-form">
+            <form
+              className="account-form__field"
+              onSubmit={(event) => {
+                event.preventDefault();
+                if (changed && name.trim()) rename.mutate(name.trim());
+              }}
+            >
+              <label className="account-form__label" htmlFor="account-display-name">
+                Tên hiển thị
+              </label>
+              <div className="account-form__row">
+                <input
+                  id="account-display-name"
+                  type="text"
+                  className="account-form__input"
+                  value={name}
+                  maxLength={50}
+                  onChange={(event) => {
+                    setDraftName(event.target.value);
+                    setSaved(false);
+                  }}
+                />
+                <button
+                  type="submit"
+                  className="account-form__save"
+                  disabled={!changed || !name.trim() || rename.isPending}
+                >
+                  {rename.isPending ? 'Đang lưu...' : 'Lưu'}
+                </button>
+              </div>
+              <span className="account-form__hint">
+                {rename.isError
+                  ? 'Không lưu được tên. Vui lòng thử lại.'
+                  : saved
+                    ? 'Đã lưu tên hiển thị.'
+                    : 'Tên này hiện ở bài viết, bình luận và tin nhắn. Người khác vẫn nhắc bạn bằng @' +
+                      (userProfile?.email.split('@')[0] ?? '')}
+              </span>
+            </form>
+
             <div className="account-form__field">
               <label className="account-form__label" htmlFor="account-email">
                 Email

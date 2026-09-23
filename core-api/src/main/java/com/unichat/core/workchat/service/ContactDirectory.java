@@ -86,7 +86,7 @@ public class ContactDirectory {
         return userRepository.findAllById(firstSharedGroup.keySet()).stream()
                 .map(user -> new ContactSummary(
                         user.getId(),
-                        user.getEmail().split("@")[0],
+                        user.getDisplayName(),
                         workspaceNames.getOrDefault(firstSharedGroup.get(user.getId()), "Nhóm")))
                 .sorted(Comparator.comparing(ContactSummary::name))
                 .toList();

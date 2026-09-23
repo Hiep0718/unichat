@@ -32,6 +32,7 @@ import com.unichat.core.communitychat.domain.DiscussionReplyRepository;
 import com.unichat.core.communitychat.domain.DiscussionRepository;
 import com.unichat.core.communitychat.domain.MentionEvent;
 import com.unichat.core.communitychat.domain.NewReplyEvent;
+import com.unichat.core.user.domain.User;
 import com.unichat.core.user.domain.UserRepository;
 import com.unichat.core.workspace.domain.Workspace;
 import com.unichat.core.workspace.domain.WorkspaceMember;
@@ -110,7 +111,7 @@ public class DiscussionService {
         Map<UUID, String> authorNames = userRepository
                 .findAllById(result.getContent().stream().map(Discussion::getAuthorId).distinct().toList())
                 .stream()
-                .collect(Collectors.toMap(u -> u.getId(), u -> u.getEmail().split("@")[0]));
+                .collect(Collectors.toMap(User::getId, User::getDisplayName));
         Map<UUID, List<PostAttachmentResponse>> attachments = attachmentService.listForAll(discussionIds);
         Map<UUID, ReactionSummary> reactions =
                 reactionService.summariseAll("DISCUSSION", discussionIds, userId);
@@ -168,7 +169,7 @@ public class DiscussionService {
         discussionRepository.save(discussion);
         publishMentions(workspaceId, discussion.getId(), null, userId, request.body());
 
-        String authorName = userRepository.findById(userId).map(u -> u.getEmail().split("@")[0]).orElse("Unknown");
+        String authorName = userRepository.findById(userId).map(User::getDisplayName).orElse("Người dùng");
         return DiscussionResponse.from(discussion, authorName, null);
     }
 
@@ -232,12 +233,12 @@ public class DiscussionService {
         Map<UUID, String> authorNames = userRepository
                 .findAllById(replies.stream().map(DiscussionReply::getAuthorId).distinct().toList())
                 .stream()
-                .collect(Collectors.toMap(u -> u.getId(), u -> u.getEmail().split("@")[0]));
+                .collect(Collectors.toMap(User::getId, User::getDisplayName));
 
         return replies.stream()
                 .map(r -> ReplyResponse.from(
                         r,
-                        displayName(r.getAuthorId(), authorNames),
+                        authorNames.getOrDefault(r.getAuthorId(), "Người dùng"),
                         null,
                         reactions.getOrDefault(r.getId(), ReactionSummary.empty())))
                 .collect(Collectors.toList());
@@ -284,7 +285,7 @@ public class DiscussionService {
                     discussion.getTitle(), request.body()));
         }
 
-        String authorName = userRepository.findById(userId).map(u -> u.getEmail().split("@")[0]).orElse("Unknown");
+        String authorName = userRepository.findById(userId).map(User::getDisplayName).orElse("Người dùng");
         return ReplyResponse.from(reply, authorName, null, ReactionSummary.empty());
     }
 
@@ -317,7 +318,7 @@ public class DiscussionService {
         discussionRepository.save(discussion);
 
         String authorName = userRepository.findById(userId)
-                .map(u -> u.getEmail().split("@")[0]).orElse("Unknown");
+                .map(User::getDisplayName).orElse("Người dùng");
         return DiscussionResponse.from(discussion, authorName, null);
     }
 
@@ -403,7 +404,7 @@ public class DiscussionService {
     /** Builds the full response for one post: author, attachments, reactions. */
     private DiscussionResponse toResponse(UUID workspaceId, Discussion discussion, UUID userId) {
         String authorName = userRepository.findById(discussion.getAuthorId())
-                .map(u -> u.getEmail().split("@")[0]).orElse("Unknown");
+                .map(User::getDisplayName).orElse("Người dùng");
         String workspaceName = workspaceRepository.findById(workspaceId)
                 .map(Workspace::getName).orElse(null);
         ReactionSummary reactions = reactionService
@@ -414,14 +415,4 @@ public class DiscussionService {
                 attachmentService.listFor(discussion.getId()), reactions);
     }
 
-    /**
-     * The assistant posts under a system account, so show it by its role rather
-     * than by the local part of {@code assistant@unichat.system}.
-     */
-    private static String displayName(UUID authorId, Map<UUID, String> names) {
-        if (AiReplyService.ASSISTANT_USER_ID.equals(authorId)) {
-            return AiReplyService.ASSISTANT_DISPLAY_NAME;
-        }
-        return names.getOrDefault(authorId, "Unknown");
-    }
 }

@@ -26,6 +26,7 @@ import com.unichat.core.communitychat.domain.Discussion;
 import com.unichat.core.communitychat.domain.DiscussionRepository;
 import com.unichat.core.communitychat.domain.Reaction;
 import com.unichat.core.communitychat.domain.ReactionRepository;
+import com.unichat.core.user.domain.User;
 import com.unichat.core.user.domain.UserRepository;
 import com.unichat.core.workspace.domain.Workspace;
 import com.unichat.core.workspace.domain.WorkspaceMember;
@@ -230,7 +231,7 @@ public class FeedService {
                 .findAllById(result.getContent().stream()
                         .map(Discussion::getAuthorId).distinct().toList())
                 .stream()
-                .collect(Collectors.toMap(u -> u.getId(), u -> u.getEmail().split("@")[0]));
+                .collect(Collectors.toMap(User::getId, User::getDisplayName));
 
         Map<UUID, List<PostAttachmentResponse>> attachments =
                 attachmentService.listForAll(discussionIds);
