@@ -523,3 +523,15 @@
 
 - Decision: The profile carries the mention handle explicitly.
   Rationale: Now that the display name is free text, the name on screen is no longer what you type to mention someone, and the profile is where a viewer would look to find out.
+
+## 2026-09-23 - A Second Migration Version Collision, And Its Root Cause
+
+- Incident: `V23__user_display_name.sql` never ran. The shared development database already had version 23 recorded as `V23__enable_rls_defense_in_depth_v2.sql`, applied from another branch earlier the same day. Flyway skipped this branch's V23 in silence, and the failure surfaced only as Hibernate reporting `missing column [display_name]`. This is the second time — V16 collided with `V16__conversation_summary.sql` the same way.
+
+- Decision: Renumbered to `V25__user_display_name.sql`.
+  Rationale: The same remedy as V16 to V20. Nothing in V24 depends on it, so the order is free.
+
+- Decision: Turned `validate-on-migrate` back on.
+  Rationale: This is what made both collisions silent. With validation on, a version already recorded under a different script fails the startup loudly instead of being skipped. The existing `ignore-migration-patterns: "*:missing,*:ignored"` still tolerates migrations applied from another branch that are not in this tree, which is why this can be enabled without first reconciling those. Verified by starting the application: it migrates and boots clean.
+
+- Still open, and not something code can fix: two people are numbering migrations independently against one shared database. Agreeing on disjoint ranges, or on who adds migrations, would stop the collision happening at all. Validation only turns a silent skip into a loud stop.

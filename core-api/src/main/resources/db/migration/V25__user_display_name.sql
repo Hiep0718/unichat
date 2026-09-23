@@ -1,5 +1,10 @@
 -- A name a person chooses, separate from their email
 --
+-- Numbered 25, not 23: version 23 was taken on the shared development database
+-- by a migration applied from another branch. With validate-on-migrate off,
+-- Flyway trusts the version number alone, so a second V23 is skipped in
+-- silence rather than refused.
+--
 -- Every name in the product was derived as split_part(email, '@', 1), so a
 -- member's name was a piece of their email address shown to everyone in their
 -- groups. Beyond looking unfinished, it leaks the local part of an address to

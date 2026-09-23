@@ -14,7 +14,11 @@ spring:
   flyway:
     enabled: true
     baseline-on-migrate: true
-    validate-on-migrate: false
+    # On, so a version number already taken on the shared database fails loudly
+    # instead of this branch's migration being skipped in silence. The ignore
+    # patterns below still tolerate migrations applied from another branch that
+    # are not in this tree.
+    validate-on-migrate: true
     out-of-order: true
     ignore-migration-patterns: "*:missing,*:ignored"
   jpa:
