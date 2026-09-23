@@ -1,7 +1,8 @@
 /**
  * Authentication API endpoints and types.
  */
-import { fetchJson } from '../../../lib/api-client';
+import { fetchJson, getAccessToken } from '../../../lib/api-client';
+import type { AvatarColorKey } from '../../../components/entity-avatar';
 
 export interface LoginRequest {
   email: string;
@@ -24,6 +25,10 @@ export interface UserResponse {
   email: string;
   /** The name others see; the @mention handle stays derived from the email. */
   displayName: string;
+  /** True when a picture was uploaded; otherwise a letter avatar is shown. */
+  hasAvatar: boolean;
+  /** Chosen letter-avatar colour, or null to derive one from the name. */
+  avatarColor: AvatarColorKey | null;
   systemRole: 'USER' | 'ADMIN';
   status: 'ACTIVE' | 'LOCKED';
   createdAt: string;
@@ -58,6 +63,32 @@ export const authApi = {
     return fetchJson('/users/me', {
       method: 'GET',
     });
+  },
+
+  /** Replaces the caller's profile picture. */
+  uploadAvatar: async (file: File): Promise<void> => {
+    const body = new FormData();
+    body.append('file', file);
+    const token = getAccessToken();
+    const response = await fetch('/api/v1/users/me/avatar', {
+      method: 'PUT',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body,
+    });
+    if (!response.ok) {
+      throw new Error(`Không tải được ảnh lên (HTTP ${response.status})`);
+    }
+  },
+
+  /** Removes the picture, leaving the letter avatar. */
+  removeAvatar: (): Promise<void> => {
+    return fetchJson('/users/me/avatar', { method: 'DELETE' });
+  },
+
+  /** Chooses the letter-avatar colour; null returns to the derived one. */
+  chooseAvatarColor: (color: AvatarColorKey | null): Promise<void> => {
+    const query = color ? `?color=${color}` : '';
+    return fetchJson(`/users/me/avatar-color${query}`, { method: 'PATCH' });
   },
 
   /** Renames the caller. Does not affect how they are mentioned. */

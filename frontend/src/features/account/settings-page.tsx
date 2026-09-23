@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Icon } from '../../components/icon';
 import { authApi } from '../auth/api/auth-api';
 import { useAuth } from '../auth/auth-context';
+import { AvatarPicker } from './components/avatar-picker';
 import { settingsApi } from './settings-api';
 import type { ApiError } from '../../lib/api-client';
 import './settings-page.css';
@@ -157,6 +158,15 @@ function ProfileSection() {
           <p>Đang tải hồ sơ...</p>
         ) : (
           <div className="account-form">
+            {userProfile && (
+              <AvatarPicker
+                profile={userProfile}
+                onChanged={() => {
+                  void queryClient.invalidateQueries({ queryKey: ['userProfile'] });
+                }}
+              />
+            )}
+
             <form
               className="account-form__field"
               onSubmit={(event) => {

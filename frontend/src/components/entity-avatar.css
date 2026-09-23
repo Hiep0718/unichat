@@ -15,3 +15,9 @@
 .entity-avatar--circle {
   border-radius: 50%;
 }
+
+/* A picture fills the same box as the letter, cropped rather than squashed —
+   the server already stores it square, this guards an odd one. */
+img.entity-avatar {
+  object-fit: cover;
+}

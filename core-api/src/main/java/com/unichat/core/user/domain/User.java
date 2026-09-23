@@ -48,6 +48,15 @@ public class User {
     @Column(name = "display_name", nullable = false)
     private String displayName;
 
+    /** Key of the uploaded picture, null when the member has not set one. */
+    @Column(name = "avatar_storage_key")
+    private String avatarStorageKey;
+
+    /** Chosen colour for the letter avatar; null means derive it from the name. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "avatar_color")
+    private AvatarColor avatarColor;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -100,6 +109,36 @@ public class User {
 
     public String getDisplayName() {
         return displayName;
+    }
+
+    public String getAvatarStorageKey() {
+        return avatarStorageKey;
+    }
+
+    public AvatarColor getAvatarColor() {
+        return avatarColor;
+    }
+
+    /** Whether a picture has been uploaded, as opposed to a letter avatar. */
+    public boolean hasAvatarImage() {
+        return avatarStorageKey != null && !avatarStorageKey.isBlank();
+    }
+
+    /**
+     * Points the member at a newly stored picture.
+     *
+     * @return the key of the picture this replaced, so the caller can delete
+     *         it; null when there was none
+     */
+    public String replaceAvatar(String storageKey) {
+        String previous = this.avatarStorageKey;
+        this.avatarStorageKey = storageKey;
+        return previous;
+    }
+
+    /** Sets the letter-avatar colour; null returns to deriving it from the name. */
+    public void setAvatarColor(AvatarColor avatarColor) {
+        this.avatarColor = avatarColor;
     }
 
     /**

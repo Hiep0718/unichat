@@ -29,9 +29,12 @@ import com.unichat.core.user.service.UserService;
 public class UserController {
 
     private final UserService userService;
+    private final com.unichat.core.user.service.AvatarService avatarService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService,
+                          com.unichat.core.user.service.AvatarService avatarService) {
         this.userService = userService;
+        this.avatarService = avatarService;
     }
 
     /**
@@ -56,6 +59,52 @@ public class UserController {
             @AuthenticationPrincipal Jwt jwt) {
         UUID userId = UUID.fromString(jwt.getSubject());
         return ResponseEntity.ok(userService.updateProfile(userId, request));
+    }
+
+    /** Replaces the caller's profile picture. */
+    @org.springframework.web.bind.annotation.PutMapping("/users/me/avatar")
+    public ResponseEntity<Void> uploadAvatar(
+            @org.springframework.web.bind.annotation.RequestPart("file")
+            org.springframework.web.multipart.MultipartFile file,
+            @AuthenticationPrincipal Jwt jwt) {
+        avatarService.upload(UUID.fromString(jwt.getSubject()), file);
+        return ResponseEntity.noContent().build();
+    }
+
+    /** Removes the picture, leaving the letter avatar. */
+    @org.springframework.web.bind.annotation.DeleteMapping("/users/me/avatar")
+    public ResponseEntity<Void> removeAvatar(@AuthenticationPrincipal Jwt jwt) {
+        avatarService.remove(UUID.fromString(jwt.getSubject()));
+        return ResponseEntity.noContent().build();
+    }
+
+    /** Chooses the letter-avatar colour; an absent value returns to the derived one. */
+    @PatchMapping("/users/me/avatar-color")
+    public ResponseEntity<Void> chooseAvatarColour(
+            @org.springframework.web.bind.annotation.RequestParam(required = false) String color,
+            @AuthenticationPrincipal Jwt jwt) {
+        avatarService.chooseColour(UUID.fromString(jwt.getSubject()), color);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Serves a member's picture.
+     *
+     * <p>Any signed-in member may read one. A per-request membership check
+     * would mean a query for every avatar on a feed of twenty posts, and the
+     * id needed to ask is a UUID that is only learned from content the caller
+     * can already see.
+     */
+    @GetMapping("/users/{userId}/avatar")
+    public ResponseEntity<byte[]> avatar(@PathVariable UUID userId) {
+        byte[] image = avatarService.read(userId);
+        return ResponseEntity.ok()
+                .header(org.springframework.http.HttpHeaders.CONTENT_TYPE,
+                        com.unichat.core.user.service.AvatarService.STORED_MEDIA_TYPE)
+                // Short and private: an avatar changes rarely, but a stale one
+                // must not follow the member around for the rest of the day.
+                .header(org.springframework.http.HttpHeaders.CACHE_CONTROL, "private, max-age=300")
+                .body(image);
     }
 
     @PatchMapping("/users/me/password")

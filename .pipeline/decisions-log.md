@@ -486,3 +486,23 @@
 
 - Decision: Removed the "Trợ lý AI" name override in `DiscussionService` now that migration V23 stores that name on the assistant's row.
   Rationale: Keeping both would leave two sources of truth for the same string.
+
+## 2026-09-23 - Profile Pictures
+
+- Decision: An upload is decoded, redrawn at a fixed 256px square and re-encoded as PNG; the original bytes are never stored.
+  Rationale: Two reasons. It caps what a huge file costs to serve, and it drops every metadata chunk the original carried — a phone photo otherwise ships GPS coordinates to everyone in the member's groups. Decoding is also the real check that the file is an image, since the declared content type is only what the client claimed; a test covers a non-image claiming to be a PNG.
+
+- Decision: The letter avatar stays the default rather than a placeholder to be replaced.
+  Rationale: Nobody should have to upload a photo to be recognisable in a list. A chosen colour gives members a way to be distinguishable without one.
+
+- Decision: Avatar colours are a fixed set of six names, not free-form hex.
+  Rationale: An arbitrary colour behind white initials is easily unreadable. Storing the name and keeping the hex in the stylesheet also stops the two drifting apart about what "navy" means.
+
+- Decision: Pictures are fetched as blobs through a shared per-user cache.
+  Rationale: `<img src>` cannot send a bearer token, so each picture has to be read with fetch. Without the cache, a feed of twenty posts by four people would issue twenty requests; with it, one per person, and one in-flight promise per person so simultaneous mounts do not race.
+
+- Decision: Serving an avatar requires authentication but not a per-request membership check.
+  Rationale: Checking group membership per avatar would mean twenty queries for a twenty-post feed. The user id needed to ask is a UUID, not guessable, and is only learned from content the caller can already see. Recorded as a deliberate trade-off on the endpoint.
+
+- Decision: Deleting the picture an upload replaced is best-effort and never fails the upload.
+  Rationale: An orphaned blob costs storage; a failed upload costs the member the thing they just did.
