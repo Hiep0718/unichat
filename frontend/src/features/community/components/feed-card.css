@@ -1,56 +1,102 @@
-/* Feed card — status rail on the left, content in the middle, save on the right. */
+/* Feed card — a white surface lifted off the canvas, with the group and the
+   resolution state in the header and the actions along the foot. */
 
 .feed-card {
-  position: relative;
-  display: grid;
-  grid-template-columns: 44px 1fr auto;
-  gap: 14px;
-  padding: 16px;
-  border: 1px solid var(--color-outline-variant);
-  border-radius: var(--radius-xl);
-  background: var(--color-surface-container-lowest);
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  padding: 18px 20px;
+  border-radius: var(--radius-2xl);
+  background: var(--ws-card);
+  box-shadow: var(--ws-card-shadow);
+  transition: box-shadow var(--transition-fast);
 }
 
 .feed-card:hover {
-  border-color: var(--color-outline);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--ws-card-shadow-hover);
 }
 
-.feed-card__rail {
+/* ── Header ─────────────────────────────────────────────── */
+
+.feed-card__head {
   display: flex;
-  justify-content: center;
-  padding-top: 2px;
+  align-items: center;
+  gap: 12px;
 }
 
-/* Non-question posts show a plain comment count instead of a resolution state. */
-.feed-card__replies {
-  display: inline-flex;
-  flex-direction: column;
+.feed-card__ws {
+  display: flex;
+  flex: 1;
   align-items: center;
-  gap: 2px;
-  width: 44px;
-  padding: 8px 0;
+  gap: 10px;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.feed-card__ws-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.feed-card__ws-name {
+  overflow: hidden;
+  color: var(--ws-ink);
+  font: var(--font-label-md);
+  font-weight: 700;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.feed-card__ws:hover .feed-card__ws-name {
+  color: var(--ws-accent);
+}
+
+.feed-card__byline {
+  color: var(--ws-ink-muted);
+  font: var(--font-label-sm);
+}
+
+/* The one place a reader looks to decide whether to open the post. */
+.feed-card__status {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
   border-radius: var(--radius-lg);
-  background: var(--color-surface-container-high);
-  color: var(--color-on-surface-variant);
   font: var(--font-label-sm);
   font-weight: 700;
 }
 
-.feed-card__main {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+.feed-card__status--resolved {
+  background: var(--ws-ok-bg);
+  color: var(--ws-ok-ink);
 }
 
-/* The title is the click target; a button keeps it keyboard reachable. */
+.feed-card__status--discussing {
+  background: var(--ws-warn-bg);
+  color: var(--ws-warn-ink);
+}
+
+.feed-card__status--unanswered {
+  background: var(--ws-accent-soft);
+  color: var(--ws-accent);
+}
+
+.feed-card__status--announcement {
+  background: var(--ws-chip);
+  color: var(--ws-ink-soft);
+}
+
+/* ── Body ───────────────────────────────────────────────── */
+
 .feed-card__title-btn {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 8px;
   padding: 0;
   border: none;
   background: none;
@@ -60,156 +106,113 @@
 
 .feed-card__title {
   margin: 0;
-  font: var(--font-title-sm);
-  font-weight: 650;
-  line-height: 1.35;
-  color: var(--color-on-surface);
+  color: var(--ws-ink);
+  font-family: var(--font-family);
+  font-size: 17.5px;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: -0.012em;
 }
 
 .feed-card__title-btn:hover .feed-card__title {
-  color: var(--color-primary);
-}
-
-.feed-card__title-btn:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 3px;
-  border-radius: var(--radius-sm);
-}
-
-/* Only non-default labels are shown; "Thảo luận" is the implicit case. */
-.feed-card__label {
-  padding: 2px 8px;
-  border-radius: var(--radius-full);
-  font: var(--font-label-sm);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-}
-
-.feed-card__label--question {
-  background: var(--color-secondary-fixed);
-  color: var(--color-on-secondary-fixed-variant);
-}
-
-.feed-card__label--announcement {
-  background: var(--color-tertiary-fixed);
-  color: var(--color-on-tertiary-fixed-variant);
+  color: var(--ws-accent);
 }
 
 .feed-card__preview {
-  margin: 0;
-  font: var(--font-body-md);
-  color: var(--color-on-surface-variant);
-  line-height: 1.55;
   display: -webkit-box;
+  overflow: hidden;
+  margin: 0;
+  color: var(--ws-ink-soft);
+  font: var(--font-body-md);
+  line-height: 1.6;
+  -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
-.feed-card__context {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 6px;
-  font: var(--font-label-sm);
-  color: var(--color-on-surface-variant);
-}
-
-.feed-card__ws {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 0;
-  border: none;
-  background: none;
-  font: inherit;
-  font-weight: 600;
-  color: var(--color-on-surface);
-  cursor: pointer;
-}
-
-.feed-card__ws:hover {
-  color: var(--color-primary);
-  text-decoration: underline;
-}
-
-.feed-card__sep {
-  opacity: 0.5;
-}
+/* ── Tags ───────────────────────────────────────────────── */
 
 .feed-card__tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 2px;
+  gap: 7px;
 }
 
 .feed-card__tag {
-  padding: 3px 10px;
-  border: 1px solid var(--color-outline-variant);
-  border-radius: var(--radius-full);
-  background: transparent;
+  padding: 4px 10px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--ws-chip);
+  color: var(--ws-ink-soft);
   font: var(--font-label-sm);
-  color: var(--color-on-surface-variant);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.feed-card__tag:hover {
+  background: var(--ws-accent-soft);
+  color: var(--ws-accent);
+}
+
+/* ── Footer ─────────────────────────────────────────────── */
+
+.feed-card__foot {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-top: 2px;
+  padding-top: 12px;
+  border-top: 1px solid var(--ws-line);
+}
+
+.feed-card__replies {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--ws-ink-muted);
+  font: var(--font-label-md);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.feed-card__replies:hover {
+  color: var(--ws-accent);
+}
+
+.feed-card__save {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  margin-left: auto;
+  border: none;
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--ws-ink-muted);
   cursor: pointer;
   transition: background var(--transition-fast), color var(--transition-fast);
 }
 
-.feed-card__tag:hover {
-  background: var(--color-secondary-fixed);
-  color: var(--color-on-secondary-fixed-variant);
-  border-color: transparent;
-}
-
-/* Save stays quiet until the card is hovered or the post is already saved. */
-.feed-card__save {
-  align-self: flex-start;
-  display: inline-flex;
-  padding: 6px;
-  border: none;
-  border-radius: var(--radius-full);
-  background: transparent;
-  color: var(--color-on-surface-variant);
-  cursor: pointer;
-  opacity: 0;
-  transition: opacity var(--transition-fast), background var(--transition-fast);
-}
-
-.feed-card:hover .feed-card__save,
-.feed-card__save:focus-visible,
-.feed-card__save--on {
-  opacity: 1;
-}
-
 .feed-card__save:hover {
-  background: var(--color-surface-container-high);
+  background: var(--ws-chip);
+  color: var(--ws-ink);
 }
 
 .feed-card__save--on {
-  color: var(--color-primary);
+  color: var(--ws-accent);
 }
 
-@media (max-width: 640px) {
+@media (max-width: 720px) {
   .feed-card {
-    grid-template-columns: 36px 1fr;
-    gap: 10px;
-    padding: 14px;
+    padding: 15px 16px;
   }
 
-  .feed-card__save {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    opacity: 1;
+  .feed-card__title {
+    font-size: 16.5px;
   }
-
-  .answer-status--rail {
-    width: 36px;
-  }
-}
-
-.feed-card__reactions {
-  margin-top: 4px;
 }

@@ -1,9 +1,12 @@
 .conversation-list {
   flex: 1;
   margin: 0;
-  padding: 8px;
+  padding: 0 10px 10px;
   overflow-y: auto;
   list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }
 
 .conversation-list__empty {
@@ -11,8 +14,8 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 28px 16px;
-  color: var(--color-on-surface-variant);
+  padding: 32px 18px;
+  color: var(--ws-ink-muted);
   font: var(--font-label-md);
   text-align: center;
 }
@@ -20,11 +23,11 @@
 .conversation-list__row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   width: 100%;
-  padding: 9px 10px;
+  padding: 11px 12px;
   border: none;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
   background: transparent;
   text-align: left;
   cursor: pointer;
@@ -32,11 +35,11 @@
 }
 
 .conversation-list__row:hover {
-  background: var(--color-surface-container-low);
+  background: var(--ws-chip);
 }
 
 .conversation-list__row--active {
-  background: var(--color-primary-fixed);
+  background: var(--ws-accent-soft);
 }
 
 .conversation-list__body {
@@ -56,35 +59,42 @@
 
 .conversation-list__name {
   overflow: hidden;
-  color: var(--color-on-surface);
+  color: var(--ws-ink);
   font: var(--font-label-md);
-  font-weight: 600;
+  font-weight: 700;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
 .conversation-list__time {
   flex-shrink: 0;
-  color: var(--color-on-surface-variant);
+  color: var(--ws-ink-muted);
   font: var(--font-label-sm);
 }
 
 .conversation-list__preview {
   overflow: hidden;
-  color: var(--color-on-surface-variant);
+  color: var(--ws-ink-muted);
   font: var(--font-label-sm);
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
+/* Unread messages are the one thing here worth interrupting for, so this is
+   the only red in the panel. */
 .conversation-list__unread {
   flex-shrink: 0;
-  min-width: 20px;
-  padding: 2px 6px;
+  min-width: 21px;
+  padding: 2px 7px;
   border-radius: var(--radius-full);
-  background: var(--color-primary);
-  color: var(--color-surface);
+  background: var(--ws-alert);
+  color: #ffffff;
   font: var(--font-label-sm);
   font-weight: 700;
   text-align: center;
+}
+
+.conversation-list__row--active .conversation-list__preview {
+  color: var(--ws-ink-soft);
+  font-weight: 600;
 }

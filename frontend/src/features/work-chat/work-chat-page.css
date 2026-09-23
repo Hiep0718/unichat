@@ -1,65 +1,85 @@
+/* Work Chat — two lifted panels on the canvas, matching the feed's surfaces. */
+
 .work-chat {
   display: grid;
-  grid-template-columns: 320px 1fr;
-  height: calc(100vh - 64px);
-  background: var(--color-surface);
+  grid-template-columns: 336px minmax(0, 1fr);
+  gap: 18px;
+  /* The shell has no top bar — only a left rail — so this fills its scroll
+     container rather than subtracting a header that does not exist. */
+  height: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+  background: var(--ws-canvas);
 }
 
 .work-chat__sidebar {
   display: flex;
   flex-direction: column;
   min-height: 0;
-  border-right: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-2xl);
+  background: var(--ws-card);
+  box-shadow: var(--ws-card-shadow);
+  overflow: hidden;
 }
 
 .work-chat__sidebar-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  padding: 16px;
-  border-bottom: 1px solid var(--color-outline-variant);
+  gap: 10px;
+  padding: 20px 20px 14px;
 }
 
 .work-chat__title {
   margin: 0;
-  font: var(--font-headline-md);
+  color: var(--ws-ink);
+  font-family: var(--font-family);
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
 .work-chat__new {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 7px 12px;
+  padding: 9px 13px;
   border: none;
-  border-radius: var(--radius-full);
-  background: var(--color-primary-fixed);
-  color: var(--color-on-primary-fixed-variant);
+  border-radius: var(--radius-lg);
+  background: var(--ws-accent);
+  color: var(--ws-accent-ink);
   font: var(--font-label-sm);
   font-weight: 700;
   cursor: pointer;
+  transition: filter var(--transition-fast);
 }
 
 .work-chat__new:hover {
-  background: var(--color-primary-fixed-dim);
+  filter: brightness(1.15);
 }
 
 /* A dropped socket is not an error: sending still works over REST. */
 .work-chat__offline {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin: 0;
-  padding: 8px 16px;
-  background: var(--color-surface-container-low);
-  color: var(--color-on-surface-variant);
+  gap: 7px;
+  margin: 0 14px 10px;
+  padding: 9px 13px;
+  border-radius: var(--radius-lg);
+  background: var(--ws-warn-bg);
+  color: var(--ws-warn-ink);
   font: var(--font-label-sm);
+  font-weight: 600;
 }
 
 .work-chat__main {
   display: flex;
   flex-direction: column;
   min-height: 0;
+  border-radius: var(--radius-2xl);
+  background: var(--ws-card);
+  box-shadow: var(--ws-card-shadow);
+  overflow: hidden;
 }
 
 .work-chat__error {
@@ -67,10 +87,11 @@
   align-items: center;
   gap: 8px;
   margin: 0;
-  padding: 10px 16px;
-  background: var(--color-surface-container-low);
-  color: var(--color-on-surface-variant);
+  padding: 11px 20px;
+  background: var(--ws-warn-bg);
+  color: var(--ws-warn-ink);
   font: var(--font-label-md);
+  font-weight: 600;
 }
 
 .work-chat__empty {
@@ -80,20 +101,20 @@
   align-items: center;
   justify-content: center;
   gap: 12px;
-  color: var(--color-on-surface-variant);
+  color: var(--ws-ink-muted);
   font: var(--font-body-md);
 }
 
-@media (max-width: 860px) {
+@media (max-width: 900px) {
   .work-chat {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    padding: 12px;
   }
 
   /* One column on a phone: the list is capped so the thread stays usable. */
   .work-chat__sidebar {
-    max-height: 40vh;
-    border-right: none;
-    border-bottom: 1px solid var(--color-outline-variant);
+    max-height: 38vh;
   }
 
   .work-chat__new-label {
