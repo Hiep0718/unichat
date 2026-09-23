@@ -44,6 +44,18 @@ public interface DocumentRepository extends JpaRepository<Document, UUID> {
     @Query("SELECT d.id FROM Document d WHERE d.workspaceId IN :workspaceIds AND d.status = 'PROCESSED'")
     List<UUID> findAllowedDocumentIdsForWorkspaces(@Param("workspaceIds") List<UUID> workspaceIds);
 
+    /** Documents a member contributed, within groups the caller can see. */
+    @Query("SELECT count(d) FROM Document d WHERE d.uploadedBy = :userId "
+            + "AND d.workspaceId IN :workspaceIds AND d.status <> 'DELETING'")
+    long countContributedBy(@Param("userId") UUID userId,
+                            @Param("workspaceIds") List<UUID> workspaceIds);
+
+    /** Of those, the ones that reached the library and can be cited. */
+    @Query("SELECT count(d) FROM Document d WHERE d.uploadedBy = :userId "
+            + "AND d.workspaceId IN :workspaceIds AND d.status = 'PROCESSED'")
+    long countApprovedFrom(@Param("userId") UUID userId,
+                           @Param("workspaceIds") List<UUID> workspaceIds);
+
     /**
      * Finds documents by name across several workspaces, for unified search.
      *

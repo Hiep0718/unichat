@@ -26,7 +26,6 @@
 
 .feed-card__ws {
   display: flex;
-  flex: 1;
   align-items: center;
   gap: 10px;
   min-width: 0;
@@ -58,14 +57,34 @@
 }
 
 .feed-card__byline {
+  flex-shrink: 0;
   color: var(--ws-ink-muted);
   font: var(--font-label-sm);
 }
 
-/* The one place a reader looks to decide whether to open the post. */
+/* The author's name opens their profile; the group avatar beside it opens the
+   group, so the two targets are kept separate rather than nested. */
+.feed-card__author {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--ws-ink-soft);
+  font: var(--font-label-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.feed-card__author:hover {
+  color: var(--ws-accent);
+  text-decoration: underline;
+}
+
+/* The one place a reader looks to decide whether to open the post. Pushed
+   right by auto margin, since neither name beside it should stretch. */
 .feed-card__status {
   display: inline-flex;
   flex-shrink: 0;
+  margin-left: auto;
   align-items: center;
   gap: 5px;
   padding: 5px 11px;

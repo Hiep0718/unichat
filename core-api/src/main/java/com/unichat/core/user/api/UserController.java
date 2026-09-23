@@ -30,11 +30,28 @@ public class UserController {
 
     private final UserService userService;
     private final com.unichat.core.user.service.AvatarService avatarService;
+    private final com.unichat.core.user.service.MemberProfileService profileService;
 
     public UserController(UserService userService,
-                          com.unichat.core.user.service.AvatarService avatarService) {
+                          com.unichat.core.user.service.AvatarService avatarService,
+                          com.unichat.core.user.service.MemberProfileService profileService) {
         this.userService = userService;
         this.avatarService = avatarService;
+        this.profileService = profileService;
+    }
+
+    /**
+     * A member's profile, as the caller is entitled to see it.
+     *
+     * <p>Scoped to groups the two share; someone with none in common is
+     * reported as not found, which is the same answer as not existing.
+     */
+    @GetMapping("/users/{userId}/profile")
+    public ResponseEntity<MemberProfile> profile(
+            @PathVariable UUID userId,
+            @AuthenticationPrincipal Jwt jwt) {
+        UUID viewerId = UUID.fromString(jwt.getSubject());
+        return ResponseEntity.ok(profileService.profileOf(viewerId, userId));
     }
 
     /**

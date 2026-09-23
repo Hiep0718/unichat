@@ -1,0 +1,211 @@
+.profile-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 860px;
+  min-height: 100%;
+  margin: 0 auto;
+  padding: 24px;
+  box-sizing: border-box;
+  background: var(--ws-canvas);
+}
+
+.profile-page__state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 60vh;
+  padding: 40px 24px;
+  color: var(--ws-ink-muted);
+  font: var(--font-body-md);
+  text-align: center;
+}
+
+/* ── Header ─────────────────────────────────────────────── */
+
+.profile-page__header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 24px;
+  border-radius: var(--radius-2xl);
+  background: var(--ws-card);
+  box-shadow: var(--ws-card-shadow);
+}
+
+.profile-page__identity {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.profile-page__name {
+  margin: 0;
+  color: var(--ws-ink);
+  font-family: var(--font-family);
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.022em;
+}
+
+.profile-page__handle {
+  margin: 0;
+  color: var(--ws-ink-muted);
+  font: var(--font-label-md);
+}
+
+.profile-page__handle strong {
+  color: var(--ws-accent);
+}
+
+.profile-page__topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin: 3px 0 0;
+  color: var(--ws-ink-muted);
+  font: var(--font-label-sm);
+}
+
+.profile-page__topic {
+  padding: 3px 9px;
+  border-radius: var(--radius-md);
+  background: var(--ws-chip);
+  color: var(--ws-ink-soft);
+  font-weight: 600;
+}
+
+.profile-page__actions {
+  flex-shrink: 0;
+}
+
+.profile-page__message,
+.profile-page__edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 11px 18px;
+  border: none;
+  border-radius: var(--radius-lg);
+  font: var(--font-label-md);
+  font-weight: 700;
+  cursor: pointer;
+  transition: filter var(--transition-fast), background var(--transition-fast);
+}
+
+.profile-page__message {
+  background: var(--ws-accent);
+  color: var(--ws-accent-ink);
+}
+
+.profile-page__message:hover {
+  filter: brightness(1.15);
+}
+
+.profile-page__edit {
+  background: var(--ws-chip);
+  color: var(--ws-ink-soft);
+}
+
+.profile-page__edit:hover {
+  color: var(--ws-ink);
+}
+
+/* ── Cards ──────────────────────────────────────────────── */
+
+.profile-card {
+  padding: 20px 24px;
+  border-radius: var(--radius-2xl);
+  background: var(--ws-card);
+  box-shadow: var(--ws-card-shadow);
+}
+
+.profile-card__heading {
+  margin: 0 0 16px;
+  color: var(--ws-ink-muted);
+  font: var(--font-label-sm);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.profile-card__empty {
+  margin: 0;
+  color: var(--ws-ink-muted);
+  font: var(--font-body-md);
+}
+
+/* ── Groups ─────────────────────────────────────────────── */
+
+.profile-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.profile-groups__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  border-radius: var(--radius-xl);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.profile-groups__row:hover {
+  background: var(--ws-chip);
+}
+
+.profile-groups__name {
+  flex: 1;
+  overflow: hidden;
+  color: var(--ws-ink);
+  font: var(--font-label-md);
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.profile-groups__role {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border-radius: var(--radius-md);
+  font: var(--font-label-sm);
+  font-weight: 700;
+}
+
+/* Owning a group is the fact worth seeing, so it is the only one coloured. */
+.profile-groups__role--owner {
+  background: var(--ws-accent-soft);
+  color: var(--ws-accent);
+}
+
+.profile-groups__role--editor,
+.profile-groups__role--viewer {
+  background: var(--ws-chip);
+  color: var(--ws-ink-muted);
+}
+
+@media (max-width: 640px) {
+  .profile-page__header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .profile-page__topics {
+    justify-content: center;
+  }
+}

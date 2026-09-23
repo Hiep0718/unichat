@@ -68,6 +68,40 @@ public interface DiscussionRepository extends JpaRepository<Discussion, UUID> {
            nativeQuery = true)
     Page<Discussion> searchByKeyword(@Param("wsIds") List<UUID> wsIds, @Param("q") String q, Pageable p);
 
+    /** Posts a member wrote, within groups the caller can see. */
+    @Query("SELECT count(d) FROM Discussion d WHERE d.authorId = :userId "
+            + "AND d.workspaceId IN :wsIds AND " + NOT_DELETED)
+    long countPostsBy(@Param("userId") UUID userId, @Param("wsIds") List<UUID> wsIds);
+
+    /**
+     * Questions resolved by an answer this member wrote.
+     *
+     * <p>The measure of a helpful member is not how much they posted but how
+     * often the asker marked their reply as the one that settled it.
+     */
+    @Query("SELECT count(d) FROM Discussion d WHERE d.workspaceId IN :wsIds AND " + NOT_DELETED
+            + " AND d.acceptedReplyId IN "
+            + "(SELECT r.id FROM DiscussionReply r WHERE r.authorId = :userId)")
+    long countAcceptedAnswersBy(@Param("userId") UUID userId, @Param("wsIds") List<UUID> wsIds);
+
+    /**
+     * Tags on questions this member has replied to, most frequent first.
+     *
+     * <p>What someone answers about says more about where to send a question
+     * than what they ask about. Native because the tags are a jsonb array.
+     *
+     * @return rows of [tag, count]
+     */
+    @Query(value = "SELECT tag, count(*) AS uses "
+            + "FROM discussions d, jsonb_array_elements_text(d.tags) AS tag "
+            + "WHERE d.workspace_id IN :wsIds AND d.status <> 'DELETED' "
+            + "AND EXISTS (SELECT 1 FROM discussion_replies r "
+            + "            WHERE r.discussion_id = d.id AND r.author_id = :userId) "
+            + "GROUP BY tag ORDER BY uses DESC LIMIT 5",
+           nativeQuery = true)
+    List<Object[]> findTopTagsAnsweredBy(@Param("userId") UUID userId,
+                                         @Param("wsIds") List<UUID> wsIds);
+
     /** Filter by JSONB tag containment. */
     @Query(value = "SELECT * FROM discussions WHERE workspace_id IN :wsIds "
             + "AND status <> 'DELETED' AND tags @> cast(:tag as jsonb) "

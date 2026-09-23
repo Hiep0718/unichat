@@ -506,3 +506,20 @@
 
 - Decision: Deleting the picture an upload replaced is best-effort and never fails the upload.
   Rationale: An orphaned blob costs storage; a failed upload costs the member the thing they just did.
+
+## 2026-09-23 - Member Profiles
+
+- Decision: A profile shows only the groups the viewer and the subject share, and counts contributions inside those groups alone.
+  Rationale: Listing everything someone belongs to would tell a viewer where that person studies and works beyond anything the viewer is part of. This reuses the rule Work Chat already applies to decide who may be messaged, so there is one answer to "what may this person see of that one". Viewing your own profile scopes to all your groups, which is the same rule.
+
+- Decision: A member sharing no group is reported as not found, not as an empty profile.
+  Rationale: Found-but-empty still confirms the account exists to anyone probing user ids.
+
+- Decision: Statistics are shown as pairs — documents approved of contributed, answers accepted of replies written.
+  Rationale: A bare "23 replies" flatters someone who posted 23 times and resolved nothing. The ratio is what says whether the contribution was usable, and it is the number that makes the community's effect on the knowledge base legible for the thesis.
+
+- Decision: "Top tags" are taken from questions the member has replied to, not the ones they asked.
+  Rationale: What somebody answers about says where to send a question; what they ask about says the opposite. This is the piece that connects a profile to knowledge-gap escalation.
+
+- Decision: The profile carries the mention handle explicitly.
+  Rationale: Now that the display name is free text, the name on screen is no longer what you type to mention someone, and the profile is where a viewer would look to find out.

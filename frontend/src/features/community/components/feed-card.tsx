@@ -65,13 +65,20 @@ export function FeedCard({ post, onOpen, onNavigate, onTagClick, onBookmark }: F
           <EntityAvatar name={post.workspaceName} size={34} />
           <span className="feed-card__ws-text">
             <span className="feed-card__ws-name">{post.workspaceName}</span>
-            <span className="feed-card__byline">
-              {post.authorName}
-              <span aria-hidden="true"> · </span>
-              <time dateTime={post.createdAt}>{formatRelativeTime(post.createdAt)}</time>
-            </span>
           </span>
         </button>
+
+        <span className="feed-card__byline">
+          <button
+            type="button"
+            className="feed-card__author"
+            onClick={() => onNavigate(`/users/${post.authorId}`)}
+          >
+            {post.authorName}
+          </button>
+          <span aria-hidden="true"> · </span>
+          <time dateTime={post.createdAt}>{formatRelativeTime(post.createdAt)}</time>
+        </span>
 
         {isQuestion && (
           <span className={`feed-card__status feed-card__status--${status.toLowerCase()}`}>

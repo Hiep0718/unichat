@@ -3,6 +3,7 @@
  * Route: /work-chat
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import { Icon } from '../../components/icon';
 import { ContactPicker } from './components/contact-picker';
@@ -20,8 +21,12 @@ import type { Conversation, DirectMessage } from './work-chat-api';
 import './work-chat-page.css';
 
 export function WorkChatPage() {
+  // A profile's "Nhắn tin" button opens the conversation it just created, so
+  // the page starts on that one rather than on nothing.
+  const [searchParams] = useSearchParams();
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [activeId, setActiveId] = useState<string | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(
+    searchParams.get('conversation'));
   const [messages, setMessages] = useState<DirectMessage[]>([]);
   const [showPicker, setShowPicker] = useState(false);
   const [error, setError] = useState<string | null>(null);

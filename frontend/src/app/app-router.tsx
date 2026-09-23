@@ -17,6 +17,7 @@ const ForgotPasswordPage = lazy(() => import('../features/auth/forgot-password-p
 
 const WorkspaceListPage = lazy(() => import('../features/workspaces/workspace-list-page'));
 const WorkChatPage = lazy(() => import('../features/work-chat/work-chat-page'));
+const ProfilePage = lazy(() => import('../features/profile/profile-page'));
 const GroupPage = lazy(() => import('../features/workspaces/group-page'));
 const GroupMembersTab = lazy(() =>
   import('../features/workspaces/components/group-members-tab'),
@@ -72,6 +73,7 @@ export function AppRouter() {
             <Route path="/feed/posts/:postId" element={<PostDetailPage />} />
             <Route path="/workspaces" element={<WorkspaceListPage />} />
             <Route path="/work-chat" element={<WorkChatPage />} />
+            <Route path="/users/:userId" element={<ProfilePage />} />
             <Route path="/account" element={<AccountPage />} />
           </Route>
 
