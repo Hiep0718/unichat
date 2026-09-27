@@ -8,7 +8,7 @@ import java.util.UUID;
  * Who has opened a post.
  *
  * <p>Everyone in the group sees the counts. Only owners and editors see the
- * names: a lecturer needs to know who has not read an announcement, but a
+ * names: whoever posted an announcement needs to know who has not read it, but a
  * member should not be able to audit their classmates' reading habits.
  *
  * @param readCount    members who opened the post

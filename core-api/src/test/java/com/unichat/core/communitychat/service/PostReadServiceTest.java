@@ -20,9 +20,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.unichat.core.common.error.AuthorizationError;
+import com.unichat.core.common.error.ValidationError;
 import com.unichat.core.communitychat.domain.Discussion;
 import com.unichat.core.communitychat.domain.DiscussionRepository;
 import com.unichat.core.communitychat.domain.PostRead;
+import com.unichat.core.communitychat.api.PostReadSummary;
 import com.unichat.core.communitychat.domain.PostReadRepository;
 import com.unichat.core.user.domain.SystemRole;
 import com.unichat.core.user.domain.User;
@@ -151,5 +153,63 @@ class PostReadServiceTest {
         // Act and Assert
         assertThrows(AuthorizationError.class,
                 () -> service.markRead(workspaceId, discussionId, outsider));
+    }
+
+    @Test
+    void shouldRefuseToTrackReadsOnAQuestion() {
+        // Arrange: on a question the author wants answers, and a list of who
+        // merely looked would only show who read them without replying.
+        when(discussionRepository.findById(discussionId)).thenReturn(Optional.of(
+                new Discussion(discussionId, workspaceId, teacherId, "Vì sao index chậm?",
+                        "body", "QUESTION", false, "OPEN", Instant.now())));
+
+        givenMember(studentId, WorkspaceRole.VIEWER);
+
+        // Act and Assert
+        assertThrows(ValidationError.class,
+                () -> service.markRead(workspaceId, discussionId, studentId));
+        verify(readRepository, never()).save(any());
+    }
+
+    @Test
+    void shouldRefuseToSummariseReadersOfADiscussion() {
+        // Arrange
+        when(discussionRepository.findById(discussionId)).thenReturn(Optional.of(
+                new Discussion(discussionId, workspaceId, teacherId, "Bàn về MongoDB",
+                        "body", "DISCUSSION", false, "OPEN", Instant.now())));
+
+        givenMember(teacherId, WorkspaceRole.OWNER);
+
+        // Act and Assert: rejected rather than answered emptily, so a caller
+        // that misunderstood finds out.
+        assertThrows(ValidationError.class,
+                () -> service.summarise(workspaceId, discussionId, teacherId));
+    }
+
+    @Test
+    void shouldWithholdNamesOnceTheGroupIsTooLargeToActOnThem() {
+        // Arrange: an owner, but 41 members — one over the threshold.
+        givenMember(teacherId, WorkspaceRole.OWNER);
+        List<WorkspaceMember> crowd = new java.util.ArrayList<>();
+        crowd.add(new WorkspaceMember(workspaceId, teacherId, WorkspaceRole.OWNER,
+                WorkspaceMemberStatus.ACTIVE, teacherId));
+        for (int i = 0; i < 40; i++) {
+            UUID id = UUID.randomUUID();
+            crowd.add(new WorkspaceMember(workspaceId, id, WorkspaceRole.VIEWER,
+                    WorkspaceMemberStatus.ACTIVE, id));
+        }
+        when(memberRepository.findByWorkspaceIdAndStatus(workspaceId, WorkspaceMemberStatus.ACTIVE))
+                .thenReturn(crowd);
+        when(readRepository.findByIdDiscussionIdOrderByReadAtDesc(discussionId))
+                .thenReturn(List.of(new PostRead(discussionId, studentId, Instant.now())));
+
+        // Act
+        PostReadSummary summary = service.summarise(workspaceId, discussionId, teacherId);
+
+        // Assert: the counts still answer "did it land", the names do not.
+        assertEquals(1, summary.readCount());
+        assertEquals(41, summary.memberCount());
+        assertTrue(summary.readers().isEmpty());
+        assertTrue(summary.notYetRead().isEmpty());
     }
 }

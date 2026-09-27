@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.unichat.core.common.error.AuthorizationError;
 import com.unichat.core.common.error.NotFoundError;
+import com.unichat.core.common.error.ValidationError;
 import com.unichat.core.communitychat.api.PostReadSummary;
 import com.unichat.core.communitychat.domain.Discussion;
 import com.unichat.core.communitychat.domain.DiscussionRepository;
@@ -24,14 +25,26 @@ import com.unichat.core.workspace.domain.WorkspaceMemberStatus;
 import com.unichat.core.workspace.domain.WorkspaceRole;
 
 /**
- * Tracks who has opened a post.
+ * Tracks who has opened an announcement.
  *
- * <p>Exists for announcements: the author needs to know whether the group
- * actually saw it, which replies alone never tell them.
+ * <p>Announcements only. On a question the author wants to know whether anyone
+ * answered, and on a discussion whoever cares joins in — for both, "who looked
+ * at this" is noise, and recording it would only tell members which of their
+ * peers read them without replying.
+ *
+ * <p>Names are also withheld once a group is large: a list of 180 people who
+ * have not read something is not a list anyone acts on.
  */
 @Service
 @Transactional(readOnly = true)
 public class PostReadService {
+
+    /**
+     * Above this many members, the summary carries counts only. The point of
+     * the names is knowing who still needs a nudge, which stops being true
+     * once the list is longer than anyone would work through.
+     */
+    private static final int MAX_NAMED_MEMBERS = 40;
 
     private final PostReadRepository readRepository;
     private final DiscussionRepository discussionRepository;
@@ -58,7 +71,7 @@ public class PostReadService {
     @Transactional
     public void markRead(UUID workspaceId, UUID discussionId, UUID userId) {
         requireMembership(workspaceId, userId);
-        requirePostInWorkspace(workspaceId, discussionId);
+        requireAnnouncement(requirePostInWorkspace(workspaceId, discussionId));
 
         if (readRepository.existsByIdDiscussionIdAndIdUserId(discussionId, userId)) {
             return;
@@ -71,15 +84,16 @@ public class PostReadService {
      */
     public PostReadSummary summarise(UUID workspaceId, UUID discussionId, UUID userId) {
         WorkspaceMember member = requireMembership(workspaceId, userId);
-        requirePostInWorkspace(workspaceId, discussionId);
+        requireAnnouncement(requirePostInWorkspace(workspaceId, discussionId));
 
         List<WorkspaceMember> members = memberRepository
                 .findByWorkspaceIdAndStatus(workspaceId, WorkspaceMemberStatus.ACTIVE);
         List<PostRead> reads = readRepository.findByIdDiscussionIdOrderByReadAtDesc(discussionId);
 
         boolean hasRead = reads.stream().anyMatch(r -> r.getUserId().equals(userId));
-        boolean canSeeNames = WorkspaceRole.OWNER.equals(member.getRole())
-                || WorkspaceRole.EDITOR.equals(member.getRole());
+        boolean canSeeNames = (WorkspaceRole.OWNER.equals(member.getRole())
+                || WorkspaceRole.EDITOR.equals(member.getRole()))
+                && members.size() <= MAX_NAMED_MEMBERS;
 
         if (!canSeeNames) {
             return new PostReadSummary(reads.size(), members.size(), hasRead, List.of(), List.of());
@@ -111,24 +125,25 @@ public class PostReadService {
         return new PostReadSummary(readers.size(), members.size(), hasRead, readers, pending);
     }
 
-    /** Read counts for a page of posts, batched. */
-    public Map<UUID, Long> countsFor(List<UUID> discussionIds) {
-        if (discussionIds.isEmpty()) {
-            return Map.of();
-        }
-        Map<UUID, Long> counts = new HashMap<>();
-        for (Object[] row : readRepository.countByDiscussionIds(discussionIds)) {
-            counts.put((UUID) row[0], ((Number) row[1]).longValue());
-        }
-        return counts;
-    }
-
     /* ---------- Private helpers ---------- */
 
     private WorkspaceMember requireMembership(UUID workspaceId, UUID userId) {
         return memberRepository
                 .findByWorkspaceIdAndUserIdAndStatus(workspaceId, userId, WorkspaceMemberStatus.ACTIVE)
                 .orElseThrow(() -> new AuthorizationError("Bạn không phải thành viên của nhóm này"));
+    }
+
+    /**
+     * Read receipts exist for announcements and nothing else.
+     *
+     * <p>Rejected rather than quietly ignored: a caller asking for the readers
+     * of a question has misunderstood something, and a silent empty answer
+     * would hide that.
+     */
+    private static void requireAnnouncement(Discussion discussion) {
+        if (!"ANNOUNCEMENT".equals(discussion.getLabel())) {
+            throw new ValidationError("Chỉ bài Thông báo có theo dõi đã đọc");
+        }
     }
 
     private Discussion requirePostInWorkspace(UUID workspaceId, UUID discussionId) {

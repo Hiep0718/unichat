@@ -16,9 +16,4 @@ public interface PostReadRepository extends JpaRepository<PostRead, PostReadId> 
     long countByIdDiscussionId(UUID discussionId);
 
     boolean existsByIdDiscussionIdAndIdUserId(UUID discussionId, UUID userId);
-
-    /** Read counts for a page of posts, so listings avoid a query per post. */
-    @Query("SELECT r.id.discussionId, count(r) FROM PostRead r "
-            + "WHERE r.id.discussionId IN :discussionIds GROUP BY r.id.discussionId")
-    List<Object[]> countByDiscussionIds(@Param("discussionIds") List<UUID> discussionIds);
 }
