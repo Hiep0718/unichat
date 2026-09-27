@@ -57,7 +57,14 @@ export function regenerateReport() {
     );
   }
 
-  const html = generateBenchmarkReportHtml(strictMetrics, hybridMetrics, allResults);
+  // Save synchronized raw results JSON
+  fs.writeFileSync(
+    path.join(REPORT_DIR, 'benchmark-results.json'),
+    JSON.stringify(allResults, null, 2),
+    'utf8'
+  );
+
+  const html = generateBenchmarkReportHtml(strictMetrics, hybridMetrics, allResults, dataset);
   fs.writeFileSync(path.join(REPORT_DIR, 'benchmark-report.html'), html, 'utf8');
 
   console.log('Successfully regenerated benchmark report:');
