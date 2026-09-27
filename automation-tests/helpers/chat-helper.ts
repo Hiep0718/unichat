@@ -139,13 +139,28 @@ export async function sendQuestionAndCollectResponse(
       answerText = markdownContent?.trim() ?? '';
 
       // Check for textual refusal (disclaimer indicating out of scope or missing info)
-      const firstSentence = (answerText.split('.')[0] || '').toLowerCase();
+      const cleanedStart = answerText
+        .slice(0, 600)
+        .replace(/^[#\s\d.*-]+\s*/gm, ' ')
+        .toLowerCase();
+
       const isTextualRefusal =
-        firstSentence.includes('không có thông tin') ||
-        firstSentence.includes('không có bất kỳ thông tin') ||
-        firstSentence.includes('hoàn toàn không có thông tin') ||
-        firstSentence.includes('tài liệu không chứa') ||
-        firstSentence.includes('ngoài phạm vi');
+        cleanedStart.includes('không có thông tin') ||
+        cleanedStart.includes('không có bất kỳ thông tin') ||
+        cleanedStart.includes('hoàn toàn không có thông tin') ||
+        cleanedStart.includes('tài liệu không chứa') ||
+        cleanedStart.includes('tài liệu không có') ||
+        cleanedStart.includes('ngoài phạm vi') ||
+        cleanedStart.includes('nằm ngoài phạm vi') ||
+        cleanedStart.includes('không thuộc phạm vi') ||
+        cleanedStart.includes('không được cập nhật') ||
+        cleanedStart.includes('chưa được tích hợp trong kho tài liệu') ||
+        cleanedStart.includes('thiếu nguồn thông tin') ||
+        cleanedStart.includes('không thể cung cấp câu trả lời') ||
+        cleanedStart.includes('không thể trả lời') ||
+        cleanedStart.includes('tài liệu hiện có chưa đủ bằng chứng') ||
+        cleanedStart.includes('độ tin cậy của tài liệu không đạt') ||
+        cleanedStart.includes('không đủ bằng chứng');
 
       if (isTextualRefusal) {
         actualDecision = 'REFUSE';

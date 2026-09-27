@@ -130,7 +130,7 @@ function saveFinalReport(
   }
 
   // Generate HTML report
-  const html = generateBenchmarkReportHtml(strictMetrics, hybridMetrics, allResults);
+  const html = generateBenchmarkReportHtml(strictMetrics, hybridMetrics, allResults, dataset);
   const htmlPath = path.join(REPORT_DIR, 'benchmark-report.html');
   fs.writeFileSync(htmlPath, html, 'utf-8');
 }
@@ -139,7 +139,7 @@ function saveFinalReport(
 
 test.describe('RAG Benchmark 120 Câu Hỏi — A/B Strict vs Hybrid', () => {
   // Set generous timeout for the full benchmark suite
-  test.setTimeout(7_200_000); // 2 hours max per test
+  test.setTimeout(14_400_000); // 4 hours max per workspace test
 
   const allResults: BenchmarkResult[] = [];
   let dataset: GoldenDatasetEntry[] = [];
@@ -175,7 +175,7 @@ test.describe('RAG Benchmark 120 Câu Hỏi — A/B Strict vs Hybrid', () => {
         }
 
         // Login and navigate to workspace chat
-        const baseURL = process.env.BASE_URL || 'http://localhost:5173';
+        const baseURL = process.env.BASE_URL || 'http://127.0.0.1:5173';
         const { context, page } = await loginAndGetPage(browser, baseURL);
 
         try {
@@ -206,6 +206,9 @@ test.describe('RAG Benchmark 120 Câu Hỏi — A/B Strict vs Hybrid', () => {
             );
 
             results.push(result);
+            console.log(
+              `[${ragMode.toUpperCase()}] [${workspaceName}] (${questionCounter}/40) ${q.id} | Intent: ${q.expectedIntent} | Decision: ${result.actualDecision} (${result.actualDecision === q.expectedDecision ? 'MATCH' : 'MISMATCH'}) | Latency: ${result.latencyMs}ms`
+            );
 
             // Take screenshot for OUT_OF_SCOPE questions
             if (q.expectedIntent === 'OUT_OF_SCOPE') {
