@@ -201,3 +201,10 @@
   margin: 0;
   font: var(--font-body-md);
 }
+
+/* Sits on the file row, opposite the name: the approver's first move is to
+   look inside, so it belongs beside the file rather than with the verdicts. */
+.pending-approval__view {
+  flex-shrink: 0;
+  margin-left: auto;
+}

@@ -7,6 +7,7 @@
  */
 import { useState } from 'react';
 
+import { DocumentPreview } from './document-preview';
 import { Icon } from '../../../components/icon';
 import { formatRelativeTime } from '../../../lib/format-time';
 import {
@@ -108,6 +109,7 @@ export function PendingApprovalTab({
         {items.map((doc) => (
           <PendingItem
             key={doc.id}
+            workspaceId={workspaceId}
             document={doc}
             isRejecting={rejectingId === doc.id}
             isBusy={approveMutation.isPending || rejectMutation.isPending}
@@ -131,6 +133,7 @@ export function PendingApprovalTab({
 }
 
 interface PendingItemProps {
+  readonly workspaceId: string;
   readonly document: DocumentResponse;
   readonly isRejecting: boolean;
   readonly isBusy: boolean;
@@ -141,6 +144,7 @@ interface PendingItemProps {
 }
 
 function PendingItem({
+  workspaceId,
   document,
   isRejecting,
   isBusy,
@@ -150,6 +154,7 @@ function PendingItem({
   onReject,
 }: PendingItemProps) {
   const [reason, setReason] = useState('');
+  const [showPreview, setShowPreview] = useState(false);
 
   return (
     <li className="pending-approval__item">
@@ -163,7 +168,25 @@ function PendingItem({
             {formatRelativeTime(document.createdAt)}
           </span>
         </div>
+        <button
+          type="button"
+          className="pending-approval__btn pending-approval__view"
+          onClick={() => setShowPreview((open) => !open)}
+          aria-expanded={showPreview}
+        >
+          <Icon name={showPreview ? 'visibility_off' : 'visibility'} size={16} />
+          {showPreview ? 'Ẩn tài liệu' : 'Xem tài liệu'}
+        </button>
       </div>
+
+      {showPreview && (
+        <DocumentPreview
+          workspaceId={workspaceId}
+          documentId={document.id}
+          originalName={document.originalName}
+          mediaType={document.mediaType}
+        />
+      )}
 
       {(document.contributionSummary || document.contributionReason) && (
         <dl className="pending-approval__context">

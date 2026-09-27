@@ -1,0 +1,60 @@
+.document-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+/* Tall enough to read a page without scrolling the panel itself, capped so the
+   approve and reject buttons stay reachable below it. */
+.document-preview__frame {
+  width: 100%;
+  height: min(60vh, 560px);
+  border: none;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-container-low);
+}
+
+.document-preview__text {
+  max-height: min(50vh, 440px);
+  margin: 0;
+  padding: 14px 16px;
+  overflow: auto;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-container-low);
+  color: var(--color-on-surface);
+  font: var(--font-code-sm);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.document-preview__state {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 12px 0 0;
+  color: var(--color-on-surface-variant);
+  font: var(--font-label-md);
+}
+
+.document-preview__state--error {
+  color: var(--color-error);
+}
+
+.document-preview__download {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-container-high);
+  color: var(--color-on-surface);
+  font: var(--font-label-md);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.document-preview__download:hover {
+  background: var(--color-surface-container-highest);
+}
