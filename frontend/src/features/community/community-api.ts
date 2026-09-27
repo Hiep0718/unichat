@@ -81,7 +81,8 @@ export interface DiscussionResponse {
   reactions: ReactionSummary;
   authorName: string;
   authorAvatar: string | null;
-  tags: string[];
+  /** Colour preset behind the post, null for an ordinary one. */
+  backgroundKey: string | null;
   acceptedReplyId: string | null;
   hasAcceptedAnswer: boolean;
   isBookmarked: boolean;
@@ -161,7 +162,7 @@ export async function getDiscussion(
 
 export async function createDiscussion(
   workspaceId: string,
-  data: { title: string; body: string; label?: string; tags?: string[] },
+  data: { title: string; body: string; label?: string; backgroundKey?: string | null },
 ): Promise<DiscussionResponse> {
   return fetchJson<DiscussionResponse>(`/workspaces/${workspaceId}/discussions`, {
     method: 'POST',
@@ -172,7 +173,7 @@ export async function createDiscussion(
 export async function updateDiscussion(
   workspaceId: string,
   discussionId: string,
-  data: { title: string; body: string; tags?: string[] },
+  data: { title: string; body: string; backgroundKey?: string | null },
 ): Promise<DiscussionResponse> {
   return fetchJson<DiscussionResponse>(`/workspaces/${workspaceId}/discussions/${discussionId}`, {
     method: 'PUT',

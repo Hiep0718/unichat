@@ -175,30 +175,6 @@
   color: var(--ws-accent-ink);
 }
 
-/* ── Active tag filter ──────────────────────────────────── */
-
-.feed-page__filter-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 8px 6px 13px;
-  border-radius: var(--radius-full);
-  background: var(--ws-accent-soft);
-  color: var(--ws-accent);
-  font: var(--font-label-md);
-  font-weight: 700;
-}
-
-.feed-page__filter-chip button {
-  display: inline-flex;
-  padding: 2px;
-  border: none;
-  border-radius: 50%;
-  background: rgb(30 58 138 / 14%);
-  color: inherit;
-  cursor: pointer;
-}
-
 /* ── List, states, pager ────────────────────────────────── */
 
 .feed-page__list {

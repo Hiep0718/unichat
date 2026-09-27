@@ -14,7 +14,6 @@ import java.util.UUID;
  * @param handle        what to type to mention them, derived from their email
  * @param sharedGroups  groups both people belong to, with the subject's role
  * @param contributions counted within those same groups
- * @param topTags       tags on questions they have answered, most frequent first
  * @param canMessage    whether Work Chat will let the viewer open a conversation
  * @param self          whether the viewer is looking at their own profile
  */
@@ -27,7 +26,6 @@ public record MemberProfile(
         Instant joinedAt,
         List<SharedGroup> sharedGroups,
         Contributions contributions,
-        List<String> topTags,
         boolean canMessage,
         boolean self
 ) {

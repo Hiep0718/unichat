@@ -21,7 +21,8 @@ public record FeedPostResponse(
     int replyCount,
     /** Counts per reaction type plus the caller's own choice. */
     ReactionSummary reactions,
-    List<String> tags,
+    /** Colour preset behind the post, null for an ordinary one. */
+    String backgroundKey,
     boolean hasAcceptedAnswer,
     boolean isBookmarked,
     Instant createdAt,

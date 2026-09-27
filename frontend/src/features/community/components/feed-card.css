@@ -149,31 +149,6 @@
   line-clamp: 2;
 }
 
-/* ── Tags ───────────────────────────────────────────────── */
-
-.feed-card__tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
-}
-
-.feed-card__tag {
-  padding: 4px 10px;
-  border: none;
-  border-radius: var(--radius-md);
-  background: var(--ws-chip);
-  color: var(--ws-ink-soft);
-  font: var(--font-label-sm);
-  font-weight: 600;
-  cursor: pointer;
-  transition: background var(--transition-fast);
-}
-
-.feed-card__tag:hover {
-  background: var(--ws-accent-soft);
-  color: var(--ws-accent);
-}
-
 /* ── Footer ─────────────────────────────────────────────── */
 
 .feed-card__foot {
@@ -234,4 +209,22 @@
   .feed-card__title {
     font-size: 16.5px;
   }
+}
+
+/* ── Pinned (group list only) ───────────────────────────── */
+
+.feed-card--pinned {
+  border-left: 3px solid var(--color-primary, #1e3a8a);
+}
+
+.feed-card__pin {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary-fixed, #dbe3f7);
+  color: var(--color-primary, #1e3a8a);
+  font: var(--font-label-sm);
+  font-weight: 700;
 }

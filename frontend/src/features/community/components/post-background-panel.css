@@ -1,0 +1,44 @@
+.post-bg {
+  display: grid;
+  place-items: center;
+  min-height: 260px;
+  margin: 12px 0 4px;
+  padding: 28px 32px;
+  border-radius: var(--radius-lg);
+  text-align: center;
+}
+
+.post-bg--compact {
+  min-height: 190px;
+  padding: 22px 24px;
+}
+
+.post-bg__text {
+  margin: 0;
+  max-width: 34ch;
+  color: #fff;
+  font-size: 25px;
+  font-weight: 700;
+  line-height: 1.34;
+  letter-spacing: -0.01em;
+  text-shadow: 0 1px 12px rgb(2 6 23 / 30%);
+  /* A pasted URL or a long compound word must wrap, not overflow. */
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.post-bg--compact .post-bg__text {
+  font-size: 20px;
+  line-height: 1.38;
+}
+
+@media (max-width: 640px) {
+  .post-bg {
+    min-height: 200px;
+    padding: 22px 20px;
+  }
+
+  .post-bg__text {
+    font-size: 20px;
+  }
+}

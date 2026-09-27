@@ -6,21 +6,32 @@
  * it still need help?" before the title. The state used to sit in a 44px rail
  * down the left, which cost a column of width to show one number.
  */
+import { useState } from 'react';
+
 import { Icon } from '../../../components/icon';
 import { formatRelativeTime } from '../../../lib/format-time';
 import type { FeedPostResponse } from '../feed-api';
 import { resolveAnswerStatus } from './answer-status';
 import { ReactionBar } from './reaction-bar';
 import { PostAttachments } from './post-attachments';
-import { EntityAvatar } from '../../../components/entity-avatar';
+import { PostBackgroundPanel } from './post-background-panel';
+import { InlineComments } from './inline-comments';
+import { GroupMark } from '../../workspaces/components/group-mark';
 import './feed-card.css';
 
 interface FeedCardProps {
   readonly post: FeedPostResponse;
   readonly onOpen: () => void;
   readonly onNavigate: (path: string) => void;
-  readonly onTagClick: (tag: string) => void;
-  readonly onBookmark: (id: string) => void;
+  /** Omitted inside a group, where there is no bookmark list to add to. */
+  readonly onBookmark?: ((id: string) => void) | undefined;
+  /**
+   * Hides the group's name and mark. Set on a group's own page, where every
+   * card belongs to the group the reader is already looking at.
+   */
+  readonly hideGroup?: boolean;
+  /** Shows the pinned marker; only a group's own list sorts by it. */
+  readonly pinned?: boolean;
 }
 
 const LABEL_TEXT: Record<string, string> = {
@@ -47,7 +58,18 @@ function toPlainPreview(body: string): string {
     .trim();
 }
 
-export function FeedCard({ post, onOpen, onNavigate, onTagClick, onBookmark }: FeedCardProps) {
+export function FeedCard({
+  post,
+  onOpen,
+  onNavigate,
+  onBookmark,
+  hideGroup = false,
+  pinned = false,
+}: FeedCardProps) {
+  const [showComments, setShowComments] = useState(false);
+  // Held locally so posting a comment updates the count without refetching the
+  // whole feed, which would also lose the reader's scroll position.
+  const [replyCount, setReplyCount] = useState(post.replyCount);
   const preview = toPlainPreview(post.body);
   // Resolution state only means something for questions; an announcement is
   // never "unanswered".
@@ -55,18 +77,26 @@ export function FeedCard({ post, onOpen, onNavigate, onTagClick, onBookmark }: F
   const status = resolveAnswerStatus(post.replyCount, post.hasAcceptedAnswer);
 
   return (
-    <article className="feed-card">
+    <article className={`feed-card ${pinned ? 'feed-card--pinned' : ''}`}>
       <header className="feed-card__head">
-        <button
-          type="button"
-          className="feed-card__ws"
-          onClick={() => onNavigate(`/workspaces/${post.workspaceId}/discussions`)}
-        >
-          <EntityAvatar name={post.workspaceName} size={34} />
-          <span className="feed-card__ws-text">
-            <span className="feed-card__ws-name">{post.workspaceName}</span>
+        {!hideGroup && (
+          <button
+            type="button"
+            className="feed-card__ws"
+            onClick={() => onNavigate(`/workspaces/${post.workspaceId}`)}
+          >
+            <GroupMark workspaceId={post.workspaceId} name={post.workspaceName} size={34} />
+            <span className="feed-card__ws-text">
+              <span className="feed-card__ws-name">{post.workspaceName}</span>
+            </span>
+          </button>
+        )}
+
+        {pinned && (
+          <span className="feed-card__pin" title="Bài viết được ghim">
+            <Icon name="push_pin" size={14} /> Đã ghim
           </span>
-        </button>
+        )}
 
         <span className="feed-card__byline">
           <button
@@ -97,7 +127,13 @@ export function FeedCard({ post, onOpen, onNavigate, onTagClick, onBookmark }: F
         <h3 className="feed-card__title">{post.title}</h3>
       </button>
 
-      {preview && <p className="feed-card__preview">{preview}</p>}
+      {/* On a coloured post the body IS the panel, so the grey preview line
+          below would just repeat it. */}
+      {post.backgroundKey ? (
+        <PostBackgroundPanel backgroundKey={post.backgroundKey} body={post.body} compact />
+      ) : (
+        preview && <p className="feed-card__preview">{preview}</p>
+      )}
 
       {post.attachments?.length > 0 && (
         <PostAttachments
@@ -108,21 +144,6 @@ export function FeedCard({ post, onOpen, onNavigate, onTagClick, onBookmark }: F
         />
       )}
 
-      {post.tags.length > 0 && (
-        <div className="feed-card__tags">
-          {post.tags.map((tag) => (
-            <button
-              key={tag}
-              type="button"
-              className="feed-card__tag"
-              onClick={() => onTagClick(tag)}
-            >
-              {tag}
-            </button>
-          ))}
-        </div>
-      )}
-
       <footer className="feed-card__foot">
         <ReactionBar
           targetType="DISCUSSION"
@@ -130,20 +151,37 @@ export function FeedCard({ post, onOpen, onNavigate, onTagClick, onBookmark }: F
           summary={post.reactions}
           compact
         />
-        <button type="button" className="feed-card__replies" onClick={onOpen}>
-          <Icon name="chat_bubble_outline" size={16} />
-          {post.replyCount} bình luận
-        </button>
         <button
           type="button"
-          className={`feed-card__save ${post.isBookmarked ? 'feed-card__save--on' : ''}`}
-          onClick={() => onBookmark(post.id)}
-          aria-pressed={post.isBookmarked}
-          aria-label={post.isBookmarked ? 'Bỏ lưu bài viết' : 'Lưu bài viết'}
+          className={`feed-card__replies ${showComments ? 'feed-card__replies--on' : ''}`}
+          onClick={() => setShowComments((open) => !open)}
+          aria-expanded={showComments}
         >
-          <Icon name={post.isBookmarked ? 'bookmark' : 'bookmark_border'} size={17} />
+          <Icon name="chat_bubble_outline" size={16} />
+          {replyCount} bình luận
         </button>
+        {onBookmark && (
+          <button
+            type="button"
+            className={`feed-card__save ${post.isBookmarked ? 'feed-card__save--on' : ''}`}
+            onClick={() => onBookmark(post.id)}
+            aria-pressed={post.isBookmarked}
+            aria-label={post.isBookmarked ? 'Bỏ lưu bài viết' : 'Lưu bài viết'}
+          >
+            <Icon name={post.isBookmarked ? 'bookmark' : 'bookmark_border'} size={17} />
+          </button>
+        )}
       </footer>
+
+      {/* Mounted only once opened, so a feed of twenty cards fetches no
+          replies until someone asks for a thread. */}
+      {showComments && (
+        <InlineComments
+          workspaceId={post.workspaceId}
+          discussionId={post.id}
+          onReplyCountChange={setReplyCount}
+        />
+      )}
     </article>
   );
 }

@@ -81,7 +81,9 @@ export function AppRouter() {
           <Route element={<AuthGuard><WorkspaceShell /></AuthGuard>}>
             {/* The group page owns the tabs that belong to a group. */}
             <Route path="/workspaces/:workspaceId" element={<GroupPage />}>
-              <Route index element={<Navigate to="discussions" replace />} />
+              {/* Opening a group lands on Giới thiệu: what the group is for,
+                  and who is in it, before its stream of posts. */}
+              <Route index element={<Navigate to="about" replace />} />
               <Route path="discussions" element={<DiscussionPage />} />
               <Route path="documents" element={<DocumentPage />} />
               <Route path="members" element={<GroupMembersTab />} />

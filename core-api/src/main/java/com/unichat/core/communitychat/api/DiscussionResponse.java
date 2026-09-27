@@ -29,7 +29,8 @@ public record DiscussionResponse(
         int voteScore,
         String authorName,
         String authorAvatar,
-        List<String> tags,
+        /** Colour preset behind the post, null for an ordinary one. */
+        String backgroundKey,
         UUID acceptedReplyId,
         List<PostAttachmentResponse> attachments,
         /** Counts per reaction type plus the caller's own choice. */
@@ -56,7 +57,7 @@ public record DiscussionResponse(
                 d.getViewCount(), d.getReplyCount(), d.getCreatedAt(), d.getUpdatedAt(),
                 d.getEditedAt(), d.getVoteScore(),
                 authorName, authorAvatar,
-                d.getTags(), d.getAcceptedReplyId(), attachments,
+                d.getBackgroundKey(), d.getAcceptedReplyId(), attachments,
                 reactions == null ? ReactionSummary.empty() : reactions
         );
     }

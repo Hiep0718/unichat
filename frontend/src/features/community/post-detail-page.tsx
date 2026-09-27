@@ -22,8 +22,10 @@ import type { DiscussionResponse, ReplyResponse } from './community-api';
 import { AnswerStatusBadge } from './components/answer-status';
 import { MentionText } from './components/mention-text';
 import { EntityAvatar } from '../../components/entity-avatar';
+import { GroupMark } from '../workspaces/components/group-mark';
 import { ReactionBar } from './components/reaction-bar';
 import { PostAttachments } from './components/post-attachments';
+import { PostBackgroundPanel } from './components/post-background-panel';
 import { PostEditForm } from './components/post-edit-form';
 import { PostOwnerMenu } from './components/post-owner-menu';
 import { PostReaders } from './components/post-readers';
@@ -77,10 +79,12 @@ export function PostDetailPage() {
       .finally(() => setLoading(false));
   }, [postId, workspaceId]);
 
-  // Opening the post counts as reading it. Recorded after the post loads so a
-  // failed load never registers a false read.
+  // Opening an announcement counts as reading it. Recorded after the post loads
+  // so a failed load never registers a false read, and only for announcements —
+  // on a question the author wants answers, not a list of who looked.
   useEffect(() => {
     if (!postId || !workspaceId || !discussion) return;
+    if (discussion.label !== 'ANNOUNCEMENT') return;
     markPostRead(workspaceId, postId)
       .then(() => setReadToken((token) => token + 1))
       .catch(() => {
@@ -121,7 +125,9 @@ export function PostDetailPage() {
     try {
       const updated = await updateDiscussion(workspaceId, discussion.id, {
         ...values,
-        tags: discussion.tags ?? [],
+        // Carried through explicitly: an absent key means "no background" to
+        // the server, so omitting it would strip the colour on every edit.
+        backgroundKey: discussion.backgroundKey,
       });
       setDiscussion(updated);
       setIsEditing(false);
@@ -232,9 +238,13 @@ export function PostDetailPage() {
               <button
                 type="button"
                 className="post-detail__ws-name"
-                onClick={() => navigate(`/workspaces/${workspaceId}/discussions`)}
+                onClick={() => navigate(`/workspaces/${workspaceId}`)}
               >
-                <EntityAvatar name={discussion.workspaceName ?? 'Workspace'} size={20} />
+                <GroupMark
+                  workspaceId={workspaceId ?? ''}
+                  name={discussion.workspaceName ?? 'Workspace'}
+                  size={20}
+                />
                 {discussion.workspaceName ?? 'Workspace'}
               </button>
               <span className="post-detail__dot">•</span>
@@ -286,20 +296,18 @@ export function PostDetailPage() {
               </h1>
             )}
 
-            {/* Tag chips */}
-            {discussion.tags?.length > 0 && (
-              <div className="post-detail__tags">
-                {discussion.tags.map(tag => (
-                  <span key={tag} className="post-detail__tag">{tag}</span>
-                ))}
-              </div>
-            )}
-
             {!isEditing && (
               <>
-                <div className="post-detail__body">
-                  <MentionText>{discussion.body}</MentionText>
-                </div>
+                {discussion.backgroundKey ? (
+                  <PostBackgroundPanel
+                    backgroundKey={discussion.backgroundKey}
+                    body={discussion.body}
+                  />
+                ) : (
+                  <div className="post-detail__body">
+                    <MentionText>{discussion.body}</MentionText>
+                  </div>
+                )}
 
                 {workspaceId && (
                   <PostAttachments
@@ -348,7 +356,7 @@ export function PostDetailPage() {
               )}
             </div>
 
-            {workspaceId && (
+            {workspaceId && discussion.label === 'ANNOUNCEMENT' && (
               <PostReaders
                 workspaceId={workspaceId}
                 discussionId={discussion.id}
@@ -455,7 +463,7 @@ export function PostDetailPage() {
             </div>
             <button
               className="post-detail__sidebar-btn"
-              onClick={() => navigate(`/workspaces/${workspaceId}/discussions`)}
+              onClick={() => navigate(`/workspaces/${workspaceId}`)}
             >
               Xem Workspace
             </button>

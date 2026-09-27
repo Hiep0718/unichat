@@ -1,5 +1,5 @@
 /**
- * REST API client for the community feed, trending tags, stats, and bookmarks.
+ * REST API client for the community feed, stats, and bookmarks.
  */
 import { fetchJson } from '../../lib/api-client';
 import type { PostAttachment, ReactionSummary } from './community-api';
@@ -19,7 +19,8 @@ export interface FeedPostResponse {
   voteScore: number;
   replyCount: number;
   reactions: ReactionSummary;
-  tags: string[];
+  /** Colour preset behind the post, null for an ordinary one. */
+  backgroundKey: string | null;
   hasAcceptedAnswer: boolean;
   isBookmarked: boolean;
   createdAt: string;
@@ -31,11 +32,6 @@ export interface FeedPage {
   totalElements: number;
   totalPages: number;
   number: number;
-}
-
-export interface TrendingTag {
-  tag: string;
-  count: number;
 }
 
 export interface FeedStats {
@@ -59,7 +55,6 @@ export interface FeedParams {
   sort?: FeedSort;
   scope?: FeedScope;
   q?: string | undefined;
-  tag?: string | undefined;
   range?: TopRange | undefined;
   page?: number;
   size?: number;
@@ -72,15 +67,8 @@ export async function fetchFeed(params: FeedParams = {}): Promise<FeedPage> {
   sp.set('page', String(params.page ?? 0));
   sp.set('size', String(params.size ?? 20));
   if (params.q) sp.set('q', params.q);
-  if (params.tag) sp.set('tag', params.tag);
   if (params.range) sp.set('range', params.range);
   return fetchJson<FeedPage>(`/feed?${sp.toString()}`);
-}
-
-/* ---------- Trending Tags ---------- */
-
-export async function fetchTrendingTags(limit = 10): Promise<TrendingTag[]> {
-  return fetchJson<TrendingTag[]>(`/feed/trending-tags?limit=${limit}`);
 }
 
 /* ---------- Stats ---------- */

@@ -1,7 +1,5 @@
 package com.unichat.core.communitychat.api;
 
-import java.util.List;
-
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -19,6 +17,7 @@ public record UpdateDiscussionRequest(
         @NotBlank(message = "Nội dung là bắt buộc")
         String body,
 
-        @Size(max = 5, message = "Tối đa 5 thẻ")
-        List<String> tags
+        /** Colour preset behind a short post; null clears it. */
+        @Size(max = 24)
+        String backgroundKey
 ) {}

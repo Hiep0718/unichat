@@ -33,6 +33,19 @@ public interface DocumentRepository extends JpaRepository<Document, UUID> {
     long countByWorkspaceId(@Param("workspaceId") UUID workspaceId);
 
     /**
+     * Counts documents per workspace for a page of workspaces.
+     *
+     * <p>One query for the whole page rather than one per card, which is what
+     * a list of twenty groups would otherwise cost.
+     *
+     * @return rows of {workspaceId, count}; a workspace with none is absent
+     */
+    @Query("SELECT d.workspaceId, COUNT(d) FROM Document d "
+            + "WHERE d.workspaceId IN :workspaceIds AND d.status <> 'DELETING' "
+            + "GROUP BY d.workspaceId")
+    List<Object[]> countGroupedByWorkspaceIds(@Param("workspaceIds") List<UUID> workspaceIds);
+
+    /**
      * Sums total byte size of documents in a workspace.
      */
     @Query("SELECT COALESCE(SUM(d.byteSize), 0) FROM Document d WHERE d.workspaceId = :workspaceId AND d.status <> 'DELETING'")

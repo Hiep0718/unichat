@@ -1,84 +1,233 @@
-/* Workspace Card */
+/* Workspace Card — picture fills the card, content sits over it. */
 
 .workspace-card {
-  display: flex;
-  flex-direction: column;
-  background: var(--color-surface-container-lowest);
-  border: 1px solid var(--color-outline-variant);
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 11;
   border-radius: var(--radius-xl);
-  padding: 20px;
+  overflow: hidden;
   text-decoration: none;
-  color: inherit;
+  color: #fff;
+  isolation: isolate;
+  box-shadow: var(--shadow-sm, 0 1px 3px rgb(0 0 0 / 12%));
   transition:
     box-shadow var(--transition-normal),
-    transform var(--transition-normal),
-    border-color var(--transition-normal);
-  border-left: 4px solid var(--color-outline-variant);
+    transform var(--transition-normal);
   animation: cardEntrance 0.4s ease both;
-  animation-delay: calc(var(--card-index, 0) * 80ms);
+  animation-delay: calc(var(--card-index, 0) * 70ms);
 }
 
 .workspace-card:hover {
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 14px 30px rgb(15 23 42 / 26%);
   transform: translateY(-4px);
+}
+
+/* A slow zoom on the picture itself, which the card's overflow crops. */
+.workspace-card .workspace-cover__image {
+  transition: transform 0.5s ease;
+}
+
+.workspace-card:hover .workspace-cover__image {
+  transform: scale(1.06);
+}
+
+.workspace-card__scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgb(2 6 23 / 46%) 0%,
+    rgb(2 6 23 / 24%) 42%,
+    rgb(2 6 23 / 3%) 72%,
+    rgb(2 6 23 / 0%) 100%
+  );
+}
+
+.workspace-card__badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  background: rgb(255 255 255 / 20%);
+  border: 1px solid rgb(255 255 255 / 26%);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  font: var(--font-label-sm);
+  font-weight: 600;
+}
+
+/* Content */
+.workspace-card__content {
+  position: absolute;
+  inset: auto 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 18px 15px;
+}
+
+.workspace-card__name {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: #fff;
+  text-shadow: 0 1px 10px rgb(2 6 23 / 55%);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+
+.workspace-card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.workspace-card__meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  font: var(--font-label-sm);
+  font-weight: 500;
+  color: rgb(255 255 255 / 82%);
+}
+
+.workspace-card__dot {
+  opacity: 0.5;
+}
+
+.workspace-card__live {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 600;
+  color: #6ee7b7;
+}
+
+.workspace-card__pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 0 3px rgb(110 231 183 / 22%);
+}
+
+/* The faces sit on a dark picture here, so their ring is light, not surface. */
+.workspace-card .member-faces__slot {
+  box-shadow: 0 0 0 2px rgb(255 255 255 / 72%);
+}
+
+.workspace-card .member-faces__more {
+  color: rgb(255 255 255 / 82%);
+}
+
+/* List view: a compact row — picture panel left, everything else on one line. */
+.workspace-grid--list .workspace-card {
+  aspect-ratio: auto;
+  display: flex;
+  align-items: center;
+  height: 66px;
+  padding-left: 104px;
+  background: var(--color-surface-container-lowest);
+  border: 1px solid var(--color-outline-variant);
+  color: inherit;
+  box-shadow: none;
+}
+
+.workspace-grid--list .workspace-card:hover {
+  box-shadow: var(--shadow-sm);
+  transform: none;
   border-color: var(--color-outline);
 }
 
-/* List view mode overrides */
-.workspace-grid--list .workspace-card {
-  flex-direction: row;
-  align-items: center;
-  padding: 16px 20px;
+.workspace-grid--list .workspace-cover {
+  right: auto;
+  width: 88px;
+  border-radius: var(--radius-xl) 0 0 var(--radius-xl);
 }
 
-.workspace-grid--list .workspace-card__header {
-  margin-bottom: 0;
-  margin-right: var(--stack-lg);
-  min-width: 140px;
+.workspace-grid--list .workspace-cover__mark {
+  font-size: 68px;
+  top: -12px;
+  right: -8px;
 }
 
-.workspace-grid--list .workspace-card__body {
-  margin-bottom: 0;
-  flex: 2;
-  margin-right: var(--stack-lg);
+/* The strip is small; a scrim on it would only muddy the colour. */
+.workspace-grid--list .workspace-card__scrim {
+  display: none;
 }
 
-.workspace-grid--list .workspace-card__footer {
-  border-top: none;
-  padding-top: 0;
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-end;
+.workspace-grid--list .workspace-card__content {
+  position: static;
   flex: 1;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  padding: 0 18px 0 16px;
+  min-width: 0;
 }
 
-.workspace-grid--list .workspace-card__stats {
-  margin-right: var(--stack-lg);
+.workspace-grid--list .workspace-card__name {
+  flex: 1;
+  min-width: 0;
+  font-size: 15.5px;
+  color: var(--color-on-surface);
+  text-shadow: none;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
 }
 
-/* Color-coded left borders by visibility */
-.workspace-card--private {
-  border-left-color: var(--color-primary);
+.workspace-grid--list .workspace-card__foot {
+  margin-top: 0;
+  flex: 0 0 auto;
+  gap: 18px;
 }
 
-.workspace-card--shared {
-  border-left-color: var(--color-secondary);
+.workspace-grid--list .workspace-card__meta {
+  color: var(--color-on-surface-variant);
 }
 
-.workspace-card--public {
-  border-left-color: var(--color-success);
+/* The label is wider than the picture strip, so in a row it stops floating and
+   becomes an ordinary chip in the line instead. */
+.workspace-grid--list .workspace-card__badge {
+  position: static;
+  flex: 0 0 auto;
+  order: 1;
+  margin-left: 16px;
+  padding: 3px 9px;
+  background: var(--color-surface-container-high);
+  border-color: transparent;
+  backdrop-filter: none;
+  color: var(--color-on-surface-variant);
+  font-size: 11px;
 }
 
-.workspace-card--private:hover {
-  border-left-color: var(--color-primary-container);
+.workspace-grid--list .workspace-card__content {
+  order: 2;
 }
 
-.workspace-card--shared:hover {
-  border-left-color: var(--color-secondary-container);
+.workspace-grid--list .workspace-card .member-faces__slot {
+  box-shadow: 0 0 0 2px var(--color-surface-container-lowest);
 }
 
-.workspace-card--public:hover {
-  border-left-color: var(--color-success);
+.workspace-grid--list .workspace-card .member-faces__more {
+  color: var(--color-on-surface-variant);
+}
+
+.workspace-grid--list .workspace-card__live {
+  color: #059669;
 }
 
 /* Staggered entrance animation */
@@ -93,104 +242,18 @@
   }
 }
 
-/* Header */
-.workspace-card__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--stack-md);
-}
+@media (prefers-reduced-motion: reduce) {
+  .workspace-card,
+  .workspace-card .workspace-cover__image {
+    animation: none;
+    transition: none;
+  }
 
-.workspace-card__badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
-  border-radius: var(--radius-full);
-  font: var(--font-label-sm);
-}
+  .workspace-card:hover {
+    transform: none;
+  }
 
-.workspace-card__badge--private {
-  background: var(--color-primary-fixed);
-  color: var(--color-on-primary-fixed);
-}
-
-.workspace-card__badge--shared {
-  background: var(--color-secondary-fixed);
-  color: var(--color-on-secondary-fixed);
-}
-
-.workspace-card__badge--public {
-  background: rgba(16, 185, 129, 0.12);
-  color: #065f46;
-}
-
-.workspace-card__menu {
-  display: grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  background: none;
-  border: none;
-  border-radius: var(--radius-lg);
-  color: var(--color-outline);
-  cursor: pointer;
-  transition: background var(--transition-fast), color var(--transition-fast);
-}
-
-.workspace-card__menu:hover {
-  background: var(--color-surface-container-high);
-  color: var(--color-on-surface);
-}
-
-/* Body */
-.workspace-card__body {
-  flex: 1;
-  margin-bottom: var(--stack-md);
-}
-
-.workspace-card__name {
-  font: var(--font-headline-md);
-  color: var(--color-on-surface);
-  margin-bottom: 6px;
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.workspace-card__desc {
-  font: var(--font-body-md);
-  color: var(--color-on-surface-variant);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-/* Footer */
-.workspace-card__footer {
-  display: flex;
-  flex-direction: column;
-  gap: var(--stack-sm);
-  padding-top: var(--stack-md);
-  border-top: 1px solid var(--color-outline-variant);
-}
-
-.workspace-card__stats {
-  display: flex;
-  gap: var(--stack-lg);
-}
-
-.workspace-card__stat {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font: var(--font-label-sm);
-  color: var(--color-on-surface-variant);
-}
-
-.workspace-card__updated {
-  font: var(--font-label-sm);
-  color: var(--color-outline);
+  .workspace-card:hover .workspace-cover__image {
+    transform: none;
+  }
 }

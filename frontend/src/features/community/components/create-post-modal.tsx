@@ -9,6 +9,9 @@ import { getWorkspaces } from '../../workspaces/workspace-api';
 import type { WorkspaceDto } from '../../workspaces/workspace-schema';
 import { ApiError } from '../../../lib/api-client';
 import { createDiscussion, uploadPostAttachment } from '../community-api';
+import { BackgroundPicker } from './background-picker';
+import { PostBackgroundPanel } from './post-background-panel';
+import { canUseBackground } from '../post-background';
 import { ComposeSuggestions } from './compose-suggestions';
 import { MentionTextarea } from './mention-textarea';
 import './create-post-modal.css';
@@ -51,12 +54,11 @@ export function CreatePostModal({
   const [title, setTitle] = useState(initialTitle ?? '');
   const [body, setBody] = useState(initialBody ?? '');
   const [label, setLabel] = useState(initialLabel ?? 'DISCUSSION');
-  const [tags, setTags] = useState<string[]>([]);
-  const [tagInput, setTagInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [wsLoading, setWsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [files, setFiles] = useState<File[]>([]);
+  const [backgroundKey, setBackgroundKey] = useState<string | null>(null);
   const [uploadingName, setUploadingName] = useState<string | null>(null);
   const [uploadPercent, setUploadPercent] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -77,6 +79,10 @@ export function CreatePostModal({
       .finally(() => setWsLoading(false));
   }, [preselectedWorkspaceId]);
 
+  // A gradient is only readable behind a line or two, and a photo grid on top
+  // of one is noise — so the option withdraws instead of producing a bad post.
+  const canShowBackground = files.length === 0 && canUseBackground(body);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !body.trim() || !selectedWsId) return;
@@ -87,7 +93,9 @@ export function CreatePostModal({
         title: title.trim(),
         body: body.trim(),
         label,
-        tags,
+        // Sent only when it still applies, so a background chosen before the
+        // post grew past the limit is dropped rather than rejected.
+        backgroundKey: canShowBackground ? backgroundKey : null,
       });
 
       // Attachments need the post id, so they are uploaded once it exists.
@@ -204,39 +212,6 @@ export function CreatePostModal({
               )}
             </div>
 
-            {/* ---------- Tags ---------- */}
-            <div className="create-post-modal__field">
-              <label className="create-post-modal__label">Thẻ (Tags) - tối đa 5 thẻ</label>
-              <div className="create-post-modal__tags-input-container" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', padding: '10px 14px', border: '1px solid var(--color-outline-variant)', borderRadius: 'var(--radius-lg)', background: 'var(--color-surface)' }}>
-                {tags.map(tag => (
-                  <span key={tag} className="create-post-modal__tag" style={{ background: 'var(--color-secondary-fixed)', color: 'var(--color-secondary)', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    {tag}
-                    <button type="button" onClick={() => setTags(tags.filter(t => t !== tag))} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex' }}><Icon name="close" size={12} /></button>
-                  </span>
-                ))}
-                {tags.length < 5 && (
-                  <input
-                    type="text"
-                    className="create-post-modal__tag-input"
-                    placeholder={tags.length === 0 ? "Nhập tag và nhấn Enter..." : ""}
-                    value={tagInput}
-                    onChange={(e) => setTagInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ',') {
-                        e.preventDefault();
-                        const val = tagInput.trim().toLowerCase();
-                        if (val && !tags.includes(val) && tags.length < 5) {
-                          setTags([...tags, val]);
-                        }
-                        setTagInput('');
-                      }
-                    }}
-                    style={{ border: 'none', background: 'transparent', outline: 'none', flex: 1, minWidth: '120px', font: 'var(--font-body-md)' }}
-                  />
-                )}
-              </div>
-            </div>
-
             {/* Body */}
             <div className="create-post-modal__field">
               <label className="create-post-modal__label">Nội dung</label>
@@ -249,6 +224,13 @@ export function CreatePostModal({
                 rows={6}
                 required
               />
+
+              {/* Shown as it will be posted, because a colour chosen from a
+                  32px swatch is not the same decision as one seen behind the
+                  actual words. */}
+              {backgroundKey && canShowBackground && (
+                <PostBackgroundPanel backgroundKey={backgroundKey} body={body} compact />
+              )}
             </div>
           </div>
           <div className="create-post-modal__attachments">
@@ -261,6 +243,12 @@ export function CreatePostModal({
               <Icon name="attach_file" size={17} />
               Đính kèm ảnh hoặc tài liệu
             </button>
+            <BackgroundPicker
+              value={backgroundKey}
+              onChange={setBackgroundKey}
+              visible={canShowBackground}
+            />
+
             <input
               ref={fileInputRef}
               type="file"

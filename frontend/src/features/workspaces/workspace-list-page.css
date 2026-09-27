@@ -17,39 +17,45 @@
   margin: 0 auto;
 }
 
-/* Dashboard Tabs */
+/* Dashboard Tabs — a segmented control, not an underline.
+   There are only two, and a pill that slides is easier to read at a glance
+   than a 2px rule. It also keeps a different shape from the filter chips
+   below, so "which view" and "which subset" do not look like the same control. */
 
 .dashboard-tabs {
-  display: flex;
-  gap: var(--stack-md);
-  border-bottom: 1px solid var(--color-outline-variant);
+  display: inline-flex;
+  gap: 3px;
+  padding: 4px;
+  background: var(--color-surface-container-high);
+  border-radius: var(--radius-full);
   margin-bottom: var(--stack-sm);
+  align-self: flex-start;
 }
 
 .dashboard-tab {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
+  gap: 7px;
+  padding: 9px 18px;
   background: none;
   border: none;
-  border-bottom: 2px solid transparent;
+  border-radius: var(--radius-full);
   font: var(--font-label-md);
+  font-weight: 600;
   color: var(--color-on-surface-variant);
   cursor: pointer;
-  transition: all var(--transition-fast);
-  margin-bottom: -1px;
+  transition: background var(--transition-fast), color var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
-.dashboard-tab:hover {
-  color: var(--color-primary);
-  background: var(--color-surface-container-low);
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+.dashboard-tab:hover:not(.dashboard-tab--active) {
+  color: var(--color-on-surface);
 }
 
 .dashboard-tab--active {
+  background: var(--color-surface-container-lowest);
   color: var(--color-primary);
-  border-bottom-color: var(--color-primary);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 8%), 0 3px 10px rgb(15 23 42 / 7%);
 }
 
 /* Recent Section */
@@ -88,11 +94,14 @@
   gap: var(--stack-md);
 }
 
-.all-workspaces-section__title {
+.all-workspaces-section__title,
+.recent-section__title {
   display: flex;
   align-items: center;
   gap: var(--stack-sm);
   font: var(--font-headline-md);
+  font-weight: 700;
+  letter-spacing: -0.015em;
   color: var(--color-on-surface);
 }
 
@@ -101,19 +110,21 @@
   align-items: center;
   justify-content: center;
   gap: var(--stack-sm);
-  padding: 10px 16px;
-  background: var(--color-primary);
-  color: var(--color-on-primary);
+  padding: 11px 20px;
+  background: linear-gradient(120deg, #1e3a8a 0%, #4f46e5 60%, #6d28d9 100%);
+  color: #fff;
   font: var(--font-label-md);
+  font-weight: 600;
   border: none;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-full);
   cursor: pointer;
-  transition: opacity var(--transition-fast), box-shadow var(--transition-fast);
+  box-shadow: 0 4px 14px rgb(79 70 229 / 30%);
+  transition: box-shadow var(--transition-fast), transform var(--transition-fast);
 }
 
 .workspace-header__create-btn:hover {
-  opacity: 0.9;
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 6px 20px rgb(79 70 229 / 42%);
+  transform: translateY(-1px);
 }
 
 /* Controls */
@@ -141,19 +152,21 @@
 
 .workspace-search__input {
   width: 100%;
-  padding: 10px 16px 10px 40px;
-  background: var(--color-surface-container-lowest);
-  border: 1px solid var(--color-outline-variant);
-  border-radius: var(--radius-xl);
+  padding: 11px 16px 11px 40px;
+  background: var(--color-surface-container-high);
+  border: 1px solid transparent;
+  border-radius: var(--radius-full);
   font: var(--font-body-md);
   color: var(--color-on-surface);
   outline: none;
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  transition: background var(--transition-fast), border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 .workspace-search__input:focus {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(0, 35, 111, 0.08);
+  background: var(--color-surface-container-lowest);
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgb(99 102 241 / 16%);
 }
 
 .workspace-filters {
@@ -172,24 +185,25 @@
 
 .workspace-filter {
   padding: 8px 16px;
-  background: var(--color-surface-container-lowest);
-  border: 1px solid var(--color-outline-variant);
-  border-radius: var(--radius-xl);
+  background: var(--color-surface-container-high);
+  border: none;
+  border-radius: var(--radius-full);
   font: var(--font-label-sm);
+  font-weight: 600;
   color: var(--color-on-surface-variant);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: background var(--transition-fast), color var(--transition-fast);
 }
 
-.workspace-filter:hover {
-  background: var(--color-surface-container-low);
-  border-color: var(--color-primary-fixed-dim);
+.workspace-filter:hover:not(.workspace-filter--active) {
+  background: var(--color-surface-container-highest);
+  color: var(--color-on-surface);
 }
 
 .workspace-filter--active {
-  background: var(--color-primary-container);
-  color: var(--color-on-primary-container);
-  border-color: var(--color-primary-container);
+  background: linear-gradient(120deg, #4f46e5 0%, #6d28d9 100%);
+  color: #fff;
+  box-shadow: 0 3px 10px rgb(79 70 229 / 28%);
 }
 
 /* Actions Group (Sort & View Toggle) */
@@ -204,10 +218,10 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 12px 6px 8px;
-  background: var(--color-surface-container-lowest);
-  border: 1px solid var(--color-outline-variant);
-  border-radius: var(--radius-xl);
+  padding: 7px 12px 7px 10px;
+  background: var(--color-surface-container-high);
+  border: none;
+  border-radius: var(--radius-full);
   color: var(--color-on-surface-variant);
 }
 
@@ -223,31 +237,33 @@
 
 .workspace-view-toggle {
   display: flex;
-  background: var(--color-surface-container-lowest);
-  border: 1px solid var(--color-outline-variant);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
+  gap: 2px;
+  padding: 3px;
+  background: var(--color-surface-container-high);
+  border: none;
+  border-radius: var(--radius-full);
 }
 
 .view-toggle-btn {
   display: grid;
   place-items: center;
-  padding: 6px 8px;
+  padding: 6px 10px;
   background: none;
   border: none;
-  color: var(--color-outline);
+  border-radius: var(--radius-full);
+  color: var(--color-on-surface-variant);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: background var(--transition-fast), color var(--transition-fast);
 }
 
-.view-toggle-btn:hover {
-  background: var(--color-surface-container-low);
+.view-toggle-btn:hover:not(.view-toggle-btn--active) {
   color: var(--color-on-surface);
 }
 
 .view-toggle-btn--active {
-  background: var(--color-surface-variant);
-  color: var(--color-on-surface);
+  background: var(--color-surface-container-lowest);
+  color: var(--color-primary);
+  box-shadow: 0 1px 3px rgb(15 23 42 / 12%);
 }
 
 /* Content */

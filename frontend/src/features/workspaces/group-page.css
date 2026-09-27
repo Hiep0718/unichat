@@ -19,6 +19,29 @@
   padding-bottom: 16px;
 }
 
+/* Only the mark straddles the banner, not the whole row.
+   Pulling the entire header up by 26px put the group's NAME inside the
+   banner's box, and since the banner is positioned while the header was not,
+   the banner painted over it and the name vanished. The same negative margin
+   also dragged the header's buttons into the cover's own "Thêm ảnh bìa"
+   control. Raising just the mark fixes both. */
+.group-page__header--under-cover {
+  position: relative;
+  z-index: 1;
+  align-items: flex-end;
+  padding: 14px 18px 16px;
+}
+
+.group-page__header--under-cover .group-page__identity {
+  align-items: flex-end;
+}
+
+.group-page__header--under-cover .group-mark {
+  align-self: flex-start;
+  margin-top: -40px;
+  box-shadow: 0 0 0 4px var(--color-surface, #fff), 0 4px 14px rgb(15 23 42 / 18%);
+}
+
 .group-page__identity {
   display: flex;
   align-items: center;

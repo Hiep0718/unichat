@@ -67,13 +67,43 @@ class PostAttachmentServiceTest {
     }
 
     /** Makes the author an active member owning the post. */
-    private void givenAuthoredPost() {
+    private Discussion givenAuthoredPost() {
         Discussion discussion = new Discussion(discussionId, workspaceId, authorId, "Đề cương môn học",
                 "body", "ANNOUNCEMENT", false, "OPEN", Instant.now());
         when(discussionRepository.findById(discussionId)).thenReturn(Optional.of(discussion));
         when(memberRepository.findByWorkspaceIdAndUserIdAndStatus(workspaceId, authorId, WorkspaceMemberStatus.ACTIVE))
                 .thenReturn(Optional.of(new WorkspaceMember(workspaceId, authorId,
                         WorkspaceRole.EDITOR, WorkspaceMemberStatus.ACTIVE, authorId)));
+        return discussion;
+    }
+
+    @Test
+    void shouldDropThePostsColourOnceAFileIsAttached() {
+        // Arrange: a photo grid on top of a gradient is noise, so the file wins.
+        Discussion discussion = givenAuthoredPost();
+        discussion.setBackgroundKey("ocean");
+        var file = new MockMultipartFile("file", "anh.png", "image/png", "png".getBytes());
+
+        // Act
+        service.attach(workspaceId, discussionId, authorId, file, "req-1");
+
+        // Assert
+        assertNull(discussion.getBackgroundKey());
+        verify(discussionRepository).save(discussion);
+    }
+
+    @Test
+    void shouldNotRewriteAPostThatHadNoColourToBeginWith() {
+        // Arrange: the overwhelming majority of posts, which must not take an
+        // extra write on every attachment.
+        givenAuthoredPost();
+        var file = new MockMultipartFile("file", "anh.png", "image/png", "png".getBytes());
+
+        // Act
+        service.attach(workspaceId, discussionId, authorId, file, "req-1");
+
+        // Assert
+        verify(discussionRepository, never()).save(any(Discussion.class));
     }
 
     @Test

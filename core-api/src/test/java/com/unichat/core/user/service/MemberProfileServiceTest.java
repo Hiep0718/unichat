@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyIterable;
-import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -69,7 +68,6 @@ class MemberProfileServiceTest {
         when(userRepository.findById(subject)).thenReturn(Optional.of(
                 new User(subject, "lan@example.com", "hash",
                         SystemRole.USER, UserStatus.ACTIVE, Instant.now())));
-        when(discussionRepository.findTopTagsAnsweredBy(any(), anyList())).thenReturn(List.of());
     }
 
     @Test

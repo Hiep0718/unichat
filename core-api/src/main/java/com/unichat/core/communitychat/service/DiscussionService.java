@@ -158,14 +158,8 @@ public class DiscussionService {
                 "OPEN",
                 Instant.now()
         );
-        if (request.tags() != null && !request.tags().isEmpty()) {
-            discussion.setTags(request.tags().stream()
-                    .map(String::trim)
-                    .filter(t -> !t.isBlank())
-                    .distinct()
-                    .limit(5)
-                    .toList());
-        }
+        discussion.setBackgroundKey(
+                PostBackground.validate(request.backgroundKey(), request.body()));
         discussionRepository.save(discussion);
         publishMentions(workspaceId, discussion.getId(), null, userId, request.body());
 
@@ -333,8 +327,8 @@ public class DiscussionService {
     }
 
     /**
-     * Edits a post. Only its author may edit, and only the text and tags change;
-     * the label is fixed at creation so the announcement role check cannot be
+     * Edits a post. Only its author may edit, and only the text changes; the
+     * label is fixed at creation so the announcement role check cannot be
      * bypassed afterwards.
      */
     @Transactional
@@ -347,7 +341,9 @@ public class DiscussionService {
             throw new AuthorizationError("Chỉ tác giả mới có thể chỉnh sửa bài viết");
         }
 
-        discussion.applyEdit(request.title(), request.body(), normaliseTags(request.tags()), Instant.now());
+        discussion.applyEdit(request.title(), request.body(), Instant.now());
+        discussion.setBackgroundKey(
+                PostBackground.validate(request.backgroundKey(), request.body()));
         discussionRepository.save(discussion);
         publishMentions(workspaceId, discussionId, null, userId, request.body());
 
@@ -387,18 +383,6 @@ public class DiscussionService {
             throw new NotFoundError("Bài viết không tồn tại");
         }
         return discussion;
-    }
-
-    private static List<String> normaliseTags(List<String> tags) {
-        if (tags == null) {
-            return List.of();
-        }
-        return tags.stream()
-                .map(String::trim)
-                .filter(t -> !t.isBlank())
-                .distinct()
-                .limit(5)
-                .toList();
     }
 
     /** Builds the full response for one post: author, attachments, reactions. */

@@ -167,10 +167,12 @@ function RecentSection({ workspaces }: RecentSectionProps) {
             key={ws.id}
             id={ws.id}
             name={ws.name}
-            description={ws.description ?? ''}
             visibility={ws.visibility}
             documentCount={ws.documentCount}
             memberCount={ws.memberCount}
+            recentPostCount={ws.recentPostCount}
+            faces={ws.faces}
+            hasCover={ws.hasCover}
             updatedAt={ws.updatedAt}
             animationIndex={i}
           />
@@ -320,10 +322,12 @@ function AllWorkspacesSection({
                 key={ws.id}
                 id={ws.id}
                 name={ws.name}
-                description={ws.description ?? ''}
-                visibility={ws.visibility}
+                    visibility={ws.visibility}
                 documentCount={ws.documentCount}
                 memberCount={ws.memberCount}
+                recentPostCount={ws.recentPostCount}
+                faces={ws.faces}
+                hasCover={ws.hasCover}
                 updatedAt={ws.updatedAt}
                 animationIndex={i}
               />

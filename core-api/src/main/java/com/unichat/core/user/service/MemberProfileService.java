@@ -91,7 +91,6 @@ public class MemberProfileService {
                 subject.getCreatedAt(),
                 sharedGroups(visible),
                 contributions(subjectId, workspaceIds),
-                topTags(subjectId, workspaceIds),
                 !self && !workspaceIds.isEmpty(),
                 self);
     }
@@ -157,14 +156,5 @@ public class MemberProfileService {
                 discussionRepository.countPostsBy(subjectId, workspaceIds),
                 replyRepository.countRepliesBy(subjectId, workspaceIds),
                 discussionRepository.countAcceptedAnswersBy(subjectId, workspaceIds));
-    }
-
-    private List<String> topTags(UUID subjectId, List<UUID> workspaceIds) {
-        if (workspaceIds.isEmpty()) {
-            return List.of();
-        }
-        return discussionRepository.findTopTagsAnsweredBy(subjectId, workspaceIds).stream()
-                .map(row -> (String) row[0])
-                .toList();
     }
 }

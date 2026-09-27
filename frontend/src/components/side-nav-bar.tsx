@@ -12,7 +12,7 @@ import { Link, useLocation, useParams } from 'react-router-dom';
 import { useAuth } from '../features/auth/auth-context';
 import { Icon } from './icon';
 import { NotificationBell } from '../features/community/notification-bell';
-import { EntityAvatar } from './entity-avatar';
+import { GroupMark } from '../features/workspaces/components/group-mark';
 import { PendingApprovalBadge } from '../features/documents/components/pending-approval-badge';
 import { useWorkspaces } from '../features/workspaces/workspace-hooks';
 import logoWhite from '../assets/logo-white.png';
@@ -83,7 +83,7 @@ export function SideNavBar() {
                   className={`side-nav__item ${isCurrent ? 'side-nav__item--active' : ''}`}
                   title={group.name}
                 >
-                  <EntityAvatar name={group.name} size={20} />
+                  <GroupMark workspaceId={group.id} name={group.name} size={24} />
                   <span className="side-nav__label">{group.name}</span>
                   {isCurrent && <PendingApprovalBadge />}
                 </Link>

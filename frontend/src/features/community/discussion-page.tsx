@@ -6,16 +6,47 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
 import { Icon } from '../../components/icon';
-import { formatRelativeTime } from '../../lib/format-time';
 import { useWorkspace } from '../workspaces/workspace-context';
 import { fetchDiscussions, DiscussionResponse, createDiscussion } from './community-api';
-import { ReactionBar } from './components/reaction-bar';
+import type { FeedPostResponse } from './feed-api';
+import { FeedCard } from './components/feed-card';
 // This page's own modal reuses the create-post styles, which used to arrive via
 // feed-page.css; they now live with the component that owns them.
 import './components/create-post-modal.css';
 import './discussion-page.css';
 
 const LABELS = ['ALL', 'QUESTION', 'DISCUSSION', 'ANNOUNCEMENT'] as const;
+
+/**
+ * Presents a group's post as the shared card expects it.
+ *
+ * The two responses carry the same post under slightly different names, so
+ * this maps rather than duplicating the card: one component means the
+ * background, the attachments and the inline comments work identically here
+ * and in the feed, because it is the same code drawing them.
+ */
+function toFeedPost(d: DiscussionResponse): FeedPostResponse {
+  return {
+    id: d.id,
+    workspaceId: d.workspaceId,
+    workspaceName: d.workspaceName ?? '',
+    authorId: d.authorId,
+    authorName: d.authorName,
+    authorAvatar: d.authorAvatar,
+    title: d.title,
+    body: d.body,
+    label: (d.label ?? 'DISCUSSION') as FeedPostResponse['label'],
+    voteScore: d.voteScore,
+    replyCount: d.replyCount,
+    reactions: d.reactions,
+    backgroundKey: d.backgroundKey,
+    hasAcceptedAnswer: d.acceptedReplyId !== null,
+    // Bookmarks are a feed concept; the group list neither shows nor sets them.
+    isBookmarked: false,
+    createdAt: d.createdAt,
+    attachments: d.attachments ?? [],
+  };
+}
 
 const DiscussionPage: React.FC = () => {
   const { workspaceId } = useParams<{ workspaceId: string }>();
@@ -109,11 +140,13 @@ const DiscussionPage: React.FC = () => {
       ) : (
         <div className="disc-list__cards">
           {discussions.map((d) => (
-            <DiscussionCard
+            <FeedCard
               key={d.id}
-              discussion={d}
-              labelName={labelName}
-              onClick={() => navigateToPost(d.id)}
+              post={toFeedPost(d)}
+              onOpen={() => navigateToPost(d.id)}
+              onNavigate={navigate}
+              hideGroup
+              pinned={d.pinned}
             />
           ))}
         </div>
@@ -132,55 +165,6 @@ const DiscussionPage: React.FC = () => {
     </div>
   );
 };
-
-/* ---------- Discussion Card ---------- */
-
-interface DiscussionCardProps {
-  discussion: DiscussionResponse;
-  labelName: (l: string) => string;
-  onClick: () => void;
-}
-
-function DiscussionCard({ discussion: d, labelName, onClick }: DiscussionCardProps) {
-  return (
-    <div className={`disc-card ${d.pinned ? 'disc-card--pinned' : ''}`} onClick={onClick}>
-      <div className="disc-card__meta">
-        <span className="disc-card__meta-item">
-          <Icon name="person" size={14} /> {d.authorName}
-        </span>
-        <span className="disc-card__dot">•</span>
-        <span className="disc-card__meta-item">
-          <Icon name="schedule" size={14} /> {formatRelativeTime(d.updatedAt)}
-        </span>
-      </div>
-      <h3 className="disc-card__title">
-        {d.pinned && (
-          <span className="disc-card__pin" title="Bài viết được ghim">
-            <Icon name="push_pin" size={14} /> Đã ghim
-          </span>
-        )}
-        {d.label && (
-          <span className={`disc-card__label disc-card__label--${d.label.toLowerCase()}`}>
-            {labelName(d.label)}
-          </span>
-        )}
-        {d.title}
-      </h3>
-      <p className="disc-card__excerpt">{d.body}</p>
-      <div className="disc-card__footer">
-        <ReactionBar
-          targetType="DISCUSSION"
-          targetId={d.id}
-          summary={d.reactions}
-          compact
-        />
-        <span className="disc-card__action-btn">
-          <Icon name="chat_bubble_outline" size={16} /> {d.replyCount} Bình luận
-        </span>
-      </div>
-    </div>
-  );
-}
 
 /* ---------- Empty State ---------- */
 function DiscussionEmptyState() {

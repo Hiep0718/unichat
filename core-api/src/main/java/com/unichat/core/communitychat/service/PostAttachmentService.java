@@ -106,6 +106,16 @@ public class PostAttachmentService {
                 Instant.now(clock));
 
         attachmentRepository.save(attachment);
+
+        // A photo grid on top of a gradient is noise, so the file wins and the
+        // background goes. Done here rather than in the compose screen because
+        // attachments are uploaded after the post exists, so this is the first
+        // moment the two are known to coexist.
+        if (discussion.getBackgroundKey() != null) {
+            discussion.setBackgroundKey(null);
+            discussionRepository.save(discussion);
+        }
+
         return PostAttachmentResponse.from(attachment);
     }
 

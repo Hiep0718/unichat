@@ -1,0 +1,29 @@
+.member-faces {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.member-faces__stack {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Each face overlaps the one before it, with a ring so the edges read apart. */
+.member-faces__slot {
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 0 0 2px var(--color-surface-container-lowest);
+}
+
+.member-faces__slot + .member-faces__slot {
+  margin-left: -8px;
+}
+
+.member-faces__more {
+  font: var(--font-label-sm);
+  font-weight: 600;
+  color: var(--color-on-surface-variant);
+}

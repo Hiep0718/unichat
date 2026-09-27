@@ -14,9 +14,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import com.unichat.core.communitychat.api.FeedPostResponse;
 import com.unichat.core.communitychat.api.PostAttachmentResponse;
 import com.unichat.core.communitychat.api.ReactionSummary;
@@ -36,8 +33,8 @@ import com.unichat.core.workspace.domain.WorkspaceRepository;
 import com.unichat.core.workspace.domain.WorkspaceVisibility;
 
 /**
- * Service layer for the community feed, supporting search, tag filtering,
- * trending tags, bookmarks, and time-ranged TOP sorting.
+ * Service layer for the community feed, supporting search, bookmarks, and
+ * time-ranged TOP sorting.
  */
 @Service
 @Transactional(readOnly = true)
@@ -46,8 +43,6 @@ public class FeedService {
     /** Sort modes whose queries already contain an ORDER BY clause. */
     private static final Set<String> SELF_ORDERED_SORTS =
             Set.of("HOT", "TOP", "UNANSWERED", "MINE");
-
-    private static final ObjectMapper TAG_MAPPER = new ObjectMapper();
 
     private final DiscussionRepository discussionRepository;
     private final WorkspaceMemberRepository memberRepository;
@@ -77,10 +72,10 @@ public class FeedService {
     }
 
     /**
-     * Main feed query with search, tag, sort, scope, and time range.
+     * Main feed query with search, sort, scope, and time range.
      */
     public Page<FeedPostResponse> getFeed(UUID userId, String sort, String scope,
-                                          String query, String tag, String range,
+                                          String query, String range,
                                           int page, int size) {
         List<UUID> workspaceIds = resolveWorkspaceIds(userId, scope);
         if (workspaceIds.isEmpty()) {
@@ -89,25 +84,9 @@ public class FeedService {
 
         PageRequest pageRequest = buildPageRequest(sort, page, size);
         Page<Discussion> result = executeQuery(
-                userId, workspaceIds, sort, scope, query, tag, range, pageRequest);
+                userId, workspaceIds, sort, scope, query, range, pageRequest);
 
         return mapToResponse(result, userId);
-    }
-
-    /**
-     * Returns trending tags (top N by frequency in the last 7 days), restricted
-     * to workspaces the user belongs to so private tags are not exposed.
-     */
-    public List<Map<String, Object>> getTrendingTags(UUID userId, int limit) {
-        List<UUID> workspaceIds = resolveWorkspaceIds(userId, "JOINED");
-        if (workspaceIds.isEmpty()) {
-            return List.of();
-        }
-        return discussionRepository.findTrendingTags(workspaceIds, limit).stream()
-                .map(row -> Map.<String, Object>of(
-                        "tag", (String) row[0],
-                        "count", ((Number) row[1]).longValue()))
-                .toList();
     }
 
     /**
@@ -153,13 +132,10 @@ public class FeedService {
     }
 
     private Page<Discussion> executeQuery(UUID userId, List<UUID> wsIds, String sort, String scope,
-                                           String query, String tag, String range,
+                                           String query, String range,
                                            PageRequest pageRequest) {
         if (query != null && !query.isBlank()) {
             return discussionRepository.searchByKeyword(wsIds, query.trim(), pageRequest);
-        }
-        if (tag != null && !tag.isBlank()) {
-            return discussionRepository.findByTag(wsIds, toJsonTagArray(tag), pageRequest);
         }
         if ("SAVED".equalsIgnoreCase(scope)) {
             return discussionRepository.findBookmarked(userId, wsIds, pageRequest);
@@ -181,19 +157,6 @@ public class FeedService {
         }
         return discussionRepository
                 .findByWorkspaceIdInOrderByCreatedAtDesc(wsIds, pageRequest);
-    }
-
-    /**
-     * Serialises a tag into a one-element JSON array for the {@code @>} operator.
-     * Built with Jackson rather than string concatenation: a tag containing a
-     * quote would otherwise produce invalid JSON and fail the cast.
-     */
-    private String toJsonTagArray(String tag) {
-        try {
-            return TAG_MAPPER.writeValueAsString(List.of(tag.trim()));
-        } catch (JsonProcessingException e) {
-            throw new IllegalArgumentException("Thẻ không hợp lệ", e);
-        }
     }
 
     private Instant resolveSince(String range) {
@@ -246,7 +209,7 @@ public class FeedService {
                     d.getTitle(), d.getBody(), d.getLabel(),
                     d.getVoteScore(), d.getReplyCount(),
                     reactions.getOrDefault(d.getId(), ReactionSummary.empty()),
-                    d.getTags(),
+                    d.getBackgroundKey(),
                     d.getAcceptedReplyId() != null,
                     bookmarkedIds.contains(d.getId()),
                     d.getCreatedAt(),

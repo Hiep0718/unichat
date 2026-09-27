@@ -1,12 +1,8 @@
 package com.unichat.core.communitychat.domain;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -55,15 +51,13 @@ public class Discussion {
     private int voteScore;
 
     /**
-     * Mapped with Hibernate's native JSON support rather than a string
-     * converter: an {@code AttributeConverter} binds the value as {@code
-     * varchar}, and PostgreSQL refuses to cast varchar to jsonb, which failed
-     * every insert with "column tags is of type jsonb but expression is of type
-     * character varying".
+     * Which colour preset sits behind a short post, null for an ordinary one.
+     *
+     * Only the key is stored; the gradients live in the frontend, so restyling
+     * the set needs no migration.
      */
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "tags", columnDefinition = "jsonb", nullable = false)
-    private List<String> tags = new ArrayList<>();
+    @Column(name = "background_key", length = 24)
+    private String backgroundKey;
 
     @Column(name = "accepted_reply_id")
     private UUID acceptedReplyId;
@@ -124,10 +118,9 @@ public class Discussion {
      *
      * @param now edit timestamp, recorded so the UI can show "đã chỉnh sửa"
      */
-    public void applyEdit(String title, String body, List<String> tags, Instant now) {
+    public void applyEdit(String title, String body, Instant now) {
         this.title = title;
         this.body = body;
-        this.tags = tags != null ? tags : new ArrayList<>();
         this.editedAt = now;
         this.updatedAt = now;
     }
@@ -143,8 +136,14 @@ public class Discussion {
     public int getVoteScore() { return voteScore; }
     public void adjustVoteScore(int delta) { this.voteScore += delta; }
 
-    public List<String> getTags() { return tags; }
-    public void setTags(List<String> tags) { this.tags = tags != null ? tags : new ArrayList<>(); }
+    public String getBackgroundKey() { return backgroundKey; }
+
+    /** A blank key clears the background, which is how "plain" is expressed. */
+    public void setBackgroundKey(String backgroundKey) {
+        this.backgroundKey = (backgroundKey == null || backgroundKey.isBlank())
+                ? null : backgroundKey;
+    }
+
     public UUID getAcceptedReplyId() { return acceptedReplyId; }
     public void setAcceptedReplyId(UUID acceptedReplyId) { this.acceptedReplyId = acceptedReplyId; }
 }

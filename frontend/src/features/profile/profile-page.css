@@ -62,24 +62,6 @@
   color: var(--ws-accent);
 }
 
-.profile-page__topics {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  align-items: center;
-  margin: 3px 0 0;
-  color: var(--ws-ink-muted);
-  font: var(--font-label-sm);
-}
-
-.profile-page__topic {
-  padding: 3px 9px;
-  border-radius: var(--radius-md);
-  background: var(--ws-chip);
-  color: var(--ws-ink-soft);
-  font-weight: 600;
-}
-
 .profile-page__actions {
   flex-shrink: 0;
 }
@@ -203,9 +185,5 @@
   .profile-page__header {
     flex-direction: column;
     text-align: center;
-  }
-
-  .profile-page__topics {
-    justify-content: center;
   }
 }

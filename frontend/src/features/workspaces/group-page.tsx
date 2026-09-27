@@ -5,13 +5,16 @@
  * things that belong to the group: its posts, its files (which are also the
  * sources its AI assistant reads), its members and its description.
  */
+import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate, useParams } from 'react-router-dom';
 
 import { Icon } from '../../components/icon';
-import { EntityAvatar } from '../../components/entity-avatar';
+import { GroupMark } from './components/group-mark';
 import { useWorkspace } from './workspace-context';
 import { useWorkspace as useWorkspaceQuery } from './workspace-hooks';
+import { CoverBanner } from './components/cover-banner';
+
 import type { WorkspaceVisibility } from './workspace-context';
 import './group-page.css';
 
@@ -40,15 +43,26 @@ export function GroupPage() {
   const { workspace, canEdit } = useWorkspace();
   const { data: details } = useWorkspaceQuery(workspaceId);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [menuOpen, setMenuOpen] = useState(false);
 
   if (!workspace) return null;
 
   return (
     <div className="group-page">
-      <header className="group-page__header">
+      <CoverBanner
+        workspaceId={workspaceId}
+        name={workspace.name}
+        hasCover={details?.hasCover ?? false}
+        canEdit={canEdit}
+        onChanged={() => {
+          void queryClient.invalidateQueries({ queryKey: ['workspaces'] });
+        }}
+      />
+
+      <header className="group-page__header group-page__header--under-cover">
         <div className="group-page__identity">
-          <EntityAvatar name={workspace.name} size={52} />
+          <GroupMark workspaceId={workspaceId} name={workspace.name} size={52} />
           <div className="group-page__titles">
             <h1 className="group-page__name">{workspace.name}</h1>
             <p className="group-page__sub">

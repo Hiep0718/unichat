@@ -11,6 +11,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 import { Icon } from '../../components/icon';
 import { EntityAvatar } from '../../components/entity-avatar';
+import { GroupMark } from '../workspaces/components/group-mark';
 import { ContributionStats } from './components/contribution-stats';
 import { fetchMemberProfile } from './profile-api';
 import { openConversation } from '../work-chat/work-chat-api';
@@ -87,14 +88,6 @@ export function ProfilePage() {
           <p className="profile-page__handle">
             Nhắc tên bằng <strong>@{profile.handle}</strong>
           </p>
-          {profile.topTags.length > 0 && (
-            <p className="profile-page__topics">
-              Hay trả lời về
-              {profile.topTags.map((tag) => (
-                <span key={tag} className="profile-page__topic">{tag}</span>
-              ))}
-            </p>
-          )}
         </div>
 
         <div className="profile-page__actions">
@@ -131,9 +124,9 @@ export function ProfilePage() {
                 <button
                   type="button"
                   className="profile-groups__row"
-                  onClick={() => navigate(`/workspaces/${group.workspaceId}/discussions`)}
+                  onClick={() => navigate(`/workspaces/${group.workspaceId}`)}
                 >
-                  <EntityAvatar name={group.name} size={34} />
+                  <GroupMark workspaceId={group.workspaceId} name={group.name} size={34} />
                   <span className="profile-groups__name">{group.name}</span>
                   <span className={`profile-groups__role profile-groups__role--${group.role.toLowerCase()}`}>
                     {ROLE_TEXT[group.role] ?? group.role}

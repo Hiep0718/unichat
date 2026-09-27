@@ -1,7 +1,5 @@
 package com.unichat.core.communitychat.api;
 
-import java.util.List;
-
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -19,7 +17,8 @@ public record CreateDiscussionRequest(
         @Size(max = 20)
         String label,
 
-        @Size(max = 5, message = "Maximum 5 tags allowed")
-        List<String> tags
+        /** Colour preset behind a short post; null for an ordinary one. */
+        @Size(max = 24)
+        String backgroundKey
 ) {}
 

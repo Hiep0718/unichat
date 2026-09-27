@@ -1,0 +1,45 @@
+.bg-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bg-picker__label {
+  font: var(--font-label-sm);
+  font-weight: 600;
+  color: var(--color-on-surface-variant);
+}
+
+.bg-picker__swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.bg-picker__swatch {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  padding: 0;
+  /* The ring is always drawn so selecting does not shift the row. */
+  box-shadow: 0 0 0 2px transparent, 0 1px 3px rgb(15 23 42 / 16%);
+  transition: box-shadow var(--transition-fast), transform var(--transition-fast);
+}
+
+.bg-picker__swatch:hover {
+  transform: translateY(-1px);
+}
+
+.bg-picker__swatch--active {
+  box-shadow: 0 0 0 2px var(--color-surface-container-lowest),
+    0 0 0 4px #4f46e5, 0 1px 3px rgb(15 23 42 / 16%);
+}
+
+.bg-picker__swatch--none {
+  display: grid;
+  place-items: center;
+  background: var(--color-surface-container-high);
+  color: var(--color-on-surface-variant);
+}

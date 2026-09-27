@@ -33,8 +33,6 @@ export interface MemberProfile {
   sharedGroups: SharedGroup[];
   /** Counted inside those same groups. */
   contributions: Contributions;
-  /** Tags on questions they have answered, most frequent first. */
-  topTags: string[];
   canMessage: boolean;
   self: boolean;
 }

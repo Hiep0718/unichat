@@ -14,10 +14,8 @@ import {
   FeedScope,
   FeedSort,
   FeedStats,
-  TrendingTag,
   fetchFeed,
   fetchFeedStats,
-  fetchTrendingTags,
   toggleBookmark,
 } from './feed-api';
 import { CreatePostModal } from './components/create-post-modal';
@@ -47,13 +45,11 @@ export function FeedPage() {
   const [view, setView] = useState<FeedSort>('UNANSWERED');
   const [searchInput, setSearchInput] = useState('');
   const [query, setQuery] = useState('');
-  const [activeTag, setActiveTag] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
-  const [trendingTags, setTrendingTags] = useState<TrendingTag[]>([]);
   const [stats, setStats] = useState<FeedStats | null>(null);
 
   // Debounce the search box into `query`; the fetch effect depends only on the
@@ -80,7 +76,6 @@ export function FeedPage() {
       sort: view,
       scope,
       q: query || undefined,
-      tag: activeTag || undefined,
       page,
     })
       .then((data) => {
@@ -97,10 +92,9 @@ export function FeedPage() {
       });
 
     return () => controller.abort();
-  }, [view, scope, query, activeTag, page]);
+  }, [view, scope, query, page]);
 
   const loadSidebar = useCallback(() => {
-    fetchTrendingTags(8).then(setTrendingTags).catch(() => setTrendingTags([]));
     fetchFeedStats().then(setStats).catch(() => setStats(null));
   }, []);
 
@@ -128,17 +122,11 @@ export function FeedPage() {
     if (next === scope) return;
     setScope(next);
     setPage(0);
-    setActiveTag(null);
   };
 
   const changeView = (next: FeedSort) => {
     if (next === view) return;
     setView(next);
-    setPage(0);
-  };
-
-  const handleTagClick = (tag: string) => {
-    setActiveTag((current) => (current === tag ? null : tag));
     setPage(0);
   };
 
@@ -208,18 +196,6 @@ export function FeedPage() {
             ))}
           </div>
 
-          {activeTag && (
-            <div className="feed-page__filter">
-              <span className="feed-page__filter-chip">
-                <Icon name="tag" size={14} />
-                {activeTag}
-                <button type="button" onClick={() => setActiveTag(null)} aria-label="Bỏ lọc thẻ">
-                  <Icon name="close" size={13} />
-                </button>
-              </span>
-            </div>
-          )}
-
           <FeedList
             posts={posts}
             isLoading={isLoading}
@@ -227,7 +203,6 @@ export function FeedPage() {
             view={view}
             onOpen={openPost}
             onNavigate={navigate}
-            onTagClick={handleTagClick}
             onBookmark={handleBookmark}
             onAsk={() => setShowCreate(true)}
           />
@@ -253,9 +228,6 @@ export function FeedPage() {
 
         <FeedSidebar
           stats={stats}
-          trendingTags={trendingTags}
-          activeTag={activeTag}
-          onTagClick={handleTagClick}
           onShowUnanswered={() => changeView('UNANSWERED')}
           onNavigate={navigate}
         />
@@ -288,7 +260,6 @@ interface FeedListProps {
   readonly view: FeedSort;
   readonly onOpen: (workspaceId: string, postId: string) => void;
   readonly onNavigate: (path: string) => void;
-  readonly onTagClick: (tag: string) => void;
   readonly onBookmark: (id: string) => void;
   readonly onAsk: () => void;
 }
@@ -315,7 +286,6 @@ function FeedList({
   view,
   onOpen,
   onNavigate,
-  onTagClick,
   onBookmark,
   onAsk,
 }: FeedListProps) {
@@ -361,7 +331,6 @@ function FeedList({
           post={post}
           onOpen={() => onOpen(post.workspaceId, post.id)}
           onNavigate={onNavigate}
-          onTagClick={onTagClick}
           onBookmark={onBookmark}
         />
       ))}

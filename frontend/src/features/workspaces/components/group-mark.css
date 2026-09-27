@@ -1,0 +1,11 @@
+.group-mark {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  color: #fff;
+  font-weight: 700;
+  line-height: 1;
+  user-select: none;
+  /* Lifts the tile off a white rail without needing a border. */
+  box-shadow: 0 1px 3px rgb(15 23 42 / 18%);
+}
