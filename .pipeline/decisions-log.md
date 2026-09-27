@@ -590,3 +590,200 @@
   Rationale: The file was applied to the shared database as version 16 from a working copy that was never committed, then committed on main as version 12. Version 12 is taken here by `V12__remove_mock_seed_data.sql`, and no revision in git matches the checksum recorded for 16 — verified by restoring main's exact bytes and watching validation still reject it. A fresh number is only safe if re-running is harmless, hence IF NOT EXISTS: a no-op where the columns exist, correct on a fresh database. This avoids writing to the shared database at all, which `flyway repair` would have required.
 
 - Note: validation earned its keep immediately. Turned on hours earlier, it caught this checksum mismatch at startup instead of letting the merge appear to succeed and fail later somewhere unrelated.
+
+## 2026-09-26 - Removing Post Tags
+
+- Decision: Removed tags from the product entirely — the input in the compose modal, the chips on the feed card and post detail, the "Chủ đề đang bàn" sidebar list, the `?tag=` feed filter, the `/feed/trending-tags` endpoint, and "Hay trả lời về" on the profile.
+  Rationale: Measured before deciding. The live database holds 5 posts, all 5 untagged, and 0 distinct tags across the whole table. The input was free text with no suggestions and no autocomplete, so two people writing about the same thing produce two different tags — which is why a tag taxonomy needs a scale this product does not have. Every feature built on top was reading an empty column: the sidebar rendered its empty state permanently, the filter could never be reached, and the profile line never appeared.
+
+- Decision: Left the `tags jsonb` column and `idx_discussions_tags` in place rather than adding a migration to drop them.
+  Rationale: The column is `NOT NULL DEFAULT '[]'`, so Postgres fills it on every insert once the entity field is gone — verified before removing the mapping. Dropping it would be a one-way migration against a database a teammate shares, for no gain: Hibernate `ddl-auto: validate` checks that mapped columns exist, not that every column is mapped. `V13__feed_enhancements.sql` is already applied and must not be edited, since Flyway checksums the whole file.
+
+- Decision: Dropped the expertise-routing suggestion from the summary document along with the feature.
+  Rationale: That proposal was to route unanswered questions to whoever answers about a tag most often. It was the only remaining argument for keeping tags, and it rests on the same empty data — routing computed from 0 tags routes nothing. Keeping the suggestion while removing its foundation would have left the document claiming a cheap next step that is not cheap.
+
+## 2026-09-26 - Workspace Cards: Covers, Faces, and a Hardcoded Zero
+
+- Decision: Declined shadcn/ui and added no UI dependency.
+  Rationale: shadcn/ui is not an installable component library — it is copy-paste source built on Radix and Tailwind utility classes, so adopting it means adopting Tailwind. This codebase is plain CSS with BEM naming and a `--ws-*` token set added days ago for the "Mạch lạc" direction; Tailwind's preflight would reset styles app-wide and leave three styling systems coexisting, since the documents, chat and admin screens are still on the old Material tokens. It would also not have addressed the complaint: shadcn's `Card` is a bordered div with padding, and the gap against the reference screenshot was cover art, real numbers and density, not component primitives.
+
+- Decision: Fixed `documentCount`, which `WorkspaceService.toResponse` had been passing as a hardcoded `0`.
+  Rationale: The comment above it read "Document count is 0 until the document feature is implemented" and had outlived its truth — `DocumentRepository.countByWorkspaceId` already existed, unused. The zero surfaced in three places at once: every workspace card, the header stat (which sums the cards), and the group header's "0 tệp" — the inconsistency reported earlier against a library of six files. This was outside the batch of extra work chosen for this round, and is included anyway because the same round rebuilds the card footer that displays it; shipping a redesigned card that still prints a known-false number is worse than either leaving the card alone or fixing the number.
+
+- Decision: Generated gradients are the cover default, with upload as the override.
+  Rationale: The chosen direction was upload. The reference screenshots are Google's curated notebooks with commissioned artwork, which a user's own notebooks do not have — so upload alone predicts cards that stay blank, because most groups will never upload anything. The gradient is derived from the workspace id, which means it is stable across renders (the same group appears in both "Truy cập nhanh" and the list below) and survives renaming.
+
+- Decision: Card statistics load per page through `WorkspaceStatsLoader`, not per card.
+  Rationale: The existing mapping already ran one member count per workspace, so a page of twenty groups cost twenty round trips; adding documents, activity and faces the same way would have made it eighty. Four grouped queries cover the whole page instead, so the fix removes the prior N+1 rather than multiplying it. Faces are ranked with `ROW_NUMBER() OVER (PARTITION BY workspace_id)` so the per-group limit applies inside the query — fetching every member of every listed group and trimming in Java would read the whole membership table for a page of large groups.
+
+- Decision: Covers are re-encoded as JPEG, unlike avatars, which are PNG.
+  Rationale: A cover is a wide photograph at 1200x400. The same picture as lossless PNG is several megabytes on a screen that lists twenty of them. Re-encoding at all is what strips the metadata a phone photo carries, which is the same reason avatars are re-encoded.
+
+- Decision: `V27__workspace_cover.sql` adds one nullable column and nothing else.
+  Rationale: Checked every remote branch before choosing the number — the highest migration anywhere else is V12, and the database is at 26. `validate-on-migrate` now catches a collision at startup if a teammate takes 27 first.
+
+## 2026-09-28 - Workspace Cards, Second Pass
+
+- Decision: Rebuilt the card so the picture fills it and the text sits on top, replacing the cover band above a white panel.
+  Rationale: The first pass split the card into two zones — picture, then a white content block. That reads as a form rather than as something worth opening, and it was the specific thing the reference product does differently: there the image is the card and the title sits over it.
+
+- Decision: Dropped the description from the card entirely.
+  Rationale: Two reasons, one of which was only visible on screen. Most groups have no description, so the line rendered as "Chưa có mô tả" on nearly every card. Worse, because the content block is anchored to the bottom, a card that *did* have a description pushed its title about 40px above its neighbours', so a row of three titles sat at two different heights. Removing it makes every card structurally identical. The description still appears on the group's own page, where there is room for it.
+
+- Decision: Moved the cover upload from the About tab to a banner across the top of the group page.
+  Rationale: It was reported as missing, and it effectively was: it sat on the fourth tab, behind a label ("Giới thiệu") nobody reads as "change the picture". On the banner the control is next to the thing it changes. The About-tab copy was deleted rather than kept as a second entry point, so there is one implementation.
+
+- Decision: Rewrote the gradient themes as deep three-stop bases with a radial highlight, and gave the initial letter a low-opacity watermark treatment.
+  Rationale: The first set was flat, saturated and light at the bottom, which left white text needing a heavy scrim to survive — and the scrim then crushed the card to near-black. Deep bases carry white text with a lighter scrim. The centred letter was the loudest element on the card while carrying the least information, since the name is written in full underneath it.
+
+- Decision: Checked the result by rendering it, rather than shipping on tests alone.
+  Rationale: Two rounds of this work were delivered without anyone looking at the output, and both were rejected on sight. There is no browser tool in this session, so the real stylesheets were bundled against the components' exact markup and screenshotted with the Chromium binary Playwright had already installed. That is what surfaced the misaligned titles and a list mode that was tall, empty and badly aligned — neither of which any passing test would have caught. The preview lives in the scratchpad, not the repo.
+
+- Decision: Added `workspace-card.test.tsx`, including a test asserting no description element renders.
+  Rationale: The alignment bug came from an element existing on some cards and not others. A test that pins the card's structure is the only thing that stops it returning, since the symptom is a layout difference no assertion about text would notice.
+
+## 2026-09-28 - Vibrant Card Palette
+
+- Decision: Replaced the six card themes with two-hue gradients plus a mesh of overlapping colour blobs.
+  Rationale: The previous set shaded one hue from dark to bright to dark (indigo-900 → indigo-600 → indigo-950), which reads as corporate rather than energetic. Travelling across two hues — violet to fuchsia, cyan to blue, amber to pink — is the difference between a gradient that looks current and one that looks like a 2015 page header. Each theme now also carries two radial blobs of further hues, which gives depth instead of one flat sweep.
+
+- Decision: The final gradient stop stays a deep 800/900-level tint of the hue, never black.
+  Rationale: The title sits there. A bright bottom would need a heavy scrim to carry white text, and that scrim would drain the colour straight back out — the exact problem the change was meant to fix.
+
+- Decision: Lightened the scrim from 74% to 46% at the bottom edge.
+  Rationale: Measured rather than guessed. Rendering the gradient stacks without text, decoding the PNG and computing WCAG ratios against white showed 6.93:1 at the worst point for a title needing 3.0 — two to three times more scrim than legibility required, spent on muting the colour. At 46% the worst case is 5.19:1 for the title and 6.41:1 for the 11px meta line (needs 4.5), so every theme still clears AA with margin while the colour reaches the bottom of the card.
+
+- Note: the contrast check reads the themes and the scrim out of the real source files rather than restating them, so the measurement cannot drift from what ships. The script is in the scratchpad; re-run it after any palette or scrim change.
+
+## 2026-09-28 - Page Chrome Brought In Line With the Cards
+
+- Decision: Restyled the banner, tabs, stat cards and control row, rather than leaving them on the old Material look.
+  Rationale: The cards now carry vibrant multi-hue gradients while the surrounding page was flat navy, pastel Material tiles and hairline 1px outlines. Two visual languages on one screen, and the older one made the newer one look pasted in.
+
+- Decision: The chrome supports the cards; it does not compete with them.
+  Rationale: The obvious move — gradients everywhere — makes a page where nothing stands out. The banner gets one bold gradient because it is the hero and the eye lands there first; everything else is calm, and the palette appears only in small doses (the three stat tiles, the active filter chip, the create button). The cards stay the loudest thing on the page, which is correct, because they are what the page is for.
+
+- Decision: The banner travels navy → indigo → violet rather than shading one navy.
+  Rationale: It keeps the brand blue at the point the eye lands while speaking the same two-hue language as the cards. A flat navy block above vibrant cards read as a header from a different product.
+
+- Decision: The two dashboard tabs became a segmented control instead of an underline.
+  Rationale: A 2px rule under one of two items is a weak signal, and its hover state applied a rounded background that only covered the top corners, which looked like a rendering fault. A segmented pill also keeps a different shape from the filter chips below it, so "which view" and "which subset" no longer look like the same kind of control.
+
+- Decision: Dropped the 1px outline from search, chips, sort and the view toggle in favour of filled shapes.
+  Rationale: An outline around every control is what made the page read as a form. Filled pills with a focus ring carry the same affordance with less visual noise, and match the cards' borderless, shadow-based depth.
+
+- Fixed a regression introduced in the previous pass: `explore-card.css` had been rewritten with `aspect-ratio: 16/11` and absolutely-positioned content but no list-mode rules, while `explore-grid--list` exists — so switching Khám phá to list view would have rendered each card as a full-width banner. Found by grepping which files reuse the restyled classes, not by a test; there is no coverage of that view.
+
+## 2026-09-28 - One Colour Per Group, Everywhere
+
+- Decision: Extracted the card palette into `frontend/src/features/workspaces/group-theme.ts` as the single source of truth for what colour a group is.
+  Rationale: The cover hashed the workspace id while the rail's letter avatar hashed the group's *name*, so the same group was violet on its card and pink in the sidebar. Colour is only worth having if it is identity, and identity that disagrees with itself is worse than no colour at all. The module exports the theme table plus `coverBackground`, `coverMesh` and `markBackground`, so a large panel and a 24px tile derive from the same entry.
+
+- Decision: Small marks use a two-stop gradient, not the cover's three stops plus mesh.
+  Rationale: At 24px the deep anchor and the blobs only muddy the tile. The point of a mark is that the hue is recognisable at a glance, which the first two stops already carry.
+
+- Decision: Grew the palette from six themes to twelve.
+  Rationale: Found by rendering the rail beside the cards rather than by reasoning. With six themes, someone in six groups should expect only about four distinct colours — roughly two colliding pairs — which defeats the identity the change was made for. Twelve brings the expected distinct count to about five of six. All twelve were re-measured for contrast; the tightest is 5.41:1 for the 11px meta line against the 4.5 it needs.
+
+- Decision: Replaced the letter avatar for groups in all five places, not only the rail that was reported.
+  Rationale: The rail was what got noticed, but the feed card, post detail, profile group list and the group page header had the same mismatch. Fixing only the reported one would have left the same bug in four places for the user to find next.
+
+- Note: `EntityAvatar` stays for *people*, which is what it is for — a letter on a colour derived from a name, with an uploaded picture when there is one. Only groups moved to `GroupMark`.
+
+- Caught while swapping the group page header: `.group-page__header--under-cover .entity-avatar` styled the white ring that makes the avatar straddle the cover banner. Changing the component would have left that rule matching nothing and the ring would have quietly disappeared, with no test and no lint error to say so.
+
+- Rail restyled to match: the brand tile and the active item now use the navy → indigo → violet gradient the hero banner and the create button already use, so "selected" means one thing across the app. The solid navy block it replaced was blunt against the softer page.
+
+## 2026-09-28 - Coloured Backgrounds for Short Posts
+
+- Note first: posting images was already built. Upload, storage, the attachment row and the preview grid on the feed card all shipped earlier, so the request's "đăng kèm ảnh" half needed no work — only the coloured background was new. Checked before building rather than after.
+
+- Decision: Stored the preset key, never the colours.
+  Rationale: `V28__post_background.sql` adds one nullable `background_key VARCHAR(24)`. The gradients live in the frontend's `post-background.ts`, so restyling the set never needs a migration and no row is ever left holding a colour the design has dropped. The trade is that the server must validate the key it does not own; it does, because an unknown key renders as no background at all, which loses the author's choice silently.
+
+- Decision: A background applies only to a short post with no attachments, and both rules are enforced where they can actually be enforced.
+  Rationale: A gradient stops being readable past a line or two, and a photo grid over one is noise. Length is checked server-side in `PostBackground.validate` and mirrored in the picker, which hides itself past the limit so the rule is met before the request is sent. Attachments could not be checked at create time — they are uploaded after the post exists — so `PostAttachmentService` clears the key when the first file lands. That is the first moment the two are known to coexist.
+
+- Decision: The picker withdraws rather than greying out.
+  Rationale: A control that is visible but refuses to work invites "why not", and the honest answer is that the result would not read well. Showing that is shorter than explaining it.
+
+- Decision: The compose box previews the post on its colour as it is typed.
+  Rationale: Choosing from a 32px swatch is not the same decision as seeing the actual words on it.
+
+- Caught while wiring the edit path: `handleUpdate` sent only title and body, and an absent key means "no background" to the server — so editing a coloured post would have stripped its colour every time. The key is now carried through explicitly.
+
+- All eight presets were measured, not eyeballed: the gradients were rendered alone, the PNG decoded, and white-text contrast computed over the band the centred text occupies. The tightest is `sunrise` at 4.09:1 against the 3.0 that 25px bold needs. The first run silently measured only six of eight because the probe window was too short to fit the last row; the script now reports "measured N of 8" and fails loudly rather than passing on a partial sample.
+
+## 2026-09-28 - Why the Background Did Not Appear
+
+- Cause: the backend process serving the app started at 01:06, and `backgroundKey` was added to `CreateDiscussionRequest` at 02:07 — the running server was an hour older than the field. Spring Boot leaves `FAIL_ON_UNKNOWN_PROPERTIES` off, so the compose screen sent the key, Jackson discarded it as unknown, the row saved with null, and the feed response had no such field to render. Nothing failed, which is why it looked like a bug in the feature.
+
+- Diagnosed by querying the database rather than reading code: the column existed and every row was null, which ruled out rendering and pointed at the write path. The process start time then settled it.
+
+- Decision: Added `DiscussionBackgroundTest` covering create, edit, removal and rejection.
+  Rationale: `PostBackgroundTest` only exercised the validation helper in isolation, so nothing asserted that a request's key reaches the saved row. That is exactly the link that appeared broken. The test would not have caught a stale server, but it pins the wiring so a real silent drop — a renamed field, a DTO left out of a refactor — fails in the build instead of in the feed.
+
+- Not changed: `FAIL_ON_UNKNOWN_PROPERTIES` stays off. Turning it on globally would make every client break on any field the server does not yet know, which trades one silent drop for a class of hard failures across unrelated endpoints. The real remedy is restarting the server after a backend change, which is a habit, not a setting.
+
+## 2026-09-28 - Comments Open In Place
+
+- Decision: Reused `ReplyThread` and `ReplyForm` in the feed rather than writing a lighter inline thread.
+  Rationale: Both already take everything through props, so nesting, citations, reactions and the assistant's answers behave in the feed exactly as they do on the post page — because it is the same code. A second, simpler implementation would have drifted, and the first difference anyone noticed would have been a bug report.
+
+- Decision: The thread component mounts only when opened, so the fetch is lazy by construction.
+  Rationale: A feed of twenty cards must not fire twenty reply requests. Making the mount the trigger means there is no separate "have I loaded this yet" flag to get wrong. A test asserts no request is made before the first click.
+
+- Decision: The reply count is held on the card and updated from the thread.
+  Rationale: Refetching the feed after every comment would rebuild the list and throw away the reader's scroll position — which is the exact cost that made the old navigate-away flow annoying.
+
+- Decision: The title still opens the post's own page; only the comment button changed.
+  Rationale: The permalink is worth keeping — it is what someone sends to a colleague, and the detail page has room for the accept-answer control and the reader list, which do not belong on a feed card.
+
+- Caught by the test run, not by review: the first fixtures used `as never` casts and invented a `mine` field on `ReactionSummary`, which the real type calls `myReaction`; replies also carry their own reactions, which the fixture omitted. `ReactionBar` threw on undefined. Rewritten against the real `ReactionSummary` and `ReplyResponse` types with no casts, so the fixtures now fail to compile if those shapes change rather than throwing at runtime.
+
+## 2026-09-28 - The Group Name Hidden Behind Its Own Cover
+
+- Cause: two faults from the same line. `.group-page__header--under-cover` carried `margin-top: -26px` to make the avatar straddle the banner, which pulled the *entire* header — name included — up into the banner's box. `.cover-banner` is `position: relative` while the header was not, and a positioned element paints after in-flow non-positioned blocks, so the banner covered the name. The same negative margin also dragged the header's "Trợ lý AI" and overflow buttons into the banner's own "Thêm ảnh bìa" control at the bottom right.
+
+- Decision: Raise only the mark, not the row.
+  Rationale: The mark is the only thing that should straddle the edge. It gets `align-self: flex-start` and its own negative margin, so the header stays in normal flow below the banner: the name is readable, and the two button clusters no longer occupy the same band. Adding `z-index` to the header would have fixed the paint order alone, but left dark heading text sitting on a saturated gradient — legible in the stacking sense and unreadable in every other.
+
+- Also moved `.cover-banner__tools` from the bottom edge to the top, so the cover's control and the page header's controls are never adjacent even as text lengths change.
+
+- Note on how this was missed: the cover banner shipped two rounds ago and was flagged then as not visually checked — "chưa xem tận mắt: header trang nhóm". It was reported by the user before that check happened. Rendering the header at the time would have shown it immediately; no test asserts paint order, and none reasonably could.
+
+## 2026-09-28 - One Post Card, Not Two
+
+- Cause of the report: the group's own post list rendered `DiscussionCard`, a second card component living inside `discussion-page.tsx`. It predated the feed work and never received any of it — no coloured background, no attachments, old styling, and "N Bình luận" was a `<span>` inside a card whose whole surface navigated away. Everything built for the feed over the last several rounds simply did not exist there.
+
+- Decision: Deleted `DiscussionCard` and used `FeedCard` on both screens, rather than porting the features across.
+  Rationale: Porting would have produced two implementations that agree today and drift by the next change — which is exactly how this gap appeared in the first place. One component means the background, the attachments and the inline comments behave identically in both places because it is the same code drawing them.
+
+- Decision: The group page adapts its data rather than the card accepting two shapes.
+  Rationale: `DiscussionResponse` and `FeedPostResponse` carry the same post under slightly different names, so a small `toFeedPost` mapper at the call site keeps the card with one prop type. `hasAcceptedAnswer` derives from `acceptedReplyId`; bookmarks are a feed concept and are mapped to false.
+
+- Decision: The card gained `hideGroup`, `pinned`, and an optional `onBookmark`.
+  Rationale: Three real differences between the two contexts, each expressed as a prop rather than a second component. Omitting `onBookmark` is how a caller says "there is no bookmark list here", which hides the button rather than rendering one that does nothing.
+
+- Removed the 16 orphaned `.disc-card*` rules. The `.reply-*` rules in the same stylesheet stay: `ReplyThread` and `ReplyForm` still use them, including inside the feed's inline comments.
+
+- Note: the earlier inline-comments round reused `ReplyThread` specifically to avoid a second implementation, and this round found an older second implementation one level up. Worth checking whether the post detail page renders the post body through yet a third path.
+
+## 2026-09-28 - Account Settings Brought Onto the Same Design
+
+- Decision: Restyled the settings page with the vocabulary the rest of the app now uses, rather than inventing a look for it.
+  Rationale: Underline tabs, hairline-bordered cards, flat navy buttons and outlined inputs were the last screen still speaking the pre-redesign language. The changes are all substitutions of an existing pattern: segmented tabs (as on the dashboard and the group page), borderless cards with a soft shadow, the navy→indigo→violet gradient for primary actions, filled inputs with an indigo focus ring, and a gradient icon tile for section headers matching the dashboard's stat tiles.
+
+- Decision: The avatar colour swatches became rounded squares with the same selection ring as the post-background picker.
+  Rationale: Two places in the app ask "pick a colour"; they should look like the same question. The ring is drawn transparent when unselected so choosing one does not shift the row.
+
+- Caught by rendering: the preview showed "Tải ảnh lên" stretched to full width, which looked like a bug in the new styling. It was not — the preview markup I wrote used `.account-btn--primary`, while the real component uses `.avatar-picker__upload`, a class I had not restyled at all. Re-reading the component and rebuilding the preview from its actual markup showed the real button still had the old flat style. Both were then fixed. The lesson is narrow and worth keeping: a hand-written preview only proves something about the classes the real component actually uses.
+
+- Replaced the last four `--ws-*` token references in `avatar-picker.css` with their `--color-*` equivalents. That file was mixing the feed's token family with this page's; both resolve, so nothing looked broken, but one stylesheet drawing from two token sets is the drift that made the app look like two products in the first place.
+
+## 2026-09-28 - Opening a Group Lands on Giới thiệu
+
+- Changed the group's index route from `discussions` to `about`.
+
+- Decision: Also pointed the four links that named `/discussions` explicitly at the group root.
+  Rationale: Three entry points used the index route (the left rail, the workspace card, and the redirect after joining from Khám phá) while four others named the posts tab directly — the group name on a feed card, two on the post detail page, and the group list on a profile. Changing only the index would have made "click a group" mean Giới thiệu in some places and Bài viết in others. One rule is less surprising than two, and it keeps the landing tab a single line to change if that judgement turns out wrong.
