@@ -29,10 +29,10 @@ import com.unichat.core.workchat.domain.DirectMessageSentEvent;
 /**
  * One-to-one messaging between people who share a group.
  *
- * <p>Sharing a group is what grants the right to message someone: on a campus
- * platform, anyone being reachable by any stranger is a way to be harassed, not
- * a feature. {@link ContactDirectory} decides that; this service enforces it on
- * every conversation it opens.
+ * <p>Sharing a group is what grants the right to message someone: in any
+ * organisation, anyone being reachable by any stranger is a way to be harassed,
+ * not a feature. {@link ContactDirectory} decides that; this service enforces
+ * it on every conversation it opens.
  *
  * <p>Every read and write checks participation. A conversation id is a UUID a
  * caller could guess at, so membership of the conversation is verified rather

@@ -21,9 +21,10 @@ import com.unichat.core.workspace.domain.WorkspaceRepository;
 /**
  * Decides who a person is allowed to message.
  *
- * <p>The rule is sharing a group. On a campus platform, making everyone
- * reachable by every stranger is a way to be harassed rather than a feature,
- * and a shared group is the existing relationship the product already models.
+ * <p>The rule is sharing a group. In any organisation — a company, a study
+ * group, a class — making everyone reachable by every stranger is a way to be
+ * harassed rather than a feature, and a shared group is the relationship the
+ * product already models.
  *
  * <p>Kept apart from {@link DirectMessageService} so the rule has one home: the
  * service asks this, rather than each call site re-deriving who counts as a
