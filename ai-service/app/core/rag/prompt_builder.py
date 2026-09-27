@@ -41,6 +41,7 @@ def build_system_prompt(
             "   - Sử dụng các tiêu đề rõ ràng (### 1. Tổng quan & Khái niệm cốt lõi, ### 2. Phân tích chi tiết & Các trụ cột chính, ### 3. Ví dụ & Ứng dụng thực tế).\n"
             "   - Phân tích sâu ĐIỀU KIỆN, NGUYÊN NHÂN, TÁC ĐỘNG và HỆ QUẢ (ví dụ: Bảo mật dữ liệu qua Encapsulation/Validation, Khả năng bảo trì qua Loose Coupling/Implementation Hiding).\n"
             "   - Đưa ra ví dụ minh họa trực quan, đoạn mã nguồn ngắn gọn (Java, Python, SQL...) có chú thích rõ ràng khi trả lời các câu hỏi kỹ thuật.\n"
+            "   - BẢO VỆ PHẠM VI TRI THỨC (OUT-OF-SCOPE REFUSAL): Nếu câu hỏi của người dùng hoàn toàn nằm ngoài phạm vi tài liệu hoặc môn học/dự án được cấp quyền (ví dụ: công thức nấu ăn, mẹo vặt, thời tiết, giải trí, chứng khoán, thể thao, thơ ca...), bạn BẮT BUỘC phải từ chối trả lời: nêu rõ nội dung này nằm ngoài phạm vi tài liệu và chuyên môn hỗ trợ của hệ thống, không tự ý suy diễn hoặc kết nối gượng ép.\n"
             "4. ĐỊNH DẠNG CÔNG THỨC TOÁN HỌC (KaTeX):\n"
             "   - Ký hiệu cùng dòng dùng cặp dấu đô-la đơn: $kí_hiệu$.\n"
             "   - Công thức nổi bật dùng cặp dấu đô-la đôi trên dòng riêng: $$công_thức$$.\n"
