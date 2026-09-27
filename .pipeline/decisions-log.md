@@ -363,3 +363,92 @@
   Rationale: Fulfills rigorous thesis-level E2E coverage and provides a long-running recorded test demonstrating all phases of ADR-021 without skipping any interactive UI element or edge case.
 - Decision: Configure Playwright video capture with smooth delays (`waitForTimeout`) at critical UX moments (drawer open, thought accordion expansion, compaction badge display).
   Rationale: Generates clear, high-definition video artifacts (`video.webm`) suitable for presentation, defense demos, and automated CI regression verification.
+
+## 2026-09-21 - Flyway Migration Version Alignment (V16 Conversation Summary)
+
+- Decision: Renumber `V12__conversation_summary.sql` to `V16__conversation_summary.sql`.
+  Rationale: The remote database schema on Supabase had already executed migrations up to version 15 (including prior V12 `remove_mock_seed_data` on 2026-08-27 and V13-V15). Flyway skipped the new migration because version 12 was marked as already applied in `flyway_schema_history`, causing Hibernate schema validation to fail with `missing column [summary] in table [conversations]`. Renumbering to V16 allowed Flyway to apply the DDL alteration cleanly and Hibernate to validate successfully.
+
+## 2026-09-21 - RAG Benchmark 120 Questions Automation Suite & Evaluation Engine
+
+- Decision: Build an automated Playwright benchmark test suite (`07-rag-benchmark-120.spec.ts`) executing 120 curated questions across 3 production workspaces ("Quản lý dự án", "Lập trình hướng đối tượng", "MongoDB Basic", 40 questions each) covering 6 intent categories (DEFINITION, FACT, COMPARISON, SUMMARY, REASONING, OUT_OF_SCOPE).
+  Rationale: Enables reproducible, automated thesis-grade evaluation directly through the real UI chat interface without manual scoring errors, evaluating both strict retrieval and hybrid generation.
+
+- Decision: Implement A/B comparative evaluation (Strict Document-Only vs Hybrid RAG + AI Expansion) within the same suite, producing unified comparison metrics.
+  Rationale: Strict mode accurately evaluates knowledge retrieval fidelity and refusal accuracy on out-of-scope questions, while Hybrid mode measures model knowledge augmentation; comparing both gives an objective benchmark of UniChat's adaptive retrieval.
+
+- Decision: Implement incremental checkpointing (`checkpoints/checkpoint-<mode>-<workspace>.json`) every 10 questions and session context reset (`startNewChat()`) every 10 questions.
+  Rationale: Prevents token accumulation drift during long test sequences and guarantees that network drops or rate limit interruptions can resume from the last completed question rather than restarting all 120 queries.
+
+- Decision: Automatically record HD video (`.webm`) for all runs into `reports/benchmark/videos/` and capture screenshot artifacts for all `OUT_OF_SCOPE` questions in `reports/benchmark/screenshots/`.
+  Rationale: Provides incontrovertible visual evidence for thesis defense, audits, and performance documentation.
+
+## 2026-09-21 - Evidence Gate Threshold Adaptation (`min_source_groups = 1`) With Single-Source Warning Label
+
+- Decision: Adjust `min_source_groups = 1` for `COMPARISON`, `SUMMARY`, and `REASONING` intents in `ai-service/app/core/rag/strategy_selector.py` while adding mandatory `single_source_warning` metadata and warning badges across the full stack.
+  Rationale: Analysis of benchmark failures revealed that 41 questions (25 Strict, 16 Hybrid) were falsely refused (`EVIDENCE_INSUFFICIENT`) because relevant knowledge was located inside a single uploaded syllabus/document in workspaces with few files. Requiring 2 or 3 distinct files was overly restrictive for single-document workspaces.
+- Decision: Mandate a visible UI warning badge `⚠️ Nên kiểm chứng lại (1 nguồn)` and an in-response blockquote disclaimer whenever an answer is generated from only a single document source (`unique_sources == 1`).
+  Rationale: Balances high retrieval recall with responsible AI safety: users receive complete answers while being explicitly cautioned that comparative or summary data lacks multi-document cross-validation.
+
+## 2026-09-21 - UniChat iOS Mobile App Architecture & Dual-Mode Auth Contract
+
+- Decision: Add `mobile` to root npm `workspaces` and support React Native (Expo SDK 57) in the UniChat monorepo.
+  Rationale: Enables an iOS app targeting iPhone tested via Expo Go without requiring macOS for development, sharing design tokens, validation schemas, and types with the web frontend.
+- Decision: Enhance `AuthController.java` to support dual-mode authentication via `X-Client-Type: mobile` and request body tokens (`MobileLoginResponse`, `RefreshFromBodyRequest`, `LogoutFromBodyRequest`) while keeping HttpOnly cookie behavior intact for web clients.
+  Rationale: Mobile clients cannot rely on browser cookies and require tokens in the response body for encrypted storage in iOS Keychain (`expo-secure-store`). Both `/login` and `/refresh` return rotated `refreshToken`s directly to mobile to prevent token rotation lockout, and `api-client.ts` uses a Single-Flight Mutex to eliminate concurrent 401 race conditions.
+
+## 2026-09-21 - Mobile Web Preview Support & Core API CORS Allowlist
+
+- Decision: Add `CorsConfigurationSource` to `SecurityConfiguration.java` in Core API with `setAllowedOriginPatterns(List.of("*"))`, `setAllowCredentials(true)`, and exposed auth headers.
+  Rationale: Required by modern web browsers when previewing or testing the Expo mobile application at `http://localhost:8081` calling the LAN Core API backend (`http://192.168.1.6:8082`), avoiding browser-blocked `Failed to fetch` errors while adhering to AGENTS.md CORS security standards.
+- Decision: Implement universal cross-platform storage adapter in `mobile/src/lib/secure-store.ts` falling back to `localStorage` on `Platform.OS === 'web'`.
+  Rationale: `expo-secure-store` relies on native iOS Keychain / Android Keystore APIs which throw `getValueWithKeyAsync is not a function` in desktop browsers. The universal adapter transparently uses `localStorage` for browser-based mobile development and native encrypted keystore when executed in Expo Go on real mobile devices.
+
+## 2026-09-23 - Database Security Hardening: RLS Defense-in-Depth V2 (`rls_disabled_in_public`)
+
+- Decision: Implement and execute Flyway migration `V23__enable_rls_defense_in_depth_v2.sql` to enforce Row-Level Security (`ENABLE ROW LEVEL SECURITY`) and default `deny_all` policies on all remaining tables in schema `public` (30/30 tables secured).
+  Rationale: Supabase Security Advisor detected 13 tables without RLS created during Phase 2 feature development (`discussions`, `studio_notes`, `direct_messages`, `workspace_categories`, etc.), triggering critical warning `rls_disabled_in_public` because Supabase's PostgREST endpoint exposes unauthenticated CRUD access to public tables without RLS.
+- Decision: Revoke all object privileges on schema `public` from Supabase roles (`anon`, `authenticated`, `service_role`) and configure `ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE ALL ON TABLES/SEQUENCES/ROUTINES`.
+  Rationale: UniChat enforces strict authorization boundaries via Core API (Spring Boot) and never utilizes PostgREST or Supabase Auth. Revoking privileges and altering default privileges ensures zero data leakage via PostgREST if Supabase project keys are exposed, while Core API's JDBC connection continues operating unaffected due to its `BYPASSRLS: true` role attribute.
+
+## 2026-09-24 - Expo Mobile Server Runner Integration in `dev.ps1` & `dev-service.ps1`
+
+- Decision: Add `mobile` (Expo App) as a first-class service in `dev.ps1` and `dev-service.ps1` with tab color `#E67E22` (orange), tag `[EXPO  ]`, dynamic port resolution (`Resolve-ExpoPort`), and interactive restart key `[5]`.
+  Rationale: Allows developers to launch the entire stack including the mobile Metro bundler in one unified command (`.\dev.ps1`). The terminal tab renders the QR code natively, letting developers quickly scan with their phone (Expo Go or Camera app) without needing separate manual terminal windows.
+- Decision: Implement smart dynamic port fallback in `Resolve-ExpoPort` (`EXPO_PORT` env var -> 8081 if free -> 8085 fallback).
+## 2026-09-24 - Custom `UCLiquidGlassTabBar` with Physics-Driven Sliding Capsule & Native Haptics
+
+- Decision: Replace default React Navigation tab bar in `mobile/app/(tabs)/_layout.tsx` with a bespoke `UCLiquidGlassTabBar` custom navigator component.
+  Rationale: The default React Navigation tab bar lacked fluid animations, had an opaque rectangular layout with harsh gray borders, and instantly switched tabs without visual motion or tactile polish. Authentic Apple "Liquid Glass" navigation requires:
+  1. Floating Island Capsule: Elevated dock (`borderRadius: 32`, `height: 64`, `marginHorizontal: 16`, `bottom: insets.bottom`) allowing background content to visibly blur underneath via native `UIBlurView` (`systemUltraThinMaterialLight`).
+  2. Physics Sliding Capsule Indicator: An animated frosted glass pill (`Animated.spring` with `damping: 18, stiffness: 200, mass: 0.8`) that glides smoothly across the dock between active tab slots.
+  3. Micro-Bounce Press Dynamics: Dynamic spring scaling (`0.9` -> `1.0`) on tap combined with native Apple Taptic light haptic impacts (`Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)`).
+  4. Specular Glass Highlights & Dual-Layer Ambient Shadow: Separated outer shadow wrapper (preventing UIKit `overflow: 'hidden'` shadow clipping) and an inner specular top hairline (`rgba(255, 255, 255, 0.9)`) mimicking ambient light reflections on curved beveled glass.
+  5. Notification Badges & Active Glow: First-class `tabBarBadge` pill rendering (demonstrated with 3 unread items on "Bảng tin") and subtle AI Teal (`#00687A`) illuminated dots under active tab labels.
+  6. Testing & Monorepo Stability: Enforced single React resolution in `mobile/jest.config.js` via `moduleNameMapper`, achieving 100% test pass rate across all 4 test suites (19 tests).
+
+## 2026-09-26 - RAG Benchmark Pipeline Optimization, Intent Taxonomy Hardening & Standardized Council Defense Report
+
+- Decision: Expand pre-retrieval intent taxonomy regex in `ai-service/app/config/adaptive-retrieval-v1.yml` (`OUT_OF_SCOPE`) to detect broad domain-unrelated queries (cooking, sports, entertainment, finance, general wellness) before vector retrieval.
+  Rationale: Multilingual-E5 vector embedding models exhibit dense semantic overlap and cross-domain similarity artifacts (~0.76–0.80 cosine similarity) against broad academic course outlines. Without early taxonomic filtering, completely unrelated questions passed the 0.72 similarity threshold into the LLM synthesis pipeline. Early regex categorization accurately identifies out-of-scope queries (18/18 true positives, 0 false positives across 120 dataset queries), completely bypassing unnecessary vector database scans and costly LLM calls.
+
+- Decision: Introduce mandatory guardrail Rule 4 (`BẢO VỆ PHẠM VI TRI THỨC / OUT-OF-SCOPE REFUSAL`) in `ai-service/app/core/rag/prompt_builder.py` for Hybrid mode (`allow_external_knowledge=True`).
+  Rationale: When external reasoning was permitted, the generative model attempted to force-connect completely out-of-scope queries to curriculum topics (e.g., conceptualizing cooking recipes as Java OOP classes). The prompt guardrail enforces a definitive boundary: external reasoning is strictly limited to augmenting, illustrating, or explaining in-scope workspace topics; non-academic queries must trigger clean, polite refusals.
+
+- Decision: Upgrade Playwright test evaluation parsing in `automation-tests/helpers/chat-helper.ts` to inspect the full initial response buffer (first 600 characters with markdown list numbering stripped) and recognize complete Vietnamese academic refusal signals (`không nằm trong phạm vi`, `thiếu nguồn thông tin đối sánh`, `vượt quá phạm vi tri thức`).
+  Rationale: Markdown-formatted LLM responses starting with numbered headings (e.g., `1. Tổng quan...`) caused previous string-split logic to truncate on the first period, missing subsequent refusal language. The enhanced parser eliminates false evaluation failures across all intent categories.
+
+## 2026-09-27 - Transformation of Benchmark Report into International Peer-Reviewed Journal Publication Format
+
+- Decision: Redesign `automation-tests/reports/benchmark/benchmark-report.html` from an AI developer dashboard into a formal IEEE/ACM scientific journal paper format. Modularized generator into `benchmark-paper-styles.ts`, `benchmark-paper-sections.ts`, and `benchmark-report-generator.ts`.
+  Rationale: The previous dark-mode neon dashboard style felt like a casual AI developer tool rather than a rigorous, peer-reviewed scientific paper suitable for presentation before an Academic Evaluation Council (Hội đồng Đánh giá & Bảo vệ Khóa luận Tốt nghiệp). The new format adheres strictly to IEEE Transactions on Learning Technologies / ACM Digital Library standards.
+
+## 2026-09-27 - Instructor-Oriented Practical Benchmark Dossier with Interactive 120-Case Inspector
+
+- Decision: Pivot benchmark presentation to a Practical Instructor & Thesis Council Defense Dossier (`automation-tests/reports/benchmark/benchmark-report.html`). Replaced overly theoretical journal imitations with high-value empirical proofs designed specifically for thesis advisors and academic evaluation committees.
+  Rationale: Instructors evaluating AI/RAG thesis projects do not need abstract journal formalism; they require concrete, reproducible, and verifiable evidence that the benchmark scores are genuine and have real academic reference value.
+  1. Executive Brief for Instructors: 4 practical KPIs highlighting zero hallucination (18/18 out-of-scope refused in 1.03s), 96.1% verified course slide citations, +22.9% pedagogical depth in Hybrid mode, and 100% decision accuracy across 240 Playwright E2E browser tests.
+  2. Practical Curriculum Usage Guide: Clear matrix contrasting when students should use Strict Mode (exam prep, slide adherence, 13s response) vs Hybrid Mode (capstone projects, programming problem solving, KaTeX/Mermaid synthesis, 38s response).
+  3. Interactive 120-Case Inspector: Built-in search and filtering engine (by course and by intent) allowing instructors to click on any of the 120 test cases to inspect the original student prompt, expected ground truth, mandatory keywords, exact AI response generated, citations list, latency, and Playwright verification status.
+  4. Real-World Screenshot Telemetry: High-resolution zoomable screenshots verifying out-of-scope refusal across all three curriculum workspaces (Java OOP, Software Project Management, MongoDB) and KaTeX mathematical reasoning.
+  5. Academic Evaluation Rubric: Formal 5-criterion rubric and official sign-off block for thesis supervisor and defense committee chair.

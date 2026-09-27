@@ -30,6 +30,11 @@ $script:Svcs = [ordered]@{
         Health = 'http://127.0.0.1:5173'; TimeoutSec = 20
         State = 'QUEUED'; Attempt = 0; Skip = $false
     }
+    'mobile'     = @{
+        Title = 'Expo App'; Port = 8081; Color = '#E67E22'; Tag = '[EXPO  ]'
+        Health = 'http://127.0.0.1:8081/status'; TimeoutSec = 30
+        State = 'QUEUED'; Attempt = 0; Skip = $false
+    }
 }
 
 $script:CurrentAction = 'Initializing...'
@@ -37,6 +42,13 @@ $script:CurrentAction = 'Initializing...'
 function Test-PortFree([int]$Port) {
     $c = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue
     return ($null -eq $c)
+}
+
+function Resolve-ExpoPort {
+    if ($env:EXPO_PORT) { return [int]$env:EXPO_PORT }
+    if (Test-PortFree 8081) { return 8081 }
+    if (Test-PortFree 8085) { return 8085 }
+    return 8086
 }
 
 function Get-PortOwner([int]$Port) {
@@ -167,6 +179,9 @@ function Assert-Prerequisites {
     $nm = Join-Path $rootDir 'frontend\node_modules'
     if (-not (Test-Path $nm)) { $ok = $false }
 
+    $nmMobile = Join-Path $rootDir 'mobile\node_modules'
+    if (-not (Test-Path $nmMobile)) { $ok = $false }
+
     if (-not $ok) {
         $script:CurrentAction = 'ERROR: Prerequisites missing!'
         Render-Dashboard
@@ -185,7 +200,7 @@ function Launch-ServiceTab([string]$Key) {
         '-w', '0', 'new-tab',
         '--tabColor', $svc.Color,
         '--title', $svc.Title,
-        '--', 'powershell', '-ExecutionPolicy', 'Bypass', '-File', $workerScript, '-Service', $Key
+        '--', 'powershell', '-ExecutionPolicy', 'Bypass', '-File', $workerScript, '-Service', $Key, '-Port', $svc.Port
     )
     & wt $wtArgs
 }
@@ -197,6 +212,24 @@ function Start-ServicesSequentially {
     New-Item $statusDir -ItemType Directory -Force | Out-Null
 
     Import-DotEnv
+
+    # Resolve Expo port dynamically if not explicitly specified
+    $expoPort = Resolve-ExpoPort
+    $env:EXPO_PORT = "$expoPort"
+    $script:Svcs['mobile'].Port = $expoPort
+    $script:Svcs['mobile'].Health = "http://127.0.0.1:$expoPort/status"
+
+    # Auto-detect active LAN IP and synchronize to mobile/.env for phone Expo Go connectivity
+    try {
+        $lanIp = (Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue | Where-Object { 
+            $_.InterfaceAlias -notmatch 'Loopback|vEthernet|Virtual' -and $_.IPAddress -notlike '169.254*' 
+        } | Select-Object -First 1).IPAddress
+        if ($lanIp) {
+            $env:EXPO_PUBLIC_API_URL = "http://$lanIp:8082"
+            $mobileEnvFile = Join-Path $rootDir 'mobile\.env'
+            "# Auto-synced LAN IP for mobile Expo Go connectivity`nEXPO_PUBLIC_API_URL=http://$lanIp:8082" | Out-File $mobileEnvFile -Encoding utf8 -Force
+        }
+    } catch {}
 
     # Auto-detect Chroma Cloud mode from .env settings
     $chromaMode = if ($env:CHROMA_MODE) { $env:CHROMA_MODE.ToLower() } else { '' }
@@ -348,7 +381,7 @@ function Start-ServicesSequentially {
         } catch {}
     }
 
-    $script:CurrentAction = 'All services active! Opening Frontend browser...'
+    $script:CurrentAction = 'All services active! Scan Expo QR in Mobile tab.'
     Render-Dashboard
 
     # Auto open Frontend web app in default browser
@@ -397,7 +430,7 @@ function Enter-DashboardLoop {
         Render-Dashboard
 
         # Interactive controls
-        Write-Host "  Controls: [1-4] Restart Service | [R] Restart All | [Q] Quit All" -ForegroundColor Cyan
+        Write-Host "  Controls: [1-5] Restart Service | [R] Restart All | [Q] Quit All" -ForegroundColor Cyan
         Write-Host ""
 
         $waited = 0
@@ -418,7 +451,7 @@ function Enter-DashboardLoop {
                             if (-not $script:Svcs[$k].Skip) { Restart-Svc $k }
                         }
                     }
-                    { '1', '2', '3', '4' -contains $_ } {
+                    { '1', '2', '3', '4', '5' -contains $_ } {
                         $idx = [int]$ch - 1
                         if ($idx -lt $keys.Count -and -not $script:Svcs[$keys[$idx]].Skip) {
                             Restart-Svc $keys[$idx]

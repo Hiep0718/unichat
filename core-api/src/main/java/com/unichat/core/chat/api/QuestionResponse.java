@@ -16,5 +16,7 @@ public record QuestionResponse(
         List<CitationResponse> citations,
         String refusalCode,
         String requestId,
-        Double evidenceScore
+        Double evidenceScore,
+        Boolean singleSourceWarning,
+        String warningMessage
 ) {}

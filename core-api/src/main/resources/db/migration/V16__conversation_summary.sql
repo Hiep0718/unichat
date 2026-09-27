@@ -1,4 +1,4 @@
--- V12__conversation_summary.sql
+-- V16__conversation_summary.sql
 -- Adds summary and summary_version columns to conversations table
 -- for short-term conversation memory compaction (ADR-021).
 

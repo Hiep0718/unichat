@@ -411,6 +411,8 @@ export const ChatPage: React.FC<ChatPageProps> = ({
               refusalReason: meta.refusalReason || null,
               providerModel: meta.providerModel || 'gemini-2.5-flash',
               evidenceScore: meta.evidenceScore,
+              singleSourceWarning: meta.singleSourceWarning,
+              warningMessage: meta.warningMessage,
               requestId: meta.requestId || 'stream',
             };
 

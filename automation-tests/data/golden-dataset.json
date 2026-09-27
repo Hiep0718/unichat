@@ -1,0 +1,1204 @@
+[
+  {
+    "id": "BM-QLDA-DEF-001",
+    "workspace": "Quản lý dự án",
+    "question": "Khái niệm Quản lý dự án là gì?",
+    "expectedIntent": "DEFINITION",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Quản lý dự án là việc áp dụng các kiến thức, kỹ năng, công cụ và kỹ thuật vào các hoạt động dự án để đáp ứng yêu cầu của dự án.",
+    "keywords": ["quản lý dự án", "kiến thức", "kỹ năng", "công cụ"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-QLDA-DEF-002",
+    "workspace": "Quản lý dự án",
+    "question": "Định nghĩa về phạm vi dự án (Project Scope) là gì?",
+    "expectedIntent": "DEFINITION",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Phạm vi dự án là tổng hợp các sản phẩm, dịch vụ và kết quả mà dự án cần cung cấp.",
+    "keywords": ["phạm vi", "scope", "sản phẩm", "dịch vụ"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-QLDA-DEF-003",
+    "workspace": "Quản lý dự án",
+    "question": "WBS (Work Breakdown Structure) là gì?",
+    "expectedIntent": "DEFINITION",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "WBS là cấu trúc phân chia công việc theo dạng cây phân cấp, chia nhỏ phạm vi dự án thành các gói công việc có thể quản lý được.",
+    "keywords": ["WBS", "phân chia công việc", "phân cấp", "gói công việc"],
+    "split": "DEVELOPMENT"
+  },
+  {
+    "id": "BM-QLDA-DEF-004",
+    "workspace": "Quản lý dự án",
+    "question": "Stakeholder (các bên liên quan) trong dự án là ai?",
+    "expectedIntent": "DEFINITION",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Stakeholder là cá nhân, nhóm hoặc tổ chức có thể ảnh hưởng hoặc bị ảnh hưởng bởi quyết định, hoạt động hoặc kết quả của dự án.",
+    "keywords": ["stakeholder", "bên liên quan", "ảnh hưởng"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-QLDA-DEF-005",
+    "workspace": "Quản lý dự án",
+    "question": "Đường găng (Critical Path) trong quản lý dự án là gì?",
+    "expectedIntent": "DEFINITION",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Đường găng là chuỗi các hoạt động dài nhất trong lịch trình dự án, xác định thời gian ngắn nhất để hoàn thành dự án.",
+    "keywords": ["đường găng", "critical path", "chuỗi hoạt động", "lịch trình"],
+    "split": "DEVELOPMENT"
+  },
+  {
+    "id": "BM-QLDA-DEF-006",
+    "workspace": "Quản lý dự án",
+    "question": "Quản lý rủi ro dự án là gì?",
+    "expectedIntent": "DEFINITION",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Quản lý rủi ro dự án là quá trình xác định, phân tích và ứng phó với các rủi ro có thể ảnh hưởng đến mục tiêu dự án.",
+    "keywords": ["quản lý rủi ro", "xác định", "phân tích", "ứng phó"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-QLDA-DEF-007",
+    "workspace": "Quản lý dự án",
+    "question": "Biểu đồ Gantt là gì và dùng để làm gì?",
+    "expectedIntent": "DEFINITION",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Biểu đồ Gantt là công cụ quản lý dự án dạng thanh ngang thể hiện lịch trình hoạt động, thời gian bắt đầu, kết thúc và tiến độ của các công việc.",
+    "keywords": ["biểu đồ Gantt", "lịch trình", "thanh ngang", "tiến độ"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-QLDA-DEF-008",
+    "workspace": "Quản lý dự án",
+    "question": "Khái niệm về quản lý chất lượng dự án (Project Quality Management) là gì?",
+    "expectedIntent": "DEFINITION",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Quản lý chất lượng dự án bao gồm các quy trình đảm bảo sản phẩm dự án đáp ứng các tiêu chuẩn chất lượng đã định.",
+    "keywords": ["chất lượng", "tiêu chuẩn", "đảm bảo", "quy trình"],
+    "split": "DEVELOPMENT"
+  },
+  {
+    "id": "BM-QLDA-FACT-001",
+    "workspace": "Quản lý dự án",
+    "question": "Có bao nhiêu nhóm quy trình trong quản lý dự án theo PMBOK?",
+    "expectedIntent": "FACT",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Theo PMBOK có 5 nhóm quy trình: Khởi tạo, Lập kế hoạch, Thực hiện, Giám sát & Kiểm soát, và Kết thúc.",
+    "keywords": ["5 nhóm", "khởi tạo", "lập kế hoạch", "thực hiện", "giám sát", "kết thúc"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-QLDA-FACT-002",
+    "workspace": "Quản lý dự án",
+    "question": "PMBOK có bao nhiêu lĩnh vực kiến thức quản lý dự án?",
+    "expectedIntent": "FACT",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "PMBOK gồm 10 lĩnh vực kiến thức: Quản lý tích hợp, Phạm vi, Lịch trình, Chi phí, Chất lượng, Nguồn lực, Truyền thông, Rủi ro, Mua sắm, và Các bên liên quan.",
+    "keywords": ["10 lĩnh vực", "tích hợp", "phạm vi", "chi phí", "chất lượng"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-QLDA-FACT-003",
+    "workspace": "Quản lý dự án",
+    "question": "Tam giác ràng buộc dự án gồm những yếu tố nào?",
+    "expectedIntent": "FACT",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Tam giác ràng buộc gồm 3 yếu tố: Phạm vi (Scope), Thời gian (Time), và Chi phí (Cost).",
+    "keywords": ["tam giác", "phạm vi", "thời gian", "chi phí", "ràng buộc"],
+    "split": "DEVELOPMENT"
+  },
+  {
+    "id": "BM-QLDA-FACT-004",
+    "workspace": "Quản lý dự án",
+    "question": "Các bước trong quy trình quản lý rủi ro dự án là gì?",
+    "expectedIntent": "FACT",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Quy trình quản lý rủi ro gồm: Lập kế hoạch, Xác định rủi ro, Phân tích định tính, Phân tích định lượng, Lập kế hoạch ứng phó, và Giám sát rủi ro.",
+    "keywords": ["xác định", "phân tích", "ứng phó", "giám sát", "rủi ro"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-QLDA-FACT-005",
+    "workspace": "Quản lý dự án",
+    "question": "Mô hình phát triển phần mềm Agile có những nguyên tắc chính nào?",
+    "expectedIntent": "FACT",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Agile ưu tiên cá nhân và tương tác, phần mềm hoạt động, hợp tác khách hàng, và phản hồi thay đổi.",
+    "keywords": ["agile", "cá nhân", "tương tác", "phần mềm", "khách hàng", "thay đổi"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-QLDA-FACT-006",
+    "workspace": "Quản lý dự án",
+    "question": "Sprint trong Scrum thường kéo dài bao lâu?",
+    "expectedIntent": "FACT",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Sprint trong Scrum thường kéo dài từ 1 đến 4 tuần, phổ biến nhất là 2 tuần.",
+    "keywords": ["sprint", "scrum", "tuần", "1", "4"],
+    "split": "DEVELOPMENT"
+  },
+  {
+    "id": "BM-QLDA-FACT-007",
+    "workspace": "Quản lý dự án",
+    "question": "Vai trò chính trong đội Scrum gồm những ai?",
+    "expectedIntent": "FACT",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Đội Scrum gồm 3 vai trò: Product Owner, Scrum Master, và Development Team.",
+    "keywords": ["product owner", "scrum master", "development team", "3 vai trò"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-QLDA-FACT-008",
+    "workspace": "Quản lý dự án",
+    "question": "Phương pháp ước lượng chi phí dự án phổ biến là gì?",
+    "expectedIntent": "FACT",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Các phương pháp ước lượng phổ biến: Ước lượng tương tự (Analogous), Ước lượng tham số (Parametric), Ước lượng Bottom-up, và Ước lượng ba điểm (Three-point).",
+    "keywords": ["ước lượng", "tương tự", "tham số", "bottom-up", "ba điểm"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-QLDA-CMP-001",
+    "workspace": "Quản lý dự án",
+    "question": "So sánh sự khác nhau giữa Waterfall và Agile trong quản lý dự án?",
+    "expectedIntent": "COMPARISON",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Waterfall là mô hình tuần tự cứng nhắc, còn Agile linh hoạt với các vòng lặp ngắn. Waterfall yêu cầu hoàn thiện từng giai đoạn trước khi sang giai đoạn kế, Agile cho phép điều chỉnh liên tục.",
+    "keywords": ["waterfall", "agile", "tuần tự", "linh hoạt", "vòng lặp"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-QLDA-CMP-002",
+    "workspace": "Quản lý dự án",
+    "question": "So sánh Scrum và Kanban trong quản lý dự án?",
+    "expectedIntent": "COMPARISON",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Scrum chia công việc thành Sprint cố định với vai trò rõ ràng, Kanban tập trung vào luồng công việc liên tục với giới hạn WIP.",
+    "keywords": ["scrum", "kanban", "sprint", "luồng công việc", "WIP"],
+    "split": "DEVELOPMENT"
+  },
+  {
+    "id": "BM-QLDA-CMP-003",
+    "workspace": "Quản lý dự án",
+    "question": "Sự khác biệt giữa quản lý rủi ro và quản lý vấn đề trong dự án?",
+    "expectedIntent": "COMPARISON",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Rủi ro là sự kiện tiềm ẩn chưa xảy ra cần phòng ngừa, vấn đề là sự kiện đã xảy ra cần xử lý ngay.",
+    "keywords": ["rủi ro", "vấn đề", "tiềm ẩn", "đã xảy ra", "phòng ngừa"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-QLDA-CMP-004",
+    "workspace": "Quản lý dự án",
+    "question": "So sánh ước lượng Top-down và Bottom-up trong quản lý dự án?",
+    "expectedIntent": "COMPARISON",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Top-down ước lượng tổng thể rồi phân bổ xuống, nhanh nhưng kém chính xác. Bottom-up ước lượng từng công việc nhỏ rồi cộng lại, chính xác hơn nhưng tốn thời gian.",
+    "keywords": ["top-down", "bottom-up", "tổng thể", "chi tiết", "chính xác"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-QLDA-CMP-005",
+    "workspace": "Quản lý dự án",
+    "question": "So sánh biểu đồ Gantt và biểu đồ PERT?",
+    "expectedIntent": "COMPARISON",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Gantt thể hiện lịch trình bằng thanh ngang theo thời gian, PERT thể hiện mối quan hệ giữa các hoạt động bằng sơ đồ mạng.",
+    "keywords": ["gantt", "PERT", "thanh ngang", "sơ đồ mạng", "lịch trình"],
+    "split": "DEVELOPMENT"
+  },
+  {
+    "id": "BM-QLDA-CMP-006",
+    "workspace": "Quản lý dự án",
+    "question": "Phân biệt Product Backlog và Sprint Backlog trong Scrum?",
+    "expectedIntent": "COMPARISON",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Product Backlog là danh sách toàn bộ yêu cầu sản phẩm do Product Owner quản lý, Sprint Backlog là tập con được chọn cho Sprint hiện tại do Development Team quản lý.",
+    "keywords": ["product backlog", "sprint backlog", "yêu cầu", "tập con"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-QLDA-SUM-001",
+    "workspace": "Quản lý dự án",
+    "question": "Tóm tắt quy trình quản lý tích hợp dự án?",
+    "expectedIntent": "SUMMARY",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Quản lý tích hợp gồm: Xây dựng điều lệ dự án, Lập kế hoạch tổng thể, Chỉ đạo và quản lý công việc, Giám sát và kiểm soát, Kiểm soát thay đổi, và Kết thúc dự án.",
+    "keywords": ["tích hợp", "điều lệ", "kế hoạch", "giám sát", "kết thúc"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-QLDA-SUM-002",
+    "workspace": "Quản lý dự án",
+    "question": "Tóm tắt các giai đoạn vòng đời dự án?",
+    "expectedIntent": "SUMMARY",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Vòng đời dự án gồm: Khởi tạo (Initiation), Lập kế hoạch (Planning), Thực hiện (Execution), Giám sát & Kiểm soát (Monitoring & Controlling), và Kết thúc (Closing).",
+    "keywords": ["vòng đời", "khởi tạo", "lập kế hoạch", "thực hiện", "kết thúc"],
+    "split": "DEVELOPMENT"
+  },
+  {
+    "id": "BM-QLDA-SUM-003",
+    "workspace": "Quản lý dự án",
+    "question": "Tóm tắt nội dung chính của phương pháp Scrum?",
+    "expectedIntent": "SUMMARY",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Scrum là framework Agile với Sprint cố định, 3 vai trò (PO, SM, Dev Team), 4 sự kiện (Sprint Planning, Daily Standup, Sprint Review, Retrospective) và 3 artifact (Product Backlog, Sprint Backlog, Increment).",
+    "keywords": ["scrum", "sprint", "vai trò", "sự kiện", "artifact"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-QLDA-SUM-004",
+    "workspace": "Quản lý dự án",
+    "question": "Tóm tắt quy trình quản lý phạm vi dự án?",
+    "expectedIntent": "SUMMARY",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Quản lý phạm vi gồm: Lập kế hoạch quản lý phạm vi, Thu thập yêu cầu, Xác định phạm vi, Tạo WBS, Xác nhận phạm vi, và Kiểm soát phạm vi.",
+    "keywords": ["phạm vi", "yêu cầu", "WBS", "xác nhận", "kiểm soát"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-QLDA-SUM-005",
+    "workspace": "Quản lý dự án",
+    "question": "Tóm tắt các chiến lược ứng phó rủi ro tiêu cực?",
+    "expectedIntent": "SUMMARY",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "4 chiến lược ứng phó rủi ro tiêu cực: Tránh né (Avoid), Chuyển giao (Transfer), Giảm thiểu (Mitigate), và Chấp nhận (Accept).",
+    "keywords": ["tránh né", "chuyển giao", "giảm thiểu", "chấp nhận", "rủi ro"],
+    "split": "DEVELOPMENT"
+  },
+  {
+    "id": "BM-QLDA-SUM-006",
+    "workspace": "Quản lý dự án",
+    "question": "Tóm tắt nội dung quản lý truyền thông dự án?",
+    "expectedIntent": "SUMMARY",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Quản lý truyền thông gồm: Lập kế hoạch truyền thông, Quản lý các kênh thông tin, và Giám sát truyền thông để đảm bảo thông tin đến đúng người, đúng lúc.",
+    "keywords": ["truyền thông", "kế hoạch", "kênh thông tin", "giám sát"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-QLDA-RSN-001",
+    "workspace": "Quản lý dự án",
+    "question": "Tại sao dự án phần mềm thường bị trễ tiến độ? Phân tích nguyên nhân.",
+    "expectedIntent": "REASONING",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Dự án phần mềm thường trễ do: Yêu cầu thay đổi liên tục, ước lượng không chính xác, phụ thuộc kỹ thuật phức tạp, thiếu giao tiếp giữa các bên, và rủi ro không được quản lý tốt.",
+    "keywords": ["trễ", "yêu cầu thay đổi", "ước lượng", "phụ thuộc", "giao tiếp"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-QLDA-RSN-002",
+    "workspace": "Quản lý dự án",
+    "question": "Giải thích tại sao WBS lại quan trọng trong quản lý dự án?",
+    "expectedIntent": "REASONING",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "WBS quan trọng vì giúp phân chia công việc rõ ràng, dễ ước lượng chi phí/thời gian, phân công trách nhiệm, và kiểm soát phạm vi dự án.",
+    "keywords": ["WBS", "phân chia", "ước lượng", "trách nhiệm", "kiểm soát"],
+    "split": "DEVELOPMENT"
+  },
+  {
+    "id": "BM-QLDA-RSN-003",
+    "workspace": "Quản lý dự án",
+    "question": "Phân tích ưu điểm và hạn chế của phương pháp Agile?",
+    "expectedIntent": "REASONING",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Ưu điểm: Linh hoạt với thay đổi, giao hàng sớm, phản hồi nhanh. Hạn chế: Khó ước lượng tổng chi phí/thời gian, đòi hỏi khách hàng tham gia liên tục, ít tài liệu.",
+    "keywords": ["agile", "linh hoạt", "giao hàng sớm", "ước lượng", "tài liệu"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-QLDA-RSN-004",
+    "workspace": "Quản lý dự án",
+    "question": "Khi nào nên sử dụng mô hình Waterfall thay vì Agile?",
+    "expectedIntent": "REASONING",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Nên dùng Waterfall khi yêu cầu rõ ràng và ổn định, dự án có quy mô nhỏ, cần tài liệu chi tiết, hoặc khách hàng không thể tham gia thường xuyên.",
+    "keywords": ["waterfall", "yêu cầu rõ ràng", "quy mô nhỏ", "tài liệu"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-QLDA-RSN-005",
+    "workspace": "Quản lý dự án",
+    "question": "Giải thích vai trò của Evidence Gate trong đánh giá chất lượng retrieval?",
+    "expectedIntent": "REASONING",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Evidence Gate đánh giá mức độ bằng chứng từ tài liệu trước khi trả lời, giúp hệ thống từ chối khi tài liệu không đủ thông tin thay vì sinh câu trả lời sai.",
+    "keywords": ["evidence gate", "bằng chứng", "từ chối", "câu trả lời sai"],
+    "split": "DEVELOPMENT"
+  },
+  {
+    "id": "BM-QLDA-RSN-006",
+    "workspace": "Quản lý dự án",
+    "question": "Phân tích tại sao quản lý stakeholder quan trọng trong dự án CNTT?",
+    "expectedIntent": "REASONING",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Quản lý stakeholder quan trọng vì các bên liên quan ảnh hưởng đến quyết định, cung cấp nguồn lực, và đánh giá thành công dự án. Thiếu quản lý stakeholder dẫn đến xung đột và thất bại.",
+    "keywords": ["stakeholder", "quyết định", "nguồn lực", "xung đột"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-QLDA-OOS-001",
+    "workspace": "Quản lý dự án",
+    "question": "Giá Bitcoin hôm nay là bao nhiêu?",
+    "expectedIntent": "OUT_OF_SCOPE",
+    "expectedDecision": "REFUSE",
+    "groundTruth": "",
+    "keywords": [],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-QLDA-OOS-002",
+    "workspace": "Quản lý dự án",
+    "question": "Cách nấu phở bò truyền thống Hà Nội?",
+    "expectedIntent": "OUT_OF_SCOPE",
+    "expectedDecision": "REFUSE",
+    "groundTruth": "",
+    "keywords": [],
+    "split": "DEVELOPMENT"
+  },
+  {
+    "id": "BM-QLDA-OOS-003",
+    "workspace": "Quản lý dự án",
+    "question": "Thời tiết ở TP.HCM ngày mai như thế nào?",
+    "expectedIntent": "OUT_OF_SCOPE",
+    "expectedDecision": "REFUSE",
+    "groundTruth": "",
+    "keywords": [],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-QLDA-OOS-004",
+    "workspace": "Quản lý dự án",
+    "question": "Lập trình Python nâng cao có những kỹ thuật gì?",
+    "expectedIntent": "OUT_OF_SCOPE",
+    "expectedDecision": "REFUSE",
+    "groundTruth": "",
+    "keywords": [],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-QLDA-OOS-005",
+    "workspace": "Quản lý dự án",
+    "question": "Cấu trúc DNA của sinh vật hoạt động như thế nào?",
+    "expectedIntent": "OUT_OF_SCOPE",
+    "expectedDecision": "REFUSE",
+    "groundTruth": "",
+    "keywords": [],
+    "split": "DEVELOPMENT"
+  },
+  {
+    "id": "BM-QLDA-OOS-006",
+    "workspace": "Quản lý dự án",
+    "question": "Đội tuyển bóng đá Việt Nam xếp hạng FIFA bao nhiêu?",
+    "expectedIntent": "OUT_OF_SCOPE",
+    "expectedDecision": "REFUSE",
+    "groundTruth": "",
+    "keywords": [],
+    "split": "HOLDOUT"
+  },
+
+  {
+    "id": "BM-OOP-DEF-001",
+    "workspace": "Lập trình hướng đối tượng",
+    "question": "Tính Đa hình (Polymorphism) trong Lập trình hướng đối tượng là gì?",
+    "expectedIntent": "DEFINITION",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Đa hình là khả năng các đối tượng thuộc các lớp khác nhau phản ứng khác nhau với cùng một thông điệp hoặc phương thức.",
+    "keywords": ["đa hình", "polymorphism", "đối tượng", "lớp", "phương thức"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-OOP-DEF-002",
+    "workspace": "Lập trình hướng đối tượng",
+    "question": "Tính đóng gói (Encapsulation) là gì?",
+    "expectedIntent": "DEFINITION",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Đóng gói là cơ chế ẩn giấu dữ liệu bên trong đối tượng, chỉ cho phép truy cập thông qua các phương thức công khai.",
+    "keywords": ["đóng gói", "encapsulation", "ẩn giấu", "dữ liệu", "phương thức công khai"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-OOP-DEF-003",
+    "workspace": "Lập trình hướng đối tượng",
+    "question": "Lớp trừu tượng (Abstract Class) là gì?",
+    "expectedIntent": "DEFINITION",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Lớp trừu tượng là lớp không thể tạo đối tượng trực tiếp, chứa ít nhất một phương thức trừu tượng, dùng làm lớp cơ sở cho các lớp con.",
+    "keywords": ["lớp trừu tượng", "abstract", "phương thức trừu tượng", "lớp cơ sở"],
+    "split": "DEVELOPMENT"
+  },
+  {
+    "id": "BM-OOP-DEF-004",
+    "workspace": "Lập trình hướng đối tượng",
+    "question": "Tính kế thừa (Inheritance) trong OOP là gì?",
+    "expectedIntent": "DEFINITION",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Kế thừa cho phép lớp con thừa hưởng các thuộc tính và phương thức từ lớp cha, giúp tái sử dụng mã nguồn và mở rộng chức năng.",
+    "keywords": ["kế thừa", "inheritance", "lớp con", "lớp cha", "tái sử dụng"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-OOP-DEF-005",
+    "workspace": "Lập trình hướng đối tượng",
+    "question": "Interface trong Java là gì?",
+    "expectedIntent": "DEFINITION",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Interface là kiểu tham chiếu trừu tượng hoàn toàn, chỉ chứa khai báo phương thức (không có thân), mà các lớp phải implements để cài đặt.",
+    "keywords": ["interface", "trừu tượng", "khai báo", "implements"],
+    "split": "DEVELOPMENT"
+  },
+  {
+    "id": "BM-OOP-DEF-006",
+    "workspace": "Lập trình hướng đối tượng",
+    "question": "Constructor (Hàm khởi tạo) là gì?",
+    "expectedIntent": "DEFINITION",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Constructor là phương thức đặc biệt được gọi tự động khi tạo đối tượng, dùng để khởi tạo giá trị ban đầu cho các thuộc tính.",
+    "keywords": ["constructor", "hàm khởi tạo", "đối tượng", "thuộc tính", "giá trị ban đầu"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-OOP-DEF-007",
+    "workspace": "Lập trình hướng đối tượng",
+    "question": "Design Pattern (Mẫu thiết kế) là gì?",
+    "expectedIntent": "DEFINITION",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Design Pattern là giải pháp tổng quát cho các vấn đề thiết kế phần mềm thường gặp, được tổ chức thành các mẫu có thể tái sử dụng.",
+    "keywords": ["design pattern", "mẫu thiết kế", "giải pháp", "tái sử dụng"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-OOP-DEF-008",
+    "workspace": "Lập trình hướng đối tượng",
+    "question": "Nguyên tắc SOLID trong OOP là gì?",
+    "expectedIntent": "DEFINITION",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "SOLID là tập 5 nguyên tắc thiết kế hướng đối tượng: Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, Dependency Inversion.",
+    "keywords": ["SOLID", "single responsibility", "open closed", "liskov", "dependency inversion"],
+    "split": "DEVELOPMENT"
+  },
+  {
+    "id": "BM-OOP-FACT-001",
+    "workspace": "Lập trình hướng đối tượng",
+    "question": "Java hỗ trợ đa kế thừa không?",
+    "expectedIntent": "FACT",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Java không hỗ trợ đa kế thừa với lớp (class), nhưng hỗ trợ đa kế thừa thông qua interface.",
+    "keywords": ["java", "đa kế thừa", "class", "interface", "không hỗ trợ"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-OOP-FACT-002",
+    "workspace": "Lập trình hướng đối tượng",
+    "question": "Có bao nhiêu access modifier trong Java?",
+    "expectedIntent": "FACT",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Java có 4 access modifier: public, protected, default (package-private), và private.",
+    "keywords": ["access modifier", "public", "protected", "default", "private", "4"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-OOP-FACT-003",
+    "workspace": "Lập trình hướng đối tượng",
+    "question": "Từ khóa static trong Java có tác dụng gì?",
+    "expectedIntent": "FACT",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Từ khóa static cho phép truy cập thành viên lớp mà không cần tạo đối tượng, thuộc về lớp chứ không thuộc về đối tượng cụ thể.",
+    "keywords": ["static", "lớp", "đối tượng", "không cần tạo"],
+    "split": "DEVELOPMENT"
+  },
+  {
+    "id": "BM-OOP-FACT-004",
+    "workspace": "Lập trình hướng đối tượng",
+    "question": "Phương thức finalize() trong Java có tác dụng gì?",
+    "expectedIntent": "FACT",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "finalize() là phương thức được gọi bởi Garbage Collector trước khi thu hồi bộ nhớ của đối tượng, dùng để dọn dẹp tài nguyên.",
+    "keywords": ["finalize", "garbage collector", "bộ nhớ", "dọn dẹp", "tài nguyên"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-OOP-FACT-005",
+    "workspace": "Lập trình hướng đối tượng",
+    "question": "Từ khóa super trong Java dùng để làm gì?",
+    "expectedIntent": "FACT",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Từ khóa super dùng để tham chiếu đến lớp cha trực tiếp, có thể gọi constructor, phương thức hoặc truy cập thuộc tính của lớp cha.",
+    "keywords": ["super", "lớp cha", "constructor", "phương thức", "thuộc tính"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-OOP-FACT-006",
+    "workspace": "Lập trình hướng đối tượng",
+    "question": "Từ khóa final trong Java có những cách sử dụng nào?",
+    "expectedIntent": "FACT",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "final dùng với biến (hằng số không đổi), phương thức (không ghi đè), và lớp (không kế thừa).",
+    "keywords": ["final", "hằng số", "không đổi", "không ghi đè", "không kế thừa"],
+    "split": "DEVELOPMENT"
+  },
+  {
+    "id": "BM-OOP-FACT-007",
+    "workspace": "Lập trình hướng đối tượng",
+    "question": "Exception handling trong Java sử dụng những từ khóa nào?",
+    "expectedIntent": "FACT",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Java sử dụng try, catch, finally, throw, và throws để xử lý ngoại lệ.",
+    "keywords": ["try", "catch", "finally", "throw", "throws", "exception"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-OOP-FACT-008",
+    "workspace": "Lập trình hướng đối tượng",
+    "question": "Collection Framework trong Java gồm những interface chính nào?",
+    "expectedIntent": "FACT",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Collection Framework gồm các interface chính: Collection, List, Set, Queue, Map, và các lớp triển khai như ArrayList, LinkedList, HashSet, HashMap.",
+    "keywords": ["collection", "list", "set", "queue", "map", "ArrayList", "HashMap"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-OOP-CMP-001",
+    "workspace": "Lập trình hướng đối tượng",
+    "question": "So sánh sự khác nhau giữa Nạp chồng (Overloading) và Ghi đè (Overriding)?",
+    "expectedIntent": "COMPARISON",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Overloading xảy ra trong cùng một lớp với cùng tên nhưng khác tham số; Overriding xảy ra giữa lớp cha và lớp con với cùng chữ ký phương thức.",
+    "keywords": ["overloading", "overriding", "nạp chồng", "ghi đè", "tham số", "chữ ký"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-OOP-CMP-002",
+    "workspace": "Lập trình hướng đối tượng",
+    "question": "So sánh Abstract Class và Interface trong Java?",
+    "expectedIntent": "COMPARISON",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Abstract Class có thể chứa phương thức có thân và thuộc tính, chỉ kế thừa đơn. Interface chỉ chứa khai báo phương thức, hỗ trợ đa kế thừa.",
+    "keywords": ["abstract class", "interface", "kế thừa đơn", "đa kế thừa", "phương thức"],
+    "split": "DEVELOPMENT"
+  },
+  {
+    "id": "BM-OOP-CMP-003",
+    "workspace": "Lập trình hướng đối tượng",
+    "question": "So sánh ArrayList và LinkedList trong Java?",
+    "expectedIntent": "COMPARISON",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "ArrayList dựa trên mảng, truy cập nhanh O(1) nhưng chèn/xóa chậm. LinkedList dựa trên danh sách liên kết, chèn/xóa nhanh nhưng truy cập chậm O(n).",
+    "keywords": ["ArrayList", "LinkedList", "mảng", "danh sách liên kết", "O(1)", "O(n)"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-OOP-CMP-004",
+    "workspace": "Lập trình hướng đối tượng",
+    "question": "Phân biệt == và equals() trong Java?",
+    "expectedIntent": "COMPARISON",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "== so sánh tham chiếu (địa chỉ bộ nhớ), equals() so sánh nội dung/giá trị của đối tượng.",
+    "keywords": ["==", "equals", "tham chiếu", "nội dung", "địa chỉ bộ nhớ"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-OOP-CMP-005",
+    "workspace": "Lập trình hướng đối tượng",
+    "question": "So sánh Composition và Inheritance trong thiết kế hướng đối tượng?",
+    "expectedIntent": "COMPARISON",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Inheritance tạo quan hệ 'is-a' với coupling chặt. Composition tạo quan hệ 'has-a' linh hoạt hơn, ưu tiên composition over inheritance.",
+    "keywords": ["composition", "inheritance", "is-a", "has-a", "coupling"],
+    "split": "DEVELOPMENT"
+  },
+  {
+    "id": "BM-OOP-CMP-006",
+    "workspace": "Lập trình hướng đối tượng",
+    "question": "So sánh HashMap và TreeMap trong Java?",
+    "expectedIntent": "COMPARISON",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "HashMap không đảm bảo thứ tự, truy cập O(1). TreeMap sắp xếp theo key tự nhiên, truy cập O(log n).",
+    "keywords": ["HashMap", "TreeMap", "thứ tự", "O(1)", "O(log n)", "sắp xếp"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-OOP-SUM-001",
+    "workspace": "Lập trình hướng đối tượng",
+    "question": "Tóm tắt 4 tính chất cơ bản của lập trình hướng đối tượng?",
+    "expectedIntent": "SUMMARY",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "4 tính chất: Đóng gói (ẩn dữ liệu), Kế thừa (tái sử dụng), Đa hình (cùng thông điệp khác hành vi), Trừu tượng (đơn giản hóa phức tạp).",
+    "keywords": ["đóng gói", "kế thừa", "đa hình", "trừu tượng", "4 tính chất"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-OOP-SUM-002",
+    "workspace": "Lập trình hướng đối tượng",
+    "question": "Tóm tắt các loại Design Pattern phổ biến?",
+    "expectedIntent": "SUMMARY",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "3 nhóm chính: Creational (Singleton, Factory, Builder), Structural (Adapter, Decorator, Facade), Behavioral (Observer, Strategy, Template Method).",
+    "keywords": ["creational", "structural", "behavioral", "singleton", "factory", "observer"],
+    "split": "DEVELOPMENT"
+  },
+  {
+    "id": "BM-OOP-SUM-003",
+    "workspace": "Lập trình hướng đối tượng",
+    "question": "Tóm tắt nguyên tắc SOLID và ý nghĩa từng chữ cái?",
+    "expectedIntent": "SUMMARY",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "S: Single Responsibility (một trách nhiệm), O: Open/Closed (mở rộng/đóng sửa đổi), L: Liskov Substitution (thay thế), I: Interface Segregation (phân tách), D: Dependency Inversion (đảo ngược phụ thuộc).",
+    "keywords": ["SOLID", "single responsibility", "open", "closed", "liskov", "interface segregation", "dependency inversion"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-OOP-SUM-004",
+    "workspace": "Lập trình hướng đối tượng",
+    "question": "Tóm tắt vòng đời đối tượng trong Java?",
+    "expectedIntent": "SUMMARY",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Vòng đời: Khai báo lớp → Khởi tạo bằng new + constructor → Sử dụng (gọi phương thức, truy cập thuộc tính) → Garbage Collection khi không còn tham chiếu.",
+    "keywords": ["vòng đời", "khởi tạo", "new", "constructor", "garbage collection"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-OOP-SUM-005",
+    "workspace": "Lập trình hướng đối tượng",
+    "question": "Tóm tắt cơ chế xử lý ngoại lệ trong Java?",
+    "expectedIntent": "SUMMARY",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Java xử lý ngoại lệ qua try-catch-finally. Ngoại lệ chia thành Checked (bắt buộc xử lý) và Unchecked (RuntimeException). Có thể tạo custom exception kế thừa từ Exception.",
+    "keywords": ["try", "catch", "finally", "checked", "unchecked", "RuntimeException"],
+    "split": "DEVELOPMENT"
+  },
+  {
+    "id": "BM-OOP-SUM-006",
+    "workspace": "Lập trình hướng đối tượng",
+    "question": "Tóm tắt các loại quan hệ giữa các lớp trong UML?",
+    "expectedIntent": "SUMMARY",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Các quan hệ UML: Association (liên kết), Aggregation (gom nhóm), Composition (hợp thành), Inheritance (kế thừa), Dependency (phụ thuộc), Realization (hiện thực hóa).",
+    "keywords": ["association", "aggregation", "composition", "inheritance", "dependency", "UML"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-OOP-RSN-001",
+    "workspace": "Lập trình hướng đối tượng",
+    "question": "Tại sao nên ưu tiên Composition thay vì Inheritance?",
+    "expectedIntent": "REASONING",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Composition linh hoạt hơn, giảm coupling, dễ thay đổi hành vi lúc runtime, tránh vấn đề diamond problem và fragile base class.",
+    "keywords": ["composition", "inheritance", "coupling", "runtime", "diamond problem"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-OOP-RSN-002",
+    "workspace": "Lập trình hướng đối tượng",
+    "question": "Giải thích tại sao nguyên tắc Single Responsibility quan trọng?",
+    "expectedIntent": "REASONING",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "SRP quan trọng vì mỗi lớp chỉ có một lý do thay đổi, giúp code dễ bảo trì, dễ test, giảm side effect khi sửa đổi.",
+    "keywords": ["single responsibility", "một lý do", "bảo trì", "test", "side effect"],
+    "split": "DEVELOPMENT"
+  },
+  {
+    "id": "BM-OOP-RSN-003",
+    "workspace": "Lập trình hướng đối tượng",
+    "question": "Phân tích ưu và nhược điểm của Singleton Pattern?",
+    "expectedIntent": "REASONING",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Ưu: Đảm bảo một instance duy nhất, tiết kiệm tài nguyên, global access point. Nhược: Khó test (mock), vi phạm SRP, tạo global state khó kiểm soát.",
+    "keywords": ["singleton", "một instance", "global", "khó test", "SRP"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-OOP-RSN-004",
+    "workspace": "Lập trình hướng đối tượng",
+    "question": "Tại sao Java không hỗ trợ đa kế thừa lớp?",
+    "expectedIntent": "REASONING",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Java tránh đa kế thừa lớp để loại bỏ Diamond Problem - khi hai lớp cha có cùng phương thức gây mập mờ cho lớp con. Java dùng interface để thay thế.",
+    "keywords": ["đa kế thừa", "diamond problem", "mập mờ", "interface"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-OOP-RSN-005",
+    "workspace": "Lập trình hướng đối tượng",
+    "question": "Giải thích tại sao cần sử dụng Generics trong Java?",
+    "expectedIntent": "REASONING",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Generics cung cấp type safety tại compile-time, loại bỏ cần ép kiểu, tái sử dụng code với nhiều kiểu dữ liệu, và phát hiện lỗi sớm hơn.",
+    "keywords": ["generics", "type safety", "compile-time", "ép kiểu", "tái sử dụng"],
+    "split": "DEVELOPMENT"
+  },
+  {
+    "id": "BM-OOP-RSN-006",
+    "workspace": "Lập trình hướng đối tượng",
+    "question": "Phân tích khi nào nên dùng Abstract Class, khi nào nên dùng Interface?",
+    "expectedIntent": "REASONING",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Dùng Abstract Class khi có code chung cần chia sẻ, có quan hệ is-a mạnh. Dùng Interface khi cần đa kế thừa, định nghĩa contract, hoặc các lớp không liên quan cùng thực hiện hành vi.",
+    "keywords": ["abstract class", "interface", "code chung", "is-a", "contract", "đa kế thừa"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-OOP-OOS-001",
+    "workspace": "Lập trình hướng đối tượng",
+    "question": "Tỷ giá USD/VND hôm nay là bao nhiêu?",
+    "expectedIntent": "OUT_OF_SCOPE",
+    "expectedDecision": "REFUSE",
+    "groundTruth": "",
+    "keywords": [],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-OOP-OOS-002",
+    "workspace": "Lập trình hướng đối tượng",
+    "question": "Cách tập gym giảm cân hiệu quả nhất?",
+    "expectedIntent": "OUT_OF_SCOPE",
+    "expectedDecision": "REFUSE",
+    "groundTruth": "",
+    "keywords": [],
+    "split": "DEVELOPMENT"
+  },
+  {
+    "id": "BM-OOP-OOS-003",
+    "workspace": "Lập trình hướng đối tượng",
+    "question": "Lịch sử hình thành thành phố Hồ Chí Minh?",
+    "expectedIntent": "OUT_OF_SCOPE",
+    "expectedDecision": "REFUSE",
+    "groundTruth": "",
+    "keywords": [],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-OOP-OOS-004",
+    "workspace": "Lập trình hướng đối tượng",
+    "question": "Cách trồng cây bonsai trong nhà?",
+    "expectedIntent": "OUT_OF_SCOPE",
+    "expectedDecision": "REFUSE",
+    "groundTruth": "",
+    "keywords": [],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-OOP-OOS-005",
+    "workspace": "Lập trình hướng đối tượng",
+    "question": "Công thức nấu bún bò Huế truyền thống?",
+    "expectedIntent": "OUT_OF_SCOPE",
+    "expectedDecision": "REFUSE",
+    "groundTruth": "",
+    "keywords": [],
+    "split": "DEVELOPMENT"
+  },
+  {
+    "id": "BM-OOP-OOS-006",
+    "workspace": "Lập trình hướng đối tượng",
+    "question": "Cách đầu tư chứng khoán cho người mới bắt đầu?",
+    "expectedIntent": "OUT_OF_SCOPE",
+    "expectedDecision": "REFUSE",
+    "groundTruth": "",
+    "keywords": [],
+    "split": "HOLDOUT"
+  },
+
+  {
+    "id": "BM-MDB-DEF-001",
+    "workspace": "MongoDB Basic",
+    "question": "MongoDB là gì?",
+    "expectedIntent": "DEFINITION",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "MongoDB là hệ quản trị cơ sở dữ liệu NoSQL hướng tài liệu (document-oriented), lưu trữ dữ liệu dưới dạng JSON-like documents (BSON).",
+    "keywords": ["MongoDB", "NoSQL", "document", "BSON", "cơ sở dữ liệu"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-MDB-DEF-002",
+    "workspace": "MongoDB Basic",
+    "question": "Document trong MongoDB là gì?",
+    "expectedIntent": "DEFINITION",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Document là đơn vị dữ liệu cơ bản trong MongoDB, tương tự một record trong SQL, lưu dưới dạng BSON với cặp key-value.",
+    "keywords": ["document", "BSON", "key-value", "record"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-MDB-DEF-003",
+    "workspace": "MongoDB Basic",
+    "question": "Collection trong MongoDB là gì?",
+    "expectedIntent": "DEFINITION",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Collection là nhóm các document trong MongoDB, tương tự table trong SQL nhưng không có schema cố định.",
+    "keywords": ["collection", "document", "table", "schema"],
+    "split": "DEVELOPMENT"
+  },
+  {
+    "id": "BM-MDB-DEF-004",
+    "workspace": "MongoDB Basic",
+    "question": "Replica Set trong MongoDB là gì?",
+    "expectedIntent": "DEFINITION",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Replica Set là nhóm các MongoDB server duy trì cùng bộ dữ liệu, đảm bảo tính sẵn sàng cao và khôi phục dữ liệu khi node chính bị lỗi.",
+    "keywords": ["replica set", "server", "sẵn sàng cao", "khôi phục"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-MDB-DEF-005",
+    "workspace": "MongoDB Basic",
+    "question": "Sharding trong MongoDB là gì?",
+    "expectedIntent": "DEFINITION",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Sharding là kỹ thuật phân tán dữ liệu qua nhiều server (shard) để xử lý tải cao và lưu trữ dữ liệu lớn.",
+    "keywords": ["sharding", "phân tán", "shard", "tải cao", "dữ liệu lớn"],
+    "split": "DEVELOPMENT"
+  },
+  {
+    "id": "BM-MDB-DEF-006",
+    "workspace": "MongoDB Basic",
+    "question": "Index trong MongoDB là gì và tại sao cần dùng?",
+    "expectedIntent": "DEFINITION",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Index là cấu trúc dữ liệu đặc biệt giúp tăng tốc truy vấn bằng cách lưu trữ tham chiếu đến các document theo thứ tự sắp xếp của field được index.",
+    "keywords": ["index", "tăng tốc", "truy vấn", "sắp xếp", "field"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-MDB-DEF-007",
+    "workspace": "MongoDB Basic",
+    "question": "Aggregation Pipeline trong MongoDB là gì?",
+    "expectedIntent": "DEFINITION",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Aggregation Pipeline là framework xử lý dữ liệu gồm nhiều stage tuần tự, biến đổi và tổng hợp documents trong collection.",
+    "keywords": ["aggregation", "pipeline", "stage", "biến đổi", "tổng hợp"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-MDB-DEF-008",
+    "workspace": "MongoDB Basic",
+    "question": "BSON trong MongoDB là gì?",
+    "expectedIntent": "DEFINITION",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "BSON (Binary JSON) là định dạng nhị phân mở rộng của JSON mà MongoDB sử dụng để lưu trữ document, hỗ trợ thêm kiểu dữ liệu như Date, ObjectId.",
+    "keywords": ["BSON", "binary JSON", "nhị phân", "ObjectId", "Date"],
+    "split": "DEVELOPMENT"
+  },
+  {
+    "id": "BM-MDB-FACT-001",
+    "workspace": "MongoDB Basic",
+    "question": "MongoDB sử dụng port mặc định nào?",
+    "expectedIntent": "FACT",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "MongoDB sử dụng port mặc định 27017.",
+    "keywords": ["port", "27017", "mặc định"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-MDB-FACT-002",
+    "workspace": "MongoDB Basic",
+    "question": "Lệnh nào dùng để chèn document vào collection trong MongoDB?",
+    "expectedIntent": "FACT",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Dùng insertOne() để chèn 1 document hoặc insertMany() để chèn nhiều document vào collection.",
+    "keywords": ["insertOne", "insertMany", "chèn", "document"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-MDB-FACT-003",
+    "workspace": "MongoDB Basic",
+    "question": "ObjectId trong MongoDB có cấu trúc như thế nào?",
+    "expectedIntent": "FACT",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "ObjectId là giá trị 12 byte gồm: 4 byte timestamp, 5 byte random value, 3 byte incrementing counter.",
+    "keywords": ["ObjectId", "12 byte", "timestamp", "random", "counter"],
+    "split": "DEVELOPMENT"
+  },
+  {
+    "id": "BM-MDB-FACT-004",
+    "workspace": "MongoDB Basic",
+    "question": "Các toán tử so sánh phổ biến trong MongoDB query là gì?",
+    "expectedIntent": "FACT",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Các toán tử phổ biến: $eq (bằng), $ne (không bằng), $gt (lớn hơn), $gte (lớn hơn hoặc bằng), $lt (nhỏ hơn), $lte (nhỏ hơn hoặc bằng), $in (trong danh sách).",
+    "keywords": ["$eq", "$ne", "$gt", "$lt", "$in", "toán tử"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-MDB-FACT-005",
+    "workspace": "MongoDB Basic",
+    "question": "Lệnh nào dùng để cập nhật document trong MongoDB?",
+    "expectedIntent": "FACT",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Dùng updateOne(), updateMany() hoặc replaceOne(). Toán tử cập nhật phổ biến: $set, $unset, $inc, $push.",
+    "keywords": ["updateOne", "updateMany", "$set", "$inc", "$push"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-MDB-FACT-006",
+    "workspace": "MongoDB Basic",
+    "question": "Aggregation Pipeline có những stage phổ biến nào?",
+    "expectedIntent": "FACT",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Các stage phổ biến: $match (lọc), $group (nhóm), $sort (sắp xếp), $project (chọn field), $limit, $skip, $lookup (join), $unwind.",
+    "keywords": ["$match", "$group", "$sort", "$project", "$lookup", "$unwind"],
+    "split": "DEVELOPMENT"
+  },
+  {
+    "id": "BM-MDB-FACT-007",
+    "workspace": "MongoDB Basic",
+    "question": "Các loại index trong MongoDB là gì?",
+    "expectedIntent": "FACT",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "MongoDB hỗ trợ: Single Field Index, Compound Index, Multikey Index (cho mảng), Text Index, Geospatial Index, Hashed Index.",
+    "keywords": ["single field", "compound", "multikey", "text index", "geospatial"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-MDB-FACT-008",
+    "workspace": "MongoDB Basic",
+    "question": "Lệnh nào dùng để xóa document trong MongoDB?",
+    "expectedIntent": "FACT",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Dùng deleteOne() để xóa 1 document hoặc deleteMany() để xóa nhiều document thỏa điều kiện.",
+    "keywords": ["deleteOne", "deleteMany", "xóa", "document"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-MDB-CMP-001",
+    "workspace": "MongoDB Basic",
+    "question": "So sánh MongoDB và MySQL?",
+    "expectedIntent": "COMPARISON",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "MongoDB là NoSQL lưu document, schema linh hoạt, scale ngang dễ. MySQL là SQL quan hệ, schema cố định, ACID mạnh, phù hợp dữ liệu có cấu trúc.",
+    "keywords": ["MongoDB", "MySQL", "NoSQL", "SQL", "schema", "scale"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-MDB-CMP-002",
+    "workspace": "MongoDB Basic",
+    "question": "So sánh find() và aggregate() trong MongoDB?",
+    "expectedIntent": "COMPARISON",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "find() dùng cho truy vấn đơn giản với filter và projection. aggregate() mạnh hơn với pipeline nhiều stage cho tính toán phức tạp, nhóm, join.",
+    "keywords": ["find", "aggregate", "filter", "pipeline", "stage"],
+    "split": "DEVELOPMENT"
+  },
+  {
+    "id": "BM-MDB-CMP-003",
+    "workspace": "MongoDB Basic",
+    "question": "So sánh Embedding và Referencing trong thiết kế schema MongoDB?",
+    "expectedIntent": "COMPARISON",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Embedding nhúng dữ liệu liên quan vào cùng document, đọc nhanh nhưng document có thể lớn. Referencing lưu reference ID, document nhỏ gọn nhưng cần nhiều query.",
+    "keywords": ["embedding", "referencing", "nhúng", "reference", "document"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-MDB-CMP-004",
+    "workspace": "MongoDB Basic",
+    "question": "So sánh MongoDB Atlas và MongoDB self-hosted?",
+    "expectedIntent": "COMPARISON",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Atlas là dịch vụ cloud managed, dễ deploy/scale/backup tự động. Self-hosted cần tự quản lý server, cấu hình, backup nhưng kiểm soát hoàn toàn.",
+    "keywords": ["Atlas", "self-hosted", "cloud", "managed", "deploy", "backup"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-MDB-CMP-005",
+    "workspace": "MongoDB Basic",
+    "question": "Phân biệt $push và $addToSet trong MongoDB?",
+    "expectedIntent": "COMPARISON",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "$push thêm phần tử vào mảng (cho phép trùng), $addToSet chỉ thêm nếu chưa tồn tại (không trùng lặp).",
+    "keywords": ["$push", "$addToSet", "mảng", "trùng lặp"],
+    "split": "DEVELOPMENT"
+  },
+  {
+    "id": "BM-MDB-CMP-006",
+    "workspace": "MongoDB Basic",
+    "question": "So sánh updateOne() và replaceOne() trong MongoDB?",
+    "expectedIntent": "COMPARISON",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "updateOne() dùng toán tử ($set, $inc) để cập nhật một số field. replaceOne() thay thế toàn bộ document (trừ _id).",
+    "keywords": ["updateOne", "replaceOne", "$set", "thay thế", "toàn bộ"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-MDB-SUM-001",
+    "workspace": "MongoDB Basic",
+    "question": "Tóm tắt các thao tác CRUD cơ bản trong MongoDB?",
+    "expectedIntent": "SUMMARY",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "CRUD: Create (insertOne/insertMany), Read (find/findOne), Update (updateOne/updateMany), Delete (deleteOne/deleteMany).",
+    "keywords": ["CRUD", "insert", "find", "update", "delete"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-MDB-SUM-002",
+    "workspace": "MongoDB Basic",
+    "question": "Tóm tắt các bước cài đặt và kết nối MongoDB?",
+    "expectedIntent": "SUMMARY",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Cài đặt MongoDB Server, khởi động mongod, kết nối bằng mongosh hoặc MongoDB Compass, tạo database và collection, thực hiện CRUD.",
+    "keywords": ["cài đặt", "mongod", "mongosh", "Compass", "kết nối"],
+    "split": "DEVELOPMENT"
+  },
+  {
+    "id": "BM-MDB-SUM-003",
+    "workspace": "MongoDB Basic",
+    "question": "Tóm tắt các kiểu dữ liệu được hỗ trợ trong MongoDB?",
+    "expectedIntent": "SUMMARY",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "MongoDB hỗ trợ: String, Number (Integer, Long, Double, Decimal128), Boolean, Date, Array, Object, ObjectId, Null, Binary Data, Regular Expression.",
+    "keywords": ["String", "Number", "Boolean", "Date", "Array", "Object", "ObjectId"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-MDB-SUM-004",
+    "workspace": "MongoDB Basic",
+    "question": "Tóm tắt các nguyên tắc thiết kế schema trong MongoDB?",
+    "expectedIntent": "SUMMARY",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Nguyên tắc: Thiết kế theo pattern truy vấn, ưu tiên embedding cho quan hệ 1-1/1-N nhỏ, dùng referencing cho N-N hoặc document lớn, tránh join quá nhiều, denormalize khi cần hiệu suất đọc.",
+    "keywords": ["schema", "pattern truy vấn", "embedding", "referencing", "denormalize"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-MDB-SUM-005",
+    "workspace": "MongoDB Basic",
+    "question": "Tóm tắt cơ chế bảo mật trong MongoDB?",
+    "expectedIntent": "SUMMARY",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "MongoDB bảo mật qua: Authentication (xác thực SCRAM, X.509), Authorization (RBAC - Role-Based Access Control), Encryption (TLS/SSL truyền tải, Encryption at Rest), Auditing.",
+    "keywords": ["authentication", "authorization", "RBAC", "encryption", "TLS"],
+    "split": "DEVELOPMENT"
+  },
+  {
+    "id": "BM-MDB-SUM-006",
+    "workspace": "MongoDB Basic",
+    "question": "Tóm tắt khái niệm về Transactions trong MongoDB?",
+    "expectedIntent": "SUMMARY",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "MongoDB hỗ trợ multi-document transactions từ phiên bản 4.0 (replica set) và 4.2 (sharded cluster), đảm bảo ACID cho nhiều thao tác ghi trên nhiều document/collection.",
+    "keywords": ["transactions", "multi-document", "ACID", "replica set", "sharded"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-MDB-RSN-001",
+    "workspace": "MongoDB Basic",
+    "question": "Tại sao MongoDB phù hợp cho ứng dụng web hiện đại?",
+    "expectedIntent": "REASONING",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "MongoDB phù hợp vì schema linh hoạt phù hợp dữ liệu thay đổi, JSON-like format tương thích với JavaScript, scale ngang dễ, hiệu suất đọc/ghi cao cho workload lớn.",
+    "keywords": ["schema linh hoạt", "JSON", "scale ngang", "hiệu suất", "web"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-MDB-RSN-002",
+    "workspace": "MongoDB Basic",
+    "question": "Giải thích tại sao Index quan trọng trong MongoDB?",
+    "expectedIntent": "REASONING",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Không có index, MongoDB phải quét toàn bộ collection (collection scan), rất chậm với dữ liệu lớn. Index giúp truy vấn O(log n) thay vì O(n), giảm đáng kể thời gian tìm kiếm.",
+    "keywords": ["index", "collection scan", "O(log n)", "chậm", "tìm kiếm"],
+    "split": "DEVELOPMENT"
+  },
+  {
+    "id": "BM-MDB-RSN-003",
+    "workspace": "MongoDB Basic",
+    "question": "Khi nào nên dùng embedding, khi nào nên dùng referencing trong MongoDB?",
+    "expectedIntent": "REASONING",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Dùng embedding khi dữ liệu liên quan luôn được đọc cùng nhau, quan hệ 1-1 hoặc 1-N nhỏ. Dùng referencing khi document con lớn, quan hệ N-N, hoặc dữ liệu cần cập nhật độc lập.",
+    "keywords": ["embedding", "referencing", "1-1", "1-N", "N-N", "cập nhật"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-MDB-RSN-004",
+    "workspace": "MongoDB Basic",
+    "question": "Phân tích ưu và nhược điểm của MongoDB so với cơ sở dữ liệu quan hệ?",
+    "expectedIntent": "REASONING",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Ưu: Schema linh hoạt, scale ngang, hiệu suất ghi cao, phù hợp dữ liệu phi cấu trúc. Nhược: Không có JOIN mạnh, ACID hạn chế (trước 4.0), dữ liệu dư thừa do denormalization.",
+    "keywords": ["schema linh hoạt", "scale ngang", "JOIN", "ACID", "denormalization"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-MDB-RSN-005",
+    "workspace": "MongoDB Basic",
+    "question": "Tại sao cần Aggregation Pipeline thay vì chỉ dùng find()?",
+    "expectedIntent": "REASONING",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Aggregation Pipeline cần thiết cho các thao tác phức tạp như nhóm dữ liệu, tính toán tổng hợp, join nhiều collection, biến đổi cấu trúc document mà find() không thể thực hiện.",
+    "keywords": ["aggregation", "nhóm", "tổng hợp", "join", "biến đổi", "find"],
+    "split": "DEVELOPMENT"
+  },
+  {
+    "id": "BM-MDB-RSN-006",
+    "workspace": "MongoDB Basic",
+    "question": "Giải thích tại sao Sharding cần thiết khi dữ liệu MongoDB tăng nhanh?",
+    "expectedIntent": "REASONING",
+    "expectedDecision": "ANSWER",
+    "groundTruth": "Sharding phân tán dữ liệu qua nhiều server, giúp xử lý workload vượt khả năng một server đơn lẻ, tăng throughput đọc/ghi và dung lượng lưu trữ theo chiều ngang.",
+    "keywords": ["sharding", "phân tán", "server", "workload", "throughput", "chiều ngang"],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-MDB-OOS-001",
+    "workspace": "MongoDB Basic",
+    "question": "Viết bài thơ về mùa thu cho tôi?",
+    "expectedIntent": "OUT_OF_SCOPE",
+    "expectedDecision": "REFUSE",
+    "groundTruth": "",
+    "keywords": [],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-MDB-OOS-002",
+    "workspace": "MongoDB Basic",
+    "question": "Cách chăm sóc chó Husky trong mùa hè ở Việt Nam?",
+    "expectedIntent": "OUT_OF_SCOPE",
+    "expectedDecision": "REFUSE",
+    "groundTruth": "",
+    "keywords": [],
+    "split": "DEVELOPMENT"
+  },
+  {
+    "id": "BM-MDB-OOS-003",
+    "workspace": "MongoDB Basic",
+    "question": "Nguyên nhân biến đổi khí hậu toàn cầu là gì?",
+    "expectedIntent": "OUT_OF_SCOPE",
+    "expectedDecision": "REFUSE",
+    "groundTruth": "",
+    "keywords": [],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-MDB-OOS-004",
+    "workspace": "MongoDB Basic",
+    "question": "Các địa điểm du lịch nổi tiếng ở Đà Nẵng?",
+    "expectedIntent": "OUT_OF_SCOPE",
+    "expectedDecision": "REFUSE",
+    "groundTruth": "",
+    "keywords": [],
+    "split": "HOLDOUT"
+  },
+  {
+    "id": "BM-MDB-OOS-005",
+    "workspace": "MongoDB Basic",
+    "question": "Cách viết CV xin việc ấn tượng nhất?",
+    "expectedIntent": "OUT_OF_SCOPE",
+    "expectedDecision": "REFUSE",
+    "groundTruth": "",
+    "keywords": [],
+    "split": "DEVELOPMENT"
+  },
+  {
+    "id": "BM-MDB-OOS-006",
+    "workspace": "MongoDB Basic",
+    "question": "Luật giao thông mới nhất năm 2024 có gì thay đổi?",
+    "expectedIntent": "OUT_OF_SCOPE",
+    "expectedDecision": "REFUSE",
+    "groundTruth": "",
+    "keywords": [],
+    "split": "HOLDOUT"
+  }
+]

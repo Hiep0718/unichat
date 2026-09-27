@@ -70,11 +70,22 @@ public class AuthController {
     }
 
     /**
-     * Authenticates user credentials and places a secure refresh cookie.
+     * Authenticates user credentials and places a secure refresh cookie or returns MobileLoginResponse.
      */
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(
+            @Valid @RequestBody LoginRequest request,
+            @RequestHeader(value = "X-Client-Type", required = false) String clientType) {
         TokenPair pair = authService.login(request);
+
+        if ("mobile".equalsIgnoreCase(clientType)) {
+            return ResponseEntity.ok(new MobileLoginResponse(
+                    pair.accessToken(),
+                    pair.refreshToken(),
+                    "Bearer",
+                    jwtProperties.accessTokenTtlSeconds()
+            ));
+        }
 
         ResponseCookie cookie = ResponseCookie.from("refresh_token", pair.refreshToken())
                 .httpOnly(true)
@@ -90,16 +101,31 @@ public class AuthController {
     }
 
     /**
-     * Rotates refresh token and returns a new access token.
+     * Rotates refresh token and returns a new access token (plus new refresh token for mobile).
      */
     @PostMapping("/refresh")
-    public ResponseEntity<LoginResponse> refresh(
-            @CookieValue(name = "refresh_token", required = false) String rawRefreshToken) {
+    public ResponseEntity<?> refresh(
+            @CookieValue(name = "refresh_token", required = false) String cookieToken,
+            @RequestBody(required = false) RefreshFromBodyRequest bodyRequest,
+            @RequestHeader(value = "X-Client-Type", required = false) String clientType) {
+        String rawRefreshToken = (cookieToken != null && !cookieToken.isBlank())
+                ? cookieToken
+                : (bodyRequest != null ? bodyRequest.refreshToken() : null);
+
         if (rawRefreshToken == null || rawRefreshToken.isBlank()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         TokenPair pair = authService.refresh(rawRefreshToken);
+
+        if ("mobile".equalsIgnoreCase(clientType) || bodyRequest != null) {
+            return ResponseEntity.ok(new MobileLoginResponse(
+                    pair.accessToken(),
+                    pair.refreshToken(),
+                    "Bearer",
+                    jwtProperties.accessTokenTtlSeconds()
+            ));
+        }
 
         ResponseCookie cookie = ResponseCookie.from("refresh_token", pair.refreshToken())
                 .httpOnly(true)
@@ -119,8 +145,14 @@ public class AuthController {
      */
     @PostMapping("/logout")
     public ResponseEntity<?> logout(
-            @CookieValue(name = "refresh_token", required = false) String rawRefreshToken,
+            @CookieValue(name = "refresh_token", required = false) String cookieToken,
+            @RequestBody(required = false) LogoutFromBodyRequest bodyRequest,
+            @RequestHeader(value = "X-Client-Type", required = false) String clientType,
             @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey) {
+
+        String rawRefreshToken = (cookieToken != null && !cookieToken.isBlank())
+                ? cookieToken
+                : (bodyRequest != null ? bodyRequest.refreshToken() : null);
 
         String actorId = "anonymous";
         String routeKey = "/auth/logout";
