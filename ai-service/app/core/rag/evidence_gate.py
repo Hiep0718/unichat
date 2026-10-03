@@ -17,10 +17,14 @@ class EvidenceGateResult:
         decision: DecisionEnum,
         evidence_score: float,
         refusal_reason: str | None = None,
+        single_source_warning: bool = False,
+        warning_message: str | None = None,
     ) -> None:
         self.decision = decision
         self.evidence_score = evidence_score
         self.refusal_reason = refusal_reason
+        self.single_source_warning = single_source_warning
+        self.warning_message = warning_message
 
 
 def evaluate_evidence(
@@ -69,6 +73,13 @@ def evaluate_evidence(
         )
         return EvidenceGateResult(DecisionEnum.REFUSE, 0.0, reason)
 
+    # Single source warning for multi-perspective intents (COMPARISON, SUMMARY, REASONING)
+    single_source_warning = False
+    warning_message = None
+    if num_source_groups == 1 and intent in (IntentEnum.COMPARISON, IntentEnum.SUMMARY, IntentEnum.REASONING):
+        single_source_warning = True
+        warning_message = "Nội dung được tổng hợp từ 1 nguồn tài liệu duy nhất. Khuyến nghị kiểm chứng lại với các tài liệu đối sánh khác."
+
     top_sim = candidates[0].similarity if candidates else 0.0
     top3_sims = [c.similarity for c in candidates[:3]]
     mean_top3_sim = sum(top3_sims) / len(top3_sims) if top3_sims else 0.0
@@ -84,4 +95,10 @@ def evaluate_evidence(
             "Độ tin cậy của tài liệu không đạt ngưỡng yêu cầu để đưa ra câu trả lời chính xác.",
         )
 
-    return EvidenceGateResult(DecisionEnum.ANSWER, evidence_score, None)
+    return EvidenceGateResult(
+        DecisionEnum.ANSWER,
+        evidence_score,
+        None,
+        single_source_warning=single_source_warning,
+        warning_message=warning_message,
+    )

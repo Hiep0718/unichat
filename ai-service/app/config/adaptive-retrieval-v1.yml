@@ -7,6 +7,22 @@ intents:
     rule_id: "RULE_OOS_HACK"
     patterns:
       - "(hack|override|jailbreak|giai ma mat khau|tan cong|system prompt|ignore previous instructions)"
+      - "(gia bitcoin|\\bbitcoin\\b|tien ao|\\bcrypto\\b)"
+      - "(ty gia|gia vang|chung khoan|dau tu co phieu)"
+      - "(thoi tiet|du bao thoi tiet)"
+      - "(nau pho|bun bo|cong thuc nau|nau an|mon an)"
+      - "(tap gym|giam can|the hinh)"
+      - "(trong cay|bonsai|cham soc cay)"
+      - "(cham soc cho|thu cung|cho husky|\\bmeo\\b)"
+      - "(viet.*tho|bai tho|lam tho)"
+      - "(du lich|dia diem du lich|ve may bay)"
+      - "(viet cv|xin viec|phong van xin viec)"
+      - "(luat giao thong)"
+      - "(bong da|xep hang fifa|cau thu)"
+      - "(cau truc dna|sinh vat hoc)"
+      - "(lich su hinh thanh thanh pho|dia danh)"
+      - "(bien doi khi hau)"
+      - "(lap trinh python nang cao)"
     negative_patterns: []
 
   COMPARISON:

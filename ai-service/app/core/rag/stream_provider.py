@@ -50,6 +50,8 @@ async def generate_rag_answer_stream(
     evidence_score: float | None = None,
     conversation_history: list[dict[str, str]] | None = None,
     conversation_summary: str | None = None,
+    single_source_warning: bool = False,
+    warning_message: str | None = None,
 ) -> AsyncGenerator[str, None]:
     """Async generator yielding SSE formatted strings for streaming RAG answers."""
     context_blocks = []
@@ -140,7 +142,7 @@ async def generate_rag_answer_stream(
         conversation_prompt = build_conversation_prompt(conv_context)
 
     context_str = "\n\n".join(context_blocks)
-    system_prompt = build_system_prompt(allow_external_knowledge)
+    system_prompt = build_system_prompt(allow_external_knowledge, single_source_warning)
     full_prompt = build_rag_prompt(system_prompt, context_str, question, conversation_prompt)
 
     yield format_sse("thought", {
@@ -217,6 +219,8 @@ async def generate_rag_answer_stream(
                             "evidenceScore": evidence_score,
                             "providerModel": used_model_name,
                             "requestId": request_id,
+                            "singleSourceWarning": single_source_warning,
+                            "warningMessage": warning_message,
                         }
                         if compacted_summary:
                             meta_payload["compactedSummary"] = compacted_summary

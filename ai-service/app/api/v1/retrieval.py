@@ -57,6 +57,8 @@ class RetrievalAnswerResponse(BaseModel):
     refusalReason: str | None = None
     requestId: str | None = None
     compactedSummary: str | None = None
+    singleSourceWarning: bool = False
+    warningMessage: str | None = None
 
 
 @router.post("/retrieval/answers", response_model=RetrievalAnswerResponse)
@@ -177,6 +179,7 @@ def get_retrieval_answer(
         allow_external_knowledge=request.allowExternalKnowledge if request.allowExternalKnowledge is not None else True,
         conversation_history=request.conversationHistory,
         conversation_summary=request.conversationSummary,
+        single_source_warning=gate_res.single_source_warning,
     )
 
     if rag_res.get("validationFailed"):
@@ -246,6 +249,8 @@ def get_retrieval_answer(
         citations=citations,
         requestId=req_id,
         compactedSummary=rag_res.get("compactedSummary"),
+        singleSourceWarning=gate_res.single_source_warning,
+        warningMessage=gate_res.warning_message if gate_res.single_source_warning else None,
     )
 
 
@@ -341,6 +346,8 @@ def get_retrieval_answer_stream(
             evidence_score=gate_res.evidence_score,
             conversation_history=request.conversationHistory,
             conversation_summary=request.conversationSummary,
+            single_source_warning=gate_res.single_source_warning,
+            warning_message=gate_res.warning_message,
         ):
             yield sse_event
 
