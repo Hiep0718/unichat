@@ -1,0 +1,131 @@
+.reaction-bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.reaction-bar__trigger-wrap {
+  position: relative;
+}
+
+.reaction-bar__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--color-on-surface-variant);
+  font: var(--font-label-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast),
+              border-color var(--transition-fast);
+}
+
+.reaction-bar__trigger:hover:not(:disabled) {
+  background: var(--color-surface-container-high);
+  color: var(--color-on-surface);
+}
+
+.reaction-bar__trigger:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.reaction-bar__trigger--mine {
+  border-color: transparent;
+  background: var(--color-primary-fixed);
+  color: var(--color-on-primary-fixed-variant);
+}
+
+/* ── Picker ─────────────────────────────────────────────── */
+
+.reaction-bar__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+}
+
+.reaction-bar__picker {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  z-index: 50;
+  display: flex;
+  gap: 2px;
+  padding: 6px;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-full);
+  background: var(--color-surface-container-lowest);
+  box-shadow: var(--shadow-lg);
+}
+
+.reaction-bar__option {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 10px;
+  border: none;
+  border-radius: var(--radius-lg);
+  background: transparent;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background var(--transition-fast), transform var(--transition-fast);
+}
+
+.reaction-bar__option:hover {
+  background: var(--color-surface-container-high);
+  transform: translateY(-2px);
+}
+
+.reaction-bar__option--mine {
+  background: var(--color-primary-fixed);
+}
+
+.reaction-bar__option-label {
+  font: var(--font-label-sm);
+  font-size: 10.5px;
+  color: var(--color-on-surface-variant);
+}
+
+/* ── Tally ──────────────────────────────────────────────── */
+
+.reaction-bar__tally {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font: var(--font-label-md);
+  color: var(--color-on-surface-variant);
+  font-variant-numeric: tabular-nums;
+}
+
+.reaction-bar__emojis {
+  display: inline-flex;
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* Overlap the emoji slightly, as a stack of reactions rather than a list. */
+.reaction-bar__emojis span + span {
+  margin-left: -3px;
+}
+
+.reaction-bar__error {
+  font: var(--font-label-sm);
+  color: var(--color-error);
+}
+
+/* ── Compact variant for replies ────────────────────────── */
+
+.reaction-bar--compact .reaction-bar__trigger {
+  padding: 4px 10px;
+  font-size: 12.5px;
+}
+
+.reaction-bar--compact .reaction-bar__tally {
+  font-size: 12.5px;
+}

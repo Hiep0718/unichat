@@ -1,0 +1,76 @@
+.cover-banner {
+  position: relative;
+  height: 168px;
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  overflow: hidden;
+}
+
+/* Holds the absolutely-positioned cover fill layer. */
+.cover-banner__art {
+  position: absolute;
+  inset: 0;
+}
+
+/* Kept away from the bottom edge, where the page header's own buttons sit
+   just below and the two read as one crowded cluster. */
+.cover-banner__tools {
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  display: flex;
+  gap: 8px;
+}
+
+.cover-banner__input {
+  display: none;
+}
+
+.cover-banner__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid rgb(255 255 255 / 30%);
+  border-radius: var(--radius-full);
+  background: rgb(15 23 42 / 52%);
+  backdrop-filter: blur(10px);
+  color: #fff;
+  font: var(--font-label-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.cover-banner__btn:hover:not(:disabled) {
+  background: rgb(15 23 42 / 74%);
+}
+
+.cover-banner__btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.cover-banner__btn--icon {
+  padding: 8px;
+}
+
+.cover-banner__error {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 7px 12px;
+  border-radius: var(--radius-lg);
+  background: rgb(127 29 29 / 88%);
+  color: #fff;
+  font: var(--font-label-md);
+}
+
+@media (max-width: 640px) {
+  .cover-banner {
+    height: 124px;
+  }
+}

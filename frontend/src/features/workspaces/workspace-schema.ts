@@ -7,6 +7,14 @@ import { z } from 'zod/v4';
 /** Workspace visibility options matching backend enum. */
 export type WorkspaceVisibility = 'PRIVATE' | 'SHARED' | 'PUBLIC';
 
+/** One member as a workspace card draws them. */
+export interface WorkspaceFace {
+  readonly userId: string;
+  readonly displayName: string;
+  readonly hasAvatar: boolean;
+  readonly avatarColor: string | null;
+}
+
 /** Workspace data returned from the API. */
 export interface WorkspaceDto {
   readonly id: string;
@@ -17,6 +25,12 @@ export interface WorkspaceDto {
   readonly cloudAllowed: boolean;
   readonly documentCount: number;
   readonly memberCount: number;
+  /** Posts in the last week, so a dormant group reads as dormant. */
+  readonly recentPostCount: number;
+  /** A few members to draw as faces on the card, owners first. */
+  readonly faces: readonly WorkspaceFace[];
+  /** True when a cover was uploaded; otherwise the card draws a gradient. */
+  readonly hasCover: boolean;
   readonly version: number;
   readonly createdAt: string;
   readonly updatedAt: string;

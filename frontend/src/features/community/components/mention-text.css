@@ -1,0 +1,9 @@
+/* A member named in a post or reply. */
+.mention {
+  padding: 1px 5px;
+  border-radius: var(--radius-sm);
+  background: var(--color-primary-fixed);
+  color: var(--color-on-primary-fixed-variant);
+  font-weight: 600;
+  white-space: nowrap;
+}

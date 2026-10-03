@@ -42,6 +42,13 @@ public class Workspace {
     @Column(name = "cloud_allowed", nullable = false)
     private boolean cloudAllowed;
 
+    /**
+     * Object-storage key for the cover picture, null when none was uploaded.
+     * The card then draws a gradient derived from the id instead.
+     */
+    @Column(name = "cover_storage_key")
+    private String coverStorageKey;
+
     @Column(name = "permission_version", nullable = false)
     private long permissionVersion;
 
@@ -120,6 +127,26 @@ public class Workspace {
 
     public boolean isCloudAllowed() {
         return cloudAllowed;
+    }
+
+    public String getCoverStorageKey() {
+        return coverStorageKey;
+    }
+
+    /** Whether a cover was uploaded, as opposed to the generated gradient. */
+    public boolean hasCoverImage() {
+        return coverStorageKey != null && !coverStorageKey.isBlank();
+    }
+
+    /**
+     * Points the cover at a new blob.
+     *
+     * @return the key this replaced, so the caller can delete the old blob
+     */
+    public String replaceCover(String storageKey) {
+        String previous = this.coverStorageKey;
+        this.coverStorageKey = storageKey;
+        return previous;
     }
 
     public void setCloudAllowed(boolean cloudAllowed) {

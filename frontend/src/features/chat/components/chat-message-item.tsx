@@ -35,6 +35,8 @@ interface ChatMessageItemProps {
   onSelectCitation?: ((citation: CitationItem) => void) | undefined;
   onSelectPrompt?: ((prompt: string) => void) | undefined;
   onSaveNote?: ((title: string, content: string) => void) | undefined;
+  /** Escalates an unanswerable question to the workspace community. */
+  onAskCommunity?: ((message: MessageItem) => void) | undefined;
 }
 
 interface NotebookCitedTextProps {
@@ -584,6 +586,7 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
   onSelectCitation,
   onSelectPrompt,
   onSaveNote,
+  onAskCommunity,
 }) => {
   const isUser = message.role === 'USER';
   const response = message.response;
@@ -744,6 +747,9 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
               <RefusalCard
                 decision={response.decision}
                 refusalReason={response.refusalReason || message.content}
+                refusalCode={response.refusalCode}
+                intent={response.intent}
+                onAskCommunity={onAskCommunity ? () => onAskCommunity(message) : undefined}
               />
             ) : (
               <div className="chat-msg__markdown">
@@ -836,6 +842,20 @@ export const ChatMessageItem: React.FC<ChatMessageItemProps> = ({
                   push_pin
                 </span>
                 <span>Lưu vào Ghi chú</span>
+              </button>
+            )}
+
+            {onAskCommunity && (
+              <button
+                type="button"
+                className="chat-msg__action-btn"
+                onClick={() => onAskCommunity(message)}
+                title="Câu trả lời chưa đủ? Hỏi thêm các thành viên trong Workspace"
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: '15px', color: '#0284c7' }}>
+                  forum
+                </span>
+                <span>Hỏi cộng đồng</span>
               </button>
             )}
           </div>

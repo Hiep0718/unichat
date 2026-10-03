@@ -5,6 +5,10 @@
 
 /** Document processing status matching backend enum. */
 export type DocumentStatus =
+  /** Contributed by a member; awaiting owner/editor approval. Not retrievable. */
+  | 'PENDING_APPROVAL'
+  /** Contribution declined by an owner/editor. Not retrievable. */
+  | 'REJECTED'
   | 'PENDING'
   | 'PROCESSING'
   | 'PROCESSED'

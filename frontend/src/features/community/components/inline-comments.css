@@ -1,0 +1,48 @@
+.inline-comments {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 14px;
+  border-top: 1px solid var(--ws-line, var(--color-outline-variant));
+}
+
+.inline-comments__list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.inline-comments__state {
+  margin: 2px 0;
+  font: var(--font-label-md);
+  color: var(--color-on-surface-variant);
+}
+
+.inline-comments__error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font: var(--font-label-md);
+  color: var(--color-error);
+}
+
+.inline-comments__waiting {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font: var(--font-label-md);
+  color: var(--color-primary);
+}
+
+/* The thread is nested inside a card here, not a page, so it gives back the
+   page-level indentation the detail view can afford. */
+.inline-comments .reply-thread {
+  margin-left: 0;
+}
+
+.inline-comments .reply-form__input {
+  min-height: 62px;
+}

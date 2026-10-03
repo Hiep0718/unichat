@@ -57,6 +57,27 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * Fetches a binary resource that needs the bearer token.
+ *
+ * `<img src>` and friends cannot send an Authorization header, so anything
+ * behind auth has to be read this way and turned into a blob URL.
+ *
+ * @throws ApiError when the request fails, carrying the status so a caller can
+ *         tell "not set" (404) apart from a real failure
+ */
+export async function fetchBlob(path: string): Promise<Blob> {
+  const token = getToken();
+  const response = await fetch(`${API_BASE}${path}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+
+  if (!response.ok) {
+    throw new ApiError(response.status, `Không tải được dữ liệu (HTTP ${response.status})`);
+  }
+  return response.blob();
+}
+
 export async function fetchJson<T>(
   endpoint: string,
   options: RequestInit = {}

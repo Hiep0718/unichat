@@ -1,0 +1,123 @@
+.contact-picker__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgb(15 23 42 / 48%);
+}
+
+.contact-picker {
+  display: flex;
+  flex-direction: column;
+  width: min(440px, 100%);
+  max-height: min(560px, 90vh);
+  border-radius: var(--radius-2xl);
+  background: var(--ws-card);
+  box-shadow: 0 20px 56px rgb(15 23 42 / 26%);
+}
+
+.contact-picker__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px 10px;
+}
+
+.contact-picker__title {
+  margin: 0;
+  color: var(--ws-ink);
+  font-family: var(--font-family);
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.contact-picker__close {
+  display: inline-flex;
+  padding: 5px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--ws-ink-muted);
+  cursor: pointer;
+}
+
+.contact-picker__close:hover {
+  background: var(--ws-chip);
+}
+
+.contact-picker__search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 18px 10px;
+  padding: 10px 14px;
+  border: none;
+  border-radius: var(--radius-lg);
+  background: var(--ws-chip);
+  color: var(--ws-ink-muted);
+}
+
+.contact-picker__search input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--ws-ink);
+  font: var(--font-body-md);
+  outline: none;
+}
+
+.contact-picker__state {
+  padding: 26px 18px;
+  color: var(--ws-ink-muted);
+  font: var(--font-body-md);
+  text-align: center;
+}
+
+.contact-picker__list {
+  margin: 0;
+  padding: 0 10px 14px;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.contact-picker__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 10px;
+  border: none;
+  border-radius: var(--radius-xl);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.contact-picker__row:hover {
+  background: var(--ws-chip);
+}
+
+.contact-picker__name {
+  flex: 1;
+  overflow: hidden;
+  color: var(--ws-ink);
+  font: var(--font-label-md);
+  font-weight: 700;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.contact-picker__group {
+  flex-shrink: 0;
+  padding: 3px 9px;
+  border-radius: var(--radius-md);
+  background: var(--ws-chip);
+  color: var(--ws-ink-soft);
+  font: var(--font-label-sm);
+  font-weight: 600;
+}

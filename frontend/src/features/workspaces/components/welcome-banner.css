@@ -4,35 +4,27 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 28px 32px;
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-container) 100%);
+  padding: 34px 36px;
+  /* Travels navy → indigo → violet rather than shading one navy, so the hero
+     speaks the same language as the cards below it while staying the brand's
+     blue at the point the eye lands first. */
+  background: linear-gradient(120deg, #1e3a8a 0%, #4f46e5 46%, #7c3aed 100%);
   border-radius: var(--radius-xl);
-  color: var(--color-on-primary);
+  color: #fff;
   position: relative;
   overflow: hidden;
+  isolation: isolate;
 }
 
+/* Two blobs of a further hue: the same mesh idea the cards use, at a lower
+   strength because this sits behind text across its whole width. */
 .welcome-banner::before {
   content: '';
   position: absolute;
-  top: -40%;
-  right: -10%;
-  width: 300px;
-  height: 300px;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, transparent 70%);
-  border-radius: 50%;
-  pointer-events: none;
-}
-
-.welcome-banner::after {
-  content: '';
-  position: absolute;
-  bottom: -60%;
-  left: 20%;
-  width: 200px;
-  height: 200px;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
-  border-radius: 50%;
+  inset: 0;
+  background:
+    radial-gradient(46% 120% at 88% 8%, rgb(232 121 249 / 42%), transparent 68%),
+    radial-gradient(38% 100% at 4% 92%, rgb(34 211 238 / 30%), transparent 70%);
   pointer-events: none;
 }
 
@@ -43,7 +35,9 @@
 
 .welcome-banner__greeting {
   font: var(--font-headline-lg);
-  color: var(--color-on-primary);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: #fff;
   margin-bottom: 6px;
   display: flex;
   align-items: center;
@@ -52,7 +46,7 @@
 
 .welcome-banner__subtitle {
   font: var(--font-body-md);
-  color: rgba(255, 255, 255, 0.8);
+  color: rgb(255 255 255 / 82%);
 }
 
 .welcome-banner__emoji {
@@ -73,11 +67,12 @@
 
 @media (max-width: 767px) {
   .welcome-banner {
-    padding: 20px;
+    padding: 22px 20px;
   }
 
   .welcome-banner__greeting {
     font: var(--font-headline-lg-mobile);
-    color: var(--color-on-primary);
+    font-weight: 700;
+    color: #fff;
   }
 }

@@ -10,6 +10,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import com.unichat.core.communitychat.api.NotificationResponse;
+import com.unichat.core.communitychat.domain.MentionEvent;
 import com.unichat.core.communitychat.domain.NewReplyEvent;
 import com.unichat.core.communitychat.domain.Notification;
 import com.unichat.core.communitychat.domain.NotificationRepository;
@@ -47,5 +48,35 @@ public class NotificationEventListener {
 
         notificationRepository.save(notification);
         log.debug("Saved notification for user {}", event.discussionAuthorId());
+    }
+
+    /**
+     * Notifies everyone a post or reply named. Mentions are resolved against
+     * active workspace members, so this never reaches someone who cannot open
+     * the post.
+     */
+    @Async
+    @EventListener
+    public void handleMentionEvent(MentionEvent event) {
+        for (UUID mentionedUserId : event.mentionedUserIds()) {
+            String payload = String.format(
+                    "{\"discussionId\": \"%s\", \"replyId\": %s, \"mentionedBy\": \"%s\"}",
+                    event.discussionId(),
+                    event.replyId() == null ? "null" : "\"" + event.replyId() + "\"",
+                    event.authorId());
+
+            notificationRepository.save(new Notification(
+                    UUID.randomUUID(),
+                    mentionedUserId,
+                    "MENTION",
+                    event.workspaceId(),
+                    payload,
+                    Instant.now()));
+        }
+
+        if (!event.mentionedUserIds().isEmpty()) {
+            log.debug("Saved {} mention notifications for discussion {}",
+                    event.mentionedUserIds().size(), event.discussionId());
+        }
     }
 }

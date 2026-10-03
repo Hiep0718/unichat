@@ -231,6 +231,9 @@ const STATUS_CONFIG: Record<
   PENDING: { label: 'Pending', className: 'doc-table__status--pending' },
   FAILED: { label: 'Failed', className: 'doc-table__status--error' },
   DELETING: { label: 'Deleting', className: 'doc-table__status--pending' },
+  // Contributions stay out of retrieval until an owner or editor approves them.
+  PENDING_APPROVAL: { label: 'Chờ duyệt', className: 'doc-table__status--warning' },
+  REJECTED: { label: 'Bị từ chối', className: 'doc-table__status--error' },
 };
 
 function TableSkeleton() {

@@ -1,0 +1,130 @@
+.post-attachments {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 14px 0;
+}
+
+/* ── Images ─────────────────────────────────────────────── */
+
+.post-attachments__grid {
+  display: grid;
+  gap: 8px;
+}
+
+.post-attachments__grid--multi {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.post-attachments__image {
+  width: 100%;
+  max-height: 420px;
+  object-fit: cover;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-outline-variant);
+  background: var(--color-surface-container-low);
+  display: block;
+}
+
+.post-attachments__image--loading {
+  min-height: 200px;
+  animation: post-attachment-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes post-attachment-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+.post-attachments__image--failed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 140px;
+  color: var(--color-on-surface-variant);
+  font: var(--font-label-sm);
+}
+
+/* ── Feed card preview ──────────────────────────────────── */
+
+.post-attachments__preview {
+  position: relative;
+  margin-top: 8px;
+}
+
+.post-attachments__preview .post-attachments__image {
+  max-height: 220px;
+}
+
+.post-attachments__more {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  background: rgba(15, 23, 42, 0.72);
+  color: #ffffff;
+  font: var(--font-label-sm);
+  font-weight: 700;
+}
+
+/* ── Document chips ─────────────────────────────────────── */
+
+.post-attachments__files {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.post-attachments__file {
+  display: flex;
+  /* The chip now stacks its own row above an optional AI summary. */
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  padding: 10px 14px;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-container-lowest);
+  color: var(--color-on-surface-variant);
+}
+
+.post-attachments__file-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.post-attachments__file-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.post-attachments__file-name {
+  font: var(--font-label-md);
+  font-weight: 600;
+  color: var(--color-on-surface);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.post-attachments__file-sub {
+  font: var(--font-label-sm);
+}
+
+/* The assistant can cite this file — the reason a document attachment matters. */
+.post-attachments__ready {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--color-secondary);
+  font-weight: 600;
+}

@@ -104,6 +104,11 @@ public class SecurityConfiguration {
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers("/api/v1/health", "/actuator/health", "/api/v1/auth/**").permitAll()
+                // The WebSocket handshake carries no Authorization header a
+                // browser can set. Identity is established on the STOMP CONNECT
+                // frame instead (StompAuthChannelInterceptor), so an open
+                // handshake yields a connection that cannot subscribe or send.
+                .requestMatchers("/ws/work-chat/**").permitAll()
                 .requestMatchers("/api/v1/admin/**").hasAuthority("SCOPE_ADMIN")
                 .anyRequest().authenticated())
             .oauth2ResourceServer(resourceServer ->

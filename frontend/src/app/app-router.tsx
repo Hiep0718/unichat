@@ -16,7 +16,15 @@ const RegisterPage = lazy(() => import('../features/auth/register-page'));
 const ForgotPasswordPage = lazy(() => import('../features/auth/forgot-password-page'));
 
 const WorkspaceListPage = lazy(() => import('../features/workspaces/workspace-list-page'));
-const WorkspaceDetailPage = lazy(() => import('../features/workspaces/workspace-detail-page'));
+const WorkChatPage = lazy(() => import('../features/work-chat/work-chat-page'));
+const ProfilePage = lazy(() => import('../features/profile/profile-page'));
+const GroupPage = lazy(() => import('../features/workspaces/group-page'));
+const GroupMembersTab = lazy(() =>
+  import('../features/workspaces/components/group-members-tab'),
+);
+const GroupAboutTab = lazy(() =>
+  import('../features/workspaces/components/group-about-tab'),
+);
 const WorkspaceOverviewPage = lazy(() =>
   import('../features/workspaces/workspace-overview-page').then((m) => ({
     default: m.WorkspaceOverviewPage,
@@ -64,21 +72,31 @@ export function AppRouter() {
             <Route path="/feed" element={<FeedPage />} />
             <Route path="/feed/posts/:postId" element={<PostDetailPage />} />
             <Route path="/workspaces" element={<WorkspaceListPage />} />
-            <Route path="/workspaces/:workspaceId/detail" element={<WorkspaceDetailPage />} />
+            <Route path="/work-chat" element={<WorkChatPage />} />
+            <Route path="/users/:userId" element={<ProfilePage />} />
             <Route path="/account" element={<AccountPage />} />
           </Route>
 
           {/* Workspace Scoped Shell Routes */}
           <Route element={<AuthGuard><WorkspaceShell /></AuthGuard>}>
-            <Route path="/workspaces/:workspaceId" element={<Navigate to="discussions" replace />} />
+            {/* The group page owns the tabs that belong to a group. */}
+            <Route path="/workspaces/:workspaceId" element={<GroupPage />}>
+              {/* Opening a group lands on Giới thiệu: what the group is for,
+                  and who is in it, before its stream of posts. */}
+              <Route index element={<Navigate to="about" replace />} />
+              <Route path="discussions" element={<DiscussionPage />} />
+              <Route path="documents" element={<DocumentPage />} />
+              <Route path="members" element={<GroupMembersTab />} />
+              <Route path="about" element={<GroupAboutTab />} />
+            </Route>
+
+            {/* Full-page destinations reached from the group header menu. */}
             <Route path="/workspaces/:workspaceId/overview" element={<WorkspaceOverviewPage />} />
-            <Route path="/workspaces/:workspaceId/documents" element={<DocumentPage />} />
             <Route path="/workspaces/:workspaceId/chat" element={<ChatPage />} />
             <Route path="/workspaces/:workspaceId/conversations" element={<ConversationListPage />} />
             <Route path="/workspaces/:workspaceId/conversations/:conversationId" element={<ConversationPage />} />
             <Route path="/workspaces/:workspaceId/settings" element={<WorkspaceSettingsPage />} />
             <Route path="/workspaces/:workspaceId/evaluation" element={<EvaluationPage />} />
-            <Route path="/workspaces/:workspaceId/discussions" element={<DiscussionPage />} />
           </Route>
 
           {/* Admin Routes */}

@@ -1,0 +1,60 @@
+.contribution-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.contribution-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border-radius: var(--radius-xl);
+  background: var(--ws-chip);
+}
+
+.contribution-stat__icon {
+  display: inline-flex;
+  color: var(--ws-ink-muted);
+}
+
+.contribution-stat__figure {
+  color: var(--ws-ink);
+  font-family: var(--font-family);
+  font-size: 25px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The denominator is context, not the headline: same line, quieter. */
+.contribution-stat__of {
+  color: var(--ws-ink-muted);
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.contribution-stat__label {
+  color: var(--ws-ink-muted);
+  font: var(--font-label-sm);
+  line-height: 1.4;
+}
+
+.contribution-stats__note {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 14px 0 0;
+  padding: 10px 13px;
+  border-radius: var(--radius-lg);
+  background: var(--ws-accent-soft);
+  color: var(--ws-accent);
+  font: var(--font-label-md);
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .contribution-stats {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

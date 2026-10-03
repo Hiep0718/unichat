@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 
 import { askWorkspaceQuestion, askWorkspaceQuestionStream, CitationItem, QuestionResponse } from './chat-api';
 import { ChatHeader } from './components/chat-header';
@@ -13,7 +13,49 @@ import { useWorkspace } from '../workspaces/workspace-context';
 import { fetchConversationDetail, createWorkspaceConversation } from '../history/conversation-api';
 import { fetchWorkspaceDocuments, DocumentResponse } from '../documents/document-api';
 import { fetchConversationStudioNotes, createStudioNote, deleteStudioNote } from './studio-note-api';
+import { CreatePostModal } from '../community/components/create-post-modal';
 import './chat-page.css';
+
+/** Maximum discussion title length accepted by the Core API. */
+const MAX_TITLE_LENGTH = 200;
+
+/** Longest AI answer excerpt quoted into a community post. */
+const MAX_ANSWER_EXCERPT = 800;
+
+/**
+ * Builds the body of a community post for a question the AI refused to answer.
+ * The question itself becomes the post title, so the body only adds context.
+ */
+const buildEscalationBody = (): string =>
+  [
+    // The title already carries the question, so the body only adds context.
+    'Mình đã hỏi AI câu này nhưng tài liệu hiện có trong Workspace chưa đủ căn cứ để trả lời.',
+    '',
+    'Mong các thành viên bổ sung thông tin giúp mình.',
+  ].join('\n');
+
+/**
+ * Builds the body of a community post for a question the AI answered but the
+ * user still needs help with. The AI answer is quoted so members can see what
+ * the documents already cover and do not repeat it.
+ *
+ * @param answer the AI answer shown in chat
+ */
+const buildFollowUpBody = (answer: string): string => {
+  const excerpt =
+    answer.length > MAX_ANSWER_EXCERPT
+      ? `${answer.slice(0, MAX_ANSWER_EXCERPT)}…`
+      : answer;
+
+  return [
+    'Câu trả lời từ tài liệu chưa giải quyết được thắc mắc của mình.',
+    'Bạn nào biết thêm giúp mình với.',
+    '',
+    '#### AI đã trả lời gì dựa trên tài liệu hiện có',
+    '',
+    ...excerpt.split('\n').map((line) => `> ${line}`),
+  ].join('\n');
+};
 
 interface ChatPageProps {
   workspaceId?: string | undefined;
@@ -49,6 +91,7 @@ export const ChatPage: React.FC<ChatPageProps> = ({
 }) => {
   const params = useParams<{ workspaceId?: string; conversationId?: string }>();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const workspaceContext = useWorkspace();
 
   const targetWorkspaceId =
@@ -73,6 +116,9 @@ export const ChatPage: React.FC<ChatPageProps> = ({
   const [savedNotes, setSavedNotes] = useState<SavedNote[]>([]);
   const [activeStudioModal, setActiveStudioModal] = useState<StudioToolType | null>(null);
   const [selectedNoteModal, setSelectedNoteModal] = useState<SavedNote | null>(null);
+
+  // Knowledge-gap escalation: draft of a community question built from a refusal
+  const [communityDraft, setCommunityDraft] = useState<{ title: string; body: string } | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesBodyRef = useRef<HTMLDivElement>(null);
@@ -489,6 +535,41 @@ export const ChatPage: React.FC<ChatPageProps> = ({
     }
   };
 
+  /**
+   * Escalates a chat question to the workspace community, either because the AI
+   * refused to answer it or because the user finds the answer incomplete. The
+   * user question immediately preceding the reply becomes the post title, and
+   * the user reviews the draft before it is published.
+   *
+   * @param assistantMessage the AI reply the user acted on
+   */
+  const handleAskCommunity = (assistantMessage: MessageItem) => {
+    const replyIndex = messages.findIndex((m) => m.id === assistantMessage.id);
+    if (replyIndex < 0) return;
+
+    let question = '';
+    for (let i = replyIndex - 1; i >= 0; i -= 1) {
+      const candidate = messages[i];
+      if (candidate?.role === 'USER') {
+        question = candidate.content.trim();
+        break;
+      }
+    }
+    if (!question) return;
+
+    const title =
+      question.length > MAX_TITLE_LENGTH
+        ? `${question.slice(0, MAX_TITLE_LENGTH - 1)}…`
+        : question;
+
+    const wasRefused = assistantMessage.response?.decision === 'REFUSE';
+    const body = wasRefused
+      ? buildEscalationBody()
+      : buildFollowUpBody(assistantMessage.content.trim());
+
+    setCommunityDraft({ title, body });
+  };
+
   const handleNewChat = () => {
     setConversationId(undefined);
     setConversationTitle(undefined);
@@ -534,6 +615,7 @@ export const ChatPage: React.FC<ChatPageProps> = ({
                       onSelectCitation={handleSelectCitation}
                       onSelectPrompt={handleSendQuestion}
                       onSaveNote={handleSaveNote}
+                      onAskCommunity={targetWorkspaceId ? handleAskCommunity : undefined}
                     />
                   ))}
                 </>
@@ -580,6 +662,25 @@ export const ChatPage: React.FC<ChatPageProps> = ({
           citations={messages.flatMap((m) => m.response?.citations || [])}
           onSaveNote={handleSaveNote}
           onClose={() => setActiveStudioModal(null)}
+        />
+      )}
+
+      {communityDraft && (
+        <CreatePostModal
+          preselectedWorkspaceId={targetWorkspaceId}
+          initialTitle={communityDraft.title}
+          initialBody={communityDraft.body}
+          initialLabel="QUESTION"
+          heading="Hỏi cộng đồng"
+          onClose={() => setCommunityDraft(null)}
+          onCreated={(wsId, discussionId) => {
+            setCommunityDraft(null);
+            navigate(`/feed/posts/${discussionId}?workspaceId=${wsId}`);
+          }}
+          onOpenExisting={(wsId, discussionId) => {
+            setCommunityDraft(null);
+            navigate(`/feed/posts/${discussionId}?workspaceId=${wsId}`);
+          }}
         />
       )}
 

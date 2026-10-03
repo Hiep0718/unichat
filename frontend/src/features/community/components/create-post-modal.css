@@ -1,0 +1,316 @@
+/* Create Post Modal — extracted from feed-page.css so the feed styles could be
+   rewritten without touching the modal. */
+
+.create-post-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.create-post-modal {
+  width: min(600px, 92vw);
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--color-surface-container-lowest);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-xl);
+  animation: slideUp 0.2s ease;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.create-post-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--color-outline-variant);
+}
+
+.create-post-modal__title {
+  font: var(--font-headline-md);
+  color: var(--color-on-surface);
+  margin: 0;
+}
+
+.create-post-modal__close {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-on-surface-variant);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition-fast);
+}
+
+.create-post-modal__close:hover {
+  background: var(--color-surface-container-high);
+}
+
+.create-post-modal__body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.create-post-modal__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.create-post-modal__label {
+  font: var(--font-label-md);
+  color: var(--color-on-surface);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.create-post-modal__select,
+.create-post-modal__input {
+  padding: 10px 14px;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  font: var(--font-body-md);
+  color: var(--color-on-surface);
+  background: var(--color-surface);
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.create-post-modal__select:focus,
+.create-post-modal__input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(0, 35, 111, 0.08);
+}
+
+.create-post-modal__textarea {
+  padding: 12px 14px;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  font: var(--font-body-md);
+  color: var(--color-on-surface);
+  background: var(--color-surface);
+  outline: none;
+  min-height: 140px;
+  resize: vertical;
+  transition: border-color var(--transition-fast);
+}
+
+.create-post-modal__textarea:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(0, 35, 111, 0.08);
+}
+
+.create-post-modal__label-pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.create-post-modal__pill {
+  padding: 6px 14px;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  color: var(--color-on-surface-variant);
+  font: var(--font-label-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.create-post-modal__pill:hover {
+  background: var(--color-surface-container-high);
+}
+
+.create-post-modal__pill--active {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  border-color: var(--color-primary);
+}
+
+.create-post-modal__char-count {
+  font: var(--font-label-sm);
+  color: var(--color-on-surface-variant);
+  text-align: right;
+}
+
+.create-post-modal__ws-hint {
+  font: var(--font-label-sm);
+  color: var(--color-primary);
+}
+
+.create-post-modal__ws-loading,
+.create-post-modal__ws-empty {
+  font: var(--font-body-md);
+  color: var(--color-on-surface-variant);
+  padding: 12px;
+  text-align: center;
+}
+
+.create-post-modal__error {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0 24px 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius-lg);
+  background: var(--color-error-container);
+  color: var(--color-on-error-container);
+  font: var(--font-body-sm);
+  line-height: 1.5;
+}
+
+.create-post-modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--color-outline-variant);
+}
+
+.create-post-modal__cancel-btn {
+  padding: 10px 20px;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--color-on-surface-variant);
+  font: var(--font-label-md);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.create-post-modal__cancel-btn:hover {
+  background: var(--color-surface-container-high);
+}
+
+.create-post-modal__submit-btn {
+  padding: 10px 24px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font: var(--font-label-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.create-post-modal__submit-btn:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.create-post-modal__submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ---------- Attachments ---------- */
+
+.create-post-modal__attachments {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 24px 12px;
+}
+
+.create-post-modal__attach-btn {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px dashed var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  background: transparent;
+  color: var(--color-on-surface-variant);
+  font: var(--font-label-md);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.create-post-modal__attach-btn:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.create-post-modal__attach-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.create-post-modal__file-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.create-post-modal__file-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  font: var(--font-body-sm);
+  color: var(--color-on-surface);
+}
+
+.create-post-modal__file-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.create-post-modal__file-list button {
+  display: inline-flex;
+  padding: 3px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-on-surface-variant);
+  cursor: pointer;
+}
+
+.create-post-modal__file-list button:hover:not(:disabled) {
+  background: var(--color-surface-container-high);
+}
+
+.create-post-modal__file-progress {
+  font: var(--font-label-sm);
+  font-weight: 700;
+  color: var(--color-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.create-post-modal__attach-hint {
+  margin: 0;
+  font: var(--font-label-sm);
+  line-height: 1.5;
+  color: var(--color-on-surface-variant);
+}

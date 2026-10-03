@@ -22,6 +22,7 @@ import com.unichat.core.common.error.ConflictError;
 import com.unichat.core.common.error.NotFoundError;
 import com.unichat.core.workspace.api.CreateWorkspaceRequest;
 import com.unichat.core.workspace.api.UpdateWorkspaceRequest;
+import com.unichat.core.workspace.api.WorkspaceCardStats;
 import com.unichat.core.workspace.domain.Workspace;
 import com.unichat.core.workspace.domain.WorkspaceMember;
 import com.unichat.core.workspace.domain.WorkspaceMemberRepository;
@@ -34,6 +35,7 @@ class WorkspaceServiceTest {
 
     private WorkspaceRepository workspaceRepository;
     private WorkspaceMemberRepository workspaceMemberRepository;
+    private WorkspaceStatsLoader statsLoader;
     private Clock clock;
     private WorkspaceService workspaceService;
 
@@ -41,8 +43,11 @@ class WorkspaceServiceTest {
     void setUp() {
         workspaceRepository = mock(WorkspaceRepository.class);
         workspaceMemberRepository = mock(WorkspaceMemberRepository.class);
+        statsLoader = mock(WorkspaceStatsLoader.class);
+        when(statsLoader.loadOne(any())).thenReturn(WorkspaceCardStats.empty());
         clock = Clock.fixed(Instant.parse("2026-07-16T00:00:00Z"), ZoneOffset.UTC);
-        workspaceService = new WorkspaceService(workspaceRepository, workspaceMemberRepository, clock);
+        workspaceService = new WorkspaceService(
+                workspaceRepository, workspaceMemberRepository, statsLoader, clock);
     }
 
     @Test

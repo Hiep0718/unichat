@@ -2,6 +2,8 @@ package com.unichat.core.workspace.service;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -14,6 +16,7 @@ import com.unichat.core.common.error.ConflictError;
 import com.unichat.core.common.error.NotFoundError;
 import com.unichat.core.workspace.api.CreateWorkspaceRequest;
 import com.unichat.core.workspace.api.UpdateWorkspaceRequest;
+import com.unichat.core.workspace.api.WorkspaceCardStats;
 import com.unichat.core.workspace.api.WorkspaceResponse;
 import com.unichat.core.workspace.domain.Workspace;
 import com.unichat.core.workspace.domain.WorkspaceMember;
@@ -32,14 +35,17 @@ public class WorkspaceService {
 
     private final WorkspaceRepository workspaceRepository;
     private final WorkspaceMemberRepository workspaceMemberRepository;
+    private final WorkspaceStatsLoader statsLoader;
     private final Clock clock;
 
     public WorkspaceService(
             WorkspaceRepository workspaceRepository,
             WorkspaceMemberRepository workspaceMemberRepository,
+            WorkspaceStatsLoader statsLoader,
             Clock clock) {
         this.workspaceRepository = workspaceRepository;
         this.workspaceMemberRepository = workspaceMemberRepository;
+        this.statsLoader = statsLoader;
         this.clock = clock;
     }
 
@@ -48,8 +54,9 @@ public class WorkspaceService {
      */
     @Transactional(readOnly = true)
     public Page<WorkspaceResponse> getWorkspaces(UUID userId, Pageable pageable) {
-        return workspaceRepository.findAllVisibleToUser(userId, pageable)
-                .map(workspace -> toResponseWithRole(workspace, userId));
+        Page<Workspace> page = workspaceRepository.findAllVisibleToUser(userId, pageable);
+        Map<UUID, WorkspaceCardStats> stats = statsForPage(page);
+        return page.map(workspace -> toResponse(workspace, stats, roleOf(workspace, userId)));
     }
 
     /**
@@ -82,7 +89,7 @@ public class WorkspaceService {
         workspaceRepository.save(workspace);
         workspaceMemberRepository.save(ownerMember);
 
-        return WorkspaceResponse.from(workspace, 0, 1, WorkspaceRole.OWNER);
+        return WorkspaceResponse.from(workspace, statsLoader.loadOne(workspaceId), WorkspaceRole.OWNER);
     }
 
     /**
@@ -181,8 +188,10 @@ public class WorkspaceService {
     @Transactional(readOnly = true)
     public Page<WorkspaceResponse> getPublicWorkspaces(UUID userId, String search, Pageable pageable) {
         String searchTerm = (search == null || search.isBlank()) ? "%" : "%" + search.trim() + "%";
-        return workspaceRepository.findPublicWorkspacesExcludingMember(userId, searchTerm, pageable)
-                .map(workspace -> toResponse(workspace, null));
+        Page<Workspace> page = workspaceRepository
+                .findPublicWorkspacesExcludingMember(userId, searchTerm, pageable);
+        Map<UUID, WorkspaceCardStats> stats = statsForPage(page);
+        return page.map(workspace -> toResponse(workspace, stats, null));
     }
 
     /**
@@ -226,27 +235,31 @@ public class WorkspaceService {
                 .orElseThrow(() -> new NotFoundError("Workspace không tồn tại"));
     }
 
-    /**
-     * Converts a Workspace entity to response with aggregated counts and user role.
-     * Document count is 0 until the document feature is implemented.
-     *
-     * @param workspace the workspace entity
-     * @param userRole  role of the requesting user, null if not a member
-     */
-    private WorkspaceResponse toResponse(Workspace workspace, WorkspaceRole userRole) {
-        long memberCount = workspaceMemberRepository
-                .countByWorkspaceIdAndStatus(workspace.getId(), WorkspaceMemberStatus.ACTIVE);
-        return WorkspaceResponse.from(workspace, 0, memberCount, userRole);
+    /** Loads card statistics for a whole page in one go, not per card. */
+    private Map<UUID, WorkspaceCardStats> statsForPage(Page<Workspace> page) {
+        List<UUID> ids = page.getContent().stream().map(Workspace::getId).toList();
+        return statsLoader.loadFor(ids);
     }
 
-    /**
-     * Converts a Workspace entity to response, looking up the user's role.
-     */
-    private WorkspaceResponse toResponseWithRole(Workspace workspace, UUID userId) {
-        WorkspaceRole userRole = workspaceMemberRepository
+    /** Maps one workspace using statistics already loaded for its page. */
+    private WorkspaceResponse toResponse(Workspace workspace,
+                                         Map<UUID, WorkspaceCardStats> stats,
+                                         WorkspaceRole userRole) {
+        return WorkspaceResponse.from(
+                workspace,
+                stats.getOrDefault(workspace.getId(), WorkspaceCardStats.empty()),
+                userRole);
+    }
+
+    /** Maps one workspace outside a page, loading its statistics alone. */
+    private WorkspaceResponse toResponse(Workspace workspace, WorkspaceRole userRole) {
+        return WorkspaceResponse.from(workspace, statsLoader.loadOne(workspace.getId()), userRole);
+    }
+
+    private WorkspaceRole roleOf(Workspace workspace, UUID userId) {
+        return workspaceMemberRepository
                 .findByWorkspaceIdAndUserIdAndStatus(workspace.getId(), userId, WorkspaceMemberStatus.ACTIVE)
                 .map(WorkspaceMember::getRole)
                 .orElse(null);
-        return toResponse(workspace, userRole);
     }
 }

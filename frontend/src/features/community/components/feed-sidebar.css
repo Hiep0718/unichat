@@ -1,0 +1,102 @@
+.feed-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  position: sticky;
+  top: 22px;
+  align-self: start;
+}
+
+/* Unanswered count leads the sidebar: it is the one number worth acting on. */
+.feed-sidebar__cta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 16px;
+  border: none;
+  border-radius: var(--radius-2xl);
+  background: var(--ws-warn-bg);
+  color: var(--ws-warn-ink);
+  font: var(--font-body-md);
+  text-align: left;
+  cursor: pointer;
+  transition: filter var(--transition-fast);
+}
+
+.feed-sidebar__cta:hover {
+  filter: brightness(0.97);
+}
+
+.feed-sidebar__cta-icon {
+  display: inline-flex;
+}
+
+.feed-sidebar__cta-text {
+  flex: 1;
+  line-height: 1.35;
+}
+
+.feed-sidebar__cta-text strong {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.feed-sidebar__card {
+  padding: 16px 18px;
+  border-radius: var(--radius-2xl);
+  background: var(--ws-card);
+  box-shadow: var(--ws-card-shadow);
+}
+
+.feed-sidebar__card--muted {
+  background: var(--ws-card);
+}
+
+.feed-sidebar__heading {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 12px;
+  color: var(--ws-ink-muted);
+  font: var(--font-label-sm);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.feed-sidebar__body {
+  margin: 0 0 12px;
+  font: var(--font-body-md);
+  line-height: 1.6;
+  color: var(--ws-ink-soft);
+}
+
+.feed-sidebar__empty {
+  margin: 0;
+  font: var(--font-body-md);
+  color: var(--ws-ink-muted);
+}
+
+.feed-sidebar__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: none;
+  background: none;
+  font: var(--font-label-md);
+  font-weight: 700;
+  color: var(--ws-accent);
+  cursor: pointer;
+}
+
+.feed-sidebar__link:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 1180px) {
+  .feed-sidebar {
+    display: none;
+  }
+}

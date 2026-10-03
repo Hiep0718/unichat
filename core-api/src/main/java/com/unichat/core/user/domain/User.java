@@ -41,6 +41,22 @@ public class User {
     @Column(name = "locked_until")
     private Instant lockedUntil;
 
+    /**
+     * The name others see. Separate from the mention handle, which stays on the
+     * email because it has to be unique and a display name does not.
+     */
+    @Column(name = "display_name", nullable = false)
+    private String displayName;
+
+    /** Key of the uploaded picture, null when the member has not set one. */
+    @Column(name = "avatar_storage_key")
+    private String avatarStorageKey;
+
+    /** Chosen colour for the letter avatar; null means derive it from the name. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "avatar_color")
+    private AvatarColor avatarColor;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -66,8 +82,21 @@ public class User {
         this.systemRole = systemRole;
         this.status = status;
         this.failedLoginCount = 0;
+        // Matches what the product displayed before names existed; the member
+        // can change it, and nothing looks empty until they do.
+        this.displayName = defaultDisplayName(email);
         this.createdAt = now;
         this.updatedAt = now;
+    }
+
+    /** Longest name the column and the UI will carry. */
+    public static final int MAX_DISPLAY_NAME = 50;
+
+    private static String defaultDisplayName(String email) {
+        String localPart = email == null ? "" : email.split("@")[0];
+        return localPart.length() > MAX_DISPLAY_NAME
+                ? localPart.substring(0, MAX_DISPLAY_NAME)
+                : localPart;
     }
 
     public UUID getId() {
@@ -76,6 +105,55 @@ public class User {
 
     public String getEmail() {
         return email;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public String getAvatarStorageKey() {
+        return avatarStorageKey;
+    }
+
+    public AvatarColor getAvatarColor() {
+        return avatarColor;
+    }
+
+    /** Whether a picture has been uploaded, as opposed to a letter avatar. */
+    public boolean hasAvatarImage() {
+        return avatarStorageKey != null && !avatarStorageKey.isBlank();
+    }
+
+    /**
+     * Points the member at a newly stored picture.
+     *
+     * @return the key of the picture this replaced, so the caller can delete
+     *         it; null when there was none
+     */
+    public String replaceAvatar(String storageKey) {
+        String previous = this.avatarStorageKey;
+        this.avatarStorageKey = storageKey;
+        return previous;
+    }
+
+    /** Sets the letter-avatar colour; null returns to deriving it from the name. */
+    public void setAvatarColor(AvatarColor avatarColor) {
+        this.avatarColor = avatarColor;
+    }
+
+    /**
+     * Renames the person as others see them.
+     *
+     * @throws IllegalArgumentException when blank or over the column's length,
+     *                                  which the database would reject anyway
+     */
+    public void rename(String displayName) {
+        String trimmed = displayName == null ? "" : displayName.trim();
+        if (trimmed.isEmpty() || trimmed.length() > MAX_DISPLAY_NAME) {
+            throw new IllegalArgumentException("Tên hiển thị phải từ 1 đến "
+                    + MAX_DISPLAY_NAME + " ký tự");
+        }
+        this.displayName = trimmed;
     }
 
     public void setEmail(String email) {

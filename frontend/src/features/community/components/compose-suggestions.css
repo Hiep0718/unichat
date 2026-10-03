@@ -1,0 +1,86 @@
+.compose-suggestions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.compose-suggestions__library {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: var(--color-on-surface-variant);
+  font: var(--font-label-sm);
+}
+
+/* An empty library is a limitation to state, not a warning to alarm anyone. */
+.compose-suggestions__library--empty {
+  opacity: 0.85;
+}
+
+.compose-suggestions__matches {
+  padding: 10px 12px;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-container-low);
+}
+
+.compose-suggestions__heading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 8px;
+  color: var(--color-on-surface);
+  font: var(--font-label-sm);
+  font-weight: 700;
+}
+
+.compose-suggestions__list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.compose-suggestions__item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-default);
+  background: var(--color-surface-container);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.compose-suggestions__item:hover {
+  border-color: var(--color-outline-variant);
+  background: var(--color-surface-container-high);
+}
+
+.compose-suggestions__item-title {
+  overflow: hidden;
+  color: var(--color-on-surface);
+  font: var(--font-label-md);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.compose-suggestions__item-meta {
+  color: var(--color-on-surface-variant);
+  font: var(--font-label-sm);
+}
+
+.compose-suggestions__resolved {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-primary);
+  font-weight: 600;
+}

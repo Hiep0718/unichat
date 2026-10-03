@@ -118,6 +118,32 @@
   --transition-normal: 200ms ease;
   --transition-slow: 300ms ease;
   --transition-transform: 500ms ease;
+
+  /* ---------- Workplace surfaces ----------
+     Cards separate by elevation, not by a 1px outline: an interface whose
+     every box is drawn round reads as a wireframe. Rolled out on the feed and
+     Work Chat first; the remaining screens still use the Material scale above. */
+  --ws-canvas: #f3f5f9;
+  --ws-card: #ffffff;
+  --ws-card-shadow: 0 1px 3px rgb(15 23 42 / 8%);
+  --ws-card-shadow-hover: 0 4px 12px rgb(15 23 42 / 11%);
+  --ws-line: #eef2f7;
+  --ws-chip: #f1f5f9;
+
+  --ws-ink: #0f172a;
+  --ws-ink-soft: #475569;
+  --ws-ink-muted: #64748b;
+
+  /* The one saturated colour, used for what the reader should act on. */
+  --ws-accent: #1e3a8a;
+  --ws-accent-ink: #ffffff;
+  --ws-accent-soft: #e6ebf7;
+
+  --ws-ok-bg: #dcfce7;
+  --ws-ok-ink: #166534;
+  --ws-warn-bg: #fef3c7;
+  --ws-warn-ink: #854d0e;
+  --ws-alert: #b91c1c;
 }
 
 /* ==========================================================================

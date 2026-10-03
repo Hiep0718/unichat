@@ -17,10 +17,13 @@ import {
 import type { ReactNode } from 'react';
 
 import { registerTokenAccessor } from '../../lib/api-client';
+import { authApi } from './api/auth-api';
 
 interface UserProfile {
   readonly id: string;
   readonly email: string;
+  /** The name others see; distinct from the @mention handle. */
+  readonly displayName: string;
   readonly systemRole: 'USER' | 'ADMIN';
   readonly status: 'ACTIVE' | 'LOCKED';
 }
@@ -81,6 +84,36 @@ export function AuthProvider({ children }: AuthProviderProps) {
       },
     );
   }, [token]);
+
+  // Resolve the profile whenever a token arrives without one. Login only stores
+  // the token, so without this `user` stays null and anything keyed on the
+  // current user id (such as accepting an answer on your own post) never works.
+  useEffect(() => {
+    if (!token || user) return;
+
+    let cancelled = false;
+    authApi
+      .getMe()
+      .then((profile) => {
+        if (!cancelled) {
+          setUserState({
+            id: profile.id,
+            email: profile.email,
+            displayName: profile.displayName,
+            systemRole: profile.systemRole,
+            status: profile.status,
+          });
+        }
+      })
+      .catch(() => {
+        // Leaving the profile unset is safe: the token still authenticates
+        // requests, only user-specific UI stays hidden.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [token, user]);
 
   const value = useMemo<AuthState>(
     () => ({

@@ -7,7 +7,14 @@
 
 import { fetchJson, getAccessToken, getApiBaseUrl } from '../../lib/api-client';
 
-export type DocumentStatus = 'PENDING' | 'PROCESSING' | 'PROCESSED' | 'FAILED' | 'DELETING';
+export type DocumentStatus =
+  | 'PENDING_APPROVAL'
+  | 'REJECTED'
+  | 'PENDING'
+  | 'PROCESSING'
+  | 'PROCESSED'
+  | 'FAILED'
+  | 'DELETING';
 
 export interface DocumentResponse {
   id: string;
@@ -23,6 +30,19 @@ export interface DocumentResponse {
   version: number;
   createdAt: string;
   updatedAt: string;
+  /** Member who contributed the document. */
+  uploadedBy: string | null;
+  /** Contributor email, resolved on moderation screens. */
+  uploadedByEmail: string | null;
+  /** Owner or editor who decided on the contribution. */
+  approvedBy: string | null;
+  approvedAt: string | null;
+  /** Reason shown to the contributor when declined. */
+  rejectionReason: string | null;
+  /** What the contributor said the document contains. */
+  contributionSummary: string | null;
+  /** Why the contributor says the workspace needs it. */
+  contributionReason: string | null;
 }
 
 export interface PageResponse<T> {
@@ -48,13 +68,29 @@ export async function fetchWorkspaceDocuments(
   return fetchJson<PageResponse<DocumentResponse>>(`/workspaces/${workspaceId}/documents?page=${page}&size=${size}`);
 }
 
+/**
+ * Explains a contributed document to whoever reviews it. Required when the
+ * uploader cannot publish directly.
+ */
+export interface ContributionContext {
+  /** What the document contains. */
+  summary: string;
+  /** Why the workspace needs it. */
+  reason: string;
+}
+
 export async function uploadWorkspaceDocument(
   workspaceId: string,
   file: File,
-  onProgress?: (percent: number) => void
+  onProgress?: (percent: number) => void,
+  contribution?: ContributionContext
 ): Promise<IngestionJobResponse> {
   const formData = new FormData();
   formData.append('file', file);
+  if (contribution) {
+    formData.append('contributionSummary', contribution.summary);
+    formData.append('contributionReason', contribution.reason);
+  }
 
   const token = getAccessToken();
 
@@ -102,7 +138,8 @@ export async function uploadWorkspaceDocument(
 export async function uploadWorkspaceDocuments(
   workspaceId: string,
   files: File[],
-  onProgressPerFile?: (fileIndex: number, percent: number) => void
+  onProgressPerFile?: (fileIndex: number, percent: number) => void,
+  contribution?: ContributionContext
 ): Promise<IngestionJobResponse[]> {
   if (!files || files.length === 0) {
     throw new Error('Không có tệp nào được chọn');
@@ -114,11 +151,16 @@ export async function uploadWorkspaceDocuments(
     const file = files[i];
     if (!file) continue;
 
-    const res = await uploadWorkspaceDocument(workspaceId, file, (percent) => {
-      if (onProgressPerFile) {
-        onProgressPerFile(i, percent);
-      }
-    });
+    const res = await uploadWorkspaceDocument(
+      workspaceId,
+      file,
+      (percent) => {
+        if (onProgressPerFile) {
+          onProgressPerFile(i, percent);
+        }
+      },
+      contribution
+    );
 
     results.push(res);
   }
@@ -138,6 +180,62 @@ export async function deleteWorkspaceDocument(workspaceId: string, documentId: s
   return fetchJson<void>(`/workspaces/${workspaceId}/documents/${documentId}`, {
     method: 'DELETE',
   });
+}
+
+/* ---------- Contribution approval ---------- */
+
+/**
+ * Lists member contributions awaiting an owner/editor decision.
+ * Requires OWNER or EDITOR role in the workspace.
+ */
+export async function fetchPendingApprovals(
+  workspaceId: string,
+  page = 0,
+  size = 20
+): Promise<PageResponse<DocumentResponse>> {
+  return fetchJson<PageResponse<DocumentResponse>>(
+    `/workspaces/${workspaceId}/documents/pending-approval?page=${page}&size=${size}`
+  );
+}
+
+/**
+ * Returns how many contributions are awaiting a decision, for the tab badge.
+ */
+export async function fetchPendingApprovalCount(
+  workspaceId: string
+): Promise<{ pendingCount: number }> {
+  return fetchJson<{ pendingCount: number }>(
+    `/workspaces/${workspaceId}/documents/pending-approval/count`
+  );
+}
+
+/**
+ * Approves a contribution, releasing it into the ingestion pipeline so it
+ * becomes retrievable by the AI.
+ */
+export async function approveDocument(
+  workspaceId: string,
+  documentId: string
+): Promise<DocumentResponse> {
+  return fetchJson<DocumentResponse>(
+    `/workspaces/${workspaceId}/documents/${documentId}/approve`,
+    { method: 'POST' }
+  );
+}
+
+/**
+ * Declines a contribution. It stays out of retrieval and the contributor sees
+ * the reason.
+ */
+export async function rejectDocument(
+  workspaceId: string,
+  documentId: string,
+  reason: string
+): Promise<DocumentResponse> {
+  return fetchJson<DocumentResponse>(
+    `/workspaces/${workspaceId}/documents/${documentId}/reject`,
+    { method: 'POST', body: JSON.stringify({ reason }) }
+  );
 }
 
 export interface VectorSyncStatusResponse {

@@ -6,55 +6,66 @@
   gap: var(--stack-md);
 }
 
+/* No outline: a hairline border around every panel is what made the page read
+   as a form. Depth comes from a soft shadow instead. */
 .quick-stats__card {
   display: flex;
   align-items: center;
-  gap: var(--stack-md);
-  padding: 20px;
+  gap: 14px;
+  padding: 18px 20px;
   background: var(--color-surface-container-lowest);
-  border: 1px solid var(--color-outline-variant);
+  border: none;
   border-radius: var(--radius-xl);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 6%), 0 4px 14px rgb(15 23 42 / 5%);
   transition: box-shadow var(--transition-normal), transform var(--transition-normal);
 }
 
 .quick-stats__card:hover {
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 2px 4px rgb(15 23 42 / 8%), 0 10px 26px rgb(15 23 42 / 10%);
   transform: translateY(-2px);
 }
 
+/* The tile is where the card palette's hues appear in the chrome — small,
+   saturated doses, so the page and the cards look like one product. */
 .quick-stats__icon-wrap {
   display: grid;
   place-items: center;
-  width: 48px;
-  height: 48px;
-  border-radius: var(--radius-lg);
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
   flex-shrink: 0;
+  color: #fff;
 }
 
 .quick-stats__icon-wrap--workspaces {
-  background: var(--color-primary-fixed);
-  color: var(--color-on-primary-fixed);
+  background: linear-gradient(145deg, #6366f1 0%, #8b5cf6 100%);
+  box-shadow: 0 4px 12px rgb(99 102 241 / 34%);
 }
 
 .quick-stats__icon-wrap--documents {
-  background: var(--color-secondary-fixed);
-  color: var(--color-on-secondary-fixed);
+  background: linear-gradient(145deg, #22d3ee 0%, #3b82f6 100%);
+  box-shadow: 0 4px 12px rgb(34 211 238 / 34%);
 }
 
 .quick-stats__icon-wrap--members {
-  background: var(--color-tertiary-fixed);
-  color: var(--color-on-tertiary-fixed);
+  background: linear-gradient(145deg, #fbbf24 0%, #ec4899 100%);
+  box-shadow: 0 4px 12px rgb(236 72 153 / 30%);
 }
 
 .quick-stats__info {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
+  min-width: 0;
 }
 
 .quick-stats__value {
-  font: var(--font-headline-lg);
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
   color: var(--color-on-surface);
+  font-variant-numeric: tabular-nums;
 }
 
 .quick-stats__label {
@@ -71,5 +82,15 @@
 @media (min-width: 768px) and (max-width: 1023px) {
   .quick-stats {
     grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quick-stats__card {
+    transition: none;
+  }
+
+  .quick-stats__card:hover {
+    transform: none;
   }
 }

@@ -4,42 +4,41 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-
-import com.unichat.core.communitychat.domain.Reaction;
-import com.unichat.core.communitychat.domain.ReactionRepository;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
 import com.unichat.core.common.error.AuthorizationError;
 import com.unichat.core.common.error.NotFoundError;
 import com.unichat.core.communitychat.api.CreateDiscussionRequest;
 import com.unichat.core.communitychat.api.CreateReplyRequest;
 import com.unichat.core.communitychat.api.DiscussionResponse;
+import com.unichat.core.communitychat.api.MentionableMember;
+import com.unichat.core.communitychat.api.PostAttachmentResponse;
+import com.unichat.core.communitychat.api.ReactionSummary;
+import com.unichat.core.communitychat.api.UpdateDiscussionRequest;
 import com.unichat.core.communitychat.api.ReplyResponse;
+import com.unichat.core.communitychat.domain.AiMentionEvent;
 import com.unichat.core.communitychat.domain.Discussion;
 import com.unichat.core.communitychat.domain.DiscussionReply;
 import com.unichat.core.communitychat.domain.DiscussionReplyRepository;
 import com.unichat.core.communitychat.domain.DiscussionRepository;
+import com.unichat.core.communitychat.domain.MentionEvent;
 import com.unichat.core.communitychat.domain.NewReplyEvent;
-import com.unichat.core.document.domain.DocumentRepository;
+import com.unichat.core.user.domain.User;
 import com.unichat.core.user.domain.UserRepository;
+import com.unichat.core.workspace.domain.Workspace;
 import com.unichat.core.workspace.domain.WorkspaceMember;
 import com.unichat.core.workspace.domain.WorkspaceMemberRepository;
+import com.unichat.core.workspace.domain.WorkspaceMemberStatus;
+import com.unichat.core.workspace.domain.WorkspaceRepository;
 import com.unichat.core.workspace.domain.WorkspaceRole;
 
 @Service
@@ -52,91 +51,90 @@ public class DiscussionService {
     private final DiscussionReplyRepository replyRepository;
     private final WorkspaceMemberRepository memberRepository;
     private final UserRepository userRepository;
-    private final DocumentRepository documentRepository;
+    private final WorkspaceRepository workspaceRepository;
     private final ApplicationEventPublisher eventPublisher;
-    private final RestTemplate restTemplate;
-    private final ReactionRepository reactionRepository;
-
-    @Value("${unichat.ai-service.url:http://localhost:8001}")
-    private String aiServiceUrl;
+    private final PostAttachmentService attachmentService;
+    private final MentionResolver mentionResolver;
+    private final ReactionService reactionService;
 
     public DiscussionService(DiscussionRepository discussionRepository,
                              DiscussionReplyRepository replyRepository,
                              WorkspaceMemberRepository memberRepository,
                              UserRepository userRepository,
-                             DocumentRepository documentRepository,
+                             WorkspaceRepository workspaceRepository,
                              ApplicationEventPublisher eventPublisher,
-                             ReactionRepository reactionRepository) {
+                             PostAttachmentService attachmentService,
+                             MentionResolver mentionResolver,
+                             ReactionService reactionService) {
+        this.reactionService = reactionService;
+        this.mentionResolver = mentionResolver;
+        this.attachmentService = attachmentService;
+        this.workspaceRepository = workspaceRepository;
         this.discussionRepository = discussionRepository;
         this.replyRepository = replyRepository;
         this.memberRepository = memberRepository;
         this.userRepository = userRepository;
-        this.documentRepository = documentRepository;
         this.eventPublisher = eventPublisher;
-        this.reactionRepository = reactionRepository;
-        this.restTemplate = new RestTemplate();
     }
 
-    public Page<DiscussionResponse> listDiscussions(UUID workspaceId, UUID userId, String label, String sort, int page, int size) {
+    /**
+     * Lists posts in one group.
+     *
+     * @param query optional full-text search across title and body
+     */
+    public Page<DiscussionResponse> listDiscussions(UUID workspaceId, UUID userId, String label,
+                                                    String sort, String query, int page, int size) {
         verifyMembership(workspaceId, userId);
-        
-        PageRequest pageRequest;
-        if ("HOT".equalsIgnoreCase(sort)) {
-            pageRequest = PageRequest.of(page, size);
-        } else if ("TOP".equalsIgnoreCase(sort)) {
-            pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "voteScore", "createdAt"));
-        } else { // NEW default
-            pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        }
+
+        // Queries carrying their own ORDER BY must not receive a second one.
+        boolean selfOrdered = query != null && !query.isBlank();
+        PageRequest pageRequest = selfOrdered || "HOT".equalsIgnoreCase(sort) || "TOP".equalsIgnoreCase(sort)
+                ? PageRequest.of(page, size)
+                : PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
 
         Page<Discussion> result;
-        
-        if (label != null && !label.isBlank()) {
+
+        if (selfOrdered) {
+            result = discussionRepository.searchByKeyword(List.of(workspaceId), query.trim(), pageRequest);
+        } else if (label != null && !label.isBlank()) {
             result = discussionRepository.findByWorkspaceIdAndLabel(workspaceId, label, pageRequest);
+        } else if ("HOT".equalsIgnoreCase(sort) || "TOP".equalsIgnoreCase(sort)) {
+            result = discussionRepository.findByWorkspaceIdOrderByVoteScoreDescCreatedAtDesc(workspaceId, pageRequest);
         } else {
-            if ("HOT".equalsIgnoreCase(sort)) {
-                result = discussionRepository.findByWorkspaceIdOrderByVoteScoreDescCreatedAtDesc(workspaceId, pageRequest);
-            } else if ("TOP".equalsIgnoreCase(sort)) {
-                result = discussionRepository.findByWorkspaceIdOrderByVoteScoreDescCreatedAtDesc(workspaceId, pageRequest); // Can optimize further later
-            } else {
-                result = discussionRepository.findByWorkspaceIdOrderByCreatedAtDesc(workspaceId, pageRequest);
-            }
+            result = discussionRepository.findByWorkspaceIdOrderByCreatedAtDesc(workspaceId, pageRequest);
         }
 
         List<UUID> discussionIds = result.getContent().stream().map(Discussion::getId).toList();
-        Map<UUID, String> userVotes = reactionRepository.findByUserIdAndTargetTypeAndTargetIdIn(userId, "DISCUSSION", discussionIds)
-                .stream().collect(Collectors.toMap(Reaction::getTargetId, Reaction::getReactionType));
 
-        return result.map(d -> {
-            String authorName = userRepository.findById(d.getAuthorId())
-                    .map(u -> u.getEmail().split("@")[0])
-                    .orElse("Unknown");
-            return DiscussionResponse.from(d, authorName, null, userVotes.get(d.getId()));
-        });
+        // Batch the author, attachment and reaction lookups rather than
+        // querying per post.
+        Map<UUID, String> authorNames = userRepository
+                .findAllById(result.getContent().stream().map(Discussion::getAuthorId).distinct().toList())
+                .stream()
+                .collect(Collectors.toMap(User::getId, User::getDisplayName));
+        Map<UUID, List<PostAttachmentResponse>> attachments = attachmentService.listForAll(discussionIds);
+        Map<UUID, ReactionSummary> reactions =
+                reactionService.summariseAll("DISCUSSION", discussionIds, userId);
+
+        return result.map(d -> DiscussionResponse.from(
+                d,
+                null,
+                authorNames.getOrDefault(d.getAuthorId(), "Unknown"),
+                null,
+                attachments.getOrDefault(d.getId(), List.of()),
+                reactions.getOrDefault(d.getId(), ReactionSummary.empty())));
     }
 
     @Transactional
     public DiscussionResponse getDiscussion(UUID workspaceId, UUID discussionId, UUID userId) {
         verifyMembership(workspaceId, userId);
-        
-        Discussion discussion = discussionRepository.findById(discussionId)
-                .orElseThrow(() -> new NotFoundError("Discussion not found"));
-                
-        if (!discussion.getWorkspaceId().equals(workspaceId)) {
-            throw new AuthorizationError("Discussion does not belong to this workspace");
-        }
-        
+
+        Discussion discussion = requirePost(workspaceId, discussionId);
+
         discussion.incrementViewCount();
         discussionRepository.save(discussion);
 
-        String authorName = userRepository.findById(discussion.getAuthorId())
-                .map(u -> u.getEmail().split("@")[0])
-                .orElse("Unknown");
-                
-        String userVote = reactionRepository.findByUserIdAndTargetTypeAndTargetId(userId, "DISCUSSION", discussionId)
-                .map(Reaction::getReactionType).orElse(null);
-                
-        return DiscussionResponse.from(discussion, authorName, null, userVote);
+        return toResponse(workspaceId, discussion, userId);
     }
 
     @Transactional
@@ -160,10 +158,56 @@ public class DiscussionService {
                 "OPEN",
                 Instant.now()
         );
+        discussion.setBackgroundKey(
+                PostBackground.validate(request.backgroundKey(), request.body()));
+        discussionRepository.save(discussion);
+        publishMentions(workspaceId, discussion.getId(), null, userId, request.body());
+
+        String authorName = userRepository.findById(userId).map(User::getDisplayName).orElse("Người dùng");
+        return DiscussionResponse.from(discussion, authorName, null);
+    }
+
+    /**
+     * Pins or unpins a post so it sorts to the top of its group. Restricted to
+     * owners and editors: pinning claims the group's attention.
+     */
+    @Transactional
+    public DiscussionResponse setPinned(UUID workspaceId, UUID discussionId, UUID userId, boolean pinned) {
+        WorkspaceMember member = verifyMembership(workspaceId, userId);
+        if (!WorkspaceRole.OWNER.equals(member.getRole())
+                && !WorkspaceRole.EDITOR.equals(member.getRole())) {
+            throw new AuthorizationError("Chỉ chủ sở hữu và người biên tập mới được ghim bài viết");
+        }
+
+        Discussion discussion = requirePost(workspaceId, discussionId);
+        discussion.setPinned(pinned);
+        discussion.setUpdatedAt(Instant.now());
         discussionRepository.save(discussion);
 
-        String authorName = userRepository.findById(userId).map(u -> u.getEmail().split("@")[0]).orElse("Unknown");
-        return DiscussionResponse.from(discussion, authorName, null, null);
+        return toResponse(workspaceId, discussion, userId);
+    }
+
+    /**
+     * Members the composer may suggest for a mention. Membership is verified
+     * first, so the roster never leaks to someone outside the group.
+     */
+    public List<MentionableMember> listMentionableMembers(UUID workspaceId, UUID userId) {
+        verifyMembership(workspaceId, userId);
+        return mentionResolver.listMentionable(workspaceId);
+    }
+
+    /**
+     * Notifies anyone the text names. Resolution is scoped to active workspace
+     * members, so a mention never reaches someone who cannot open the post.
+     */
+    private void publishMentions(UUID workspaceId, UUID discussionId, UUID replyId,
+                                 UUID authorId, String text) {
+        List<UUID> mentioned = mentionResolver.resolve(workspaceId, text, authorId);
+        if (mentioned.isEmpty()) {
+            return;
+        }
+        eventPublisher.publishEvent(
+                new MentionEvent(workspaceId, discussionId, replyId, authorId, mentioned));
     }
 
     public List<ReplyResponse> getReplies(UUID workspaceId, UUID discussionId, UUID userId) {
@@ -178,16 +222,19 @@ public class DiscussionService {
         List<DiscussionReply> replies = replyRepository.findByDiscussionIdOrderByCreatedAtAsc(discussionId);
         List<UUID> replyIds = replies.stream().map(DiscussionReply::getId).toList();
         
-        Map<UUID, String> userVotes = reactionRepository.findByUserIdAndTargetTypeAndTargetIdIn(userId, "DISCUSSION_REPLY", replyIds)
-                .stream().collect(Collectors.toMap(Reaction::getTargetId, Reaction::getReactionType));
+        Map<UUID, ReactionSummary> reactions =
+                reactionService.summariseAll("DISCUSSION_REPLY", replyIds, userId);
+        Map<UUID, String> authorNames = userRepository
+                .findAllById(replies.stream().map(DiscussionReply::getAuthorId).distinct().toList())
+                .stream()
+                .collect(Collectors.toMap(User::getId, User::getDisplayName));
 
         return replies.stream()
-                .map(r -> {
-                    String authorName = userRepository.findById(r.getAuthorId())
-                            .map(u -> u.getEmail().split("@")[0])
-                            .orElse("Unknown");
-                    return ReplyResponse.from(r, authorName, null, userVotes.get(r.getId()));
-                })
+                .map(r -> ReplyResponse.from(
+                        r,
+                        authorNames.getOrDefault(r.getAuthorId(), "Người dùng"),
+                        null,
+                        reactions.getOrDefault(r.getId(), ReactionSummary.empty())))
                 .collect(Collectors.toList());
     }
 
@@ -222,67 +269,134 @@ public class DiscussionService {
         eventPublisher.publishEvent(new NewReplyEvent(
                 workspaceId, discussionId, userId, discussion.getAuthorId(), reply.getId()
         ));
+        publishMentions(workspaceId, discussionId, reply.getId(), userId, request.body());
 
         if (request.body().toLowerCase().contains("@ai")) {
-            triggerAiResponseAsync(workspaceId, discussion, reply);
+            // Answered after this transaction commits: the assistant's reply hangs
+            // off this one, so its row has to exist first.
+            eventPublisher.publishEvent(new AiMentionEvent(
+                    workspaceId, discussionId, reply.getId(),
+                    discussion.getTitle(), request.body()));
         }
 
-        String authorName = userRepository.findById(userId).map(u -> u.getEmail().split("@")[0]).orElse("Unknown");
-        return ReplyResponse.from(reply, authorName, null, null);
+        String authorName = userRepository.findById(userId).map(User::getDisplayName).orElse("Người dùng");
+        return ReplyResponse.from(reply, authorName, null, ReactionSummary.empty());
     }
 
+    /**
+     * Accepts a reply as the best answer (StackOverflow-style).
+     * Only the discussion author can accept.
+     */
+    @Transactional
+    public DiscussionResponse acceptReply(UUID workspaceId, UUID discussionId,
+                                           UUID replyId, UUID userId) {
+        verifyMembership(workspaceId, userId);
+
+        Discussion discussion = discussionRepository.findById(discussionId)
+                .orElseThrow(() -> new NotFoundError("Discussion not found"));
+        if (!discussion.getAuthorId().equals(userId)) {
+            throw new AuthorizationError("Only the post author can accept an answer");
+        }
+
+        DiscussionReply reply = replyRepository.findById(replyId)
+                .orElseThrow(() -> new NotFoundError("Reply not found"));
+
+        // Without this check any reply id can be accepted, including one from
+        // another discussion or another workspace entirely.
+        if (!reply.getDiscussionId().equals(discussionId)) {
+            throw new AuthorizationError("Reply does not belong to this discussion");
+        }
+
+        discussion.setAcceptedReplyId(replyId);
+        discussion.setUpdatedAt(Instant.now());
+        discussionRepository.save(discussion);
+
+        String authorName = userRepository.findById(userId)
+                .map(User::getDisplayName).orElse("Người dùng");
+        return DiscussionResponse.from(discussion, authorName, null);
+    }
+
+    /**
+     * Requires an active membership. Filtering on status matters: a member whose
+     * access was revoked still satisfies a plain workspace-and-user lookup.
+     */
     private WorkspaceMember verifyMembership(UUID workspaceId, UUID userId) {
-        return memberRepository.findByWorkspaceIdAndUserId(workspaceId, userId)
-                .orElseThrow(() -> new AuthorizationError("User is not a member of this workspace"));
+        return memberRepository
+                .findByWorkspaceIdAndUserIdAndStatus(workspaceId, userId, WorkspaceMemberStatus.ACTIVE)
+                .orElseThrow(() -> new AuthorizationError("Bạn không phải thành viên của nhóm này"));
     }
 
-    private void triggerAiResponseAsync(UUID workspaceId, Discussion discussion, DiscussionReply triggerReply) {
-        CompletableFuture.runAsync(() -> {
-            try {
-                List<UUID> allowedDocUuids = documentRepository.findAllowedDocumentIdsForWorkspaces(List.of(workspaceId));
-                List<String> allowedDocIds = allowedDocUuids.stream().map(UUID::toString).toList();
+    /**
+     * Edits a post. Only its author may edit, and only the text changes; the
+     * label is fixed at creation so the announcement role check cannot be
+     * bypassed afterwards.
+     */
+    @Transactional
+    public DiscussionResponse updateDiscussion(UUID workspaceId, UUID discussionId, UUID userId,
+                                               UpdateDiscussionRequest request) {
+        verifyMembership(workspaceId, userId);
+        Discussion discussion = requirePost(workspaceId, discussionId);
 
-                String question = triggerReply.getBody().replaceAll("(?i)@ai\\b", "").trim();
-                // Contextualize question with discussion title if it's too short
-                if (question.length() < 10) {
-                    question = "Trong chủ đề '" + discussion.getTitle() + "', " + question;
-                }
+        if (!discussion.getAuthorId().equals(userId)) {
+            throw new AuthorizationError("Chỉ tác giả mới có thể chỉnh sửa bài viết");
+        }
 
-                Map<String, Object> aiRequest = Map.of(
-                        "workspaceId", workspaceId.toString(),
-                        "allowedDocumentIds", allowedDocIds,
-                        "question", question,
-                        "strategyVersion", "v1.0",
-                        "requestId", UUID.randomUUID().toString()
-                );
+        discussion.applyEdit(request.title(), request.body(), Instant.now());
+        discussion.setBackgroundKey(
+                PostBackground.validate(request.backgroundKey(), request.body()));
+        discussionRepository.save(discussion);
+        publishMentions(workspaceId, discussionId, null, userId, request.body());
 
-                HttpHeaders headers = new HttpHeaders();
-                headers.setContentType(MediaType.APPLICATION_JSON);
-                HttpEntity<Map<String, Object>> entity = new HttpEntity<>(aiRequest, headers);
-
-                ResponseEntity<Map> responseEntity = restTemplate.postForEntity(
-                        aiServiceUrl + "/internal/v1/retrieval/answers", entity, Map.class);
-                
-                Map<String, Object> aiResponse = (responseEntity.getBody() != null) ? responseEntity.getBody() : Map.of();
-                String answerText = (String) aiResponse.get("answer");
-                String assistantContent = answerText != null ? answerText : "Không có câu trả lời";
-
-                DiscussionReply aiReply = new DiscussionReply(
-                        UUID.randomUUID(),
-                        discussion.getId(),
-                        triggerReply.getAuthorId(), // Fallback user ID
-                        assistantContent,
-                        triggerReply.getId(),
-                        true,
-                        Instant.now()
-                );
-                
-                // In a real app we need a programmatic transaction here
-                replyRepository.save(aiReply);
-
-            } catch (Exception e) {
-                log.error("Failed to generate AI response in discussion", e);
-            }
-        });
+        return toResponse(workspaceId, discussion, userId);
     }
+
+    /**
+     * Removes a post. The author may remove their own; an owner or editor may
+     * remove any post in their group. The row is kept so replies and bookmarks
+     * stay referentially valid, but every listing drops it.
+     */
+    @Transactional
+    public void deleteDiscussion(UUID workspaceId, UUID discussionId, UUID userId) {
+        WorkspaceMember member = verifyMembership(workspaceId, userId);
+        Discussion discussion = requirePost(workspaceId, discussionId);
+
+        boolean isAuthor = discussion.getAuthorId().equals(userId);
+        boolean canModerate = WorkspaceRole.OWNER.equals(member.getRole())
+                || WorkspaceRole.EDITOR.equals(member.getRole());
+
+        if (!isAuthor && !canModerate) {
+            throw new AuthorizationError("Bạn không có quyền xoá bài viết này");
+        }
+
+        discussion.markDeleted(Instant.now());
+        discussionRepository.save(discussion);
+        log.info("Soft-deleted discussion {} in workspace {}", discussionId, workspaceId);
+    }
+
+    private Discussion requirePost(UUID workspaceId, UUID discussionId) {
+        Discussion discussion = discussionRepository.findById(discussionId)
+                .orElseThrow(() -> new NotFoundError("Bài viết không tồn tại"));
+        if (!discussion.getWorkspaceId().equals(workspaceId)) {
+            throw new AuthorizationError("Bài viết không thuộc Workspace này");
+        }
+        if ("DELETED".equals(discussion.getStatus())) {
+            throw new NotFoundError("Bài viết không tồn tại");
+        }
+        return discussion;
+    }
+
+    /** Builds the full response for one post: author, attachments, reactions. */
+    private DiscussionResponse toResponse(UUID workspaceId, Discussion discussion, UUID userId) {
+        String authorName = userRepository.findById(discussion.getAuthorId())
+                .map(User::getDisplayName).orElse("Người dùng");
+        String workspaceName = workspaceRepository.findById(workspaceId)
+                .map(Workspace::getName).orElse(null);
+        ReactionSummary reactions = reactionService
+                .summariseAll("DISCUSSION", List.of(discussion.getId()), userId)
+                .getOrDefault(discussion.getId(), ReactionSummary.empty());
+
+        return DiscussionResponse.from(discussion, workspaceName, authorName, null,
+                attachmentService.listFor(discussion.getId()), reactions);
+    }
+
 }

@@ -44,6 +44,28 @@ public class UserService {
 
 
     /**
+     * Renames the caller as others see them.
+     *
+     * <p>The mention handle is untouched: it has to stay unique, which the
+     * email already guarantees, while two members may pick the same name.
+     */
+    @Transactional
+    public UserResponse updateProfile(UUID userId, com.unichat.core.user.api.UpdateProfileRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundError("Người dùng không tồn tại"));
+
+        try {
+            user.rename(request.displayName());
+        } catch (IllegalArgumentException e) {
+            throw new com.unichat.core.common.error.ValidationError(e.getMessage());
+        }
+        user.setUpdatedAt(Instant.now(clock));
+        userRepository.save(user);
+
+        return UserResponse.from(user);
+    }
+
+    /**
      * Changes the user's password.
      */
     @Transactional

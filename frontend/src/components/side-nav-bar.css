@@ -11,7 +11,8 @@
   padding: 16px 12px;
   gap: 12px;
   background: var(--color-surface);
-  border-right: 1px solid var(--color-outline-variant);
+  border-right: 1px solid transparent;
+  box-shadow: inset -1px 0 0 rgb(15 23 42 / 6%);
   overflow: hidden;
   z-index: 100;
   white-space: nowrap;
@@ -47,14 +48,19 @@
   width: 40px;
   height: 40px;
   min-width: 40px;
-  border-radius: 12px;
-  background: var(--color-primary);
-  color: var(--color-on-primary);
+  border-radius: 13px;
+  background: linear-gradient(140deg, #1e3a8a 0%, #4f46e5 58%, #7c3aed 100%);
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--shadow-sm);
-  transition: transform var(--transition-fast);
+  box-shadow: 0 4px 12px rgb(79 70 229 / 34%);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.side-nav__brand-link:hover .side-nav__avatar {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgb(79 70 229 / 44%);
 }
 
 .side-nav__brand-info {
@@ -75,6 +81,7 @@
   font-size: 17px;
   font-weight: 700;
   color: var(--color-primary);
+  letter-spacing: -0.015em;
   line-height: 1.2;
   margin: 0;
 }
@@ -138,18 +145,49 @@
   flex-direction: column;
   gap: 6px;
   flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Section label ("Nhóm"). Hidden while the rail is collapsed, where a divider
+   carries the grouping instead. */
+.side-nav__section {
+  margin: 14px 0 2px 14px;
+  font: var(--font-label-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-on-surface-variant);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.22s ease 0.04s, visibility 0.22s;
+}
+
+.side-nav:hover .side-nav__section {
+  opacity: 1;
+  visibility: visible;
+}
+
+.side-nav:not(:hover) .side-nav__section {
+  margin: 10px 12px;
+  height: 1px;
+  background: var(--color-outline-variant);
+  font-size: 0;
 }
 
 .side-nav__item {
+  /* Anchors the pending-approval dot while the nav is collapsed. */
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 13px;
   height: 44px;
-  padding: 0 14px;
-  border-radius: var(--radius-xl);
+  padding: 0 12px;
+  border-radius: var(--radius-full);
   color: var(--color-on-surface-variant);
   font: var(--font-body-md);
   font-size: 14.5px;
+  font-weight: 500;
   text-decoration: none;
   transition: background var(--transition-fast), color var(--transition-fast);
   overflow: hidden;
@@ -176,21 +214,28 @@
   transform: translateX(0);
 }
 
-.side-nav__item:hover {
+.side-nav__item:hover:not(.side-nav__item--active) {
   background: var(--color-surface-container-high);
   color: var(--color-on-surface);
 }
 
 .side-nav__item--active {
-  background: var(--color-primary-container);
-  color: var(--color-on-primary-container);
-  font-weight: 700;
+  background: linear-gradient(120deg, #1e3a8a 0%, #4f46e5 62%, #6d28d9 100%);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 4px 14px rgb(79 70 229 / 30%);
+}
+
+/* On the coloured pill the group's own mark would fight the background, so it
+   gets a light ring to sit inside instead. */
+.side-nav__item--active .group-mark {
+  box-shadow: 0 0 0 2px rgb(255 255 255 / 55%);
 }
 
 .side-nav__footer {
   margin-top: auto;
   padding-top: 12px;
-  border-top: 1px solid var(--color-outline-variant);
+  border-top: 1px solid rgb(15 23 42 / 8%);
   display: flex;
   flex-direction: column;
   gap: 6px;

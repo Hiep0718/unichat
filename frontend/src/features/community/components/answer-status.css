@@ -1,0 +1,52 @@
+/* Resolution state of a question. One colour per meaning, used identically on
+   the feed, the post page and any badge. */
+
+.answer-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Labelled pill — used on the post detail header. */
+.answer-status--pill {
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font: var(--font-label-sm);
+  font-weight: 600;
+}
+
+/* Compact rail — used on the left edge of a feed card. */
+.answer-status--rail {
+  flex-direction: column;
+  gap: 2px;
+  width: 44px;
+  padding: 8px 0;
+  border-radius: var(--radius-lg);
+  font: var(--font-label-sm);
+}
+
+.answer-status__count {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* Needs help — warm, draws the eye first. */
+.answer-status--unanswered {
+  background: var(--color-tertiary-fixed);
+  color: var(--color-on-tertiary-fixed-variant);
+}
+
+/* In progress — neutral, present but not urgent. */
+.answer-status--discussing {
+  background: var(--color-surface-container-high);
+  color: var(--color-on-surface-variant);
+}
+
+/* Resolved — the only green in the feed, so it reads instantly. */
+.answer-status--resolved {
+  background: #dcfce7;
+  color: #15803d;
+}

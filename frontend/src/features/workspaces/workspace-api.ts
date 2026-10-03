@@ -2,7 +2,7 @@
  * Workspace API client functions.
  * Communicates with Core API workspace endpoints via fetchJson.
  */
-import { fetchJson } from '../../lib/api-client';
+import { fetchJson, getAccessToken } from '../../lib/api-client';
 
 import type {
   CreateWorkspaceInput,
@@ -107,3 +107,31 @@ export function joinWorkspace(workspaceId: string): Promise<WorkspaceDto> {
   });
 }
 
+
+/**
+ * Replaces a group's cover picture. Owners and editors only.
+ *
+ * Sent with `fetch` rather than `fetchJson`: a multipart body must set its own
+ * boundary, which a hardcoded JSON content type would break.
+ */
+export async function uploadWorkspaceCover(
+  workspaceId: string,
+  file: File,
+): Promise<void> {
+  const body = new FormData();
+  body.append('file', file);
+  const token = getAccessToken();
+  const response = await fetch(`/api/v1/workspaces/${workspaceId}/cover`, {
+    method: 'PUT',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body,
+  });
+  if (!response.ok) {
+    throw new Error(`Không tải được ảnh bìa (HTTP ${response.status})`);
+  }
+}
+
+/** Removes the cover, leaving the gradient derived from the group id. */
+export function removeWorkspaceCover(workspaceId: string): Promise<void> {
+  return fetchJson(`/workspaces/${workspaceId}/cover`, { method: 'DELETE' });
+}

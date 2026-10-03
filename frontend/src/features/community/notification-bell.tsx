@@ -73,6 +73,7 @@ export const NotificationBell: React.FC = () => {
       case 'DOCUMENT_APPROVED': return { name: 'check_circle', className: 'notification-item__icon--approval' };
       case 'DOCUMENT_REJECTED': return { name: 'cancel', className: 'notification-item__icon--approval' };
       case 'COMMUNITY_MENTION': return { name: 'alternate_email', className: 'notification-item__icon--mention' };
+      case 'MENTION': return { name: 'alternate_email', className: 'notification-item__icon--mention' };
       default: return { name: 'notifications', className: 'notification-item__icon--reply' };
     }
   };
@@ -85,6 +86,7 @@ export const NotificationBell: React.FC = () => {
       case 'DOCUMENT_REJECTED': return 'Tài liệu của bạn đã bị từ chối';
       case 'JOIN_APPROVED': return 'Yêu cầu tham gia đã được chấp nhận';
       case 'COMMUNITY_MENTION': return 'Bạn được nhắc đến trong chat';
+      case 'MENTION': return 'Bạn được nhắc tên trong một bài viết';
       default: return 'Bạn có thông báo mới';
     }
   };

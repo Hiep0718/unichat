@@ -1,136 +1,146 @@
-/* Explore Card */
+/* Explore card — same picture-behind-text build as the main workspace card. */
 
 .explore-card {
-  display: flex;
-  flex-direction: column;
-  background: var(--color-surface-container-lowest);
-  border: 1px solid var(--color-outline-variant);
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 11;
   border-radius: var(--radius-xl);
-  padding: 20px;
-  border-left: 4px solid var(--color-success);
-  transition:
-    box-shadow var(--transition-normal),
-    transform var(--transition-normal);
+  overflow: hidden;
+  color: #fff;
+  isolation: isolate;
+  box-shadow: var(--shadow-sm, 0 1px 3px rgb(0 0 0 / 12%));
+  transition: box-shadow var(--transition-normal), transform var(--transition-normal);
   animation: cardEntrance 0.4s ease both;
-  animation-delay: calc(var(--card-index, 0) * 80ms);
+  animation-delay: calc(var(--card-index, 0) * 70ms);
 }
 
 .explore-card:hover {
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 14px 30px rgb(15 23 42 / 26%);
   transform: translateY(-4px);
 }
 
-/* List view mode overrides */
-.explore-grid--list .explore-card {
-  flex-direction: row;
-  align-items: center;
-  padding: 16px 20px;
+.explore-card .workspace-cover__image {
+  transition: transform 0.5s ease;
 }
 
-.explore-grid--list .explore-card__header {
-  margin-bottom: 0;
-  margin-right: var(--stack-lg);
-  min-width: 120px;
+.explore-card:hover .workspace-cover__image {
+  transform: scale(1.06);
 }
 
-.explore-grid--list .explore-card__body {
-  margin-bottom: 0;
-  flex: 2;
-  margin-right: var(--stack-lg);
-}
-
-.explore-grid--list .explore-card__footer {
-  border-top: none;
-  padding-top: 0;
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-end;
-  flex: 1;
-}
-
-.explore-grid--list .explore-card__stats {
-  margin-right: var(--stack-lg);
-}
-
-.explore-card__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: var(--stack-md);
+.explore-card__scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgb(2 6 23 / 90%) 0%,
+    rgb(2 6 23 / 58%) 38%,
+    rgb(2 6 23 / 10%) 66%,
+    rgb(2 6 23 / 0%) 100%
+  );
 }
 
 .explore-card__badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
   display: inline-flex;
   align-items: center;
   gap: 4px;
   padding: 4px 10px;
   border-radius: var(--radius-full);
+  background: rgb(255 255 255 / 20%);
+  border: 1px solid rgb(255 255 255 / 26%);
+  backdrop-filter: blur(8px);
+  color: #fff;
   font: var(--font-label-sm);
-  background: rgba(16, 185, 129, 0.12);
-  color: #065f46;
+  font-weight: 600;
 }
 
-.explore-card__body {
-  flex: 1;
-  margin-bottom: var(--stack-md);
+.explore-card__content {
+  position: absolute;
+  inset: auto 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 18px 15px;
 }
 
 .explore-card__name {
-  font: var(--font-headline-md);
-  color: var(--color-on-surface);
-  margin-bottom: 6px;
+  margin: 0;
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: #fff;
+  text-shadow: 0 1px 10px rgb(2 6 23 / 55%);
   display: -webkit-box;
-  -webkit-line-clamp: 1;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
 .explore-card__desc {
-  font: var(--font-body-md);
-  color: var(--color-on-surface-variant);
+  margin: 0;
+  font: var(--font-body-sm, 13px/1.5 system-ui);
+  color: rgb(255 255 255 / 78%);
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-.explore-card__footer {
+.explore-card__foot {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: var(--stack-md);
-  border-top: 1px solid var(--color-outline-variant);
+  gap: 10px;
+  margin-top: 6px;
 }
 
-.explore-card__stats {
+.explore-card__facts {
   display: flex;
-  gap: var(--stack-lg);
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
 }
 
-.explore-card__stat {
+.explore-card__meta {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   font: var(--font-label-sm);
-  color: var(--color-on-surface-variant);
+  color: rgb(255 255 255 / 82%);
+}
+
+/* The faces sit on a dark picture, so their ring is light, not surface. */
+.explore-card .member-faces__slot {
+  box-shadow: 0 0 0 2px rgb(255 255 255 / 72%);
+}
+
+.explore-card .member-faces__more {
+  color: rgb(255 255 255 / 82%);
 }
 
 .explore-card__join-btn {
   display: flex;
   align-items: center;
   gap: 6px;
+  flex-shrink: 0;
   padding: 8px 16px;
-  background: var(--color-primary);
-  color: var(--color-on-primary);
+  background: #fff;
+  color: #0f172a;
   font: var(--font-label-md);
+  font-weight: 600;
   border: none;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-full);
   cursor: pointer;
   transition: opacity var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .explore-card__join-btn:hover {
-  opacity: 0.9;
+  opacity: 0.92;
   box-shadow: var(--shadow-sm);
 }
 
@@ -139,13 +149,112 @@
   cursor: not-allowed;
 }
 
-@keyframes cardEntrance {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
+/* List view: the same compact row the workspace cards use, with the join
+   button kept at the end where the eye finishes reading. */
+.explore-grid--list .explore-card {
+  aspect-ratio: auto;
+  display: flex;
+  align-items: center;
+  height: 66px;
+  padding-left: 104px;
+  background: var(--color-surface-container-lowest);
+  color: inherit;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 6%), 0 4px 14px rgb(15 23 42 / 5%);
+}
+
+.explore-grid--list .explore-card:hover {
+  transform: none;
+  box-shadow: 0 2px 4px rgb(15 23 42 / 8%), 0 10px 26px rgb(15 23 42 / 10%);
+}
+
+.explore-grid--list .workspace-cover {
+  right: auto;
+  width: 88px;
+  border-radius: var(--radius-xl) 0 0 var(--radius-xl);
+}
+
+.explore-grid--list .workspace-cover__mark {
+  font-size: 68px;
+  top: -12px;
+  right: -8px;
+}
+
+/* The strip is small; a scrim on it would only muddy the colour. */
+.explore-grid--list .explore-card__scrim {
+  display: none;
+}
+
+.explore-grid--list .explore-card__badge {
+  position: static;
+  flex: 0 0 auto;
+  order: 1;
+  margin-left: 16px;
+  padding: 3px 9px;
+  background: var(--color-surface-container-high);
+  border-color: transparent;
+  backdrop-filter: none;
+  color: var(--color-on-surface-variant);
+  font-size: 11px;
+}
+
+.explore-grid--list .explore-card__content {
+  position: static;
+  order: 2;
+  flex: 1;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  padding: 0 16px;
+  min-width: 0;
+}
+
+.explore-grid--list .explore-card__name {
+  flex: 1;
+  min-width: 0;
+  font-size: 15.5px;
+  color: var(--color-on-surface);
+  text-shadow: none;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+}
+
+.explore-grid--list .explore-card__desc {
+  display: none;
+}
+
+.explore-grid--list .explore-card__foot {
+  margin-top: 0;
+  flex: 0 0 auto;
+  gap: 16px;
+}
+
+.explore-grid--list .explore-card__meta {
+  color: var(--color-on-surface-variant);
+}
+
+.explore-grid--list .explore-card .member-faces__slot {
+  box-shadow: 0 0 0 2px var(--color-surface-container-lowest);
+}
+
+.explore-grid--list .explore-card .member-faces__more {
+  color: var(--color-on-surface-variant);
+}
+
+.explore-grid--list .explore-card__join-btn {
+  background: linear-gradient(120deg, #4f46e5 0%, #6d28d9 100%);
+  color: #fff;
+  padding: 7px 15px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .explore-card,
+  .explore-card .workspace-cover__image {
+    animation: none;
+    transition: none;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  .explore-card:hover,
+  .explore-card:hover .workspace-cover__image {
+    transform: none;
   }
 }

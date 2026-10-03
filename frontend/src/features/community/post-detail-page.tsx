@@ -8,11 +8,34 @@ import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 
 import { Icon } from '../../components/icon';
 import { formatRelativeTime, formatFullDateTime } from '../../lib/format-time';
-import { getDiscussion, fetchReplies, addReply } from './community-api';
+import { mentionsAi } from './await-ai-reply';
+import {
+  addReply,
+  deleteDiscussion,
+  fetchReplies,
+  getDiscussion,
+  markPostRead,
+  setPostPinned,
+  updateDiscussion,
+} from './community-api';
 import type { DiscussionResponse, ReplyResponse } from './community-api';
-import { VoteControl } from './components/vote-control';
+import { AnswerStatusBadge } from './components/answer-status';
+import { MentionText } from './components/mention-text';
+import { EntityAvatar } from '../../components/entity-avatar';
+import { GroupMark } from '../workspaces/components/group-mark';
+import { ReactionBar } from './components/reaction-bar';
+import { PostAttachments } from './components/post-attachments';
+import { PostBackgroundPanel } from './components/post-background-panel';
+import { PostEditForm } from './components/post-edit-form';
+import { PostOwnerMenu } from './components/post-owner-menu';
+import { PostReaders } from './components/post-readers';
+import { ReplyCitations } from './components/reply-citations';
 import { ReplyForm } from './components/reply-form';
 import { ReplyThread } from './components/reply-thread';
+import { useAuth } from '../auth/auth-context';
+import { useAiReplyWatch } from './use-ai-reply-watch';
+import { useWorkspace as useWorkspaceQuery } from '../workspaces/workspace-hooks';
+import { toggleBookmark, acceptReply } from './feed-api';
 import './post-detail-page.css';
 
 /**
@@ -25,10 +48,19 @@ export function PostDetailPage() {
   const navigate = useNavigate();
 
   const [discussion, setDiscussion] = useState<DiscussionResponse | null>(null);
+  const [readToken, setReadToken] = useState(0);
+  const { data: workspaceDetails } = useWorkspaceQuery(workspaceId ?? '');
   const [replies, setReplies] = useState<ReplyResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [replyLoading, setReplyLoading] = useState(false);
+  const aiReply = useAiReplyWatch(workspaceId, discussion?.id, (answer) =>
+    setReplies((prev) =>
+      prev.some((reply) => reply.id === answer.id) ? prev : [...prev, answer]));
   const [error, setError] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
+  const { user } = useAuth();
 
   useEffect(() => {
     if (!postId || !workspaceId) return;
@@ -47,6 +79,19 @@ export function PostDetailPage() {
       .finally(() => setLoading(false));
   }, [postId, workspaceId]);
 
+  // Opening an announcement counts as reading it. Recorded after the post loads
+  // so a failed load never registers a false read, and only for announcements —
+  // on a question the author wants answers, not a list of who looked.
+  useEffect(() => {
+    if (!postId || !workspaceId || !discussion) return;
+    if (discussion.label !== 'ANNOUNCEMENT') return;
+    markPostRead(workspaceId, postId)
+      .then(() => setReadToken((token) => token + 1))
+      .catch(() => {
+        // Read receipts are supplementary; the post still works without them.
+      });
+  }, [postId, workspaceId, discussion?.id]);
+
   const handleAddReply = async (body: string, parentId?: string) => {
     if (!workspaceId || !discussion) return;
     setReplyLoading(true);
@@ -55,8 +100,70 @@ export function PostDetailPage() {
       if (parentId) payload.parentReplyId = parentId;
       const result = await addReply(workspaceId, discussion.id, payload);
       setReplies((prev) => [...prev, result]);
+      if (mentionsAi(body)) {
+        aiReply.watch(result.id);
+      }
     } finally {
       setReplyLoading(false);
+    }
+  };
+
+  const handleAcceptReply = async (replyId: string) => {
+    if (!workspaceId || !discussion) return;
+    try {
+      await acceptReply(workspaceId, discussion.id, replyId);
+      setDiscussion(prev => prev ? { ...prev, acceptedReplyId: replyId } : null);
+    } catch {
+      /* ignore */
+    }
+  };
+
+  const handleUpdate = async (values: { title: string; body: string }) => {
+    if (!workspaceId || !discussion) return;
+    setSaving(true);
+    setEditError(null);
+    try {
+      const updated = await updateDiscussion(workspaceId, discussion.id, {
+        ...values,
+        // Carried through explicitly: an absent key means "no background" to
+        // the server, so omitting it would strip the colour on every edit.
+        backgroundKey: discussion.backgroundKey,
+      });
+      setDiscussion(updated);
+      setIsEditing(false);
+    } catch (err: unknown) {
+      setEditError(err instanceof Error ? err.message : 'Không lưu được thay đổi');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!workspaceId || !discussion) return;
+    try {
+      await deleteDiscussion(workspaceId, discussion.id);
+      navigate('/feed');
+    } catch (err: unknown) {
+      setEditError(err instanceof Error ? err.message : 'Không xoá được bài viết');
+    }
+  };
+
+  const handleTogglePin = async () => {
+    if (!workspaceId || !discussion) return;
+    try {
+      setDiscussion(await setPostPinned(workspaceId, discussion.id, !discussion.pinned));
+    } catch (err: unknown) {
+      setEditError(err instanceof Error ? err.message : 'Không đổi được trạng thái ghim');
+    }
+  };
+
+  const handleBookmark = async () => {
+    if (!discussion) return;
+    try {
+      const res = await toggleBookmark(discussion.id);
+      setDiscussion(prev => prev ? { ...prev, isBookmarked: res.bookmarked } : null);
+    } catch {
+      /* ignore */
     }
   };
 
@@ -71,7 +178,22 @@ export function PostDetailPage() {
     return map;
   }, [replies]);
 
-  const rootReplies = repliesByParent.get(null) ?? [];
+  // The accepted answer is lifted out of the thread and pinned above it, so a
+  // reader gets the resolution without scanning every comment.
+  const acceptedReply = useMemo(
+    () => replies.find((r) => r.id === discussion?.acceptedReplyId) ?? null,
+    [replies, discussion?.acceptedReplyId],
+  );
+
+  const rootReplies = (repliesByParent.get(null) ?? []).filter(
+    (r) => r.id !== acceptedReply?.id,
+  );
+
+  const isAuthor = Boolean(user?.id && discussion && user.id === discussion.authorId);
+  // This route sits outside the workspace shell, so the caller's role comes
+  // from the workspace query rather than a context.
+  const canModerate =
+    workspaceDetails?.userRole === 'OWNER' || workspaceDetails?.userRole === 'EDITOR';
 
   const labelName = (l: string | null) => {
     if (!l) return '';
@@ -113,17 +235,18 @@ export function PostDetailPage() {
           {/* Post card */}
           <article className="post-detail__article">
             <div className="post-detail__post-meta">
-              <img
-                src={`https://api.dicebear.com/7.x/identicon/svg?seed=${workspaceId}`}
-                alt="workspace"
-                className="post-detail__ws-avatar"
-              />
-              <span
+              <button
+                type="button"
                 className="post-detail__ws-name"
-                onClick={() => navigate(`/workspaces/${workspaceId}/discussions`)}
+                onClick={() => navigate(`/workspaces/${workspaceId}`)}
               >
-                w/{discussion.authorName}
-              </span>
+                <GroupMark
+                  workspaceId={workspaceId ?? ''}
+                  name={discussion.workspaceName ?? 'Workspace'}
+                  size={20}
+                />
+                {discussion.workspaceName ?? 'Workspace'}
+              </button>
               <span className="post-detail__dot">•</span>
               <span className="post-detail__author">
                 Đăng bởi {discussion.authorName}
@@ -135,48 +258,163 @@ export function PostDetailPage() {
               >
                 {formatRelativeTime(discussion.createdAt)}
               </time>
+              <AnswerStatusBadge
+                replyCount={discussion.replyCount}
+                hasAcceptedAnswer={Boolean(discussion.acceptedReplyId)}
+              />
+              {discussion.editedAt && (
+                <span className="post-detail__edited">đã chỉnh sửa</span>
+              )}
+              <PostOwnerMenu
+                canEdit={isAuthor}
+                canDelete={isAuthor}
+                onEdit={() => setIsEditing(true)}
+                onDelete={handleDelete}
+              />
             </div>
 
-            <h1 className="post-detail__title">
-              {discussion.label && (
-                <span className={`post-detail__label post-detail__label--${discussion.label.toLowerCase()}`}>
-                  {labelName(discussion.label)}
-                </span>
-              )}
-              {discussion.title}
-            </h1>
+            {isEditing ? (
+              <PostEditForm
+                initialTitle={discussion.title}
+                initialBody={discussion.body}
+                saving={saving}
+                error={editError}
+                onCancel={() => {
+                  setIsEditing(false);
+                  setEditError(null);
+                }}
+                onSave={handleUpdate}
+              />
+            ) : (
+              <h1 className="post-detail__title">
+                {discussion.label && (
+                  <span className={`post-detail__label post-detail__label--${discussion.label.toLowerCase()}`}>
+                    {labelName(discussion.label)}
+                  </span>
+                )}
+                {discussion.title}
+              </h1>
+            )}
 
-            <div className="post-detail__body">{discussion.body}</div>
+            {!isEditing && (
+              <>
+                {discussion.backgroundKey ? (
+                  <PostBackgroundPanel
+                    backgroundKey={discussion.backgroundKey}
+                    body={discussion.body}
+                  />
+                ) : (
+                  <div className="post-detail__body">
+                    <MentionText>{discussion.body}</MentionText>
+                  </div>
+                )}
+
+                {workspaceId && (
+                  <PostAttachments
+                    workspaceId={workspaceId}
+                    discussionId={discussion.id}
+                    attachments={discussion.attachments ?? []}
+                  />
+                )}
+              </>
+            )}
 
             <div className="post-detail__actions">
-              <VoteControl
+              <ReactionBar
                 targetType="DISCUSSION"
                 targetId={discussion.id}
-                initialScore={discussion.voteScore}
-                initialVote={discussion.userVote}
-                orientation="horizontal"
+                summary={discussion.reactions}
               />
-              <span className="post-detail__action-btn">
-                <Icon name="chat_bubble" size={18} />
-                {discussion.replyCount} Bình luận
+              <span className="post-detail__stat">
+                <Icon name="chat_bubble" size={17} />
+                {discussion.replyCount} bình luận
               </span>
-              <span className="post-detail__action-btn">
-                <Icon name="visibility" size={18} />
-                {discussion.viewCount} Lượt xem
+              <span className="post-detail__stat">
+                <Icon name="visibility" size={17} />
+                {discussion.viewCount} lượt xem
               </span>
+              <button
+                type="button"
+                className={`post-detail__action-btn ${discussion.isBookmarked ? 'post-detail__action-btn--bookmarked' : ''}`}
+                onClick={handleBookmark}
+                aria-pressed={discussion.isBookmarked}
+              >
+                <Icon name={discussion.isBookmarked ? 'bookmark' : 'bookmark_border'} size={17} />
+                {discussion.isBookmarked ? 'Đã lưu' : 'Lưu'}
+              </button>
+
+              {canModerate && (
+                <button
+                  type="button"
+                  className={`post-detail__action-btn ${discussion.pinned ? 'post-detail__action-btn--pinned' : ''}`}
+                  onClick={handleTogglePin}
+                  aria-pressed={discussion.pinned}
+                >
+                  <Icon name={discussion.pinned ? 'push_pin' : 'keep'} size={17} />
+                  {discussion.pinned ? 'Bỏ ghim' : 'Ghim'}
+                </button>
+              )}
             </div>
+
+            {workspaceId && discussion.label === 'ANNOUNCEMENT' && (
+              <PostReaders
+                workspaceId={workspaceId}
+                discussionId={discussion.id}
+                reloadToken={readToken}
+              />
+            )}
           </article>
 
           {/* Reply input */}
           <div className="post-detail__reply-box">
-            <ReplyForm loading={replyLoading} onSubmit={(b) => handleAddReply(b)} />
+            <ReplyForm
+              loading={replyLoading}
+              onSubmit={(b) => handleAddReply(b)}
+              workspaceId={workspaceId}
+            />
           </div>
+
+          {acceptedReply && (
+            <section className="accepted-answer" aria-label="Câu trả lời được chấp nhận">
+              <h2 className="accepted-answer__header">
+                <Icon name="check_circle" size={18} />
+                Câu trả lời được chấp nhận
+              </h2>
+              <div className="accepted-answer__meta">
+                <EntityAvatar
+                  name={acceptedReply.isAiAnswer ? 'AI' : acceptedReply.authorName}
+                  size={22}
+                  shape="circle"
+                />
+                <strong>{acceptedReply.authorName}</strong>
+                <span className="post-detail__dot">•</span>
+                <time dateTime={acceptedReply.createdAt}>
+                  {formatRelativeTime(acceptedReply.createdAt)}
+                </time>
+              </div>
+              <div className="accepted-answer__body">
+                <MentionText>{acceptedReply.body}</MentionText>
+              </div>
+              <ReplyCitations citations={acceptedReply.citations ?? []} />
+              <ReactionBar
+                targetType="DISCUSSION_REPLY"
+                targetId={acceptedReply.id}
+                summary={acceptedReply.reactions}
+              />
+            </section>
+          )}
 
           {/* Comment thread */}
           <section className="post-detail__comments">
             <h2 className="post-detail__comments-title">
-              {replies.length} Bình luận
+              {acceptedReply ? `${replies.length - 1} bình luận khác` : `${replies.length} bình luận`}
             </h2>
+            {(aiReply.pending || aiReply.error) && (
+              <p className="post-detail__ai-pending" role="status">
+                <Icon name={aiReply.pending ? 'smart_toy' : 'error_outline'} size={16} />
+                {aiReply.pending ? 'Trợ lý AI đang đọc tài liệu của nhóm...' : aiReply.error}
+              </p>
+            )}
             <div className="post-detail__comments-list">
               {rootReplies.length === 0 ? (
                 <div className="post-detail__no-comments">
@@ -191,6 +429,10 @@ export function PostDetailPage() {
                     repliesByParent={repliesByParent}
                     onAddReply={handleAddReply}
                     replyLoading={replyLoading}
+                    onAcceptReply={handleAcceptReply}
+                    acceptedReplyId={discussion.acceptedReplyId}
+                    isPostAuthor={user?.id === discussion.authorId}
+                    workspaceId={workspaceId}
                   />
                 ))
               )}
@@ -221,7 +463,7 @@ export function PostDetailPage() {
             </div>
             <button
               className="post-detail__sidebar-btn"
-              onClick={() => navigate(`/workspaces/${workspaceId}/discussions`)}
+              onClick={() => navigate(`/workspaces/${workspaceId}`)}
             >
               Xem Workspace
             </button>

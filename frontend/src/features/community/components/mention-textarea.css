@@ -1,0 +1,45 @@
+.mention-input {
+  position: relative;
+}
+
+.mention-input textarea {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.mention-input__list {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  z-index: 60;
+  list-style: none;
+  margin: 0;
+  padding: 5px;
+  min-width: 190px;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-container-lowest);
+  box-shadow: var(--shadow-lg);
+}
+
+.mention-input__item {
+  display: block;
+  width: 100%;
+  padding: 7px 11px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-on-surface);
+  font: var(--font-body-sm);
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.mention-input__item:hover,
+.mention-input__item--active {
+  background: var(--color-primary-fixed);
+  color: var(--color-on-primary-fixed-variant);
+}

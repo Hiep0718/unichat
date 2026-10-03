@@ -24,7 +24,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.unichat.core.shared.idempotency.IdempotencyService;
+import com.unichat.core.workspace.service.WorkspaceCoverService;
 import com.unichat.core.workspace.service.WorkspaceService;
 
 /**
@@ -35,10 +39,14 @@ import com.unichat.core.workspace.service.WorkspaceService;
 public class WorkspaceController {
 
     private final WorkspaceService workspaceService;
+    private final WorkspaceCoverService coverService;
     private final IdempotencyService idempotencyService;
 
-    public WorkspaceController(WorkspaceService workspaceService, IdempotencyService idempotencyService) {
+    public WorkspaceController(WorkspaceService workspaceService,
+                               WorkspaceCoverService coverService,
+                               IdempotencyService idempotencyService) {
         this.workspaceService = workspaceService;
+        this.coverService = coverService;
         this.idempotencyService = idempotencyService;
     }
 
@@ -148,5 +156,44 @@ public class WorkspaceController {
             @PathVariable("workspaceId") UUID workspaceId) {
         UUID userId = UUID.fromString(jwt.getSubject());
         return ResponseEntity.ok(workspaceService.joinPublicWorkspace(userId, workspaceId));
+    }
+
+    /** Replaces the group's cover picture. Owners and editors only. */
+    @PutMapping(value = "/{workspaceId:[0-9a-fA-F\\-]+}/cover",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Void> uploadCover(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable("workspaceId") UUID workspaceId,
+            @RequestParam("file") MultipartFile file) {
+        coverService.upload(UUID.fromString(jwt.getSubject()), workspaceId, file);
+        return ResponseEntity.noContent().build();
+    }
+
+    /** Removes the cover, leaving the gradient derived from the group id. */
+    @DeleteMapping("/{workspaceId:[0-9a-fA-F\\-]+}/cover")
+    public ResponseEntity<Void> removeCover(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable("workspaceId") UUID workspaceId) {
+        coverService.remove(UUID.fromString(jwt.getSubject()), workspaceId);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Serves the group's cover.
+     *
+     * <p>Unlike an avatar, this checks what the caller may see: a private
+     * group's cover is part of that group's content.
+     */
+    @GetMapping("/{workspaceId:[0-9a-fA-F\\-]+}/cover")
+    public ResponseEntity<byte[]> cover(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable("workspaceId") UUID workspaceId) {
+        byte[] image = coverService.read(UUID.fromString(jwt.getSubject()), workspaceId);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_TYPE, WorkspaceCoverService.STORED_MEDIA_TYPE)
+                // Short and private: a cover changes rarely, but a replaced one
+                // must not keep showing for the rest of the day.
+                .header(HttpHeaders.CACHE_CONTROL, "private, max-age=300")
+                .body(image);
     }
 }

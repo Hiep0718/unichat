@@ -3,6 +3,7 @@ package com.unichat.core.communitychat.domain;
 import java.time.Instant;
 import java.util.UUID;
 
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -49,11 +50,27 @@ public class Discussion {
     @Column(name = "vote_score", nullable = false)
     private int voteScore;
 
+    /**
+     * Which colour preset sits behind a short post, null for an ordinary one.
+     *
+     * Only the key is stored; the gradients live in the frontend, so restyling
+     * the set needs no migration.
+     */
+    @Column(name = "background_key", length = 24)
+    private String backgroundKey;
+
+    @Column(name = "accepted_reply_id")
+    private UUID acceptedReplyId;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
+
+    /** Set the first time the author edits the post, so the UI can mark it. */
+    @Column(name = "edited_at")
+    private Instant editedAt;
 
     public Discussion() {}
 
@@ -93,9 +110,40 @@ public class Discussion {
     public void setPinned(boolean pinned) { this.pinned = pinned; }
     public void setStatus(String status) { this.status = status; }
     public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
+
+    public Instant getEditedAt() { return editedAt; }
+
+    /**
+     * Applies an author's edit to the post body and metadata.
+     *
+     * @param now edit timestamp, recorded so the UI can show "đã chỉnh sửa"
+     */
+    public void applyEdit(String title, String body, Instant now) {
+        this.title = title;
+        this.body = body;
+        this.editedAt = now;
+        this.updatedAt = now;
+    }
+
+    /** Soft delete: the row stays for referential integrity, listings drop it. */
+    public void markDeleted(Instant now) {
+        this.status = "DELETED";
+        this.updatedAt = now;
+    }
     
     public void incrementViewCount() { this.viewCount++; }
     public void incrementReplyCount() { this.replyCount++; }
     public int getVoteScore() { return voteScore; }
     public void adjustVoteScore(int delta) { this.voteScore += delta; }
+
+    public String getBackgroundKey() { return backgroundKey; }
+
+    /** A blank key clears the background, which is how "plain" is expressed. */
+    public void setBackgroundKey(String backgroundKey) {
+        this.backgroundKey = (backgroundKey == null || backgroundKey.isBlank())
+                ? null : backgroundKey;
+    }
+
+    public UUID getAcceptedReplyId() { return acceptedReplyId; }
+    public void setAcceptedReplyId(UUID acceptedReplyId) { this.acceptedReplyId = acceptedReplyId; }
 }
