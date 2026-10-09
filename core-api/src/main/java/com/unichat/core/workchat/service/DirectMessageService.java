@@ -12,12 +12,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.unichat.core.common.error.AuthorizationError;
-import com.unichat.core.common.error.NotFoundError;
+import com.unichat.core.common.error.ValidationError;
 import com.unichat.core.shared.util.UuidGenerator;
 import com.unichat.core.user.domain.User;
 import com.unichat.core.user.domain.UserRepository;
+import com.unichat.core.workchat.api.ChatAttachmentResponse;
 import com.unichat.core.workchat.api.ConversationSummary;
 import com.unichat.core.workchat.api.MessageResponse;
 import com.unichat.core.workchat.domain.DirectConversation;
@@ -43,10 +45,15 @@ import com.unichat.core.workchat.domain.DirectMessageSentEvent;
 public class DirectMessageService {
 
     private static final int PREVIEW_LENGTH = 120;
+    /** Enforced here rather than only on the JSON request, which the
+     *  multipart path does not go through. */
+    private static final int MAX_BODY_LENGTH = 4000;
 
     private final DirectConversationRepository conversationRepository;
     private final DirectMessageRepository messageRepository;
     private final ContactDirectory contactDirectory;
+    private final ConversationAccess conversationAccess;
+    private final ChatAttachmentService attachmentService;
     private final UserRepository userRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final Clock clock;
@@ -54,12 +61,16 @@ public class DirectMessageService {
     public DirectMessageService(DirectConversationRepository conversationRepository,
                                 DirectMessageRepository messageRepository,
                                 ContactDirectory contactDirectory,
+                                ConversationAccess conversationAccess,
+                                ChatAttachmentService attachmentService,
                                 UserRepository userRepository,
                                 ApplicationEventPublisher eventPublisher,
                                 Clock clock) {
         this.conversationRepository = conversationRepository;
         this.messageRepository = messageRepository;
         this.contactDirectory = contactDirectory;
+        this.conversationAccess = conversationAccess;
+        this.attachmentService = attachmentService;
         this.userRepository = userRepository;
         this.eventPublisher = eventPublisher;
         this.clock = clock;
@@ -116,7 +127,7 @@ public class DirectMessageService {
      * @throws AuthorizationError if the caller is not one of the two participants
      */
     public List<MessageResponse> listMessages(UUID callerId, UUID conversationId, int page, int size) {
-        requireParticipant(callerId, conversationId);
+        conversationAccess.requireParticipant(callerId, conversationId);
 
         List<DirectMessage> messages = messageRepository
                 .findByConversationIdOrderByCreatedAtDesc(conversationId, PageRequest.of(page, size))
@@ -125,30 +136,66 @@ public class DirectMessageService {
         Map<UUID, String> names = namesOf(
                 messages.stream().map(DirectMessage::getSenderId).distinct().toList());
 
+        Map<UUID, List<ChatAttachmentResponse>> attachments = attachmentService.listForAll(
+                messages.stream().map(DirectMessage::getId).toList());
+
         return messages.stream()
                 .map(message -> MessageResponse.from(
-                        message, names.getOrDefault(message.getSenderId(), "Người dùng"), callerId))
+                        message,
+                        names.getOrDefault(message.getSenderId(), "Người dùng"),
+                        callerId,
+                        attachments.getOrDefault(message.getId(), List.of())))
                 .toList();
+    }
+
+    /** Sends a message that is text only. */
+    @Transactional
+    public MessageResponse send(UUID callerId, UUID conversationId, String body) {
+        return send(callerId, conversationId, body, List.of());
     }
 
     /**
      * Sends a message, and moves the conversation to the top of both lists.
      *
+     * <p>Text and files arrive as one message rather than as a message
+     * followed by an upload: delivery pushes the message as soon as it is
+     * committed, and a reader must never see a bubble whose file is still on
+     * its way.
+     *
+     * @throws ValidationError    if there is neither text nor a file
      * @throws AuthorizationError if the caller is not one of the two participants
      */
     @Transactional
-    public MessageResponse send(UUID callerId, UUID conversationId, String body) {
-        DirectConversation conversation = requireParticipant(callerId, conversationId);
+    public MessageResponse send(UUID callerId, UUID conversationId, String body,
+                                List<MultipartFile> files) {
+        DirectConversation conversation =
+                conversationAccess.requireParticipant(callerId, conversationId);
+
+        String text = textOrNull(body);
+        if (text != null && text.length() > MAX_BODY_LENGTH) {
+            throw new ValidationError("Tin nhắn tối đa 4000 ký tự");
+        }
+        if (text == null && files.isEmpty()) {
+            throw new ValidationError("Tin nhắn cần có nội dung hoặc tệp đính kèm");
+        }
+        // Checked before the message row exists, so a rejected file does not
+        // leave an empty bubble behind.
+        attachmentService.validateAll(files);
 
         Instant now = Instant.now(clock);
         DirectMessage message = new DirectMessage(
-                UuidGenerator.generateV7(), conversationId, callerId, body.trim(), now);
+                UuidGenerator.generateV7(), conversationId, callerId, text, now);
         messageRepository.save(message);
+
+        List<ChatAttachmentResponse> attachments = files.isEmpty()
+                ? List.of()
+                : attachmentService.attachAll(conversationId, message.getId(), files);
 
         conversation.setLastMessageAt(now);
         conversationRepository.save(conversation);
 
-        MessageResponse response = MessageResponse.from(message, displayNameOf(callerId), callerId);
+        MessageResponse response =
+                MessageResponse.from(message, displayNameOf(callerId), callerId, attachments);
         // Delivery is someone else's job; this service stays free of the broker
         // so it keeps working, and keeps being testable, without one.
         eventPublisher.publishEvent(
@@ -164,28 +211,13 @@ public class DirectMessageService {
      */
     @Transactional
     public int markRead(UUID callerId, UUID conversationId) {
-        requireParticipant(callerId, conversationId);
+        conversationAccess.requireParticipant(callerId, conversationId);
 
         List<DirectMessage> unread = messageRepository.findUnreadFor(conversationId, callerId);
         Instant now = Instant.now(clock);
         unread.forEach(message -> message.markRead(now));
         messageRepository.saveAll(unread);
         return unread.size();
-    }
-
-    /**
-     * Loads the conversation and confirms the caller belongs to it.
-     *
-     * <p>Not found and not-a-participant are deliberately the same answer: a
-     * different message would tell a stranger that a conversation exists.
-     */
-    private DirectConversation requireParticipant(UUID callerId, UUID conversationId) {
-        DirectConversation conversation = conversationRepository.findById(conversationId)
-                .orElseThrow(() -> new NotFoundError("Cuộc trò chuyện không tồn tại"));
-        if (!conversation.includes(callerId)) {
-            throw new NotFoundError("Cuộc trò chuyện không tồn tại");
-        }
-        return conversation;
     }
 
     private ConversationSummary toSummary(DirectConversation conversation, UUID callerId,
@@ -238,8 +270,16 @@ public class DirectMessageService {
         return user.getDisplayName();
     }
 
+    /** Trimmed text, or null when the message carries only files. */
+    private static String textOrNull(String body) {
+        return body == null || body.isBlank() ? null : body.trim();
+    }
+
     /** Enough of the message to recognise the thread, not to read it. */
     private static String preview(String body) {
+        if (body == null) {
+            return "Đã gửi tệp đính kèm";
+        }
         String flattened = body.replaceAll("\\s+", " ").trim();
         return flattened.length() <= PREVIEW_LENGTH
                 ? flattened

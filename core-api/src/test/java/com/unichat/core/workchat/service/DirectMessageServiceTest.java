@@ -45,6 +45,7 @@ class DirectMessageServiceTest {
     private DirectConversationRepository conversationRepository;
     private DirectMessageRepository messageRepository;
     private ContactDirectory contactDirectory;
+    private ChatAttachmentService attachmentService;
     private UserRepository userRepository;
     private DirectMessageService service;
 
@@ -60,8 +61,13 @@ class DirectMessageServiceTest {
         messageRepository = mock(DirectMessageRepository.class);
         contactDirectory = mock(ContactDirectory.class);
         userRepository = mock(UserRepository.class);
+        attachmentService = mock(ChatAttachmentService.class);
+        // The real collaborator over the mocked repository: participation is
+        // the rule under test in several of these cases, so stubbing it away
+        // would make them pass without checking anything.
         service = new DirectMessageService(conversationRepository, messageRepository,
-                contactDirectory, userRepository,
+                contactDirectory, new ConversationAccess(conversationRepository),
+                attachmentService, userRepository,
                 mock(org.springframework.context.ApplicationEventPublisher.class), clock);
 
         // Built before stubbing the repositories: creating a mock inside a

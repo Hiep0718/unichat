@@ -11,8 +11,9 @@ import jakarta.persistence.Table;
 /**
  * One message in a direct conversation.
  *
- * <p>Text only: attachments and group threads are deliberately out of scope for
- * this phase, and adding them later needs a schema change rather than a flag.
+ * <p>The text is optional, because a message may carry only files. Blank text
+ * is stored as null rather than as an empty string, so a bug cannot produce an
+ * empty bubble; {@link ChatAttachment} holds anything sent with it.
  */
 @Entity
 @Table(name = "direct_messages")
@@ -28,7 +29,8 @@ public class DirectMessage {
     @Column(name = "sender_id", nullable = false, updatable = false)
     private UUID senderId;
 
-    @Column(name = "body", nullable = false)
+    /** Null in a message that is only files. Never blank. */
+    @Column(name = "body")
     private String body;
 
     @Column(name = "created_at", nullable = false, updatable = false)
