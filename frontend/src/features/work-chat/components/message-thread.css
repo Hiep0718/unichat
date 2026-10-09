@@ -40,18 +40,38 @@
   font: var(--font-body-md);
 }
 
-.message-bubble {
+/* The row is the flex item, so a group bubble can sit beside its sender's
+   face without the face stretching the bubble. */
+.message-row {
+  display: flex;
+  align-items: flex-end;
   align-self: flex-start;
-  max-width: min(62%, 560px);
+  gap: 8px;
+  max-width: min(72%, 620px);
+}
+
+.message-row--mine {
+  align-self: flex-end;
+}
+
+.message-bubble {
+  min-width: 0;
   padding: 12px 16px;
   border-radius: var(--radius-xl) var(--radius-xl) var(--radius-xl) 4px;
   background: var(--ws-chip);
 }
 
 .message-bubble--mine {
-  align-self: flex-end;
   border-radius: var(--radius-xl) var(--radius-xl) 4px var(--radius-xl);
   background: var(--ws-accent);
+}
+
+/* Named only in a group, where there is more than one other person. */
+.message-bubble__sender {
+  margin: 0 0 2px;
+  color: var(--ws-ink-muted);
+  font: var(--font-label-sm);
+  font-weight: 700;
 }
 
 .message-bubble__body {
@@ -77,4 +97,25 @@
 
 .message-bubble--mine .message-bubble__time {
   color: rgb(255 255 255 / 72%);
+}
+
+/* A group header carries its member count, which opens the members panel. */
+.message-thread__members {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  padding: 6px 12px;
+  border: 1px solid var(--ws-line);
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--ws-ink-muted);
+  font: var(--font-label-md);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.message-thread__members:hover {
+  border-color: var(--ws-accent);
+  color: var(--ws-ink);
 }

@@ -20,15 +20,36 @@ export interface Contact {
   sharedGroup: string;
 }
 
+/** Whether a conversation is between two people or among several. */
+export type ConversationKind = 'DIRECT' | 'GROUP';
+
+/** Only an owner renames a group or changes who is in it. */
+export type ParticipantRole = 'OWNER' | 'MEMBER';
+
+export interface ChatParticipant {
+  userId: string;
+  name: string;
+  role: ParticipantRole;
+  /** Whether this is the caller, so the UI need not compare ids. */
+  me: boolean;
+}
+
 export interface Conversation {
   id: string;
-  otherUserId: string;
-  otherUserName: string;
+  kind: ConversationKind;
+  /** The group's name, or the other person's — filled for both kinds. */
+  title: string;
+  /** Null in a group, where there is no single other person. */
+  otherUserId: string | null;
+  participants: ChatParticipant[];
   /** Null in a conversation nobody has written in yet. */
   lastMessage: string | null;
   lastMessageAt: string | null;
   unreadCount: number;
 }
+
+/** Matches the server ceiling, so the picker can stop before a refusal. */
+export const MAX_GROUP_PARTICIPANTS = 50;
 
 /** Images the server renders inline; anything else is a download. */
 export const CHAT_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
@@ -64,7 +85,6 @@ export interface DirectMessage {
   /** Whether the caller sent it, so the UI need not compare ids. */
   mine: boolean;
   createdAt: string;
-  readAt: string | null;
   attachments: ChatAttachment[];
 }
 

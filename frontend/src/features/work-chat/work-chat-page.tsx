@@ -1,5 +1,5 @@
 /**
- * Work Chat — one-to-one messaging with people who share a group.
+ * Work Chat — messaging people and groups you share a group with.
  * Route: /work-chat
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -8,8 +8,16 @@ import { useSearchParams } from 'react-router-dom';
 import { Icon } from '../../components/icon';
 import { ContactPicker } from './components/contact-picker';
 import { ConversationList } from './components/conversation-list';
+import { GroupCreateModal } from './components/group-create-modal';
+import { GroupMembersPanel } from './components/group-members-panel';
 import { MessageThread } from './components/message-thread';
 import { useWorkChatSocket } from './use-work-chat-socket';
+import {
+  addGroupMember,
+  createGroup,
+  leaveGroup,
+  removeGroupMember,
+} from './group-api';
 import {
   fetchConversations,
   fetchMessages,
@@ -29,12 +37,26 @@ export function WorkChatPage() {
     searchParams.get('conversation'));
   const [messages, setMessages] = useState<DirectMessage[]>([]);
   const [showPicker, setShowPicker] = useState(false);
+  const [showGroupForm, setShowGroupForm] = useState(false);
+  const [showMembers, setShowMembers] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const active = useMemo(
     () => conversations.find((conversation) => conversation.id === activeId) ?? null,
     [conversations, activeId],
   );
+
+  /**
+   * Opens a conversation, closing the members panel on the way.
+   *
+   * Done here rather than in an effect on `activeId`: setting state from
+   * an effect body costs a second render pass for something every caller
+   * already knows it is doing.
+   */
+  const selectConversation = useCallback((conversationId: string | null) => {
+    setActiveId(conversationId);
+    setShowMembers(false);
+  }, []);
 
   /** Refreshes the list. Called from handlers and callbacks, never as an
    *  effect body, so it never sets state during a render pass. */
@@ -68,7 +90,7 @@ export function WorkChatPage() {
     void loadConversations();
   }, [activeId, loadConversations]);
 
-  const connected = useWorkChatSocket(onPushed);
+  const connected = useWorkChatSocket(onPushed, loadConversations);
 
   useEffect(() => {
     if (!activeId) {
@@ -103,10 +125,33 @@ export function WorkChatPage() {
     try {
       const conversation = await openConversation(userId);
       await loadConversations();
-      setActiveId(conversation.id);
+      selectConversation(conversation.id);
     } catch {
       setError('Không mở được cuộc trò chuyện.');
     }
+  };
+
+  const handleCreateGroup = async (title: string, memberIds: readonly string[]) => {
+    const group = await createGroup(title, memberIds);
+    setShowGroupForm(false);
+    await loadConversations();
+    selectConversation(group.id);
+  };
+
+  /** Membership changes come back as the new list, so the row refreshes too. */
+  const handleMembership = async (change: () => Promise<unknown>) => {
+    await change();
+    await loadConversations();
+  };
+
+  const handleLeave = async () => {
+    if (!activeId) {
+      return;
+    }
+    await leaveGroup(activeId);
+    selectConversation(null);
+    setMessages([]);
+    await loadConversations();
   };
 
   return (
@@ -114,14 +159,24 @@ export function WorkChatPage() {
       <aside className="work-chat__sidebar">
         <header className="work-chat__sidebar-header">
           <h1 className="work-chat__title">Tin nhắn</h1>
-          <button
-            type="button"
-            className="work-chat__new"
-            onClick={() => setShowPicker(true)}
-          >
-            <Icon name="add_comment" size={18} />
-            <span className="work-chat__new-label">Cuộc trò chuyện mới</span>
-          </button>
+          <div className="work-chat__new-row">
+            <button
+              type="button"
+              className="work-chat__new"
+              onClick={() => setShowPicker(true)}
+            >
+              <Icon name="add_comment" size={18} />
+              <span className="work-chat__new-label">Cuộc trò chuyện mới</span>
+            </button>
+            <button
+              type="button"
+              className="work-chat__new-group"
+              onClick={() => setShowGroupForm(true)}
+              aria-label="Tạo nhóm mới"
+            >
+              <Icon name="group_add" size={18} />
+            </button>
+          </div>
         </header>
 
         {!connected && (
@@ -134,7 +189,7 @@ export function WorkChatPage() {
         <ConversationList
           conversations={conversations}
           activeId={activeId}
-          onSelect={setActiveId}
+          onSelect={selectConversation}
         />
       </aside>
 
@@ -150,6 +205,7 @@ export function WorkChatPage() {
             conversation={active}
             messages={messages}
             onSend={handleSend}
+            onShowMembers={() => setShowMembers(true)}
           />
         ) : (
           <div className="work-chat__empty">
@@ -159,8 +215,26 @@ export function WorkChatPage() {
         )}
       </main>
 
+      {active && active.kind === 'GROUP' && showMembers && (
+        <GroupMembersPanel
+          title={active.title}
+          participants={active.participants}
+          onAdd={(userId) => handleMembership(() => addGroupMember(active.id, userId))}
+          onRemove={(userId) => handleMembership(() => removeGroupMember(active.id, userId))}
+          onLeave={handleLeave}
+          onClose={() => setShowMembers(false)}
+        />
+      )}
+
       {showPicker && (
         <ContactPicker onPick={handlePick} onClose={() => setShowPicker(false)} />
+      )}
+
+      {showGroupForm && (
+        <GroupCreateModal
+          onCreate={handleCreateGroup}
+          onClose={() => setShowGroupForm(false)}
+        />
       )}
     </div>
   );

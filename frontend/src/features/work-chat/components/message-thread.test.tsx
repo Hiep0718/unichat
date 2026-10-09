@@ -10,11 +10,28 @@ afterEach(cleanup);
 
 const conversation: Conversation = {
   id: 'c1',
+  kind: 'DIRECT',
+  title: 'bob',
   otherUserId: 'u2',
-  otherUserName: 'bob',
+  participants: [
+    { userId: 'u1', name: 'tôi', role: 'MEMBER', me: true },
+    { userId: 'u2', name: 'bob', role: 'MEMBER', me: false },
+  ],
   lastMessage: null,
   lastMessageAt: null,
   unreadCount: 0,
+};
+
+const groupConversation: Conversation = {
+  ...conversation,
+  kind: 'GROUP',
+  title: 'Nhóm đồ án',
+  otherUserId: null,
+  participants: [
+    { userId: 'u1', name: 'tôi', role: 'OWNER', me: true },
+    { userId: 'u2', name: 'bob', role: 'MEMBER', me: false },
+    { userId: 'u3', name: 'carol', role: 'MEMBER', me: false },
+  ],
 };
 
 const message = (overrides: Partial<DirectMessage> = {}): DirectMessage => ({
@@ -25,7 +42,6 @@ const message = (overrides: Partial<DirectMessage> = {}): DirectMessage => ({
   body: 'Chào bạn',
   mine: false,
   createdAt: new Date().toISOString(),
-  readAt: null,
   attachments: [],
   ...overrides,
 });
@@ -38,6 +54,7 @@ describe('MessageThread', () => {
         conversation={conversation}
         messages={[]}
         onSend={async () => {}}
+        onShowMembers={() => {}}
       />,
     );
 
@@ -56,6 +73,7 @@ describe('MessageThread', () => {
         conversation={conversation}
         messages={[newer, older]}
         onSend={async () => {}}
+        onShowMembers={() => {}}
       />,
     );
 
@@ -68,7 +86,12 @@ describe('MessageThread', () => {
     // Arrange
     const onSend = vi.fn().mockResolvedValue(undefined);
     render(
-      <MessageThread conversation={conversation} messages={[]} onSend={onSend} />,
+      <MessageThread
+        conversation={conversation}
+        messages={[]}
+        onSend={onSend}
+        onShowMembers={() => {}}
+      />,
     );
     const input = screen.getByLabelText('Nội dung tin nhắn');
 
@@ -85,7 +108,12 @@ describe('MessageThread', () => {
     // Arrange
     const onSend = vi.fn().mockResolvedValue(undefined);
     render(
-      <MessageThread conversation={conversation} messages={[]} onSend={onSend} />,
+      <MessageThread
+        conversation={conversation}
+        messages={[]}
+        onSend={onSend}
+        onShowMembers={() => {}}
+      />,
     );
 
     // Act
@@ -100,7 +128,12 @@ describe('MessageThread', () => {
     // Arrange
     const onSend = vi.fn().mockRejectedValue(new Error('offline'));
     render(
-      <MessageThread conversation={conversation} messages={[]} onSend={onSend} />,
+      <MessageThread
+        conversation={conversation}
+        messages={[]}
+        onSend={onSend}
+        onShowMembers={() => {}}
+      />,
     );
     const input = screen.getByLabelText('Nội dung tin nhắn');
 
@@ -120,10 +153,76 @@ describe('MessageThread', () => {
         conversation={conversation}
         messages={[message()]}
         onSend={async () => {}}
+        onShowMembers={() => {}}
       />,
     );
 
     // Assert
     expect(screen.getByRole('heading', { name: 'bob' })).toBeInTheDocument();
+  });
+
+  it('should name other people in a group, where there is more than one', () => {
+    // Arrange and Act
+    render(
+      <MessageThread
+        conversation={groupConversation}
+        messages={[message({ senderName: 'carol' })]}
+        onSend={async () => {}}
+        onShowMembers={() => {}}
+      />,
+    );
+
+    // Assert
+    expect(screen.getByText('carol')).toBeInTheDocument();
+  });
+
+  it('should not name the sender in a one-to-one thread', () => {
+    // Arrange and Act: there is only one other person, so repeating their name
+    // on every bubble is noise.
+    render(
+      <MessageThread
+        conversation={conversation}
+        messages={[message({ senderName: 'bob' })]}
+        onSend={async () => {}}
+        onShowMembers={() => {}}
+      />,
+    );
+
+    // Assert: the heading names them once, and nothing else does.
+    expect(screen.getAllByText('bob')).toHaveLength(1);
+  });
+
+  it('should offer the member list only for a group', async () => {
+    // Arrange
+    const onShowMembers = vi.fn();
+    render(
+      <MessageThread
+        conversation={groupConversation}
+        messages={[]}
+        onSend={async () => {}}
+        onShowMembers={onShowMembers}
+      />,
+    );
+
+    // Act
+    await userEvent.click(screen.getByLabelText('Xem thành viên nhóm'));
+
+    // Assert
+    expect(onShowMembers).toHaveBeenCalled();
+  });
+
+  it('should not offer a member list in a one-to-one thread', () => {
+    // Arrange and Act
+    render(
+      <MessageThread
+        conversation={conversation}
+        messages={[]}
+        onSend={async () => {}}
+        onShowMembers={() => {}}
+      />,
+    );
+
+    // Assert
+    expect(screen.queryByLabelText('Xem thành viên nhóm')).not.toBeInTheDocument();
   });
 });

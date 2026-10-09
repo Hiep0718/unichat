@@ -6,11 +6,11 @@
  */
 import { useMemo } from 'react';
 
+import { Icon } from '../../../components/icon';
 import { EntityAvatar } from '../../../components/entity-avatar';
 import { ChatComposer } from './chat-composer';
 import { MessageBubble } from './message-bubble';
-import type { Conversation } from '../work-chat-api';
-import type { DirectMessage } from '../work-chat-api';
+import type { Conversation, DirectMessage } from '../work-chat-api';
 import './message-thread.css';
 
 interface MessageThreadProps {
@@ -21,16 +21,40 @@ interface MessageThreadProps {
     files: readonly File[],
     onProgress?: (percent: number) => void,
   ) => Promise<void>;
+  /** Opens the members panel. Only meaningful for a group. */
+  readonly onShowMembers: () => void;
 }
 
-export function MessageThread({ conversation, messages, onSend }: MessageThreadProps) {
+export function MessageThread({
+  conversation,
+  messages,
+  onSend,
+  onShowMembers,
+}: MessageThreadProps) {
   const ordered = useMemo(() => [...messages].reverse(), [messages]);
+  const isGroup = conversation.kind === 'GROUP';
 
   return (
     <section className="message-thread">
       <header className="message-thread__header">
-        <EntityAvatar name={conversation.otherUserName} size={34} shape="circle" />
-        <h2 className="message-thread__name">{conversation.otherUserName}</h2>
+        <EntityAvatar
+          name={conversation.title}
+          size={34}
+          shape={isGroup ? 'square' : 'circle'}
+        />
+        <h2 className="message-thread__name">{conversation.title}</h2>
+
+        {isGroup && (
+          <button
+            type="button"
+            className="message-thread__members"
+            onClick={onShowMembers}
+            aria-label="Xem thành viên nhóm"
+          >
+            <Icon name="group" size={18} />
+            {conversation.participants.length}
+          </button>
+        )}
       </header>
 
       <div className="message-thread__messages">
@@ -44,6 +68,7 @@ export function MessageThread({ conversation, messages, onSend }: MessageThreadP
               key={message.id}
               conversationId={conversation.id}
               message={message}
+              showSender={isGroup}
             />
           ))
         )}

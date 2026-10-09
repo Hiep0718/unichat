@@ -121,3 +121,31 @@
     display: none;
   }
 }
+
+/* Two ways to start: a person, or a group. The group button is an icon only —
+   the sidebar is too narrow for two labelled buttons side by side. */
+.work-chat__new-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.work-chat__new-group {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border: 1px solid var(--ws-line);
+  border-radius: var(--radius-lg);
+  background: transparent;
+  color: var(--ws-ink-muted);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.work-chat__new-group:hover {
+  border-color: var(--ws-accent);
+  color: var(--ws-ink);
+}

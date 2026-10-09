@@ -10,13 +10,32 @@ afterEach(cleanup);
 
 const conversation = (overrides: Partial<Conversation> = {}): Conversation => ({
   id: 'c1',
+  kind: 'DIRECT',
+  title: 'bob',
   otherUserId: 'u2',
-  otherUserName: 'bob',
+  participants: [
+    { userId: 'u1', name: 'tôi', role: 'MEMBER', me: true },
+    { userId: 'u2', name: 'bob', role: 'MEMBER', me: false },
+  ],
   lastMessage: 'Chào bạn nhé',
   lastMessageAt: new Date().toISOString(),
   unreadCount: 0,
   ...overrides,
 });
+
+const group = (overrides: Partial<Conversation> = {}): Conversation =>
+  conversation({
+    kind: 'GROUP',
+    title: 'Nhóm đồ án',
+    otherUserId: null,
+    participants: [
+      { userId: 'u1', name: 'tôi', role: 'OWNER', me: true },
+      { userId: 'u2', name: 'bob', role: 'MEMBER', me: false },
+      { userId: 'u3', name: 'carol', role: 'MEMBER', me: false },
+      { userId: 'u4', name: 'dung', role: 'MEMBER', me: false },
+    ],
+    ...overrides,
+  });
 
 describe('ConversationList', () => {
   it('should invite the first conversation when there are none', () => {
@@ -96,6 +115,34 @@ describe('ConversationList', () => {
 
     // Assert
     expect(screen.getByRole('button')).toHaveAttribute('aria-current', 'true');
+  });
+
+  it('should title a group row with the group name, not a person', () => {
+    // Arrange and Act
+    render(
+      <ConversationList
+        conversations={[group()]}
+        activeId={null}
+        onSelect={() => {}}
+      />,
+    );
+
+    // Assert
+    expect(screen.getByText('Nhóm đồ án')).toBeInTheDocument();
+  });
+
+  it('should count the members a group row has no room to show', () => {
+    // Arrange and Act: two faces fit in a row; the rest become a count.
+    render(
+      <ConversationList
+        conversations={[group()]}
+        activeId={null}
+        onSelect={() => {}}
+      />,
+    );
+
+    // Assert
+    expect(screen.getByText('+1')).toBeInTheDocument();
   });
 
   it('should open the conversation that was clicked', async () => {
