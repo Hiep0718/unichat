@@ -26,6 +26,7 @@ const message = (overrides: Partial<DirectMessage> = {}): DirectMessage => ({
   mine: false,
   createdAt: new Date().toISOString(),
   readAt: null,
+  attachments: [],
   ...overrides,
 });
 
@@ -76,7 +77,7 @@ describe('MessageThread', () => {
     await userEvent.click(screen.getByLabelText('Gửi'));
 
     // Assert
-    expect(onSend).toHaveBeenCalledWith('xin chào');
+    expect(onSend).toHaveBeenCalledWith('xin chào', [], expect.any(Function));
     expect(input).toHaveValue('');
   });
 

@@ -1,0 +1,107 @@
+.message-attachments {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+/* An image grid inside a bubble, capped at two columns: a bubble is narrow
+   enough that three across would render thumbnails too small to read. */
+.message-attachments__images {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 4px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.message-attachments__images[data-count='2'],
+.message-attachments__images[data-count='3'] {
+  grid-template-columns: 1fr 1fr;
+}
+
+.message-attachments__image {
+  display: block;
+  width: 100%;
+  max-height: 320px;
+  object-fit: cover;
+  background: var(--ws-chip);
+}
+
+.message-attachments__image--loading {
+  min-height: 140px;
+  animation: message-attachment-pulse 1.4s ease-in-out infinite;
+}
+
+.message-attachments__image--failed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 140px;
+  color: var(--ws-ink-muted);
+  font: var(--font-label-sm);
+}
+
+@keyframes message-attachment-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.55;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .message-attachments__image--loading {
+    animation: none;
+  }
+}
+
+.message-attachments__file {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--ws-line);
+  border-radius: var(--radius-lg);
+  background: var(--ws-card);
+  color: var(--ws-ink);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.message-attachments__file:hover:not(:disabled) {
+  border-color: var(--ws-accent);
+  background: var(--ws-accent-soft);
+}
+
+.message-attachments__file:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+
+.message-attachments__file-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.message-attachments__file-name {
+  font: var(--font-label-md);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.message-attachments__file-meta {
+  color: var(--ws-ink-muted);
+  font: var(--font-label-sm);
+}

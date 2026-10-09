@@ -85,11 +85,15 @@ export function WorkChatPage() {
       });
   }, [activeId, loadConversations]);
 
-  const handleSend = async (body: string) => {
+  const handleSend = async (
+    body: string,
+    files: readonly File[],
+    onProgress?: (percent: number) => void,
+  ) => {
     if (!activeId) {
       return;
     }
-    const sent = await sendMessage(activeId, body);
+    const sent = await sendMessage(activeId, body, files, onProgress);
     setMessages((previous) => [sent, ...previous]);
     void loadConversations();
   };
