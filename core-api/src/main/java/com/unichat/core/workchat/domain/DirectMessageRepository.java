@@ -17,21 +17,22 @@ public interface DirectMessageRepository extends JpaRepository<DirectMessage, UU
     Page<DirectMessage> findByConversationIdOrderByCreatedAtDesc(UUID conversationId, Pageable pageable);
 
     /**
-     * Messages in this conversation that the caller has not read.
+     * Unread counts for a page of conversations, in one query rather than per row.
      *
-     * <p>Excludes the caller's own messages: reading your own is meaningless,
-     * and counting them would show an unread badge on every thread you speak in.
+     * <p>Compares each message against the reader's own watermark, which is why
+     * this is native: the watermark lives on a different table and JPQL cannot
+     * join to it without an association that would exist only for this query.
+     *
+     * <p>Excludes the reader's own messages: reading your own is meaningless,
+     * and counting them would put an unread badge on every thread you speak in.
      */
-    @Query("SELECT m FROM DirectMessage m WHERE m.conversationId = :conversationId "
-            + "AND m.senderId <> :readerId AND m.readAt IS NULL")
-    List<DirectMessage> findUnreadFor(@Param("conversationId") UUID conversationId,
-                                      @Param("readerId") UUID readerId);
-
-    /** Unread counts for a page of conversations, in one query rather than per row. */
-    @Query("SELECT m.conversationId, COUNT(m) FROM DirectMessage m "
-            + "WHERE m.conversationId IN :conversationIds "
-            + "AND m.senderId <> :readerId AND m.readAt IS NULL "
-            + "GROUP BY m.conversationId")
+    @Query(value = "SELECT m.conversation_id, COUNT(*) FROM direct_messages m "
+            + "JOIN conversation_participants p "
+            + "  ON p.conversation_id = m.conversation_id AND p.user_id = :readerId "
+            + "WHERE m.conversation_id IN :conversationIds "
+            + "  AND m.sender_id <> :readerId "
+            + "  AND (p.last_read_at IS NULL OR m.created_at > p.last_read_at) "
+            + "GROUP BY m.conversation_id", nativeQuery = true)
     List<Object[]> countUnreadByConversation(@Param("conversationIds") List<UUID> conversationIds,
                                              @Param("readerId") UUID readerId);
 

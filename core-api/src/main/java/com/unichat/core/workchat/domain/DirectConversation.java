@@ -5,16 +5,27 @@ import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 /**
- * A one-to-one conversation between two people.
+ * A conversation, either between two people or among a group.
  *
- * <p>The two participants are held in a fixed order rather than as "starter"
- * and "recipient", so one pair of people has exactly one conversation whichever
- * of them opened it. {@link #between} is the only way to build one, which keeps
- * that ordering from being bypassed.
+ * <p>The "direct" in the class and table name is historical: V22 built this for
+ * one-to-one messaging only, and V30 widened it rather than renaming two tables
+ * on a shared database. See ADR-023.
+ *
+ * <p>A {@link ConversationKind#DIRECT} conversation holds its two participants
+ * here, in a fixed order, so one pair of people has exactly one conversation
+ * whichever of them opened it. A {@link ConversationKind#GROUP} conversation has
+ * a title instead, and its members live in {@link ConversationParticipant}.
+ * Both kinds also have participant rows, so access and read state are answered
+ * one way for both.
+ *
+ * <p>{@link #between} and {@link #group} are the only ways to build one, which
+ * keeps each kind's shape from being bypassed.
  */
 @Entity
 @Table(name = "direct_conversations")
@@ -24,11 +35,25 @@ public class DirectConversation {
     @Column(name = "id", nullable = false)
     private UUID id;
 
-    @Column(name = "participant_low", nullable = false, updatable = false)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "kind", nullable = false, updatable = false)
+    private ConversationKind kind;
+
+    /** Null for a group, which has no pair to identify it by. */
+    @Column(name = "participant_low", updatable = false)
     private UUID participantLow;
 
-    @Column(name = "participant_high", nullable = false, updatable = false)
+    /** Null for a group, which has no pair to identify it by. */
+    @Column(name = "participant_high", updatable = false)
     private UUID participantHigh;
+
+    /** Set for a group only; a one-to-one thread is named by the other person. */
+    @Column(name = "title")
+    private String title;
+
+    /** Who opened a group. Null for conversations created before V30. */
+    @Column(name = "created_by", updatable = false)
+    private UUID createdBy;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -39,10 +64,15 @@ public class DirectConversation {
 
     protected DirectConversation() {}
 
-    private DirectConversation(UUID id, UUID participantLow, UUID participantHigh, Instant createdAt) {
+    private DirectConversation(UUID id, ConversationKind kind, UUID participantLow,
+                               UUID participantHigh, String title, UUID createdBy,
+                               Instant createdAt) {
         this.id = id;
+        this.kind = kind;
         this.participantLow = participantLow;
         this.participantHigh = participantHigh;
+        this.title = title;
+        this.createdBy = createdBy;
         this.createdAt = createdAt;
     }
 
@@ -59,9 +89,29 @@ public class DirectConversation {
         boolean oneIsLower = one.compareTo(other) < 0;
         return new DirectConversation(
                 id,
+                ConversationKind.DIRECT,
                 oneIsLower ? one : other,
                 oneIsLower ? other : one,
+                null,
+                null,
                 createdAt);
+    }
+
+    /**
+     * Creates a named group.
+     *
+     * <p>Membership is not held here: a group with two members and a group with
+     * twenty are the same shape, so the members are rows of their own.
+     *
+     * @throws IllegalArgumentException if the title is blank
+     */
+    public static DirectConversation group(UUID id, String title, UUID createdBy,
+                                           Instant createdAt) {
+        if (title == null || title.isBlank()) {
+            throw new IllegalArgumentException("A group needs a name");
+        }
+        return new DirectConversation(
+                id, ConversationKind.GROUP, null, null, title.trim(), createdBy, createdAt);
     }
 
     /** Orders a pair the same way {@link #between} does, for lookups. */
@@ -76,9 +126,15 @@ public class DirectConversation {
 
     public UUID getId() { return id; }
 
+    public ConversationKind getKind() { return kind; }
+
     public UUID getParticipantLow() { return participantLow; }
 
     public UUID getParticipantHigh() { return participantHigh; }
+
+    public String getTitle() { return title; }
+
+    public UUID getCreatedBy() { return createdBy; }
 
     public Instant getCreatedAt() { return createdAt; }
 
@@ -86,19 +142,38 @@ public class DirectConversation {
 
     public void setLastMessageAt(Instant lastMessageAt) { this.lastMessageAt = lastMessageAt; }
 
-    /** Whether this user is one of the two people in the conversation. */
-    public boolean includes(UUID userId) {
-        return participantLow.equals(userId) || participantHigh.equals(userId);
+    public boolean isGroup() { return kind == ConversationKind.GROUP; }
+
+    /**
+     * Renames a group.
+     *
+     * @throws IllegalStateException    on a one-to-one conversation, which is
+     *                                  named by the person on the other side
+     * @throws IllegalArgumentException if the title is blank
+     */
+    public void rename(String newTitle) {
+        if (!isGroup()) {
+            throw new IllegalStateException("A one-to-one conversation has no name");
+        }
+        if (newTitle == null || newTitle.isBlank()) {
+            throw new IllegalArgumentException("A group needs a name");
+        }
+        this.title = newTitle.trim();
     }
 
     /**
      * The other person, as seen by this one.
      *
+     * @throws IllegalStateException    on a group, where there is no single
+     *                                  other person to return
      * @throws IllegalArgumentException if the user is not a participant, which
      *                                  would otherwise silently return someone
      *                                  unrelated
      */
     public UUID otherThan(UUID userId) {
+        if (isGroup()) {
+            throw new IllegalStateException("A group has no single other participant");
+        }
         if (participantLow.equals(userId)) {
             return participantHigh;
         }
