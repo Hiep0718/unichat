@@ -787,3 +787,157 @@
 
 - Decision: Also pointed the four links that named `/discussions` explicitly at the group root.
   Rationale: Three entry points used the index route (the left rail, the workspace card, and the redirect after joining from Khám phá) while four others named the posts tab directly — the group name on a feed card, two on the post detail page, and the group list on a profile. Changing only the index would have made "click a group" mean Giới thiệu in some places and Bài viết in others. One rule is less surprising than two, and it keeps the landing tab a single line to change if that judgement turns out wrong.
+
+## 2026-09-28 - Accepted Answers: Reversible, Reachable, and Counted Correctly
+
+- Fixed: `findUnanswered` and `countUnanswered` had no label filter, so the feed's
+  default view and the sidebar badge counted discussions and announcements as
+  questions awaiting help. Neither has a resolution to wait for. Measured against
+  the live database before and after: the badge read 6 (3 questions + 2
+  discussions + 1 announcement) where the true figure is 3. The count was exactly
+  double the real one, and it is the number that would have gone into the thesis.
+
+- Decision: Verified the fix by running both SQL forms against the real database
+  rather than by unit test.
+  Rationale: These are native queries. A mocked repository test asserts that the
+  service calls a method, not that the WHERE clause is right — precisely the thing
+  that was wrong.
+
+- Decision: Accepting is now a toggle rather than a one-way action.
+  Rationale: There was no path back: no endpoint cleared the column and no UI
+  offered it, so a misclick was permanent and a better answer arriving later could
+  not take over. Switching between replies already worked; only clearing was
+  missing. `DELETE /discussions/{id}/accept-reply` fills it, restricted to the
+  author for the same reason they alone may accept — only the person who asked
+  knows whether their problem is settled.
+
+- Decision: The same button both accepts and takes back.
+  Rationale: The control that sets a state should be the one that clears it.
+  Clicking the already-accepted reply now reads "Bỏ chấp nhận" rather than
+  silently re-accepting, which is what the old handler would have done once the
+  button appeared there.
+
+- Decision: Replaced `hasAcceptedAnswer` on `FeedPostResponse` with
+  `acceptedReplyId`, rather than adding the id alongside the boolean.
+  Rationale: The inline thread needs to know *which* reply was accepted, to
+  highlight it and to place the control. Carrying both would be two fields that
+  must agree — the same duplication being removed elsewhere this week. The boolean
+  is derived where it is used.
+
+- Caught by the type change: `inline-comments.test.tsx` still built its fixture
+  with `hasAcceptedAnswer`, and the compiler rejected it. That is the payoff for
+  having rewritten those fixtures against the real types instead of `as never`
+  casts — the same change would previously have failed at runtime, or passed while
+  testing nothing.
+
+- Also fixed while touching it: `post-detail-page`'s accept handler swallowed its
+  error in an empty catch, so a failed accept left the button looking like it had
+  worked. AGENTS.md forbids swallowing errors; it now surfaces the message.
+
+## 2026-09-28 - Folding Long Comments
+
+- Decision: Fold by length, not by author.
+  Rationale: The assistant's answers are why this was asked for — a retrieval
+  answer with headings, lists and a diagram can be twenty times the height of the
+  question it sits under. But a rule keyed to who wrote something surprises the
+  person who pasted an essay and saw it left alone, and the problem is the height
+  either way. Above 600 characters a comment folds to 200px with a faded cut and a
+  "Xem thêm" toggle.
+
+- Decision: Measured on the raw text rather than the rendered height.
+  Rationale: Reading the DOM back to decide whether content overflows means
+  writing state from an effect for every comment in a thread — more machinery, and
+  a ninth instance of the `set-state-in-effect` pattern the project already has
+  eight of. A character count is deterministic, testable, and wrong only at the
+  margin, where the cost is a fold button on something that nearly fitted.
+
+- Decision: Citations stay outside the fold.
+  Rationale: They are the evidence for the answer. Evidence behind a click is
+  evidence nobody checks, and the citation trail is the thesis's whole claim about
+  the assistant not inventing things.
+
+- Decision: Folded rather than removed from the DOM.
+  Rationale: The text stays present for browser search, screen readers and copy —
+  a test asserts it. Unmounting would have been simpler and would have quietly
+  broken all three.
+
+- Caught by rendering, nothing else: the fade gradient ended on
+  `--color-tertiary-container`, which sounds like the assistant panel's tint and
+  actually resolves to `#6e2c00`, a dark brown. It painted a muddy band across the
+  cut edge. The panel's real token is `--color-ai-bubble`. Tests passed, lint
+  passed, typecheck passed — only looking at it found this, which is the third
+  time this week a plausible-sounding token name has been wrong.
+
+## 2026-10-09 - Files in Work Chat
+
+- Decision: A file sent in a chat never enters the workspace document library, and the
+  assistant never reads it.
+  Rationale: The user chose this when asked, and the choice is right: a file sent
+  privately between two people becoming a group-wide retrieval source publishes
+  something that was never shared. Put in the schema rather than only in code — no
+  `document_id` column, and the kinds are `IMAGE`/`FILE` rather than the
+  `IMAGE`/`DOCUMENT` of `post_attachments` — so that nobody reading it later takes the
+  absence for an omission.
+
+- Decision: Text and files travel in one multipart request, not "create the message,
+  then upload" the way `PostAttachmentService` does for posts.
+  Rationale: `WorkChatBroadcaster` pushes the message to the recipient as soon as it
+  commits. Two steps would show them a bubble whose file had not arrived, and no later
+  event would take it away. A post does not have this problem because nobody is
+  watching it at the moment it is created. A side benefit: there is no such thing as an
+  orphaned upload waiting to be swept.
+
+- Decision: A second `@PostMapping` with `consumes = multipart/form-data`, rather than
+  teaching the JSON endpoint to accept both.
+  Rationale: The text path does not change by a single line, so there is no regression
+  risk in the part that already works. Two mappings on one path differing by `consumes`
+  is Spring's own mechanism, not a trick.
+
+- Decision: The 5-file and 20 MiB limits are per message, not per file.
+  Rationale: `spring.servlet.multipart.max-request-size` caps the whole request at
+  25 MB. A per-file limit would let 5 × 20 MiB past our own validation and then be
+  refused by the servlet with an error that tells the user nothing.
+
+- Decision: `direct_messages.body` becomes nullable with `CHECK (body IS NULL OR
+  length(trim(body)) > 0)` rather than allowing the empty string.
+  Rationale: A message that is only an image is ordinary. But if blank could be stored
+  as `''`, a bug would produce empty bubbles that nothing complains about. NULL means
+  "no text"; `''` means "there is text and it is empty", and only the first is true.
+
+- Decision: For group chat later, fan out to each participant over `/user/queue/...`
+  rather than using `/topic/conversation/{id}`.
+  Rationale: `StompAuthChannelInterceptor` authenticates CONNECT and does **not** check
+  SUBSCRIBE. A topic named by conversation id would let any authenticated user subscribe
+  to someone else's conversation. Recorded here because it is the trap that will be
+  waiting at the start of Phase 2.
+
+- Decision: `Content-Disposition: inline` only for the allowlisted image types,
+  `attachment` for everything else, plus `X-Content-Type-Options: nosniff`.
+  Rationale: The media type is declared by the client, so it cannot be trusted. No
+  sniffing plus no inline means a file that lies about its type still cannot run script
+  in the API's origin. SVG and HTML are off the allowlist because both can.
+
+- Decision: Image magic bytes are not checked.
+  Rationale: It keeps the same posture as the `PostAttachmentService` already in use,
+  and `nosniff` plus the disposition is the defence that actually matters. The residual
+  risk is recorded: a file declaring `image/png` that is not one renders as a broken
+  image, which is not a vulnerability.
+
+- Decision: `ConversationAccess` was split out of `DirectMessageService` in this change,
+  although Phase 1 alone did not require it.
+  Rationale: `ChatAttachmentService` also has to check participation, and that rule
+  needs one home, exactly as `ContactDirectory` is the one home for who may message
+  whom. Two copies of it is how two copies drift. The split also keeps
+  `DirectMessageService` under the 300-line ceiling.
+
+- Decision: `formatBytes` moved to `lib/format-bytes.ts` instead of being exported from
+  a component file.
+  Rationale: ESLint's `react-refresh/only-export-components` is right — a file that
+  exports both a component and a helper breaks hot reload. Noted for later: three other
+  copies of this function remain in `community` and `documents`, and two of them use one
+  decimal place for KB where the third uses none, so consolidating them would change
+  what those screens display. Left as its own cleanup.
+
+- Not verified by eye: migration V29 has not been run against any database, and
+  Playwright has no browsers downloaded in this environment, so Suite 07 has never
+  executed.

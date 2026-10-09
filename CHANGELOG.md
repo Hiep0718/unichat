@@ -19,6 +19,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+- Files in Work Chat: a message may carry up to five images or documents (PNG, JPEG, WebP, GIF, PDF, DOCX, TXT) totalling 20 MiB, sent together with its text in one request. Images render inline in the bubble; everything else is a download. Chat files stay private to the conversation and never enter a workspace's document library (ADR-022).
 - MIT License naming Nguyễn Thanh Hiệp and Hoàng Phi Hùng as copyright holders.
 - Contribution workflow for the two-person cross-review model.
 - Required dependency audit policy with an explicit scoped `SEC-DEBT-001` exception.

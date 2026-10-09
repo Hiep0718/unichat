@@ -137,6 +137,12 @@ Decision: Truyền conversation history (tối đa 10 lượt trao đổi gần 
 
 Reason: Tính năng cốt lõi P0 cần sự mạch lạc và hiểu ngữ cảnh liên tục giữa các lượt hỏi đáp trong cùng một phiên hội thoại (multi-turn coherence). Đây là short-term session memory (trong phạm vi một phiên hội thoại), không phải long-term persistent memory xuyên các phiên hay user profiling (vẫn tuân thủ ranh giới của ADR-001).
 
+## ADR-022 — Tệp đính kèm trong Work Chat
+
+Decision: Tệp gửi trong hội thoại được lưu ở bảng `chat_attachments` gắn vào `direct_messages.id`, **không** đăng ký vào kho tài liệu Workspace và **không** bao giờ trở thành nguồn truy xuất cho trợ lý AI; vì vậy bảng không có cột `document_id` và enum là `IMAGE`/`FILE` thay vì `IMAGE`/`DOCUMENT` như `post_attachments`. Văn bản và tệp đi trong **một** request multipart duy nhất (`POST /work-chat/conversations/{id}/messages` với `consumes: multipart/form-data`, song song endpoint JSON cũ). `direct_messages.body` trở thành nullable, với CHECK `body IS NULL OR length(trim(body)) > 0`. Giới hạn 5 tệp và 20 MiB **cho cả tin nhắn**, allowlist PNG/JPEG/WebP/GIF/PDF/DOCX/TXT. Nội dung tệp chỉ phục vụ qua endpoint có kiểm tra tham gia hội thoại, kèm `X-Content-Type-Options: nosniff` và `Content-Disposition: inline` chỉ cho ảnh trong allowlist.
+
+Reason: Một tệp gửi riêng giữa hai người mà tự động thành nguồn truy xuất của cả nhóm là hành vi công bố thứ chưa từng được chia sẻ — đây là quyết định về quyền riêng tư, không phải phần còn thiếu. Gộp văn bản và tệp vào một request là vì `WorkChatBroadcaster` đẩy tin nhắn ngay sau commit: tách thành hai bước sẽ hiện cho người nhận một bong bóng mà tệp chưa tới, và không có sự kiện nào sau đó thu nó lại. Giới hạn tính theo tin nhắn vì `spring.servlet.multipart.max-request-size` chặn cả request ở 25 MB, nên giới hạn theo từng tệp sẽ bị tầng servlet từ chối bằng một lỗi không nói được gì cho người dùng. Loại SVG và HTML khỏi allowlist vì cả hai chạy script khi được phục vụ inline cùng origin với API.
+
 ## Consequences
 
 - Runtime đã được cung cấp theo version đã khóa; mỗi máy vẫn phải cung cấp evidence độc lập trước `READY — CORE-001`.

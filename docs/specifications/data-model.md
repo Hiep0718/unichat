@@ -40,6 +40,9 @@
 | idempotency_records | actorId, routeKey, idempotencyKey, requestHash, responseStatus, responseBody, expiresAt | PK(actorId,routeKey,idempotencyKey); body khác trả 409 |
 | rate_limit_buckets | subjectKey, actionKey, windowStart, requestCount, expiresAt | PK(subjectKey,actionKey,windowStart) |
 | audit_events | id, occurredAt, requestId, actorId, action, targetType, targetId, workspaceId, outcome, metadata | append-only; metadata không chứa secret/nội dung tài liệu |
+| direct_conversations | id, participantLow, participantHigh, createdAt, lastMessageAt | CHECK participantLow < participantHigh và unique(participantLow,participantHigh): một cặp người có đúng một hội thoại, bất kể ai mở trước |
+| direct_messages | id, conversationId, senderId, body, createdAt, readAt | body nullable cho tin nhắn chỉ có tệp; CHECK body IS NULL OR length(trim(body)) > 0 |
+| chat_attachments | id, messageId, kind, storageKey, originalName, mediaType, byteSize, createdAt | kind IMAGE/FILE; không có documentId — tệp trong chat không vào kho tài liệu và AI không đọc (ADR-022); byteSize > 0 |
 | password_reset_otps | email, otpCode, expiresAt, createdAt | PK(email); OTP 6 chữ số, hết hạn 5 phút; xóa sau khi sử dụng thành công |
 
 ## 3. Quan hệ
@@ -49,6 +52,7 @@
 - documents: trạng thái document chỉ đổi qua service transaction. Ingestion/deletion bất đồng bộ qua RabbitMQ (ADR-007).
 - conversations 1–N messages; assistant message 1–1 retrieval_trace và 1–N citation_history.
 - retrieval_traces 1–N retrieval_trace_items.
+- direct_conversations 1–N direct_messages; direct_messages 1–N chat_attachments, xóa theo cascade cùng tin nhắn.
 - evaluation_runs N–N evaluation_cases qua evaluation_results.
 
 ## 4. Index bắt buộc
@@ -64,6 +68,9 @@
 | evaluation_cases(datasetVersion,split,intent,topicGroup) | Tạo tập calibration/holdout |
 | evaluation_results(runId,caseId) unique | Bảo toàn một kết quả/case/run |
 | audit_events(workspaceId,occurredAt desc) | Audit Workspace |
+| direct_messages(conversationId,createdAt desc) | Phân trang hội thoại |
+| direct_messages(conversationId,senderId) where readAt is null | Đếm tin chưa đọc |
+| chat_attachments(messageId,createdAt) | Nạp tệp cho cả một trang tin nhắn |
 
 ## 5. Chroma collection
 

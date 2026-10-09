@@ -63,6 +63,7 @@ UI component ưu tiên interaction unit test và E2E happy path; không đặt m
 - documents: validation, progress, status, delete confirmation.
 - chat: answer, citation focus, clarify/refuse, idempotent retry.
 - history: pagination/order/reload.
+- work-chat: luật từ chối tệp phía client, gửi tệp không kèm chữ, giữ nháp khi gửi lỗi, chỉ hiện lý do do API trả về, ảnh inline và chip tải về, thu hồi blob URL khi unmount.
 - admin/evaluation: role guard, filters, run state.
 - accessibility: axe scan, keyboard path, focus restoration, live region.
 - security: raw HTML/script/link protocol không render.
@@ -77,6 +78,7 @@ MSW mock toàn bộ Core API trong unit/component test. Playwright chạy với 
 - jobs: SKIP LOCKED claim, lease expiry, retry, idempotency.
 - ask: authorize → AI call → reauthorize → atomic persistence.
 - conversation/citation: ownership, cursor, redaction.
+- work-chat: participation trên mọi đọc/ghi; tin nhắn chỉ có tệp; không có cả nội dung lẫn tệp bị từ chối; tệp bị từ chối thì không ghi hàng tin nhắn nào; ba mắt kiểm quyền khi đọc tệp (participant, tin nhắn thuộc hội thoại, tệp thuộc tin nhắn); storageKey không ra khỏi server.
 - admin/evaluation: RBAC và config freeze.
 - error/logging: typed error → RFC7807; redaction.
 - architecture: ArchUnit kiểm tra route → service → repository và feature boundaries.
@@ -109,6 +111,8 @@ MSW mock toàn bộ Core API trong unit/component test. Playwright chạy với 
 11. Keyboard-only qua login/workspace/documents/chat/citation.
 12. Multi-turn conversation & Context Compaction: hỏi câu tiếp nối với đại từ ("nó là gì"), kích hoạt compaction khi vượt ngưỡng, hiển thị thought step COMPACTION trên Thoughts accordion và duy trì working memory (ADR-021).
 13. Master Long-Running Conversation Lifecycle & Edge Cases (Suite 06): kiểm thử toàn bộ 4 lượt hội thoại (cold start, đại từ mơ hồ, kích hoạt nén context khi token vượt budget 80%, working memory summary, tra cứu citation chip & citation drawer, render công thức toán LaTeX & code block Java syntax highlight, copy câu trả lời, không mất trạng thái 8 tin nhắn trong DOM).
+
+14. Gửi tệp trong Work Chat (Suite 07): gửi ảnh kèm chú thích trong **một** request multipart, gửi tin nhắn chỉ có tệp, từ chối định dạng ngoài allowlist mà không upload gì, tệp hiện thành chip tải về kèm dung lượng, bỏ tệp đã chọn trước khi gửi.
 
 ## 8. Research evaluation
 

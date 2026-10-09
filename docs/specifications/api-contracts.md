@@ -153,3 +153,25 @@ Mã chuẩn: VALIDATION_ERROR, UNAUTHENTICATED, FORBIDDEN, NOT_FOUND, CONFLICT, 
 - Mỗi public/internal endpoint có integration test success, validation, authentication, authorization và error contract.
 - Frontend dùng type sinh từ OpenAPI; không duy trì DTO trùng lặp bằng tay.
 - Provider/network ngoài hệ thống luôn mock trong test.
+
+## 12. Work Chat — nhắn tin 1-1
+
+| Method | Route | Quyền | Ghi chú |
+|---|---|---|---|
+| GET | /work-chat/contacts | Đăng nhập | Người cùng nhóm với caller |
+| GET | /work-chat/presence | Đăng nhập | Chỉ contact đang online |
+| GET | /work-chat/conversations | Participant | page/size, mặc định 20, tối đa 100 |
+| POST | /work-chat/conversations/with/{userId} | Cùng nhóm | Tạo ở lần liên hệ đầu |
+| GET | /work-chat/conversations/{id}/messages | Participant | Mới nhất trước |
+| POST | /work-chat/conversations/{id}/messages | Participant | `application/json`: chỉ văn bản |
+| POST | /work-chat/conversations/{id}/messages | Participant | `multipart/form-data`: part `body` tùy chọn, part `files` lặp lại |
+| GET | /work-chat/conversations/{cid}/messages/{mid}/attachments/{aid}/content | Participant | Bytes của tệp |
+| POST | /work-chat/conversations/{id}/read | Participant | Đánh dấu đã đọc, idempotent |
+
+Tin nhắn cần có nội dung **hoặc** tệp; không có cả hai trả `VALIDATION_ERROR`. Nội dung tối đa 4000 ký tự, kiểm tra ở service nên áp dụng cho cả hai đường JSON và multipart. Giới hạn tệp: 5 tệp và tổng 20 MiB cho **mỗi tin nhắn**; allowlist PNG, JPEG, WebP, GIF, PDF, DOCX, TXT; vi phạm trả `FILE_REJECTED`.
+
+Tệp không vào kho tài liệu Workspace và trợ lý AI không đọc chúng (ADR-022). `storageKey` không bao giờ xuất hiện trong response; nội dung chỉ phục vụ qua endpoint trên, luôn kèm `X-Content-Type-Options: nosniff`, `Cache-Control: private` và `Content-Disposition: inline` chỉ với ảnh trong allowlist — mọi định dạng khác là `attachment`.
+
+Hội thoại không tồn tại và caller không phải participant trả **cùng** một `NOT_FOUND`, để một người lạ giữ UUID không suy ra được hội thoại đó có thật.
+
+Đẩy tin nhắn trực tiếp qua STOMP tại `/ws/work-chat`, destination `/user/queue/messages`; token đi trên CONNECT frame.
