@@ -32,10 +32,13 @@ import com.unichat.core.workchat.api.ChatAttachmentResponse;
 import com.unichat.core.workchat.domain.ChatAttachment;
 import com.unichat.core.workchat.domain.ChatAttachmentKind;
 import com.unichat.core.workchat.domain.ChatAttachmentRepository;
+import com.unichat.core.workchat.domain.ConversationParticipant;
+import com.unichat.core.workchat.domain.ConversationParticipantRepository;
 import com.unichat.core.workchat.domain.DirectConversation;
 import com.unichat.core.workchat.domain.DirectConversationRepository;
 import com.unichat.core.workchat.domain.DirectMessage;
 import com.unichat.core.workchat.domain.DirectMessageRepository;
+import com.unichat.core.workchat.domain.ParticipantRole;
 
 /**
  * Files in a conversation are private to its participants, limited in format
@@ -46,6 +49,7 @@ class ChatAttachmentServiceTest {
     private ChatAttachmentRepository attachmentRepository;
     private DirectMessageRepository messageRepository;
     private DirectConversationRepository conversationRepository;
+    private ConversationParticipantRepository participantRepository;
     private StoragePort storagePort;
     private ChatAttachmentService service;
 
@@ -62,6 +66,7 @@ class ChatAttachmentServiceTest {
         attachmentRepository = mock(ChatAttachmentRepository.class);
         messageRepository = mock(DirectMessageRepository.class);
         conversationRepository = mock(DirectConversationRepository.class);
+        participantRepository = mock(ConversationParticipantRepository.class);
         storagePort = mock(StoragePort.class);
 
         when(attachmentRepository.save(any(ChatAttachment.class)))
@@ -70,7 +75,8 @@ class ChatAttachmentServiceTest {
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         service = new ChatAttachmentService(attachmentRepository, messageRepository,
-                new ConversationAccess(conversationRepository), storagePort, clock);
+                new ConversationAccess(conversationRepository, participantRepository),
+                storagePort, clock);
     }
 
     @Test
@@ -159,7 +165,8 @@ class ChatAttachmentServiceTest {
 
     @Test
     void shouldHideAFileFromSomeoneOutsideTheConversation() {
-        // Arrange
+        // Arrange: the stranger has no participant row, which is what
+        // access depends on.
         when(conversationRepository.findById(conversationId))
                 .thenReturn(Optional.of(conversation()));
 
@@ -173,6 +180,7 @@ class ChatAttachmentServiceTest {
     void shouldRefuseAMessageThatBelongsToAnotherConversation() {
         // Arrange: holding a message id from elsewhere must not let it be read
         // through a conversation the caller does belong to.
+        aliceTakesPart();
         when(conversationRepository.findById(conversationId))
                 .thenReturn(Optional.of(conversation()));
         when(messageRepository.findById(messageId)).thenReturn(Optional.of(new DirectMessage(
@@ -244,7 +252,14 @@ class ChatAttachmentServiceTest {
         verify(attachmentRepository, never()).findByMessageIdInOrderByCreatedAtAsc(any());
     }
 
+    private void aliceTakesPart() {
+        when(participantRepository.findByIdConversationIdAndIdUserId(conversationId, alice))
+                .thenReturn(Optional.of(new ConversationParticipant(
+                        conversationId, alice, ParticipantRole.MEMBER, Instant.now(clock))));
+    }
+
     private void participantReadingAMessageInThisConversation() {
+        aliceTakesPart();
         when(conversationRepository.findById(conversationId))
                 .thenReturn(Optional.of(conversation()));
         when(messageRepository.findById(messageId)).thenReturn(Optional.of(new DirectMessage(

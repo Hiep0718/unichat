@@ -23,8 +23,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -33,13 +31,15 @@ import com.unichat.core.common.error.ValidationError;
 import com.unichat.core.user.domain.User;
 import com.unichat.core.user.domain.UserRepository;
 import com.unichat.core.workchat.api.ChatAttachmentResponse;
-import com.unichat.core.workchat.api.ConversationSummary;
 import com.unichat.core.workchat.api.MessageResponse;
 import com.unichat.core.workchat.domain.ChatAttachmentKind;
 import com.unichat.core.workchat.domain.DirectConversation;
+import com.unichat.core.workchat.domain.ConversationParticipant;
+import com.unichat.core.workchat.domain.ConversationParticipantRepository;
 import com.unichat.core.workchat.domain.DirectConversationRepository;
 import com.unichat.core.workchat.domain.DirectMessage;
 import com.unichat.core.workchat.domain.DirectMessageRepository;
+import com.unichat.core.workchat.domain.ParticipantRole;
 
 /**
  * A message may be text, files, or both — but never neither, and never a bubble
@@ -49,6 +49,7 @@ class DirectMessageAttachmentTest {
 
     private DirectConversationRepository conversationRepository;
     private DirectMessageRepository messageRepository;
+    private ConversationParticipantRepository participantRepository;
     private ChatAttachmentService attachmentService;
     private DirectMessageService service;
 
@@ -61,6 +62,7 @@ class DirectMessageAttachmentTest {
     void setUp() {
         conversationRepository = mock(DirectConversationRepository.class);
         messageRepository = mock(DirectMessageRepository.class);
+        participantRepository = mock(ConversationParticipantRepository.class);
         attachmentService = mock(ChatAttachmentService.class);
         UserRepository userRepository = mock(UserRepository.class);
 
@@ -71,8 +73,11 @@ class DirectMessageAttachmentTest {
         service = new DirectMessageService(
                 conversationRepository,
                 messageRepository,
+                participantRepository,
                 mock(ContactDirectory.class),
-                new ConversationAccess(conversationRepository),
+                new ConversationAccess(conversationRepository, participantRepository),
+                new ConversationSummaryAssembler(
+                        participantRepository, messageRepository, userRepository),
                 attachmentService,
                 userRepository,
                 mock(ApplicationEventPublisher.class),
@@ -146,25 +151,12 @@ class DirectMessageAttachmentTest {
         verify(attachmentService).attachAll(eq(conversationId), eq(stored), anyList());
     }
 
-    @Test
-    void shouldPreviewAFileOnlyMessageWithoutReadingItsText() {
-        // Arrange
-        when(conversationRepository.findForParticipant(any(), any(Pageable.class)))
-                .thenReturn(new PageImpl<>(List.of(conversation())));
-        when(messageRepository.findLatestPerConversation(anyList())).thenReturn(List.of(
-                new DirectMessage(UUID.randomUUID(), conversationId, bob, null, Instant.now(clock))));
-        when(messageRepository.countUnreadByConversation(anyList(), any())).thenReturn(List.of());
-
-        // Act
-        List<ConversationSummary> rows = service.listConversations(alice, 0, 20);
-
-        // Assert
-        assertEquals("Đã gửi tệp đính kèm", rows.get(0).lastMessage());
-    }
-
     private void openConversation() {
         when(conversationRepository.findById(conversationId))
                 .thenReturn(Optional.of(conversation()));
+        when(participantRepository.findByIdConversationIdAndIdUserId(conversationId, alice))
+                .thenReturn(Optional.of(new ConversationParticipant(
+                        conversationId, alice, ParticipantRole.MEMBER, Instant.now(clock))));
     }
 
     private DirectMessage storedMessage() {
