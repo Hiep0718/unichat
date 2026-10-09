@@ -17,7 +17,7 @@ import jakarta.persistence.Table;
  *
  * <p>Nothing here records who has read it. In a conversation with several
  * people that is a fact about each of them, so it lives on
- * {@link ConversationParticipant} as a watermark (V30).
+ * {@link ConversationParticipant} as a watermark (V31).
  */
 @Entity
 @Table(name = "direct_messages")

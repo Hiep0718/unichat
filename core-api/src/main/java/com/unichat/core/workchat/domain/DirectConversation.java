@@ -14,7 +14,7 @@ import jakarta.persistence.Table;
  * A conversation, either between two people or among a group.
  *
  * <p>The "direct" in the class and table name is historical: V22 built this for
- * one-to-one messaging only, and V30 widened it rather than renaming two tables
+ * one-to-one messaging only, and V31 widened it rather than renaming two tables
  * on a shared database. See ADR-023.
  *
  * <p>A {@link ConversationKind#DIRECT} conversation holds its two participants
@@ -51,7 +51,7 @@ public class DirectConversation {
     @Column(name = "title")
     private String title;
 
-    /** Who opened a group. Null for conversations created before V30. */
+    /** Who opened a group. Null for conversations created before V31. */
     @Column(name = "created_by", updatable = false)
     private UUID createdBy;
 

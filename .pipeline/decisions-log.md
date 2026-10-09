@@ -1016,3 +1016,35 @@
   the JPA mapping has never been validated at startup and the backfill has never
   executed. V30 drops a column, which does not roll back. Playwright has no browsers
   downloaded in this environment, so Suites 07 and 08 have never run.
+
+## 2026-10-09 - Two Things the Migrations Hit on the Way to the Database
+
+- Decision: The Work Chat migrations were renumbered from 29/30 to 30/31 rather than
+  repaired.
+  Rationale: Version 29 on the shared development database is "admin user seed", applied
+  on 2026-10-04 from a working copy that was never committed — the same thing V26 records
+  happening to version 16. It went unnoticed because no file here claimed 29, so Flyway
+  saw the row as missing and the ignore patterns passed over it; adding a file with that
+  number turned it into a checksum mismatch that stopped the application. `flyway repair`
+  is what the error message suggests and is the wrong tool: it would stamp this branch's
+  checksum onto a row describing somebody else's migration, so the history would be a lie
+  and our SQL would never run. Both files were also made idempotent, because a fresh
+  number is only safe if the file is a no-op on a database that already holds part of it.
+
+- Still open, not ours to fix: that `V29__admin_user_seed.sql` is applied to the shared
+  database and committed nowhere. Any new database will be missing it, and the next person
+  to pick a number will collide again.
+
+- Mistake, mine, recorded so it is not repeated: the read-only inspection scripts issued
+  `SET default_transaction_read_only = on` as a safety belt. Against Supabase's connection
+  pooler that is not a safety belt — a session-level SET stays on the pooled backend and is
+  handed to whoever gets it next, which was the application. Flyway then reached version 30,
+  ran it, and failed on `cannot execute INSERT in a read-only transaction` (SQLSTATE 25006)
+  when writing its history row. `pg_settings` showed `boot_val=off`, `reset_val=off`,
+  `source=session`, no sourcefile and no role or database default, which is what pins the
+  cause on the SET rather than on a Supabase-side read-only flag or a disk quota (the
+  database is 17 MB).
+  The rule: on a pooled connection, scope read-only to the transaction with
+  `BEGIN READ ONLY`, never to the session with `SET`.
+  Nothing was migrated and nothing was lost — `chat_attachments` does not exist, the
+  history still tops out at 29, and `direct_messages` is unchanged.

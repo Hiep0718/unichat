@@ -12,7 +12,7 @@ import com.unichat.core.workchat.domain.DirectMessage;
  * <p>Carries no read state. In a group that is a fact about each participant
  * rather than about the message, and it is held as a watermark on the
  * participant row; the conversation list turns those into an unread count,
- * which is the only form the UI shows (V30).
+ * which is the only form the UI shows (V31).
  *
  * @param body        null in a message that is only files
  * @param senderName  shown on other people's bubbles in a group

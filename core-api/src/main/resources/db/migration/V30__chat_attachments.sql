@@ -5,6 +5,17 @@
 -- a retrieval source for the AI assistant. There is therefore no document_id
 -- column here, and the kinds are IMAGE/FILE rather than IMAGE/DOCUMENT, so that
 -- nobody reading this table later assumes the assistant can cite it.
+--
+-- Numbered 30, not 29, and idempotent, for the reason V26 already records once:
+-- version 29 was taken on the shared development database on 2026-10-04 by an
+-- "admin user seed" migration from a working copy that was never committed. It
+-- went unnoticed because no file here claimed 29, so Flyway treated the row as
+-- missing and the ignore patterns passed over it; adding a file with that number
+-- turned it into a checksum mismatch that stopped the application from starting.
+--
+-- A fresh number is what makes that safe, and IF NOT EXISTS is what makes a
+-- fresh number safe: on a database that already holds part of this, every
+-- statement below is a no-op.
 
 -- A message may now carry only files, with no text. Blank text must be NULL
 -- rather than an empty string, so a bug cannot produce an empty bubble.
@@ -13,7 +24,7 @@ ALTER TABLE direct_messages ALTER COLUMN body DROP NOT NULL;
 ALTER TABLE direct_messages ADD CONSTRAINT chk_direct_messages_body
     CHECK (body IS NULL OR length(trim(body)) > 0);
 
-CREATE TABLE chat_attachments (
+CREATE TABLE IF NOT EXISTS chat_attachments (
     id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     message_id    UUID NOT NULL REFERENCES direct_messages(id) ON DELETE CASCADE,
     kind          VARCHAR(16) NOT NULL CHECK (kind IN ('IMAGE', 'FILE')),
@@ -26,9 +37,13 @@ CREATE TABLE chat_attachments (
 
 -- Attachments are always read by the message they belong to, one page of
 -- messages at a time.
-CREATE INDEX idx_chat_attachments_message ON chat_attachments (message_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_chat_attachments_message
+    ON chat_attachments (message_id, created_at);
 
 -- Defense in depth, following V6: Core API connects with a BYPASSRLS role, so
 -- this only blocks direct PostgREST access if a Supabase key ever leaks.
 ALTER TABLE chat_attachments ENABLE ROW LEVEL SECURITY;
+-- Postgres has no CREATE POLICY IF NOT EXISTS, so the drop is what makes this
+-- statement safe to run twice.
+DROP POLICY IF EXISTS "deny_all" ON chat_attachments;
 CREATE POLICY "deny_all" ON chat_attachments FOR ALL USING (false);

@@ -42,7 +42,7 @@
 | audit_events | id, occurredAt, requestId, actorId, action, targetType, targetId, workspaceId, outcome, metadata | append-only; metadata không chứa secret/nội dung tài liệu |
 | direct_conversations | id, kind, title, createdBy, participantLow, participantHigh, createdAt, lastMessageAt | kind DIRECT/GROUP; CHECK ràng buộc hình dạng từng loại (DIRECT có cặp đã sắp thứ tự và không title, GROUP có title và không cặp); unique(participantLow,participantHigh) vẫn chặn trùng thread 1-1, và hai NULL không trùng nhau nên nhóm không bị ràng buộc |
 | conversation_participants | conversationId, userId, role, joinedAt, lastReadAt | PK(conversationId,userId); role OWNER/MEMBER; có cho **cả hai** loại hội thoại; lastReadAt là mốc nước đã đọc, thay cho cờ trên từng tin nhắn (ADR-023) |
-| direct_messages | id, conversationId, senderId, body, createdAt | body nullable cho tin nhắn chỉ có tệp; CHECK body IS NULL OR length(trim(body)) > 0; không còn readAt — trạng thái đọc nằm ở mốc nước của từng người (V30) |
+| direct_messages | id, conversationId, senderId, body, createdAt | body nullable cho tin nhắn chỉ có tệp; CHECK body IS NULL OR length(trim(body)) > 0; không còn readAt — trạng thái đọc nằm ở mốc nước của từng người (V31) |
 | chat_attachments | id, messageId, kind, storageKey, originalName, mediaType, byteSize, createdAt | kind IMAGE/FILE; không có documentId — tệp trong chat không vào kho tài liệu và AI không đọc (ADR-022); byteSize > 0 |
 | password_reset_otps | email, otpCode, expiresAt, createdAt | PK(email); OTP 6 chữ số, hết hạn 5 phút; xóa sau khi sử dụng thành công |
 
