@@ -154,7 +154,7 @@ Mã chuẩn: VALIDATION_ERROR, UNAUTHENTICATED, FORBIDDEN, NOT_FOUND, CONFLICT, 
 - Frontend dùng type sinh từ OpenAPI; không duy trì DTO trùng lặp bằng tay.
 - Provider/network ngoài hệ thống luôn mock trong test.
 
-## 12. Work Chat — nhắn tin 1-1
+## 12. Work Chat — nhắn tin 1-1 và nhóm
 
 | Method | Route | Quyền | Ghi chú |
 |---|---|---|---|
@@ -166,7 +166,13 @@ Mã chuẩn: VALIDATION_ERROR, UNAUTHENTICATED, FORBIDDEN, NOT_FOUND, CONFLICT, 
 | POST | /work-chat/conversations/{id}/messages | Participant | `application/json`: chỉ văn bản |
 | POST | /work-chat/conversations/{id}/messages | Participant | `multipart/form-data`: part `body` tùy chọn, part `files` lặp lại |
 | GET | /work-chat/conversations/{cid}/messages/{mid}/attachments/{aid}/content | Participant | Bytes của tệp |
-| POST | /work-chat/conversations/{id}/read | Participant | Đánh dấu đã đọc, idempotent |
+| POST | /work-chat/conversations/{id}/read | Participant | Dời mốc nước đã đọc, idempotent |
+| GET | /work-chat/conversations/{id}/participants | Participant | Thành viên, theo thứ tự tham gia |
+| POST | /work-chat/groups | Đăng nhập | `{title, memberIds[]}`; người tạo là OWNER |
+| PATCH | /work-chat/groups/{id} | OWNER | `{title}` |
+| POST | /work-chat/groups/{id}/members | OWNER | `{userId}`; phải là contact của OWNER |
+| DELETE | /work-chat/groups/{id}/members/{userId} | OWNER | Không tự xóa mình |
+| POST | /work-chat/groups/{id}/leave | Participant | OWNER rời thì quyền chuyển cho người vào sớm nhất |
 
 Tin nhắn cần có nội dung **hoặc** tệp; không có cả hai trả `VALIDATION_ERROR`. Nội dung tối đa 4000 ký tự, kiểm tra ở service nên áp dụng cho cả hai đường JSON và multipart. Giới hạn tệp: 5 tệp và tổng 20 MiB cho **mỗi tin nhắn**; allowlist PNG, JPEG, WebP, GIF, PDF, DOCX, TXT; vi phạm trả `FILE_REJECTED`.
 
@@ -174,4 +180,10 @@ Tệp không vào kho tài liệu Workspace và trợ lý AI không đọc chún
 
 Hội thoại không tồn tại và caller không phải participant trả **cùng** một `NOT_FOUND`, để một người lạ giữ UUID không suy ra được hội thoại đó có thật.
 
-Đẩy tin nhắn trực tiếp qua STOMP tại `/ws/work-chat`, destination `/user/queue/messages`; token đi trên CONNECT frame.
+Nhóm: tên tối đa 120 ký tự, tối đa 50 người kể cả người tạo, cần ít nhất một thành viên khác. Mọi người được thêm phải là người caller đã nhắn tin 1-1 được (cùng nhóm), nếu không trả `FORBIDDEN` — nếu không nhóm sẽ thành đường lách luật đó. Thành viên mới đọc được toàn bộ lịch sử (ADR-023).
+
+Gửi và đọc tin nhắn, cùng tệp đính kèm, dùng **chung** các route `/conversations/{id}/...` cho cả hai loại hội thoại.
+
+`ConversationSummary` trả `kind`, `title` (tên nhóm, hoặc tên người còn lại), `otherUserId` (null với nhóm), `participants[]`, `lastMessage`, `lastMessageAt` và `unreadCount`. Tin nhắn **không** mang trạng thái đã đọc: đó là mốc nước của từng người, và `unreadCount` là hình thức duy nhất UI nhận được.
+
+Đẩy tin nhắn trực tiếp qua STOMP tại `/ws/work-chat`, destination `/user/queue/messages`; token đi trên CONNECT frame. Tin nhắn nhóm được fan-out tới từng destination của từng người chứ không qua topic chung (ADR-023). `/user/queue/conversations` báo rằng danh sách hội thoại đã đổi khi không có tin nhắn nào — được thêm vào nhóm, bị xóa, hoặc nhóm đổi tên.

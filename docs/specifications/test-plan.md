@@ -64,6 +64,7 @@ UI component ưu tiên interaction unit test và E2E happy path; không đặt m
 - chat: answer, citation focus, clarify/refuse, idempotent retry.
 - history: pagination/order/reload.
 - work-chat: luật từ chối tệp phía client, gửi tệp không kèm chữ, giữ nháp khi gửi lỗi, chỉ hiện lý do do API trả về, ảnh inline và chip tải về, thu hồi blob URL khi unmount.
+- work-chat nhóm: hàng nhóm đặt tên theo nhóm chứ không theo người, bong bóng nhóm nêu tên người gửi còn 1-1 thì không, trần 50 người tự giải thích thay vì khóa im lặng, chủ nhóm thấy nút thêm/xóa còn thành viên thường thì không, lý do bị từ chối vẫn giữ panel mở.
 - admin/evaluation: role guard, filters, run state.
 - accessibility: axe scan, keyboard path, focus restoration, live region.
 - security: raw HTML/script/link protocol không render.
@@ -79,6 +80,7 @@ MSW mock toàn bộ Core API trong unit/component test. Playwright chạy với 
 - ask: authorize → AI call → reauthorize → atomic persistence.
 - conversation/citation: ownership, cursor, redaction.
 - work-chat: participation trên mọi đọc/ghi; tin nhắn chỉ có tệp; không có cả nội dung lẫn tệp bị từ chối; tệp bị từ chối thì không ghi hàng tin nhắn nào; ba mắt kiểm quyền khi đọc tệp (participant, tin nhắn thuộc hội thoại, tệp thuộc tin nhắn); storageKey không ra khỏi server.
+- work-chat nhóm: thành viên ngoài tầm `canMessage` bị từ chối (chống lách luật); chỉ OWNER thêm/xóa/đổi tên; OWNER không tự xóa mình; OWNER rời thì quyền chuyển cho người vào sớm nhất; người cuối rời không vỡ; không rời được hội thoại 1-1; trần 50 người; hội thoại 1-1 cũng sinh hàng participant; sự kiện gửi tin nêu đúng tập người nhận trừ người gửi.
 - admin/evaluation: RBAC và config freeze.
 - error/logging: typed error → RFC7807; redaction.
 - architecture: ArchUnit kiểm tra route → service → repository và feature boundaries.
@@ -113,6 +115,7 @@ MSW mock toàn bộ Core API trong unit/component test. Playwright chạy với 
 13. Master Long-Running Conversation Lifecycle & Edge Cases (Suite 06): kiểm thử toàn bộ 4 lượt hội thoại (cold start, đại từ mơ hồ, kích hoạt nén context khi token vượt budget 80%, working memory summary, tra cứu citation chip & citation drawer, render công thức toán LaTeX & code block Java syntax highlight, copy câu trả lời, không mất trạng thái 8 tin nhắn trong DOM).
 
 14. Gửi tệp trong Work Chat (Suite 07): gửi ảnh kèm chú thích trong **một** request multipart, gửi tin nhắn chỉ có tệp, từ chối định dạng ngoài allowlist mà không upload gì, tệp hiện thành chip tải về kèm dung lượng, bỏ tệp đã chọn trước khi gửi.
+15. Chat nhóm (Suite 08): tạo nhóm từ thanh bên rồi mở ra, bong bóng nhóm nêu tên người gửi, chủ nhóm mở được danh sách thành viên và xóa người, thành viên thường không thấy nút của chủ nhóm, rời nhóm thì đóng luồng.
 
 ## 8. Research evaluation
 

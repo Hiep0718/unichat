@@ -19,6 +19,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+- Group conversations in Work Chat: a group of up to fifty people, named, with an owner who adds and removes members and hands the group on when they leave. Everyone added must be someone you could already message one-to-one, so a group cannot become a way around that rule. Read state became a per-person watermark, so a
+  conversation reports an unread count rather than a flag on each message (ADR-023).
 - Files in Work Chat: a message may carry up to five images or documents (PNG, JPEG, WebP, GIF, PDF, DOCX, TXT) totalling 20 MiB, sent together with its text in one request. Images render inline in the bubble; everything else is a download. Chat files stay private to the conversation and never enter a workspace's document library (ADR-022).
 - MIT License naming Nguyễn Thanh Hiệp and Hoàng Phi Hùng as copyright holders.
 - Contribution workflow for the two-person cross-review model.

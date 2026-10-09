@@ -941,3 +941,78 @@
 - Not verified by eye: migration V29 has not been run against any database, and
   Playwright has no browsers downloaded in this environment, so Suite 07 has never
   executed.
+
+## 2026-10-09 - Group Conversations
+
+- Decision: `direct_conversations` was widened in place — a `kind` column, a title, and a
+  `conversation_participants` table — rather than renamed to something honest.
+  Rationale: The migration stays additive plus one backfill. A rename buys a better
+  name at the cost of every branch currently checked out against the shared
+  development database, two weeks from a thesis deadline. The lie is paid for in
+  JavaDoc instead: the class says outright that "direct" is historical and the table
+  now holds both kinds.
+
+- Decision: Participant rows exist for one-to-one conversations too, backfilled by the
+  migration, not only for groups.
+  Rationale: Otherwise participation, listing and read state each have two
+  implementations and a branch at every call site. With the rows present for both,
+  `ConversationAccess` answers one question one way, and the one-to-one case is simply
+  a conversation that happens to have two participants.
+
+- Decision: Read state became a watermark on the participant, and
+  `direct_messages.read_at` was dropped after being backfilled into it.
+  Rationale: With several people in a conversation, "read" is a fact about each person,
+  not about the message; a flag per person per message is a table that grows as the
+  product of the two. Keeping the old column as well would have left two sources of
+  truth for one fact, and the one nothing writes is the one something eventually reads.
+  The cost is real and accepted: `MessageResponse` no longer carries `readAt`, so
+  per-message "seen" ticks are not available. Nothing rendered them, and an unread
+  count is what the UI actually shows.
+
+- Decision: Everyone added to a group must already be someone the adder could message
+  one-to-one.
+  Rationale: Without it a group is the way around the rule that strangers cannot reach
+  you — add them and start typing. This is the single most important rule in the
+  feature, and it has its own test.
+
+- Decision: An owner who leaves hands the group to whoever joined earliest.
+  Rationale: The alternative is a group with members and nobody able to administer it,
+  which no amount of UI can recover from. The last person out leaves the messages
+  behind: they are still referenced, and the conversation just stops being listed.
+
+- Decision: Realtime delivery fans out to one `/user/queue/...` destination per
+  recipient instead of publishing to `/topic/conversation/{id}`.
+  Rationale: This is a security decision, not a performance one.
+  `StompAuthChannelInterceptor` authenticates CONNECT and does **not** check SUBSCRIBE,
+  so a topic named by conversation id could be subscribed to by anyone logged in. Spring
+  scopes a user destination to the connected principal, which leaves no such opening.
+  The flagged trap from the attachment work was indeed waiting here.
+
+- Decision: `/user/queue/conversations` was added so a client refetches its list when
+  nothing was sent.
+  Rationale: Being added to a group produces no message, so without it the group would
+  not appear until the page was reloaded. It carries only the conversation id and the
+  client refetches, rather than being handed a patch — a second description of the same
+  state is a second thing to keep correct.
+
+- Decision: Someone added to a group sees the whole history.
+  Rationale: A group's point is one shared thread; a member who can read only the second
+  half answers questions they cannot see. Recorded as a deliberate privacy choice rather
+  than an oversight — the stricter rule is one clause, `AND m.createdAt >= :joinedAt`,
+  if it is ever wanted.
+
+- Decision: `ConversationSummaryAssembler` was split out of `DirectMessageService`.
+  Rationale: Four things from four places make up a row, and gathering them is not the
+  same job as sending and reading messages. The service was also about to cross its
+  size limit, which is the symptom rather than the reason.
+
+- Caught by the type checker and the linter, not by reasoning: the group picker disabled
+  the remaining checkboxes once full, so the ceiling was enforced by a control that did
+  nothing when clicked — and the error explaining it was set from inside a `setPicked`
+  updater, where React does not promise to run it once. The test for the ceiling was what
+  exposed both. It now says why instead of going quiet.
+
+- Not verified by eye: migrations V29 and V30 have not been run against any database, so
+  the JPA mapping has never been validated at startup and the backfill has never
+  executed. V30 drops a column, which does not roll back. Playwright has no browsers
+  downloaded in this environment, so Suites 07 and 08 have never run.

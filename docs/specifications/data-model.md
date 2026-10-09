@@ -40,8 +40,9 @@
 | idempotency_records | actorId, routeKey, idempotencyKey, requestHash, responseStatus, responseBody, expiresAt | PK(actorId,routeKey,idempotencyKey); body khác trả 409 |
 | rate_limit_buckets | subjectKey, actionKey, windowStart, requestCount, expiresAt | PK(subjectKey,actionKey,windowStart) |
 | audit_events | id, occurredAt, requestId, actorId, action, targetType, targetId, workspaceId, outcome, metadata | append-only; metadata không chứa secret/nội dung tài liệu |
-| direct_conversations | id, participantLow, participantHigh, createdAt, lastMessageAt | CHECK participantLow < participantHigh và unique(participantLow,participantHigh): một cặp người có đúng một hội thoại, bất kể ai mở trước |
-| direct_messages | id, conversationId, senderId, body, createdAt, readAt | body nullable cho tin nhắn chỉ có tệp; CHECK body IS NULL OR length(trim(body)) > 0 |
+| direct_conversations | id, kind, title, createdBy, participantLow, participantHigh, createdAt, lastMessageAt | kind DIRECT/GROUP; CHECK ràng buộc hình dạng từng loại (DIRECT có cặp đã sắp thứ tự và không title, GROUP có title và không cặp); unique(participantLow,participantHigh) vẫn chặn trùng thread 1-1, và hai NULL không trùng nhau nên nhóm không bị ràng buộc |
+| conversation_participants | conversationId, userId, role, joinedAt, lastReadAt | PK(conversationId,userId); role OWNER/MEMBER; có cho **cả hai** loại hội thoại; lastReadAt là mốc nước đã đọc, thay cho cờ trên từng tin nhắn (ADR-023) |
+| direct_messages | id, conversationId, senderId, body, createdAt | body nullable cho tin nhắn chỉ có tệp; CHECK body IS NULL OR length(trim(body)) > 0; không còn readAt — trạng thái đọc nằm ở mốc nước của từng người (V30) |
 | chat_attachments | id, messageId, kind, storageKey, originalName, mediaType, byteSize, createdAt | kind IMAGE/FILE; không có documentId — tệp trong chat không vào kho tài liệu và AI không đọc (ADR-022); byteSize > 0 |
 | password_reset_otps | email, otpCode, expiresAt, createdAt | PK(email); OTP 6 chữ số, hết hạn 5 phút; xóa sau khi sử dụng thành công |
 
@@ -53,6 +54,7 @@
 - conversations 1–N messages; assistant message 1–1 retrieval_trace và 1–N citation_history.
 - retrieval_traces 1–N retrieval_trace_items.
 - direct_conversations 1–N direct_messages; direct_messages 1–N chat_attachments, xóa theo cascade cùng tin nhắn.
+- direct_conversations 1–N conversation_participants; người rời nhóm mất hàng participant nên hội thoại biến khỏi danh sách của họ, còn tin nhắn giữ nguyên.
 - evaluation_runs N–N evaluation_cases qua evaluation_results.
 
 ## 4. Index bắt buộc
@@ -69,7 +71,8 @@
 | evaluation_results(runId,caseId) unique | Bảo toàn một kết quả/case/run |
 | audit_events(workspaceId,occurredAt desc) | Audit Workspace |
 | direct_messages(conversationId,createdAt desc) | Phân trang hội thoại |
-| direct_messages(conversationId,senderId) where readAt is null | Đếm tin chưa đọc |
+| direct_messages(conversationId,senderId,createdAt) | Đếm tin chưa đọc theo mốc nước |
+| conversation_participants(userId) | Liệt kê hội thoại của một người |
 | chat_attachments(messageId,createdAt) | Nạp tệp cho cả một trang tin nhắn |
 
 ## 5. Chroma collection
