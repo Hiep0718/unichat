@@ -1048,3 +1048,33 @@
   `BEGIN READ ONLY`, never to the session with `SET`.
   Nothing was migrated and nothing was lost — `chat_attachments` does not exist, the
   history still tops out at 29, and `direct_messages` is unchanged.
+
+- Decision: `*:future` was added to `spring.flyway.ignore-migration-patterns` so this tree
+  starts while the shared development database runs ahead of it.
+  Rationale: on 2026-10-10 somebody applied versions 32 ("add direct messages read at")
+  and 33 ("schema catchup v30 v31") to the shared database from a working copy committed
+  nowhere — neither version exists in any git ref, local or on origin. Because both sit
+  above the highest version this tree resolves (31), Flyway classifies them as *future*,
+  not *missing*, and the existing `*:missing,*:ignored` patterns do not cover that class,
+  so `validate` refused to start the application. The pattern is the right scope rather
+  than a blanket relaxation: *future* means a version number this tree makes no claim
+  about, while a collision on a version it does claim still fails as a checksum mismatch —
+  which is exactly what caught version 29. `flyway repair` was again the wrong tool: it
+  would delete two rows describing migrations that really did run.
+  Checked before changing anything, read-only: the schema this tree maps is intact.
+  `direct_messages.read_at` is back but nullable with no default, so it is inert for code
+  that no longer maps it; `conversation_participants`, `direct_conversations` and
+  `chat_attachments` still have the shape V30/V31 left; `public.refresh_tokens` matches its
+  entity exactly. Six tables no migration here creates now exist on the database
+  (`chat_operations`, `chat_source_dependencies`, `provider_attempts`, `refresh_families`,
+  `security_rate_windows`, `service_nonces`), which is what version 33 most likely added.
+
+- Still open, not ours to fix: version 32 reinstates `direct_messages.read_at`, the column
+  V31 dropped when read state moved to a per-participant watermark (ADR-023). A branch out
+  there still carries the old per-message design. Whoever merges has to pick one; the
+  column being nullable is what keeps the two from breaking each other until then.
+
+- Second time now that an uncommitted migration on the shared database has stopped work
+  (version 29, then 32 and 33). The durable fix is a database per developer, or a rule that
+  nothing is applied to the shared one before it is committed. Worth raising with the team
+  rather than absorbing a third time.

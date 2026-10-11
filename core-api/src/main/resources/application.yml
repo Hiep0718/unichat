@@ -20,7 +20,12 @@ spring:
     # are not in this tree.
     validate-on-migrate: true
     out-of-order: true
-    ignore-migration-patterns: "*:missing,*:ignored"
+    # "future" covers versions applied above everything this tree resolves —
+    # a teammate working ahead on the shared database. This tree makes no claim
+    # about those numbers, so there is nothing to disagree about. A collision on
+    # a version this tree *does* claim still fails as a checksum mismatch, which
+    # is what caught version 29.
+    ignore-migration-patterns: "*:missing,*:ignored,*:future"
   jpa:
     hibernate:
       ddl-auto: validate
