@@ -110,18 +110,25 @@ public interface DiscussionRepository extends JpaRepository<Discussion, UUID> {
     /**
      * Questions still waiting for a resolution — the actionable set for members
      * who can help. Ordered oldest-unanswered first so nothing is forgotten.
+     *
+     * <p>Restricted to questions. Without that the view also returned
+     * discussions and announcements, neither of which has a resolution to
+     * wait for, and the sidebar badge counted them as questions needing help.
      */
     @Query(value = "SELECT * FROM discussions WHERE workspace_id IN :wsIds "
-            + "AND status <> 'DELETED' AND accepted_reply_id IS NULL "
+            + "AND status <> 'DELETED' AND label = 'QUESTION' "
+            + "AND accepted_reply_id IS NULL "
             + "ORDER BY reply_count ASC, created_at DESC",
            countQuery = "SELECT count(*) FROM discussions WHERE workspace_id IN :wsIds "
-            + "AND status <> 'DELETED' AND accepted_reply_id IS NULL",
+            + "AND status <> 'DELETED' AND label = 'QUESTION' "
+            + "AND accepted_reply_id IS NULL",
            nativeQuery = true)
     Page<Discussion> findUnanswered(@Param("wsIds") List<UUID> wsIds, Pageable p);
 
     /** Counts unanswered questions, for the feed tab badge. */
     @Query(value = "SELECT count(*) FROM discussions WHERE workspace_id IN :wsIds "
-            + "AND status <> 'DELETED' AND accepted_reply_id IS NULL",
+            + "AND status <> 'DELETED' AND label = 'QUESTION' "
+            + "AND accepted_reply_id IS NULL",
            nativeQuery = true)
     long countUnanswered(@Param("wsIds") List<UUID> wsIds);
 
