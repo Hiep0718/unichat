@@ -1,0 +1,72 @@
+.foldable {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.foldable__body {
+  width: 100%;
+}
+
+/* Tall enough to judge whether the answer is the one being looked for, short
+   enough that the next reply stays on screen. */
+.foldable__body--folded {
+  position: relative;
+  max-height: 200px;
+  overflow: hidden;
+}
+
+/* Fades the cut edge rather than slicing a line of text in half, which reads
+   as a rendering fault. */
+.foldable__body--folded::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 64px;
+  background: linear-gradient(
+    to bottom,
+    rgb(255 255 255 / 0%),
+    var(--color-surface-container-lowest, #fff) 92%
+  );
+  pointer-events: none;
+}
+
+.foldable__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  padding: 4px 10px 4px 6px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-container-high);
+  color: var(--color-primary);
+  font: var(--font-label-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.foldable__toggle:hover {
+  background: var(--color-surface-container-highest);
+}
+
+/* Inside the assistant's tinted panel the fade has to end on that panel's own
+   colour. The token is --color-ai-bubble, the one .reply-node--ai uses;
+   --color-tertiary-container looks related but resolves to a dark brown and
+   painted a muddy band across the cut. */
+.reply-node--ai .foldable__body--folded::after {
+  background: linear-gradient(
+    to bottom,
+    rgb(236 254 255 / 0%),
+    var(--color-ai-bubble, #ecfeff) 92%
+  );
+}
+
+.reply-node--ai .foldable__toggle {
+  background: rgb(255 255 255 / 70%);
+}
+
+.reply-node--ai .foldable__toggle:hover {
+  background: rgb(255 255 255 / 92%);
+}

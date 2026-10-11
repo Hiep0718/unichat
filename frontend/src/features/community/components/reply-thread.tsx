@@ -6,6 +6,7 @@ import { useState, useMemo } from 'react';
 
 import { Icon } from '../../../components/icon';
 import { formatRelativeTime } from '../../../lib/format-time';
+import { CollapsibleBody } from './collapsible-body';
 import { MentionText } from './mention-text';
 import { ReactionBar } from './reaction-bar';
 import { ReplyCitations } from './reply-citations';
@@ -66,8 +67,13 @@ export function ReplyThread({
             )}
           </div>
           <div className="reply-node__body">
-            <MentionText>{reply.body}</MentionText>
+            <CollapsibleBody text={reply.body}>
+              <MentionText>{reply.body}</MentionText>
+            </CollapsibleBody>
           </div>
+          {/* Outside the fold on purpose: the citations are the evidence for
+              the answer, and evidence behind a click is evidence nobody
+              checks. */}
           <ReplyCitations citations={reply.citations ?? []} />
           <div className="reply-node__actions">
             <ReactionBar
