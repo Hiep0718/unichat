@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TASKLIST HOAN THIEN UNICHAT 2026 10 07</title>
+  <style>
+    
+:root {
+  --bg-color: #0d1117;
+  --text-color: #c9d1d9;
+  --accent-color: #58a6ff;
+  --border-color: #30363d;
+  --code-bg: #161b22;
+  --blockquote-bg: #151b23;
+  --alert-note-bg: rgba(56, 139, 253, 0.15);
+  --alert-note-border: #388bfd;
+  --alert-tip-bg: rgba(63, 185, 80, 0.15);
+  --alert-tip-border: #3fb950;
+  --alert-warning-bg: rgba(210, 153, 34, 0.15);
+  --alert-warning-border: #d29922;
+  --alert-caution-bg: rgba(248, 81, 73, 0.15);
+  --alert-caution-border: #f85149;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text-color);
+  background-color: var(--bg-color);
+  margin: 0;
+  padding: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+.container {
+  width: 100%;
+  max-width: 900px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #f0f6fc;
+  font-weight: 600;
+  line-height: 1.25;
+  margin-top: 24px;
+  margin-bottom: 16px;
+}
+
+h1 { font-size: 2em; padding-bottom: 0.3em; border-bottom: 1px solid var(--border-color); }
+h2 { font-size: 1.5em; padding-bottom: 0.3em; border-bottom: 1px solid var(--border-color); }
+h3 { font-size: 1.25em; }
+
+p, ul, ol {
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+a {
+  color: var(--accent-color);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+  font-size: 85%;
+  background-color: rgba(110, 118, 129, 0.4);
+  padding: 0.2em 0.4em;
+  border-radius: 6px;
+}
+
+pre {
+  background-color: var(--code-bg);
+  padding: 16px;
+  border-radius: 6px;
+  overflow: auto;
+  border: 1px solid var(--border-color);
+}
+
+pre code {
+  background-color: transparent;
+  padding: 0;
+  font-size: 100%;
+  color: #e6edf3;
+  border-radius: 0;
+}
+
+blockquote {
+  margin: 0 0 16px 0;
+  padding: 0 1em;
+  color: #8b949e;
+  border-left: 0.25em solid #30363d;
+  background-color: var(--blockquote-bg);
+  padding: 8px 16px;
+  border-radius: 0 6px 6px 0;
+}
+
+table {
+  border-spacing: 0;
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+table th, table td {
+  padding: 6px 13px;
+  border: 1px solid var(--border-color);
+}
+
+table tr {
+  background-color: var(--bg-color);
+  border-top: 1px solid var(--border-color);
+}
+
+table tr:nth-child(2n) {
+  background-color: #161b22;
+}
+
+table th {
+  font-weight: 600;
+  background-color: #161b22;
+}
+
+hr {
+  height: 0.25em;
+  padding: 0;
+  margin: 24px 0;
+  background-color: var(--border-color);
+  border: 0;
+}
+
+/* Alert styles */
+.alert {
+  padding: 15px;
+  margin-bottom: 20px;
+  border: 1px solid transparent;
+  border-left-width: 5px;
+  border-radius: 4px;
+}
+
+.alert-note {
+  background-color: var(--alert-note-bg);
+  border-color: var(--alert-note-border);
+}
+
+.alert-tip {
+  background-color: var(--alert-tip-bg);
+  border-color: var(--alert-tip-border);
+}
+
+.alert-warning {
+  background-color: var(--alert-warning-bg);
+  border-color: var(--alert-warning-border);
+}
+
+.alert-caution {
+  background-color: var(--alert-caution-bg);
+  border-color: var(--alert-caution-border);
+}
+
+.alert-title {
+  font-weight: bold;
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  color: #fff;
+}
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Tasklist hoàn thiện UniChat — rà soát ngày 07/10/2026</h1>
+<h2>1. Kết luận và phạm vi</h2>
+<p>UniChat đã có triển khai đáng kể trên web, Core API, AI Service và mobile. Việc tiếp theo là hoàn thiện tính đúng, phân quyền, độ bền dữ liệu và bằng chứng nghiên cứu của các luồng hiện có. Có UI hoặc có unit test chưa đồng nghĩa chức năng đã hoàn thành end-to-end.</p>
+<ul>
+<li>Phạm vi rà soát: đặc tả P0, source của bốn ứng dụng, migrations, CI, tests và checkpoint hiện hành.</li>
+<li>Snapshot: nhánh <code>feature/conversation-memory-compaction</code>, HEAD <code>aa67bdf</code>; working tree có nhiều thay đổi và file chưa tracked. Kết quả bao gồm cả các thay đổi chưa commit tại thời điểm đọc.</li>
+<li>Đây là backlog đề xuất để lựa chọn triển khai; không phải phê duyệt thay đổi kiến trúc, cài package, sửa database hay deployment.</li>
+<li>Không quy đổi số màn hình thành phần trăm hoàn thành. Không khẳng định trạng thái database/cloud thực tế từ source.</li>
+<li>P0 trong báo cáo: chặn độ đúng, bảo mật, luồng RAG hoặc bằng chứng khóa luận. P1: hoàn thiện sản phẩm đang có. P2: mở rộng tùy chọn.</li>
+<li>Size S/M/L là độ phức tạp tương đối, không phải cam kết ngày công; task L cần chia tiếp khi thiết kế.</li>
+<li>Owner ghi theo lớp trách nhiệm. Ownership đã ghi trong kế hoạch cũ: Hiệp phụ trách Core/DB/infra; Hùng phụ trách frontend/AI. Mobile và người review từng task cần chốt khi nhận việc.</li>
+</ul>
+<h2>2. Chức năng đã có và phần cần hoàn thiện</h2>
+<table>
+<thead>
+<tr>
+<th>Nhóm</th>
+<th>Đã có trong source</th>
+<th>Phần còn thiếu hoặc cần chứng minh</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tài khoản</td>
+<td>Đăng ký, đăng nhập, refresh rotation, logout, OTP, đổi mật khẩu, hồ sơ/avatar</td>
+<td>Transaction khi auth thất bại; giới hạn OTP; khóa tài khoản có hiệu lực với access token/socket; quyền admin thuần RBAC</td>
+</tr>
+<tr>
+<td>Workspace</td>
+<td>CRUD, PRIVATE/SHARED/PUBLIC, explore/join, quản lý member, ảnh bìa, thống kê</td>
+<td>Policy thống nhất; chuyển owner/rời nhóm; xóa đầy đủ; optimistic concurrency; đồng bộ đặc tả contribution</td>
+</tr>
+<tr>
+<td>Tài liệu</td>
+<td>Upload batch, quota, storage local/Supabase, duyệt/từ chối contribution, preview/PDF split</td>
+<td>Kiểm signature; job thật; publish đáng tin cậy; retry; version; vector cleanup; sync theo allowlist</td>
+</tr>
+<tr>
+<td>Adaptive RAG</td>
+<td>Detector YAML, strategy, Evidence Gate, E5/Chroma, provider, citation, trace</td>
+<td>Grounding mặc định; source groups đúng spec; claim/hash validation; embedding revision; model/config freeze</td>
+</tr>
+<tr>
+<td>Chat AI</td>
+<td>Streaming SSE, Markdown/LaTeX/Mermaid, citations, history, summary compaction</td>
+<td>Ràng buộc conversation–workspace; reauthorization; atomic persistence; idempotency stream; cancel/reconnect; streaming validation</td>
+</tr>
+<tr>
+<td>Community</td>
+<td>Feed, bài viết, replies, reactions, bookmarks, attachments, mention, @AI, notification, search</td>
+<td>ACL sau AI; queue bền; pagination replies; mark-all thật; negative tests và validation attachment/thread</td>
+</tr>
+<tr>
+<td>Work Chat</td>
+<td>Direct messages, contacts, STOMP WebSocket, presence</td>
+<td>Subscription authorization; token expiry/lock; reconnect/resync; phạm vi single-instance; E2E hai người dùng</td>
+</tr>
+<tr>
+<td>Knowledge Studio</td>
+<td>Parser sinh quiz/flashcard/mindmap/slides/report, podcast dialog, lưu note</td>
+<td>Note ACL đang thiếu; tránh template sai nội dung; quiz distractor đúng; xác định artifact/export/audio nào thực sự hỗ trợ</td>
+</tr>
+<tr>
+<td>Admin</td>
+<td>User, workspace, document, AI Studio, biểu đồ telemetry</td>
+<td>RBAC; retry thật; audit thật; lọc document; system metrics UI/backend; dữ liệu telemetry qua restart</td>
+</tr>
+<tr>
+<td>Evaluation</td>
+<td>Runner/storage/metrics/report nội bộ và 120 câu hỏi trong automation</td>
+<td>Runner nội bộ đang mô phỏng; API workspace và UI chưa đầy đủ; dataset lệch spec; paired benchmark tái lập</td>
+</tr>
+<tr>
+<td>Mobile</td>
+<td>Auth, workspace, upload/list, chat stream/history/citation, đổi mật khẩu</td>
+<td>Feed sample và vote local; post detail/community actions; member/settings; citation preview; lỗi/empty/pagination</td>
+</tr>
+<tr>
+<td>Chất lượng/vận hành</td>
+<td>Vitest/Jest/JUnit/pytest/Playwright, CI, Compose</td>
+<td>Các gate chưa xanh; thiếu DB integration; E2E tách rời CI; dependency debt; migration integrity; backup/restore</td>
+</tr>
+</tbody>
+</table>
+<h2>3. Bằng chứng kiểm tra trong phiên</h2>
+<table>
+<thead>
+<tr>
+<th>Kiểm tra</th>
+<th>Kết quả</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>npm run typecheck --workspace frontend</code></td>
+<td>PASS</td>
+<td>TypeScript hiện compile được</td>
+</tr>
+<tr>
+<td><code>npm run build --workspace frontend</code></td>
+<td>PASS; cảnh báo chunk khoảng 663 kB</td>
+<td>Build được nhưng cần đo bundle/chat/document trước tối ưu</td>
+</tr>
+<tr>
+<td><code>npm run lint --workspace frontend</code></td>
+<td>FAIL: 34 errors, 2 warnings</td>
+<td>Chủ yếu hooks, console và quy tắc code; chưa đạt zero-warning gate</td>
+</tr>
+<tr>
+<td><code>npm test --workspace frontend -- --reporter=dot</code></td>
+<td>105 PASS, 1 FAIL; 18 test files</td>
+<td>Landing test chưa tìm thấy heading trong thời gian chờ; có cảnh báo cập nhật FeedCard khi InlineComments render</td>
+</tr>
+<tr>
+<td><code>npm run typecheck --workspace mobile</code></td>
+<td>PASS</td>
+<td>Mobile compile được ở mức TypeScript</td>
+</tr>
+<tr>
+<td><code>npm run lint --workspace mobile</code></td>
+<td>Exit 0; 5 warnings</td>
+<td>Các import unused; script hiện chưa ép zero warnings</td>
+</tr>
+<tr>
+<td><code>npm test --workspace mobile -- --runInBand --silent</code></td>
+<td>65/65 PASS, 21 suites</td>
+<td>Không chứng minh feed gọi API thật hoặc native-device E2E</td>
+</tr>
+<tr>
+<td><code>core-api/mvnw.cmd -o -B verify</code></td>
+<td>BLOCKED</td>
+<td>Maven cache thiếu Spring Boot parent 4.1.0; chưa chạy đến compile/test; không kết luận code Core fail</td>
+</tr>
+<tr>
+<td>Python venv chạy Ruff</td>
+<td>BLOCKED: Access denied</td>
+<td>Chưa xác nhận Ruff/mypy/pytest/coverage trong phiên; không cài hoặc sửa runtime</td>
+</tr>
+<tr>
+<td>Cloud/DB/live benchmark/E2E</td>
+<td>Chưa chạy</td>
+<td>Tránh gọi provider thật, đổi dữ liệu shared và dùng credentials của bộ automation</td>
+</tr>
+<tr>
+<td>Coverage</td>
+<td>Chưa đo lại</td>
+<td>Số test pass không thay thế line/branch coverage ≥80% core logic</td>
+</tr>
+</tbody>
+</table>
+<h2>4. Các phát hiện quan trọng có vị trí source</h2>
+<table>
+<thead>
+<tr>
+<th>Mã bằng chứng</th>
+<th>Phát hiện từ đọc source</th>
+<th>Nguồn</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F01</td>
+<td>Admin route chỉ yêu cầu authenticated; service có ngoại lệ email chứa <code>taolahiep</code>; guard UI còn nhận email/displayName. Không tìm thấy <code>EnableMethodSecurity</code> trong main source</td>
+<td><a href="file:///D:/codex-workspace/unichat/core-api/src/main/java/com/unichat/core/shared/config/SecurityConfiguration.java">SecurityConfiguration</a>, <a href="file:///D:/codex-workspace/unichat/core-api/src/main/java/com/unichat/core/admin/service/AdminUserService.java">AdminUserService</a>, <a href="file:///D:/codex-workspace/unichat/frontend/src/features/auth/route-guard.tsx">route-guard</a></td>
+</tr>
+<tr>
+<td>F02</td>
+<td>AI verifier chấp nhận chuỗi bắt đầu <code>ey</code> mà không verify signature; eval/AI metrics router không gắn dependency xác thực chung</td>
+<td><a href="file:///D:/codex-workspace/unichat/ai-service/app/core/security.py">security.py</a>, <a href="file:///D:/codex-workspace/unichat/ai-service/app/api/v1/<strong>init</strong>.py">API router</a>, <a href="file:///D:/codex-workspace/unichat/core-api/src/main/java/com/unichat/core/shared/config/ServiceTokenIssuer.java">ServiceTokenIssuer</a></td>
+</tr>
+<tr>
+<td>F03</td>
+<td>Studio note list/create/delete kiểm workspace của conversation nhưng không kiểm conversation owner, note owner hoặc membership; <code>userId</code> không được dùng để authorize list/delete</td>
+<td><a href="file:///D:/codex-workspace/unichat/core-api/src/main/java/com/unichat/core/chat/service/StudioNoteService.java">StudioNoteService</a></td>
+</tr>
+<tr>
+<td>F04</td>
+<td>Chat chọn conversation theo user/id nhưng thiếu đối chiếu workspace path; không reauthorize sau AI; stream forward done trước bước persist</td>
+<td><a href="file:///D:/codex-workspace/unichat/core-api/src/main/java/com/unichat/core/chat/service/ChatService.java">ChatService</a>, <a href="file:///D:/codex-workspace/unichat/core-api/src/main/java/com/unichat/core/chat/service/SseChatService.java">SseChatService</a></td>
+</tr>
+<tr>
+<td>F05</td>
+<td>Ingestion publisher log lỗi rồi bỏ qua; result consumer cũng bắt lỗi; admin retry chỉ set PENDING; DLQ tồn tại nhưng ingestion queue chưa có dead-letter arguments</td>
+<td><a href="file:///D:/codex-workspace/unichat/core-api/src/main/java/com/unichat/core/document/messaging/DocumentIngestionProducer.java">Producer</a>, <a href="file:///D:/codex-workspace/unichat/core-api/src/main/java/com/unichat/core/document/messaging/IngestionResultConsumer.java">Result consumer</a>, <a href="file:///D:/codex-workspace/unichat/core-api/src/main/java/com/unichat/core/config/RabbitMqConfig.java">RabbitMqConfig</a>, <a href="file:///D:/codex-workspace/unichat/core-api/src/main/java/com/unichat/core/admin/api/AdminOperationsController.java">Admin operations</a></td>
+</tr>
+<tr>
+<td>F06</td>
+<td>Document delete mark DELETING, redact chat citation và xóa blob nhưng chưa xóa vectors/metadata theo saga; result đến muộn có thể set lại PROCESSED; workspace delete còn TODO</td>
+<td><a href="file:///D:/codex-workspace/unichat/core-api/src/main/java/com/unichat/core/document/service/DocumentService.java">DocumentService</a>, <a href="file:///D:/codex-workspace/unichat/core-api/src/main/java/com/unichat/core/workspace/service/WorkspaceService.java">WorkspaceService</a></td>
+</tr>
+<tr>
+<td>F07</td>
+<td>Chroma connection lỗi có thể fallback sang EphemeralClient; embedding không pin revision; ghi <code>collection.add</code>; retrieval chưa filter ingestion version</td>
+<td><a href="file:///D:/codex-workspace/unichat/ai-service/app/services/vector</em>store.py">vector<em>store</a>, <a href="file:///D:/codex-workspace/unichat/ai-service/app/core/rag/retrieval</em>engine.py">retrieval<em>engine</a></td>
+</tr>
+<tr>
+<td>F08</td>
+<td>External knowledge mặc định true; COMPARISON/SUMMARY/REASONING min groups đang là 1; citation validator nhận list rỗng và chỉ kiểm ID/locator/excerpt cơ bản</td>
+<td><a href="file:///D:/codex-workspace/unichat/ai-service/app/api/v1/retrieval.py">Retrieval API</a>, <a href="file:///D:/codex-workspace/unichat/ai-service/app/core/rag/strategy</em>selector.py">strategy<em>selector</a>, <a href="file:///D:/codex-workspace/unichat/ai-service/app/core/rag/citation</em>validator.py">citation<em>validator</a></td>
+</tr>
+<tr>
+<td>F09</td>
+<td>Citation history sinh <code>chunk-N</code>, lưu score vào vị trí contentHash; tên nguồn có fallback sang tài liệu khác trong 10 tài liệu đầu</td>
+<td><a href="file:///D:/codex-workspace/unichat/core-api/src/main/java/com/unichat/core/chat/service/ChatService.java">ChatService</a>, <a href="file:///D:/codex-workspace/unichat/core-api/src/main/java/com/unichat/core/chat/service/CitationExtractor.java">CitationExtractor</a></td>
+</tr>
+<tr>
+<td>F10</td>
+<td>Sync endpoint Core không kiểm role/workspace; AI reingest scan storage toàn bucket và gán PROCESSED, không lấy danh sách approved từ Core</td>
+<td><a href="file:///D:/codex-workspace/unichat/core-api/src/main/java/com/unichat/core/document/api/InternalEvalController.java">InternalEvalController</a>, <a href="file:///D:/codex-workspace/unichat/ai-service/app/services/reingest.py">reingest</a></td>
+</tr>
+<tr>
+<td>F11</td>
+<td>EvaluationRunner.run<em>single không gọi pipeline: predicted intent lấy expected intent, citation</em>valid=true, token cố định; benchmark suite dùng runner này</td>
+<td><a href="file:///D:/codex-workspace/unichat/ai-service/app/evaluation/runner.py">evaluation runner</a>, <a href="file:///D:/codex-workspace/unichat/ai-service/app/evaluation/benchmark_suite.py">benchmark suite</a></td>
+</tr>
+<tr>
+<td>F12</td>
+<td>Dataset automation có 120 case nhưng split 39 DEVELOPMENT/81 HOLDOUT; FACT/DEFINITION 24, các intent còn lại 18; chưa có field source document/locator/topic group</td>
+<td><a href="file:///D:/codex-workspace/unichat/automation-tests/data/golden-dataset.json">golden dataset</a></td>
+</tr>
+<tr>
+<td>F13</td>
+<td>Evaluation page và system metrics page là placeholder; audit endpoint trả ba event dựng sẵn; document status filter chưa áp dụng vào query</td>
+<td><a href="file:///D:/codex-workspace/unichat/frontend/src/features/evaluation/evaluation-page.tsx">EvaluationPage</a>, <a href="file:///D:/codex-workspace/unichat/frontend/src/features/admin/admin-metric-page.tsx">AdminMetricPage</a>, <a href="file:///D:/codex-workspace/unichat/core-api/src/main/java/com/unichat/core/admin/api/AdminOperationsController.java">AdminOperationsController</a></td>
+</tr>
+<tr>
+<td>F14</td>
+<td>Mobile feed khởi tạo FALLBACK_FEED; lỗi/empty không xóa sample; vote chỉ đổi local state; account có hàng cài đặt không action</td>
+<td><a href="file:///D:/codex-workspace/unichat/mobile/app/%28tabs%29/feed.tsx">mobile feed</a>, <a href="file:///D:/codex-workspace/unichat/mobile/app/%28tabs%29/account.tsx">mobile account</a></td>
+</tr>
+<tr>
+<td>F15</td>
+<td>Flyway strategy sửa checksum V23 trực tiếp bằng SQL; config ignore missing/future migrations</td>
+<td><a href="file:///D:/codex-workspace/unichat/core-api/src/main/java/com/unichat/core/config/FlywayConfig.java">FlywayConfig</a>, <a href="file:///D:/codex-workspace/unichat/core-api/src/main/resources/application.yml">application.yml</a></td>
+</tr>
+<tr>
+<td>F16</td>
+<td>Pure/service files vượt 300 dòng; UI có file 600–866 dòng; root CI không chạy mobile hoặc automation E2E; backend chủ yếu Mockito/standalone MVC</td>
+<td><a href="file:///D:/codex-workspace/unichat/frontend/src/features/chat/components/chat-message-item.tsx">chat-message-item</a>, <a href="file:///D:/codex-workspace/unichat/.github/workflows/ci.yml">CI</a>, <a href="file:///D:/codex-workspace/unichat/core-api/src/test">Core tests</a></td>
+</tr>
+</tbody>
+</table>
+<p>Phát hiện bảo mật ở trên là kết quả phân tích source; chưa thực hiện khai thác trên môi trường đang chạy. SEC-DEBT-001 vẫn được tài liệu repository ghi là open; chưa quét advisory mới trong phiên. Việc source đã dùng Chroma không chứng minh exception đã được đóng.</p>
+<h2>5. Backlog chi tiết — 65 task đề xuất</h2>
+<p>Mỗi hàng là một hạng mục có thể giao việc, trạng thái đề xuất/chưa nghiệm thu. Tất cả task cần test phù hợp, cập nhật hành vi và evidence. Dấu “—” nghĩa không có phụ thuộc kỹ thuật bắt buộc; không bỏ qua cổng approval khi cài package/DB/delivery.</p>
+<h3>A. Nền chất lượng, tài liệu và dữ liệu — owner Core/Frontend/AI</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>P / Size</th>
+<th>Việc cần làm</th>
+<th>Tiêu chí hoàn thành / test</th>
+<th>Phụ thuộc</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>G01</td>
+<td>P0 / M</td>
+<td>Sửa 34 lỗi + 2 cảnh báo frontend và 5 cảnh báo mobile; xử lý setState-in-render của comment; sửa landing test theo lazy loading và nội dung thật</td>
+<td>Lint zero warnings; 106 frontend tests và 65 mobile tests pass; không disable rule/test để che lỗi</td>
+<td>—</td>
+</tr>
+<tr>
+<td>G02</td>
+<td>P0 / M</td>
+<td>Khôi phục đường chạy Maven/Python được hỗ trợ; đồng bộ Java mục tiêu 21 với pom đang 17; chạy compile/lint/test/coverage Core và AI</td>
+<td>Ghi rõ runtime, command, test counts, line/branch coverage; core logic ≥80%; mọi dependency install cần approval</td>
+<td>—</td>
+</tr>
+<tr>
+<td>G03</td>
+<td>P0 / M</td>
+<td>Đồng bộ README/CHANGELOG/checkpoint với source; thống nhất các tài liệu mâu thuẫn cursor/offset, RabbitMQ/resource_jobs, model, collection và contribution</td>
+<td>Một bộ contract hiện hành; checkpoint không còn “chưa có Git/chưa có Chroma”; lưu approval scope cũ, không tự đặt approval mới</td>
+<td>—</td>
+</tr>
+<tr>
+<td>G04</td>
+<td>P0 / M</td>
+<td>Bỏ tự sửa checksum Flyway; xác minh V23 và lịch sử migrations; tách chính sách local/shared/production; review RLS theo DB role thực tế</td>
+<td>Fresh DB + upgrade DB pass; sửa migration đã áp dụng phải báo mismatch; không đổi DB shared tự động; RLS test owner/viewer/cross-workspace</td>
+<td>G02</td>
+</tr>
+<tr>
+<td>G05</td>
+<td>P0 / M</td>
+<td>Xử lý/revalidate SEC-DEBT-001 bằng inventory và compatibility evidence; pin manifest còn caret/tilde/latest theo policy đã chốt</td>
+<td>Audit xác minh được, không Critical/High chưa xử lý; client/server upsert/query/delete pass; exception chỉ đóng khi đủ evidence</td>
+<td>G02</td>
+</tr>
+</tbody>
+</table>
+<h3>B. Bảo mật và tài khoản — owner Core/AI/Frontend</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>P / Size</th>
+<th>Việc cần làm</th>
+<th>Tiêu chí hoàn thành / test</th>
+<th>Phụ thuộc</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S01</td>
+<td>P0 / M</td>
+<td>Admin chỉ dựa systemRole và trạng thái account; bỏ đặc quyền theo email/displayName; enforce route/service; ngăn mất admin cuối cùng</td>
+<td>USER gọi mọi admin API nhận 403; email chứa tên đặc biệt không tăng quyền; ADMIN không tự đọc nội dung PRIVATE; negative integration tests</td>
+<td>G02</td>
+</tr>
+<tr>
+<td>S02</td>
+<td>P0 / L</td>
+<td>Service JWT RS256 thật: exp≤60s, kid, audience/issuer, method/path/bodyHash/requestId/idempotency binding; chống replay; auth chung eval/metrics/retrieval</td>
+<td>JWT bắt đầu ey nhưng giả/expired/wrong body/path/jti bị reject trước vector/provider; health probe có exception tường minh; secret mặc định bị từ chối ở prod</td>
+<td>G02</td>
+</tr>
+<tr>
+<td>S03</td>
+<td>P0 / M</td>
+<td>CORS từ env allowlist; cookie Secure/HttpOnly/SameSite theo profile; Origin/CSRF cho refresh-cookie trước production; CSP/TLS/security headers</td>
+<td>Unknown origin không được credentialed CORS; refresh bị chặn từ origin sai; test cookie flags; không dùng wildcard production</td>
+<td>G03</td>
+</tr>
+<tr>
+<td>S04</td>
+<td>P0 / M</td>
+<td>Khóa/đổi role/reset password phải thu hồi refresh và chặn access/socket còn sống; kiểm issuer/audience của access JWT</td>
+<td>Locked user không đọc API/nhận Work Chat; mở khóa có policy rõ; tests dùng token cấp trước lúc lock</td>
+<td>S01</td>
+</tr>
+<tr>
+<td>S05</td>
+<td>P0 / M</td>
+<td>Sửa auth failure transaction: login attempts/reuse revoke phải persist dù trả 401; rotation concurrent phải atomic; hash/limit/resend/one-time OTP; lỗi mail có trạng thái</td>
+<td>DB integration chứng minh counters và revokedAt tồn tại sau failure; 2 refresh đồng thời không tạo 2 token active; OTP brute force/reuse/expiry bị chặn</td>
+<td>G04</td>
+</tr>
+<tr>
+<td>S06</td>
+<td>P0 / M</td>
+<td>Implement rate limit cho login/register/OTP/question/upload/evaluation và concurrency question; retention cleanup idempotency/OTP/token</td>
+<td>429 + Retry-After; question tối đa 2 concurrent/user; limits theo spec; cleanup không xóa active data; clock deterministic tests</td>
+<td>S05</td>
+</tr>
+</tbody>
+</table>
+<h3>C. Workspace và phân quyền tài nguyên — owner Core/Frontend</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>P / Size</th>
+<th>Việc cần làm</th>
+<th>Tiêu chí hoàn thành / test</th>
+<th>Phụ thuộc</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>W01</td>
+<td>P0 / M</td>
+<td>Dùng permission policy chung cho PRIVATE/SHARED/PUBLIC, resource status và contribution; giải quyết lệch spec VIEWER không upload với flow chờ duyệt đang có</td>
+<td>Matrix READ/ASK/UPLOAD/APPROVE/DELETE đúng toàn endpoint; pending/rejected không vào allowlist; PUBLIC read/join có contract rõ</td>
+<td>G03</td>
+</tr>
+<tr>
+<td>W02</td>
+<td>P1 / M</td>
+<td>Hoàn thiện rời nhóm/chuyển ownership; bảo vệ owner cuối; member error/empty/loading; optimistic version khi đổi quyền/visibility</td>
+<td>Transfer atomic; owner mới/owner cũ đúng role; không được kick owner cuối; request version stale trả 409; tests Core + UI</td>
+<td>W01</td>
+</tr>
+<tr>
+<td>W03</td>
+<td>P1 / M</td>
+<td>Hoàn thiện list/search/explore/join với phân trang và debounce 300ms; validate page/size; tránh N+1 thống kê</td>
+<td>Max100/default20; &gt;20 workspace vẫn truy cập được; join lặp không duplicate; bộ lọc không chỉ tìm trên trang đầu; measured query counts</td>
+<td>W01</td>
+</tr>
+<tr>
+<td>W04</td>
+<td>P0 / M</td>
+<td>Studio note phải thuộc conversation của user và workspace còn quyền; mọi list/create/delete kiểm ownership và resource state</td>
+<td>User B không đọc/tạo/xóa note của A; user bị revoke không truy cập note cũ; note/conversation/workspace IDs không tráo được</td>
+<td>W01</td>
+</tr>
+</tbody>
+</table>
+<h3>D. Tài liệu, ingestion và xóa dữ liệu — owner Core/AI/Frontend</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>P / Size</th>
+<th>Việc cần làm</th>
+<th>Tiêu chí hoàn thành / test</th>
+<th>Phụ thuộc</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D01</td>
+<td>P0 / M</td>
+<td>Validate magic/signature PDF/DOCX, UTF-8 TXT, page/block limits, zip expansion; giữ filename tiếng Việt riêng storage key; quota/upload rollback</td>
+<td>Sai MIME/signature/20MiB/500 trang/2000 blocks bị reject; không blob orphan khi DB rollback; quota concurrency không vượt; filename full dấu</td>
+<td>G04</td>
+</tr>
+<tr>
+<td>D02</td>
+<td>P0 / M</td>
+<td>Lưu jobId/attempt/state/timestamps/errorCode thực; chuyển PENDING→PROCESSING→PROCESSED/FAILED; jobs API và progress phản ánh dữ liệu thật</td>
+<td>Job ID tồn tại sau reload; failure reason thân thiện; không dùng chunkCount làm pageOrBlockCount; tests lifecycle và invalid transitions</td>
+<td>D01</td>
+</tr>
+<tr>
+<td>D03</td>
+<td>P0 / M</td>
+<td>Publish ingestion bền sau DB commit, chọn outbox/publisher confirms theo thiết kế; lỗi broker không biến thành “thành công rồi treo”</td>
+<td>DB commit/broker down/crash có recovery; rollback không enqueue; không log rồi bỏ lỗi; fault-injection tests không network ngoài</td>
+<td>D02</td>
+</tr>
+<tr>
+<td>D04</td>
+<td>P0 / M</td>
+<td>Retry API phải enqueue job thật; retry backoff/attempt cap; nối DLX vào ingestion queue; result update ACK/NACK có semantics đúng</td>
+<td>FAILED retry→PROCESSING→PROCESSED; duplicate messages idempotent; poison message vào DLQ; DB lỗi không ACK mất result</td>
+<td>D03</td>
+</tr>
+<tr>
+<td>D05</td>
+<td>P0 / M</td>
+<td>Version ingestion và idempotent vector upsert; loại vectors version cũ; ngăn late result phục hồi tài liệu DELETING/REJECTED</td>
+<td>Ingest hai lần không duplicate; query chỉ currentVersion; delete-during-ingestion không set PROCESSED trở lại</td>
+<td>D04, G05</td>
+</tr>
+<tr>
+<td>D06</td>
+<td>P0 / L</td>
+<td>Delete document/workspace saga: revoke→delete vector v1/v2→blob→redact mọi citation/note-derived content theo policy→metadata→audit; reconciliation</td>
+<td>Retry từng bước sau crash; không file/vector orphan; chat và community không còn excerpt nguồn đã xóa; workspace không treo DELETING</td>
+<td>D05, W01</td>
+</tr>
+<tr>
+<td>D07</td>
+<td>P0 / M</td>
+<td>Sync/reingest do Core cấp document manifest đã approved; cấm scan toàn bucket từ user thường; trạng thái job durable và phân trang storage</td>
+<td>VIEWER/khác workspace không trigger sync; pending/rejected/deleted không vào vector; sync &gt;100 files đủ; restart có progress/recovery</td>
+<td>S02, D05</td>
+</tr>
+<tr>
+<td>D08</td>
+<td>P1 / M</td>
+<td>UI tài liệu: upload progress, failure/retry, poll cleanup, contribution decision/reason, preview locator PDF/DOCX/TXT, action theo role</td>
+<td>Happy path upload→approval→processed→citation; error/cancel/retry không duplicate; empty/loading/access denied rõ; keyboard/focus tests</td>
+<td>D02, D04, W01</td>
+</tr>
+</tbody>
+</table>
+<h3>E. Adaptive Retrieval, grounding và citation — owner AI/Core</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>P / Size</th>
+<th>Việc cần làm</th>
+<th>Tiêu chí hoàn thành / test</th>
+<th>Phụ thuộc</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R01</td>
+<td>P0 / M</td>
+<td>Chốt và enforce RAG chỉ từ nguồn mặc định; external knowledge là chế độ được duyệt/ghi nhãn riêng; không biến thiếu bằng chứng thành answer</td>
+<td>Empty/weak corpus→CLARIFY/REFUSE; provider không gọi khi gate từ chối; mode external không lẫn benchmark grounded</td>
+<td>W01, G03</td>
+</tr>
+<tr>
+<td>R02</td>
+<td>P0 / M</td>
+<td>Đồng bộ source-group rules và strategyVersion/configHash; COMPARISON một nguồn theo spec không ANSWER; strategy lấy config đã version hóa</td>
+<td>AC-AR-01/03/04/06 pass; không hạ min groups ngầm; mọi ngoại lệ 1 nguồn cần scope được duyệt và dataset riêng</td>
+<td>R01</td>
+</tr>
+<tr>
+<td>R03</td>
+<td>P0 / L</td>
+<td>Structured generation schema + claims/citationIds; kiểm claim coverage, chunk tồn tại, excerpt/contentHash/locator; retry cùng evidence đúng một lần</td>
+<td>ANSWER không factual claim vô citation; bịa chunk/hash/locator/empty citation→retry→REFUSE; stream và nonstream cùng invariant</td>
+<td>R02</td>
+</tr>
+<tr>
+<td>R04</td>
+<td>P0 / M</td>
+<td>Truyền/persist chunkId, contentHash, extractorVersion, locator thật; tên file lấy đúng doc trong workspace; bỏ fallback gán file khác</td>
+<td>Citation của tài liệu thứ 11+ vẫn đúng; không sinh chunk-N/hash từ score; reload giữ nguồn chính xác; invalid doc bị reject</td>
+<td>R03, D05</td>
+</tr>
+<tr>
+<td>R05</td>
+<td>P0 / M</td>
+<td>Pin E5 revision/dimension/normalization và provider/prompt/temperature; thống nhất streaming/nonstream fallback; Ollama nhận cùng evidence, không chỉ question; benchmark cấm model hopping</td>
+<td>Reproducible config snapshot; auth/validation/safety không fallback; timeout/429/5xx đúng policy; không latest; stream không nối đáp án từ 2 model; fallback vẫn grounded</td>
+<td>S02, G05</td>
+</tr>
+<tr>
+<td>R06</td>
+<td>P0 / M</td>
+<td>Trace đầy đủ cho stream/nonstream/@AI: scores/source groups/coverage/tokens/provider/latency/config hash; persistent owner và retention</td>
+<td>requestId truy vết tới message/run; log không prompt/token/chunk; trace sau restart còn dùng được; Core/AI ownership không vượt boundary</td>
+<td>R04, R05</td>
+</tr>
+<tr>
+<td>R07</td>
+<td>P0 / M</td>
+<td>Calibration chỉ development; freeze strategy; phân tích các lỗi intent, chunk boundary, single-source và OOS technical keyword</td>
+<td>Dương/âm/priority tiếng Việt; câu học thuật về “hack/system prompt” không bị chặn chỉ vì keyword; holdout không dùng tune</td>
+<td>E02, R02</td>
+</tr>
+</tbody>
+</table>
+<h3>F. Chat, SSE và memory — owner Core/AI/Frontend</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>P / Size</th>
+<th>Việc cần làm</th>
+<th>Tiêu chí hoàn thành / test</th>
+<th>Phụ thuộc</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C01</td>
+<td>P0 / M</td>
+<td>Conversation ID phải đồng thời thuộc user/workspace path; reauthorize user/status/permissionVersion/allowed docs trước persist và trước return</td>
+<td>ID conversation workspace A gửi qua B bị reject trước AI; revoke/delete/lock lúc AI chạy không lưu/return nguồn không còn quyền</td>
+<td>W01, S04</td>
+</tr>
+<tr>
+<td>C02</td>
+<td>P0 / M</td>
+<td>Tách AI network call khỏi transaction dài; persist message/citations/trace/summary bằng service transaction rõ; done chỉ sau commit</td>
+<td>DB fault không để half-message/citations; done mang assistantMessageId thật; reload immediately thấy result; error có requestId</td>
+<td>C01, R04</td>
+</tr>
+<tr>
+<td>C03</td>
+<td>P0 / M</td>
+<td>Idempotency-Key bắt buộc theo contract cho question/upload; stream có request operation/replay contract; concurrent keys xử lý atomically</td>
+<td>Timeout retry cùng key không tạo đôi messages/files; cùng key khác body→409; duplicate stream không gọi model lần nữa</td>
+<td>C02, D03</td>
+</tr>
+<tr>
+<td>C04</td>
+<td>P1 / M</td>
+<td>SSE cancel/timeout/disconnect/reconnect, backpressure và bounded executor; trạng thái incomplete/error tường minh; client parser xử lý UTF-8 boundary</td>
+<td>Abort dừng upstream; EOF thiếu done không báo success; partial answer không được nhận là citation-validated; tests fragmentation/cancel</td>
+<td>C02, R03</td>
+</tr>
+<tr>
+<td>C05</td>
+<td>P0 / M</td>
+<td>Memory/compaction đúng budget, summary version locking, context isolation; kiểm retrieval cho câu “nó…” bằng context đúng, không chỉ bỏ CLARIFY</td>
+<td>Concurrent turns không overwrite summary; summary xóa/revoke nguồn theo policy; UI + AI tests chứng minh câu follow-up lấy đúng nguồn</td>
+<td>C01, R05</td>
+</tr>
+<tr>
+<td>C06</td>
+<td>P1 / M</td>
+<td>Chat/history UI: pagination messages, stable order/scroll, send state, refusal reason, citation navigation; XSS tests Markdown/Mermaid/SVG</td>
+<td>Long conversation không mất tin; raw HTML/javascript links không chạy; clipboard/TTS có fallback UI rõ; render math/code sau stream tốt</td>
+<td>C03, C04, R04</td>
+</tr>
+</tbody>
+</table>
+<h3>G. Admin vận hành — owner Core/Frontend/AI</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>P / Size</th>
+<th>Việc cần làm</th>
+<th>Tiêu chí hoàn thành / test</th>
+<th>Phụ thuộc</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A01</td>
+<td>P0 / M</td>
+<td>Audit event store append-only từ thao tác thật; thay 3 event dựng sẵn; filters/pagination/requestId/actor/outcome; không nội dung private</td>
+<td>Promote/lock/retry/delete có event thật; empty DB trả empty; USER403; restart vẫn xem được; logs redact</td>
+<td>S01, G04</td>
+</tr>
+<tr>
+<td>A02</td>
+<td>P1 / M</td>
+<td>Implement <code>/admin/metrics</code> và thay placeholder UI bằng user/workspace/document/job totals, error rate và dependency status</td>
+<td>Counts khớp fixture DB; không đọc private content; loading/error/no-data; không suy đoán online từ port cố định</td>
+<td>S01, D02</td>
+</tr>
+<tr>
+<td>A03</td>
+<td>P1 / M</td>
+<td>Document/workspace admin filters thật; visibility mutation validated DTO + permissionVersion; delete dùng saga; tránh N+1</td>
+<td>Filter FAILED không trả PROCESSED; invalid visibility400; admin action audit; không delete repository trực tiếp bỏ cleanup</td>
+<td>S01, A01, D06</td>
+</tr>
+<tr>
+<td>A04</td>
+<td>P1 / M</td>
+<td>AI Studio telemetry persistent/retention; ghi streaming usage; phân biệt no-data/sample; model/key config được mask, quyền ping chặt</td>
+<td>Chart dựa event thật sau restart; USER không xem key metadata; provider lỗi không lộ secret; test SSE/nonstream accounting</td>
+<td>S01, S02, R06</td>
+</tr>
+</tbody>
+</table>
+<h3>H. Evaluation và bằng chứng khóa luận — owner AI/Core/Frontend + hai người gán nhãn</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>P / Size</th>
+<th>Việc cần làm</th>
+<th>Tiêu chí hoàn thành / test</th>
+<th>Phụ thuộc</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>E01</td>
+<td>P0 / M</td>
+<td>Thay EvaluationRunner simulation bằng pipeline adapter có branch BASELINE/ADAPTIVE; fixture adapter chỉ dùng tests; baseline fixed Top-K thật</td>
+<td>Predicted intent/citation/tokens lấy output thực; branch tạo strategy khác; invalid case không được tự chấm true; isolated unit tests</td>
+<td>R02, R05</td>
+</tr>
+<tr>
+<td>E02</td>
+<td>P0 / L</td>
+<td>Curate/version dataset 120 cases, 20 mỗi intent; split 60/60 theo topic; expected docs/chunks/locator/evidence labels; review draft và nhãn độc lập</td>
+<td>Manifest validation count/split/topic disjoint; Cohen kappa≥0,70; không giữ placeholder question; nguồn có quyền; điều chỉnh scope khác phải được duyệt</td>
+<td>G03, D05</td>
+</tr>
+<tr>
+<td>E03</td>
+<td>P0 / M</td>
+<td>Paired runs dùng cùng corpus/chunking/model/prompt/embedding; config SHA-256 thật; checkpoint/resume theo case+branch; execution state/cancel</td>
+<td>120×2 results; resume không bỏ ADAPTIVE vì BASELINE xong; compatibility fail không tiếp tục giả thành công; failed run không COMPLETED</td>
+<td>E01, E02, R06</td>
+</tr>
+<tr>
+<td>E04</td>
+<td>P0 / M</td>
+<td>Metric thật source hit@K/MRR, citation source+locator, claim support, refusal F1, intent confusion, latency/tokens; paired bootstrap1000 CI95%</td>
+<td>Metric từ raw rows và ground truth; keyword hit không thay citation accuracy; report âm/dương đều giữ; deterministic metric tests</td>
+<td>E03</td>
+</tr>
+<tr>
+<td>E05</td>
+<td>P0 / M</td>
+<td>Core workspace evaluation API create/list/detail/results, OWNER/EDITOR ACL, async RabbitMQ, status/retention; AI nhận authorized scope</td>
+<td>API202+runId; VIEWER403; cross-workspace404; result pagination; AI không quyết định quyền; lưu metadata theo ADR được chốt</td>
+<td>S02, W01, E03</td>
+</tr>
+<tr>
+<td>E06</td>
+<td>P0 / M</td>
+<td>Evaluation web UI tạo run, chọn dataset/branch đã freeze, progress/resume/cancel, summary/detail/export; thay placeholder</td>
+<td>E2E fake-provider tạo→completed→results; invalid config bị chặn; không khởi chạy provider thật ngoài run được phép</td>
+<td>E04, E05</td>
+</tr>
+</tbody>
+</table>
+<h3>I. Community và Work Chat — owner Core/Frontend</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>P / Size</th>
+<th>Việc cần làm</th>
+<th>Tiêu chí hoàn thành / test</th>
+<th>Phụ thuộc</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P01</td>
+<td>P0 / M</td>
+<td>Reauthorize @AI sau inference; event bền/idempotent, state QUEUED/RUNNING/FAILED; không mất tác vụ khi process restart</td>
+<td>Revoke/delete post trước AI done không persist citation trái quyền; duplicate event chỉ một reply; timeout hiển thị retry rõ</td>
+<td>C01, D03, R04</td>
+</tr>
+<tr>
+<td>P02</td>
+<td>P1 / M</td>
+<td>Replies pagination; validate parentReply cùng discussion; permissions edit/delete/accept/pin; reactions/bookmarks race; search debounce</td>
+<td>Không parent thread khác; &gt;100 replies có next page; counts không âm/trùng; search không lộ workspace không được phép</td>
+<td>W01</td>
+</tr>
+<tr>
+<td>P03</td>
+<td>P1 / M</td>
+<td>Notification unread/mark-all bằng query đúng toàn bộ; privacy sau revoke; attachment validator và lifecycle khi xóa post</td>
+<td>&gt;100 unread đều được mark; user khác không mark; notification không còn excerpt trái quyền; file spoof/oversize bị reject và cleanup</td>
+<td>W01, D06</td>
+</tr>
+<tr>
+<td>P04</td>
+<td>P0 / M</td>
+<td>Work Chat authorize SUBSCRIBE/SEND, reject raw queue/foreign user destinations; JWT expiry/lock disconnect; reconnect REST resync</td>
+<td>Hai user chỉ nhận DM của mình; user thứ ba không subscribe queue người khác; refresh reconnect không mất/trùng tin; ghi giới hạn single process</td>
+<td>S04, S03</td>
+</tr>
+</tbody>
+</table>
+<h3>J. Mobile hoàn thiện nghiệp vụ — owner Mobile cần phân công</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>P / Size</th>
+<th>Việc cần làm</th>
+<th>Tiêu chí hoàn thành / test</th>
+<th>Phụ thuộc</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>M01</td>
+<td>P1 / M</td>
+<td>Bỏ sample feed ở mode thật; adapter đúng FeedPostResponse; server pagination/filter/reaction persistence + optimistic rollback</td>
+<td>API empty→empty UI; API lỗi→error/retry; vote reload vẫn còn; hasAcceptedAnswer/reactions/createdAt mapping đúng</td>
+<td>P02</td>
+</tr>
+<tr>
+<td>M02</td>
+<td>P1 / L</td>
+<td>Post detail, replies/mention/@AI/bookmark, compose và attachment nếu scope mobile giữ community parity</td>
+<td>Feed card mở bài đúng; đăng/reply/react gọi API thật; permission lỗi rõ; integration tests mock full flows</td>
+<td>M01, P01, P03</td>
+</tr>
+<tr>
+<td>M03</td>
+<td>P1 / M</td>
+<td>Explore/join/member/settings trên mobile theo priority được chốt; workspace role actions và list pagination</td>
+<td>Có &gt;20 workspace vẫn xem được; VIEWER không thấy admin actions; invitation/join lỗi và reload role được kiểm chứng</td>
+<td>W02, W03</td>
+</tr>
+<tr>
+<td>M04</td>
+<td>P1 / M</td>
+<td>Upload/approval/status/retry/document preview trên mobile; citation mở file và locator thật; guard revoked/deleted source</td>
+<td>Native picker MIME/size validation; processed mới ask; citation PDF đúng trang; expired download URL có refresh path; test mocked</td>
+<td>D08, R04</td>
+</tr>
+<tr>
+<td>M05</td>
+<td>P1 / M</td>
+<td>Account profile/avatar/settings/notification actions thật hoặc đánh dấu chưa hỗ trợ; SecureStore/session foreground/logout/network loss</td>
+<td>Token không lộ log/storage không an toàn; offline không dùng sample như dữ liệu thật; logout clears caches; native smoke iOS/Android</td>
+<td>S04, P03</td>
+</tr>
+</tbody>
+</table>
+<h3>K. Knowledge Studio và trải nghiệm — owner Frontend/Core/AI</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>P / Size</th>
+<th>Việc cần làm</th>
+<th>Tiêu chí hoàn thành / test</th>
+<th>Phụ thuộc</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>K01</td>
+<td>P1 / M</td>
+<td>Chốt Studio dùng parser hay AI-generated artifact; bỏ generic fallback giả nguồn; quiz distractor không lấy phát biểu đúng khác làm sai</td>
+<td>Ít nội dung→thông báo thiếu; quiz một đáp án đúng rõ; artifact giữ source citation; tests fact validity và unsupported format</td>
+<td>W04, R03</td>
+</tr>
+<tr>
+<td>K02</td>
+<td>P2 / M</td>
+<td>Nếu giữ phạm vi: export notes/report/slides, audio podcast thật và playback state; phân biệt dialogue preview với audio</td>
+<td>Download artifact đúng nội dung; tiếng Việt full dấu; audio có play/pause/error; giới hạn provider/cost phải được duyệt trước</td>
+<td>K01</td>
+</tr>
+<tr>
+<td>K03</td>
+<td>P2 / S</td>
+<td>Hoàn thiện web preferences theme/language/accessibility và persist settings; thay mục đang phát triển theo scope</td>
+<td>Setting reload còn giá trị; keyboard/focus/contrast đạt; text tiếng Việt không mất dấu; không giới thiệu feature chưa hoạt động</td>
+<td>G01</td>
+</tr>
+</tbody>
+</table>
+<h3>L. Kiểm thử và CI — owner từng module + reviewer độc lập</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>P / Size</th>
+<th>Việc cần làm</th>
+<th>Tiêu chí hoàn thành / test</th>
+<th>Phụ thuộc</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>T01</td>
+<td>P0 / L</td>
+<td>DB/API integration thật bằng Testcontainers/controlled fixtures; auth transaction, RBAC/IDOR, quota, publish failure, delete race, FK/migrations</td>
+<td>Endpoint success/validation/authn/authz/failure; persistence assertions sau commit/rollback; không chỉ mock repository</td>
+<td>G02, G04, S01–S05, D03–D06</td>
+</tr>
+<tr>
+<td>T02</td>
+<td>P0 / M</td>
+<td>E2E local fake-provider critical flows; nối frontend/e2e và automation suites vào một entry rõ; tách live benchmark khỏi regression</td>
+<td>Login→workspace→upload→ask→citation→reload; revoke/delete/admin/eval/memory; CI không outbound cloud/secret test credentials</td>
+<td>C06, D08, E06, P04</td>
+</tr>
+<tr>
+<td>T03</td>
+<td>P0 / M</td>
+<td>CI có mobile lint/typecheck/Jest, E2E và core-logic coverage enforcement; publish JUnit/coverage/artifacts; contract generation/diff</td>
+<td>Fresh runner xanh; Core JaCoCo check thật ≥80%; UI coverage không thay core gate; breaking contract fail; no skipped tests</td>
+<td>G01, G02, T01, T02</td>
+</tr>
+<tr>
+<td>T04</td>
+<td>P1 / M</td>
+<td>Refactor file/function vượt chuẩn có rollback plan và tests bảo vệ; inject HTTP/clock/storage/provider ports; thay DTO Map bằng schema</td>
+<td>Logic≤30 dòng, UI≤100 JSX/max500 file, service≤300; test hành vi giữ nguyên; public API docs/barrels; không refactor đồng loạt không có scope</td>
+<td>G01, T01</td>
+</tr>
+</tbody>
+</table>
+<h3>M. Vận hành và bàn giao — owner Core/Infra/AI</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>P / Size</th>
+<th>Việc cần làm</th>
+<th>Tiêu chí hoàn thành / test</th>
+<th>Phụ thuộc</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>O01</td>
+<td>P0 / M</td>
+<td>Chroma production persistent và fail-closed; readiness kiểm đúng client/server/model/broker/storage; hoàn thiện Compose/test stack hiện mới có PostgreSQL+Chroma, thống nhất cloud/local; isolate ports</td>
+<td>Chroma down→not ready/503, không tự chuyển ephemeral; restart không mất vectors; local fake-provider/broker/storage không phụ thuộc cloud; TestClient không mở consumer thật</td>
+<td>G05, D04, S02</td>
+</tr>
+<tr>
+<td>O02</td>
+<td>P1 / M</td>
+<td>Backup/restore DB+blobs+vectors; reconcile orphan/failed jobs; key rotation/retention và observability requestId xuyên service</td>
+<td>Restore trên môi trường disposable chứng minh được; alert backlog/failure; không log prompt/chunk/key; runbook rollback có commands được review</td>
+<td>D06, R06, A01</td>
+</tr>
+<tr>
+<td>O03</td>
+<td>P0 / M</td>
+<td>Đóng gói bằng chứng và demo P0, API examples/generated contract, CHANGELOG, nghiên cứu results/case studies; delivery checklist</td>
+<td>Một demo tái lập bằng fake provider; ≥10 case study; không khẳng định adaptive tốt hơn thiếu CI; compile/lint/tests xanh; commit/push/deploy xin approval riêng</td>
+<td>E04, E06, T03, O01</td>
+</tr>
+</tbody>
+</table>
+<h2>6. Thứ tự triển khai đề xuất</h2>
+<table>
+<thead>
+<tr>
+<th>Đợt</th>
+<th>Task chính</th>
+<th>Điều kiện chuyển đợt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 — Kiểm soát quyền và baseline</td>
+<td>G01–G05; S01–S05; W01/W04; C01; khóa các endpoint sync chưa đúng ACL</td>
+<td>Có kiểm tra mới đáng tin; admin/note/service/IDOR không bypass; schema policy và Chroma debt được chốt</td>
+</tr>
+<tr>
+<td>2 — Tài liệu và chat đáng tin cậy</td>
+<td>D01–D07; R01–R06; C02/C03/C05; S06; P01/P04; A01</td>
+<td>Upload/retry/delete/revoke không mất dữ liệu hoặc rò nguồn; answer/citation/history có invariant và trace</td>
+</tr>
+<tr>
+<td>3 — Bằng chứng nghiên cứu P0</td>
+<td>E01–E06; R07; T01/T02; O01</td>
+<td>Dataset freeze; paired results thật; Evaluation UI/API hoạt động; integration/E2E pass</td>
+</tr>
+<tr>
+<td>4 — Hoàn thiện sản phẩm đã mở rộng</td>
+<td>W02/W03; D08; C04/C06; A02–A04; P02/P03; M01–M05; K01; T04</td>
+<td>Tất cả nút advertised gọi nghiệp vụ thật; error/empty/pagination đầy đủ; mobile smoke</td>
+</tr>
+<tr>
+<td>5 — Release evidence</td>
+<td>T03; O02/O03; K02/K03 nếu còn phạm vi</td>
+<td>Gate xanh, restore/demo tái lập, tài liệu đồng bộ, user phê duyệt delivery riêng</td>
+</tr>
+</tbody>
+</table>
+<p>Critical path P0: sửa auth/ACL và schema baseline → reliable ingestion/version/delete → grounded RAG/citation + chat persistence → frozen dataset + paired execution → evaluation UI/metrics + integration/E2E → evidence/demo.</p>
+<p>Các nhánh có thể giao việc song song sau khi thống nhất contract: frontend lint/UI, Core RBAC/ingestion, AI citation/evaluation, mobile feed. Đây là gợi ý tổ chức nhân sự; không tự tạo subagent hoặc giao task cho người khác trong phiên.</p>
+<h2>7. Ranh giới phạm vi và quyết định cần chốt khi bắt đầu task</h2>
+<ol>
+<li>Grounded-only có giữ là default P0 hay external knowledge trở thành mode chính? Đặc tả hiện tại yêu cầu không lấp khoảng trống bằng kiến thức nền.</li>
+<li>COMPARISON một nguồn: giữ REFUSE theo AC-AR-03 hay phê duyệt strategy version mới có warning? Không sửa threshold ngầm.</li>
+<li>Contribution VIEWER chờ duyệt: cập nhật permission matrix cho hành vi đã có, hay giới hạn upload OWNER/EDITOR như đặc tả gốc?</li>
+<li>Evaluation lưu metadata/results tại Core DB hay local JSON riêng? Source hiện khác data-model; chốt ADR và boundary trước xây public API.</li>
+<li>Mobile cần ngang chức năng web hay chỉ auth/workspace/documents/chat? M02/M03/M05 là đề xuất phạm vi, không phải tính năng P0 đã được duyệt.</li>
+<li>Studio parser/template được chấp nhận tới đâu, và podcast/slides export là requirement thật hay roadmap? Không xem parser dialog là audio generation đã xong.</li>
+</ol>
+<p>Các điểm trên không cản việc nhận G01, S01, W04 và tái kiểm G02/G05; chúng cần câu trả lời trước triển khai thay đổi hành vi liên quan.</p>
+<p>Không đưa OCR, Knowledge Graph, multi-agent AI, hybrid search, reranker, long-term cross-session memory hoặc thông báo lịch học mới vào P0. Chỉ đưa vào backlog mới khi có scope riêng; giữ trọng tâm Adaptive Knowledge Retrieval &amp; Reasoning.</p>
+<h2>8. Definition of Done áp dụng cho mọi task</h2>
+<ul>
+<li>Chức năng chạy end-to-end với dữ liệu thật ở tầng nghiệp vụ; không sample/simulation trên đường production.</li>
+<li>Input schema, ACL, state transitions, typed/RFC7807 errors và requestId được kiểm tra; không lộ secret/nội dung private.</li>
+<li>Unit cho logic; integration cho endpoint/DB; E2E cho critical flow. Core logic line/branch ≥80%, external dependencies mock.</li>
+<li>Build/typecheck/lint/test pass theo scope; không bỏ qua hoặc disable tests/rules để đạt số liệu.</li>
+<li>Full dấu tiếng Việt; loading/empty/error/forbidden/retry/accessibility; pagination default20/max100 khi applicable.</li>
+<li>Public API documentation, behavior docs và decisions/evidence cập nhật; rollback plan trước refactor; review độc lập.</li>
+<li>Cài package, thay DB shared, commit, push, deployment giữ cổng approval riêng.</li>
+</ul>
+<h2>9. Ghi chú về mức độ xác nhận</h2>
+<p>Task này chỉ phân tích và tạo tài liệu. Không chỉnh application source, không dùng cloud để xác minh, không sửa migration history, không cài dependency và không commit/push/deploy. Generated build/test outputs là kết quả kiểm tra local.</p>
+<p>Những hạng mục ghi “cần chứng minh” là khoảng trống bằng chứng hoặc yêu cầu còn thiếu; không đồng nghĩa đã xác nhận lỗi runtime. Các phát hiện F01–F16 có source cụ thể, còn kiểm chứng exploit/DB/recovery sẽ nằm trong test tasks tương ứng.</p>
+
+  </div>
+</body>
+</html>

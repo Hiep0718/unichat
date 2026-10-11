@@ -47,6 +47,8 @@ Change-password yêu cầu mật khẩu hiện tại và mật khẩu mới (12�
 |---|---|---|
 | GET | /workspaces | Người dùng đã đăng nhập |
 | POST | /workspaces | Người dùng đã đăng nhập |
+| GET | /workspaces/explore | Người dùng đã đăng nhập | Khám phá workspace công khai |
+| POST | /workspaces/{workspaceId}/join | Người dùng đã đăng nhập | Tham gia workspace công khai/chia sẻ |
 | GET | /workspaces/{workspaceId} | ACL READ |
 | PATCH | /workspaces/{workspaceId} | OWNER/EDITOR theo field |
 | DELETE | /workspaces/{workspaceId} | OWNER |
