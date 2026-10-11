@@ -11,6 +11,9 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface StudioNoteRepository extends JpaRepository<StudioNote, UUID> {
+    /** Pages only notes owned by the caller in the bound conversation. */
+    org.springframework.data.domain.Page<StudioNote> findByConversationIdAndUserIdOrderByCreatedAtDescIdDesc(
+            UUID conversationId, UUID userId, org.springframework.data.domain.Pageable pageable);
 
     List<StudioNote> findByConversationIdOrderByCreatedAtDesc(UUID conversationId);
 

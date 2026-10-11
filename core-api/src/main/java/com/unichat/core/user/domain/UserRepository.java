@@ -8,11 +8,29 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.jpa.repository.Lock;
+import jakarta.persistence.LockModeType;
 
 /**
  * Persistence layer gateway for User entities.
  */
 public interface UserRepository extends JpaRepository<User, UUID> {
+    /** Serializes all account and session mutations on the account row. */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT u FROM User u WHERE u.id = :id")
+    Optional<User> lockById(@Param("id") UUID id);
+
+    /** Serializes login and OTP changes for an existing account. */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT u FROM User u WHERE LOWER(u.email) = LOWER(:email)")
+    Optional<User> lockByEmail(@Param("email") String email);
+
+    /** Counts accounts eligible to administer the system. */
+    long countBySystemRoleAndStatus(SystemRole role, UserStatus status);
+    /** Counts accounts by durable manual status, ignoring temporary login throttles. */
+    long countByStatus(UserStatus status);
+    /** Counts administrative accounts independently of their manual status. */
+    long countBySystemRole(SystemRole role);
 
     /**
      * Finds a user by case-insensitive email.
@@ -33,12 +51,11 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     boolean existsByEmailIgnoreCase(@Param("email") String email);
 
     /**
-     * Searches users by email matching query.
+     * Searches users by email containing query string (case-insensitive).
      *
-     * @param query search query
+     * @param email search keyword
      * @param pageable pagination options
      * @return page of matching users
      */
-    @Query("SELECT u FROM User u WHERE :query IS NULL OR LOWER(u.email) LIKE LOWER(CONCAT('%', :query, '%'))")
-    Page<User> searchUsers(@Param("query") String query, Pageable pageable);
+    Page<User> findByEmailContainingIgnoreCase(String email, Pageable pageable);
 }

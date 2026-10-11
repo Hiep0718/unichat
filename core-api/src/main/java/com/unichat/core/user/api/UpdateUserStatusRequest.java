@@ -1,6 +1,7 @@
 package com.unichat.core.user.api;
 
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 
 import com.unichat.core.user.domain.UserStatus;
 
@@ -9,5 +10,6 @@ import com.unichat.core.user.domain.UserStatus;
  */
 public record UpdateUserStatusRequest(
         @NotNull(message = "Trạng thái tài khoản không được để trống")
-        UserStatus status
+        UserStatus status,
+        @NotNull @PositiveOrZero Long expectedVersion
 ) {}

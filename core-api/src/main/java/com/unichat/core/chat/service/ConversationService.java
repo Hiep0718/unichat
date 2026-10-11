@@ -1,161 +1,74 @@
 package com.unichat.core.chat.service;
 
 import java.time.Clock;
-import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import com.unichat.core.chat.api.ConversationDetailResponse;
-import com.unichat.core.chat.api.ConversationResponse;
-import com.unichat.core.chat.api.MessageResponse;
+import com.unichat.core.chat.api.*;
 import com.unichat.core.chat.domain.Conversation;
 import com.unichat.core.chat.domain.ConversationRepository;
-import com.unichat.core.chat.domain.MessageRepository;
 import com.unichat.core.common.error.NotFoundError;
-import com.unichat.core.shared.util.UuidGenerator;
-import com.unichat.core.workspace.domain.WorkspaceMemberRepository;
-import com.unichat.core.workspace.domain.WorkspaceMemberStatus;
-import com.unichat.core.workspace.domain.WorkspaceRepository;
 
-/**
- * Service managing user conversation sessions and message history.
- */
+/** Owns private conversation metadata and bounded source-safe message history. */
 @Service
 public class ConversationService {
-
-    private final ConversationRepository conversationRepository;
-    private final MessageRepository messageRepository;
-    private final com.unichat.core.chat.domain.CitationHistoryRepository citationHistoryRepository;
-    private final com.unichat.core.document.domain.DocumentRepository documentRepository;
-    private final WorkspaceRepository workspaceRepository;
-    private final WorkspaceMemberRepository workspaceMemberRepository;
+    private final ConversationRepository conversations;
+    private final ChatConversationStore ownership;
+    private final ChatAccessService access;
+    private final ChatMessageStore messages;
+    private final ChatOperationService operations;
+    private final JdbcTemplate database;
     private final Clock clock;
-
-    public ConversationService(
-            ConversationRepository conversationRepository,
-            MessageRepository messageRepository,
-            com.unichat.core.chat.domain.CitationHistoryRepository citationHistoryRepository,
-            com.unichat.core.document.domain.DocumentRepository documentRepository,
-            WorkspaceRepository workspaceRepository,
-            WorkspaceMemberRepository workspaceMemberRepository,
-            Clock clock) {
-        this.conversationRepository = conversationRepository;
-        this.messageRepository = messageRepository;
-        this.citationHistoryRepository = citationHistoryRepository;
-        this.documentRepository = documentRepository;
-        this.workspaceRepository = workspaceRepository;
-        this.workspaceMemberRepository = workspaceMemberRepository;
-        this.clock = clock;
+    /** Uses Core authorization for every history read and lifecycle mutation. */
+    public ConversationService(ConversationRepository conversations,ChatConversationStore ownership,
+            ChatAccessService access,ChatMessageStore messages,ChatOperationService operations,JdbcTemplate database,Clock clock) {
+        this.conversations=conversations;this.ownership=ownership;this.access=access;this.messages=messages;
+        this.operations=operations;this.database=database;this.clock=clock;
     }
-
-
-    /**
-     * Lists active conversations for the authenticated user in a workspace.
-     */
-    @Transactional(readOnly = true)
-    public Page<ConversationResponse> getConversations(UUID userId, UUID workspaceId, Pageable pageable) {
-        validateAccess(userId, workspaceId);
-        return conversationRepository
-                .findByUserIdAndWorkspaceIdAndStatusOrderByUpdatedAtDesc(userId, workspaceId, "ACTIVE", pageable)
+    /** Lists only the caller's active conversations. */
+    @Transactional(readOnly=true)
+    public Page<ConversationResponse> getConversations(ChatActor actor,UUID workspaceId,Pageable pageable) {
+        access.read(actor,workspaceId);
+        return conversations.findByUserIdAndWorkspaceIdAndStatusOrderByUpdatedAtDesc(actor.userId(),workspaceId,"ACTIVE",pageable)
                 .map(ConversationResponse::from);
     }
-
-    /**
-     * Creates a new empty conversation session.
-     */
+    /** Creates an empty conversation without invoking AI or ingestion. */
     @Transactional
-    public ConversationResponse createConversation(UUID userId, UUID workspaceId) {
-        validateAccess(userId, workspaceId);
-        Instant now = Instant.now(clock);
-        Conversation conversation = new Conversation(
-                UuidGenerator.generateV7(),
-                workspaceId,
-                userId,
-                "Hội thoại mới",
-                now
-        );
-        conversationRepository.save(conversation);
-        return ConversationResponse.from(conversation);
+    public ConversationResponse createConversation(ChatActor actor,UUID workspaceId) {
+        access.read(actor,workspaceId);
+        return ConversationResponse.from(conversations.save(new Conversation(UUID.randomUUID(),workspaceId,actor.userId(),"Hội thoại mới",clock.instant())));
     }
-
-    /**
-     * Retrieves conversation details along with message history and citations.
-     */
-    @Transactional(readOnly = true)
-    public ConversationDetailResponse getConversation(UUID userId, UUID workspaceId, UUID conversationId) {
-        validateAccess(userId, workspaceId);
-        Conversation conversation = conversationRepository
-                .findByUserIdAndIdAndStatus(userId, conversationId, "ACTIVE")
-                .orElseThrow(() -> new NotFoundError("Hội thoại không tồn tại"));
-
-        List<com.unichat.core.document.domain.Document> wsDocs = workspaceRepository.findById(workspaceId)
-                .map(w -> documentRepository.findByWorkspaceIdExcludingDeleting(workspaceId, org.springframework.data.domain.PageRequest.of(0, 10)).getContent())
-                .orElse(List.of());
-
-        List<MessageResponse> messages = messageRepository
-                .findByConversationIdOrderByCreatedAtAsc(conversationId)
-                .stream()
-                .map(m -> {
-                    List<com.unichat.core.chat.domain.CitationHistory> chList =
-                            citationHistoryRepository.findByMessageIdOrderByOrdinalAsc(m.getId());
-                    List<com.unichat.core.chat.api.CitationResponse> citations = chList.stream().map(ch -> {
-                        String fName = ch.getFileName();
-                        if (fName == null || fName.isBlank() || "Tài liệu".equals(fName) || "Tài liệu tham khảo".equals(fName)) {
-                            fName = documentRepository.findById(ch.getDocumentId())
-                                    .map(com.unichat.core.document.domain.Document::getOriginalName)
-                                    .orElse(!wsDocs.isEmpty() ? wsDocs.get(0).getOriginalName() : "Tài liệu tham khảo");
-                        }
-                        return new com.unichat.core.chat.api.CitationResponse(
-                                ch.getDocumentId(),
-                                fName,
-                                ch.getLocatorValue(),
-                                ch.getExcerpt(),
-                                tryParseScore(ch.getContentHash())
-                        );
-                    }).toList();
-                    return MessageResponse.from(m, citations);
-                })
-                .toList();
-
-
-        return ConversationDetailResponse.from(conversation, messages);
+    /** Returns metadata and at most the latest twenty messages. */
+    @Transactional(readOnly=true)
+    public ConversationDetailResponse getConversation(ChatActor actor,UUID workspaceId,UUID conversationId) {
+        var sources=access.read(actor,workspaceId);
+        var conversation=owned(actor,workspaceId,conversationId,false);
+        return ConversationDetailResponse.from(conversation,messages.page(conversationId,sources,0,20,null).content());
     }
-
-    private double tryParseScore(String str) {
-        if (str == null) return 0.75;
-        try {
-            return Double.parseDouble(str);
-        } catch (Exception e) {
-            return 0.75;
-        }
+    /** Returns stable message pages anchored by sequence rather than mutable offsets. */
+    @Transactional(readOnly=true)
+    public MessagePageResponse messages(ChatActor actor,UUID workspaceId,UUID conversationId,int page,int size,Long snapshot) {
+        var sources=access.read(actor,workspaceId);
+        owned(actor,workspaceId,conversationId,false);
+        return messages.page(conversationId,sources,page,size,snapshot);
     }
-
-
-    /**
-     * Deletes / archives a conversation session.
-     */
+    /** Deletes metadata and cancels active turns in the same transaction. */
     @Transactional
-    public void deleteConversation(UUID userId, UUID workspaceId, UUID conversationId) {
-        validateAccess(userId, workspaceId);
-        Conversation conversation = conversationRepository
-                .findByUserIdAndIdAndStatus(userId, conversationId, "ACTIVE")
-                .orElseThrow(() -> new NotFoundError("Hội thoại không tồn tại"));
-
-        conversation.setStatus("DELETED");
-        conversation.setUpdatedAt(Instant.now(clock));
-        conversationRepository.save(conversation);
+    public void deleteConversation(ChatActor actor,UUID workspaceId,UUID conversationId) {
+        database.queryForObject("SELECT id FROM users WHERE id=? FOR UPDATE",UUID.class,actor.userId());
+        access.read(actor,workspaceId);
+        var conversation=owned(actor,workspaceId,conversationId,true);
+        database.queryForList("SELECT id FROM chat_operations WHERE conversation_id=? AND state='RUNNING'",UUID.class,conversationId)
+                .forEach(id -> operations.cancel(actor,workspaceId,id));
+        conversation.setStatus("DELETED");conversation.setUpdatedAt(clock.instant());
+        conversations.save(conversation);
     }
-
-    private void validateAccess(UUID userId, UUID workspaceId) {
-        workspaceRepository.findById(workspaceId)
-                .orElseThrow(() -> new NotFoundError("Workspace không tồn tại"));
-
-        workspaceMemberRepository.findByWorkspaceIdAndUserIdAndStatus(workspaceId, userId, WorkspaceMemberStatus.ACTIVE)
-                .orElseThrow(() -> new NotFoundError("Workspace không tồn tại"));
+    private Conversation owned(ChatActor actor,UUID workspaceId,UUID id,boolean lock) {
+        ownership.requireOwner(actor.userId(),workspaceId,id,lock);
+        return conversations.findByUserIdAndIdAndStatus(actor.userId(),id,"ACTIVE")
+                .filter(value -> value.getWorkspaceId().equals(workspaceId)).orElseThrow(() -> new NotFoundError("Hội thoại không tồn tại."));
     }
 }

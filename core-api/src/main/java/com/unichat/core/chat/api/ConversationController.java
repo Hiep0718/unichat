@@ -1,85 +1,51 @@
 package com.unichat.core.chat.api;
 
+import java.util.Map;
 import java.util.UUID;
-
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.web.bind.annotation.*;
+import com.unichat.core.chat.service.ChatActor;
 import com.unichat.core.chat.service.ConversationService;
 
-/**
- * REST controller for managing conversation history sessions.
- */
+/** Private conversation lifecycle and strict page/size history endpoints. */
 @RestController
 @RequestMapping("/api/v1/workspaces/{workspaceId}/conversations")
 public class ConversationController {
-
-    private final ConversationService conversationService;
-
-    public ConversationController(ConversationService conversationService) {
-        this.conversationService = conversationService;
-    }
-
-    /**
-     * Lists active conversations for the current user in a workspace.
-     */
+    private final ConversationService conversations;
+    /** Uses the authoritative ownership/source service. */
+    public ConversationController(ConversationService conversations) { this.conversations=conversations; }
+    /** Lists a bounded page; unsupported cursor/limit query parameters return 400. */
     @GetMapping
-    public ResponseEntity<Page<ConversationResponse>> getConversations(
-            @AuthenticationPrincipal Jwt jwt,
-            @PathVariable("workspaceId") UUID workspaceId,
-            @RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "size", defaultValue = "20") int size) {
-        UUID userId = UUID.fromString(jwt.getSubject());
-        Pageable pageable = PageRequest.of(page, Math.min(size, 100));
-        return ResponseEntity.ok(conversationService.getConversations(userId, workspaceId, pageable));
+    public Page<ConversationResponse> getConversations(@AuthenticationPrincipal Jwt jwt,@PathVariable UUID workspaceId,
+            @RequestParam Map<String,String> query) {
+        return conversations.getConversations(ChatActor.from(jwt),workspaceId,ChatPagination.parse(query,false));
     }
-
-    /**
-     * Creates a new empty conversation session.
-     */
+    /** Creates an owned empty conversation. */
     @PostMapping
-    public ResponseEntity<ConversationResponse> createConversation(
-            @AuthenticationPrincipal Jwt jwt,
-            @PathVariable("workspaceId") UUID workspaceId) {
-        UUID userId = UUID.fromString(jwt.getSubject());
-        ConversationResponse response = conversationService.createConversation(userId, workspaceId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    public ResponseEntity<ConversationResponse> createConversation(@AuthenticationPrincipal Jwt jwt,@PathVariable UUID workspaceId) {
+        return ResponseEntity.status(201).body(conversations.createConversation(ChatActor.from(jwt),workspaceId));
     }
-
-    /**
-     * Gets conversation details with message history.
-     */
+    /** Returns metadata and the latest message page. */
     @GetMapping("/{conversationId}")
-    public ResponseEntity<ConversationDetailResponse> getConversation(
-            @AuthenticationPrincipal Jwt jwt,
-            @PathVariable("workspaceId") UUID workspaceId,
-            @PathVariable("conversationId") UUID conversationId) {
-        UUID userId = UUID.fromString(jwt.getSubject());
-        return ResponseEntity.ok(conversationService.getConversation(userId, workspaceId, conversationId));
+    public ConversationDetailResponse getConversation(@AuthenticationPrincipal Jwt jwt,@PathVariable UUID workspaceId,
+            @PathVariable UUID conversationId) {
+        return conversations.getConversation(ChatActor.from(jwt),workspaceId,conversationId);
     }
-
-    /**
-     * Deletes a conversation session.
-     */
+    /** Pages older messages without displacement when new turns arrive. */
+    @GetMapping("/{conversationId}/messages")
+    public MessagePageResponse messages(@AuthenticationPrincipal Jwt jwt,@PathVariable UUID workspaceId,
+            @PathVariable UUID conversationId,@RequestParam Map<String,String> query) {
+        var page=ChatPagination.parse(query,true);
+        return conversations.messages(ChatActor.from(jwt),workspaceId,conversationId,page.getPageNumber(),page.getPageSize(),ChatPagination.snapshot(query));
+    }
+    /** Atomically archives metadata and cancels an active operation. */
     @DeleteMapping("/{conversationId}")
-    public ResponseEntity<Void> deleteConversation(
-            @AuthenticationPrincipal Jwt jwt,
-            @PathVariable("workspaceId") UUID workspaceId,
-            @PathVariable("conversationId") UUID conversationId) {
-        UUID userId = UUID.fromString(jwt.getSubject());
-        conversationService.deleteConversation(userId, workspaceId, conversationId);
+    public ResponseEntity<Void> deleteConversation(@AuthenticationPrincipal Jwt jwt,@PathVariable UUID workspaceId,
+            @PathVariable UUID conversationId) {
+        conversations.deleteConversation(ChatActor.from(jwt),workspaceId,conversationId);
         return ResponseEntity.noContent().build();
     }
 }

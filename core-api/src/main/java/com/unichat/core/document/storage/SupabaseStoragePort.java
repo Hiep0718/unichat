@@ -33,7 +33,7 @@ public class SupabaseStoragePort implements StoragePort {
     private final String baseUrl;
     private final String serviceKey;
     private final String bucket;
-    private final HttpClient httpClient;
+    private HttpClient httpClient;
 
     public SupabaseStoragePort(
             @Value("${unichat.storage.supabase.url}") String baseUrl,
@@ -42,10 +42,12 @@ public class SupabaseStoragePort implements StoragePort {
         this.baseUrl = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
         this.serviceKey = serviceKey;
         this.bucket = bucket;
-        this.httpClient = HttpClient.newBuilder()
-                .connectTimeout(TIMEOUT)
-                .build();
         log.info("SupabaseStoragePort initialized: bucket={}", bucket);
+    }
+
+    private synchronized HttpClient client() {
+        if (httpClient == null) httpClient = HttpClient.newBuilder().connectTimeout(TIMEOUT).build();
+        return httpClient;
     }
 
     @Override
@@ -62,7 +64,7 @@ public class SupabaseStoragePort implements StoragePort {
                     .header("x-upsert", "true")
                     .POST(HttpRequest.BodyPublishers.ofByteArray(bytes))
                     .build();
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = client().send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() >= 200 && response.statusCode() < 300) {
                 log.info("Stored object in Supabase Storage: {}", storageKey);
                 return storageKey;
@@ -87,7 +89,7 @@ public class SupabaseStoragePort implements StoragePort {
                     .header("apikey", serviceKey)
                     .GET()
                     .build();
-            HttpResponse<byte[]> response = httpClient.send(request, HttpResponse.BodyHandlers.ofByteArray());
+            HttpResponse<byte[]> response = client().send(request, HttpResponse.BodyHandlers.ofByteArray());
             if (response.statusCode() == 200) {
                 return response.body();
             }
@@ -116,7 +118,7 @@ public class SupabaseStoragePort implements StoragePort {
                     .header("Content-Type", "application/json")
                     .method("DELETE", HttpRequest.BodyPublishers.ofString(body))
                     .build();
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = client().send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() >= 200 && response.statusCode() < 300) {
                 log.info("Deleted object from Supabase Storage: {}", storageKey);
             } else {

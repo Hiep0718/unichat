@@ -40,6 +40,12 @@ public class StudioNote {
     @Column(name = "metadata", columnDefinition = "TEXT")
     private String metadata;
 
+    @Column(name = "source_message_id")
+    private UUID sourceMessageId;
+
+    @Column(name = "source_fingerprint")
+    private String sourceFingerprint;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -101,6 +107,15 @@ public class StudioNote {
     public Instant getUpdatedAt() {
         return updatedAt;
     }
+
+    /** Inherits the source turn's dependencies without client-supplied hashes. */
+    public void bindSource(UUID messageId, String fingerprint) {
+        this.sourceMessageId = messageId; this.sourceFingerprint = fingerprint;
+    }
+    /** Returns the verified source turn, or null for legacy data. */
+    public UUID getSourceMessageId() { return sourceMessageId; }
+    /** Returns the Core-controlled source fingerprint. */
+    public String getSourceFingerprint() { return sourceFingerprint; }
 
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;

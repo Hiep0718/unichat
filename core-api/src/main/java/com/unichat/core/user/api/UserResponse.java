@@ -21,8 +21,10 @@ public record UserResponse(
         String avatarColor,
         SystemRole systemRole,
         UserStatus status,
-        Instant createdAt
+        Instant createdAt,
+        long version
 ) {
+    /** Projects public profile fields and the optimistic mutation revision. */
     public static UserResponse from(User u) {
         return new UserResponse(
                 u.getId(),
@@ -32,7 +34,8 @@ public record UserResponse(
                 u.getAvatarColor() == null ? null : u.getAvatarColor().key(),
                 u.getSystemRole(),
                 u.getStatus(),
-                u.getCreatedAt()
+                u.getCreatedAt(),
+                u.getVersion()
         );
     }
 }

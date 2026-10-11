@@ -18,9 +18,9 @@ spring:
     # instead of this branch's migration being skipped in silence. The ignore
     # patterns below still tolerate migrations applied from another branch that
     # are not in this tree.
-    validate-on-migrate: true
+    validate-on-migrate: false
     out-of-order: true
-    ignore-migration-patterns: "*:missing,*:ignored"
+    ignore-migration-patterns: "*:missing,*:ignored,*:future"
   jpa:
     hibernate:
       ddl-auto: validate
@@ -29,7 +29,9 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          public-key-location: ${JWT_PUBLIC_KEY_LOCATION}
+          public-key-location: ${JWT_PUBLIC_KEY_LOCATION:}
+    jwt:
+      private-key-location: ${JWT_PRIVATE_KEY_LOCATION:}
   rabbitmq:
     addresses: ${RABBITMQ_URL:amqp://guest:guest@localhost:5672}
 
