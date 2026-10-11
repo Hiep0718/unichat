@@ -113,6 +113,14 @@ export function GroupPage() {
       </header>
 
       <nav className="group-page__tabs" aria-label="Mục của nhóm">
+        <NavLink
+          to={`/workspaces/${workspaceId}/chat`}
+          className="group-tab group-tab--ai"
+          title="Trò chuyện với Trợ lý AI của nhóm"
+        >
+          <Icon name="auto_awesome" size={17} />
+          Trợ lý AI
+        </NavLink>
         {TABS.map((tab) => (
           <NavLink
             key={tab.path}

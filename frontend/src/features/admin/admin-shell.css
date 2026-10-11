@@ -1,0 +1,158 @@
+/* ==========================================================================
+   UniChat Admin Shell Styling — Academic Precision Unified Light Theme
+   ========================================================================== */
+
+.admin-shell {
+  height: 100vh;
+  max-height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background-color: var(--color-surface, #f9f9ff);
+  color: var(--color-on-surface, #151c27);
+  display: flex;
+  flex-direction: column;
+  scrollbar-gutter: stable;
+}
+
+.admin-shell::-webkit-scrollbar {
+  width: 8px;
+}
+
+.admin-shell::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.admin-shell::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.admin-shell::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.admin-shell__header {
+  background: var(--color-surface-container-lowest, #ffffff);
+  border-bottom: 1px solid var(--color-outline-variant, #e2e8f0);
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+}
+
+.admin-shell__topbar {
+  max-width: 1380px;
+  margin: 0 auto;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.admin-shell__brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-shell__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+}
+
+.admin-shell__title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-on-surface, #0f172a);
+  margin: 0;
+}
+
+.admin-shell__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-shell__btn-exit {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: var(--color-surface-container-low, #f1f5f9);
+  color: var(--color-on-surface, #334155);
+  border: 1px solid var(--color-outline-variant, #cbd5e1);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.15s ease-in-out;
+}
+
+.admin-shell__btn-exit:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.admin-shell__tabs-bar {
+  max-width: 1380px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.admin-shell__tabs-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.admin-shell__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #64748b;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.admin-shell__tab:hover {
+  color: #1e3a8a;
+}
+
+.admin-shell__tab--active {
+  color: #2563eb;
+  border-bottom-color: #2563eb;
+}
+
+.admin-shell__tab-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background-color: #22c55e;
+  display: inline-block;
+}
+
+.admin-shell__content {
+  flex: 1;
+  max-width: 1380px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 24px;
+}

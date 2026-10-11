@@ -43,7 +43,12 @@ const EvaluationPage = lazy(() => import('../features/evaluation/evaluation-page
 const DiscussionPage = lazy(() => import('../features/community/discussion-page'));
 
 const AccountPage = lazy(() => import('../features/account/settings-page'));
+const AdminShell = lazy(() => import('../features/admin/admin-shell'));
+const AdminAiStudioPage = lazy(() => import('../features/admin/admin-ai-studio-page'));
 const AdminUserPage = lazy(() => import('../features/admin/admin-user-page'));
+const AdminWorkspacePage = lazy(() => import('../features/admin/admin-workspace-page'));
+const AdminDocumentPage = lazy(() => import('../features/admin/admin-document-page'));
+const AdminAuditPage = lazy(() => import('../features/admin/admin-audit-page'));
 const AdminMetricPage = lazy(() => import('../features/admin/admin-metric-page'));
 
 const ForbiddenPage = lazy(() =>
@@ -71,6 +76,7 @@ export function AppRouter() {
           <Route element={<AuthGuard><AppShell /></AuthGuard>}>
             <Route path="/feed" element={<FeedPage />} />
             <Route path="/feed/posts/:postId" element={<PostDetailPage />} />
+            <Route path="/chat" element={<ChatRedirect />} />
             <Route path="/workspaces" element={<WorkspaceListPage />} />
             <Route path="/work-chat" element={<WorkChatPage />} />
             <Route path="/users/:userId" element={<ProfilePage />} />
@@ -100,8 +106,13 @@ export function AppRouter() {
           </Route>
 
           {/* Admin Routes */}
-          <Route element={<AuthGuard><AdminGuard><AppShell /></AdminGuard></AuthGuard>}>
+          <Route element={<AuthGuard><AdminGuard><AdminShell /></AdminGuard></AuthGuard>}>
+            <Route path="/admin" element={<Navigate to="/admin/ai-studio" replace />} />
+            <Route path="/admin/ai-studio" element={<AdminAiStudioPage />} />
             <Route path="/admin/users" element={<AdminUserPage />} />
+            <Route path="/admin/workspaces" element={<AdminWorkspacePage />} />
+            <Route path="/admin/documents" element={<AdminDocumentPage />} />
+            <Route path="/admin/audit-logs" element={<AdminAuditPage />} />
             <Route path="/admin/metrics" element={<AdminMetricPage />} />
           </Route>
 
@@ -115,8 +126,42 @@ export function AppRouter() {
 }
 
 import { LoadingScreen } from '../components/loading-screen';
+import { useWorkspaces } from '../features/workspaces/workspace-hooks';
 
 /** Simple centered loading indicator. */
 function PageLoader() {
   return <LoadingScreen message="Đang kết nối giao diện..." />;
 }
+
+/**
+ * Intelligent redirect for global /chat route.
+ * Directs to the active workspace's chat, or first group's chat, or workspaces list.
+ */
+function ChatRedirect() {
+  const { data: groupPage, isLoading } = useWorkspaces(0);
+  if (isLoading) {
+    return <LoadingScreen message="Đang kết nối Trợ lý AI..." />;
+  }
+
+  const groups = groupPage?.content ?? [];
+  let targetId: string | undefined;
+
+  try {
+    const lastId = localStorage.getItem('unichat_active_workspace_id');
+    if (lastId && groups.some((g) => g.id === lastId)) {
+      targetId = lastId;
+    }
+  } catch {
+    // Ignore localStorage access failures
+  }
+
+  if (!targetId && groups.length > 0) {
+    targetId = groups[0]?.id;
+  }
+
+  if (targetId) {
+    return <Navigate to={`/workspaces/${targetId}/chat`} replace />;
+  }
+  return <Navigate to="/workspaces" replace />;
+}
+

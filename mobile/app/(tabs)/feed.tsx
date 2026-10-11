@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,27 +7,17 @@ import {
   RefreshControl,
   TouchableOpacity,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
+
 import { colors, spacing, radii } from '../../src/design/tokens';
 import { shadows } from '../../src/design/shadows';
-import { UCIcon } from '../../src/components/uc-icon';
-import { UCBadge } from '../../src/components/uc-badge';
-import { UCGlassCard } from '../../src/components/uc-glass-card';
+import { UCScreenContainer } from '../../src/components/uc-screen-container';
 import { fetchJson } from '../../src/lib/api-client';
-
-interface DiscussionItem {
-  id: string;
-  title: string;
-  body: string;
-  authorName?: string;
-  workspaceName?: string;
-  label?: 'QUESTION' | 'DISCUSSION' | 'ANNOUNCEMENT' | 'NOTE';
-  voteScore: number;
-  replyCount: number;
-  createdAt: string;
-  hasAiAnswer?: boolean;
-  pinned?: boolean;
-}
+import { DiscussionCard } from '../../src/features/feed/components/discussion-card';
+import { DiscussionItem } from '../../src/features/feed/feed-types';
 
 const FALLBACK_FEED: DiscussionItem[] = [
   {
@@ -98,135 +88,83 @@ export default function FeedTabScreen() {
   };
 
   const handleVote = (id: string) => {
-    setVotedMap((prev) => {
-      const current = !!prev[id];
-      const next = !current;
-      setFeed((items) =>
-        items.map((item) =>
-          item.id === id ? { ...item, voteScore: item.voteScore + (next ? 1 : -1) } : item
-        )
-      );
-      return { ...prev, [id]: next };
-    });
+    if (Platform.OS === 'ios') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    const wasVoted = !!votedMap[id];
+    const delta = wasVoted ? -1 : 1;
+    setVotedMap((prev) => ({ ...prev, [id]: !wasVoted }));
+    setFeed((items) =>
+      items.map((item) =>
+        item.id === id ? { ...item, voteScore: item.voteScore + delta } : item
+      )
+    );
   };
 
   const filteredFeed =
     activeFilter === 'ALL' ? feed : feed.filter((item) => item.label === activeFilter);
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.scrollContent}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-    >
-      {/* Category Pills */}
-      <View style={styles.filterRow}>
-        <TouchableOpacity
-          style={[styles.filterPill, activeFilter === 'ALL' && styles.filterPillActive]}
-          onPress={() => setActiveFilter('ALL')}
-        >
-          <Text style={[styles.filterText, activeFilter === 'ALL' && styles.filterTextActive]}>
-            🔥 Tất cả
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.filterPill, activeFilter === 'QUESTION' && styles.filterPillActive]}
-          onPress={() => setActiveFilter('QUESTION')}
-        >
-          <Text style={[styles.filterText, activeFilter === 'QUESTION' && styles.filterTextActive]}>
-            ❓ Hỏi đáp
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.filterPill, activeFilter === 'ANNOUNCEMENT' && styles.filterPillActive]}
-          onPress={() => setActiveFilter('ANNOUNCEMENT')}
-        >
-          <Text style={[styles.filterText, activeFilter === 'ANNOUNCEMENT' && styles.filterTextActive]}>
-            📢 Thông báo
-          </Text>
-        </TouchableOpacity>
-      </View>
+    <UCScreenContainer>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      >
+        {/* Category Pills */}
+        <Animated.View entering={FadeInUp.duration(280)} style={styles.filterRow}>
+          <TouchableOpacity
+            style={[styles.filterPill, activeFilter === 'ALL' && styles.filterPillActive]}
+            onPress={() => setActiveFilter('ALL')}
+          >
+            <Text style={[styles.filterText, activeFilter === 'ALL' && styles.filterTextActive]}>
+              🔥 Tất cả
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.filterPill, activeFilter === 'QUESTION' && styles.filterPillActive]}
+            onPress={() => setActiveFilter('QUESTION')}
+          >
+            <Text style={[styles.filterText, activeFilter === 'QUESTION' && styles.filterTextActive]}>
+              ❓ Hỏi đáp
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.filterPill, activeFilter === 'ANNOUNCEMENT' && styles.filterPillActive]}
+            onPress={() => setActiveFilter('ANNOUNCEMENT')}
+          >
+            <Text style={[styles.filterText, activeFilter === 'ANNOUNCEMENT' && styles.filterTextActive]}>
+              📢 Thông báo
+            </Text>
+          </TouchableOpacity>
+        </Animated.View>
 
-      {/* Feed Cards */}
-      {loading ? (
-        <View style={styles.loadingBox}>
-          <ActivityIndicator size="large" color={colors.primary} />
-        </View>
-      ) : (
-        <View style={styles.listWrap}>
-          {filteredFeed.map((item) => {
-            const hasVoted = !!votedMap[item.id];
-            return (
-              <UCGlassCard key={item.id} variant="light" style={styles.feedCard}>
-                {/* Card Meta */}
-                <View style={styles.cardMetaRow}>
-                  <View style={styles.authorAvatar}>
-                    <Text style={styles.authorInitial}>
-                      {(item.authorName || 'U').charAt(0)}
-                    </Text>
-                  </View>
-                  <View style={styles.metaTextWrap}>
-                    <Text style={styles.authorName}>{item.authorName || 'Sinh viên'}</Text>
-                    <Text style={styles.workspaceTag}>
-                      {item.workspaceName || 'Không gian chung'} • {item.createdAt}
-                    </Text>
-                  </View>
-                  {item.pinned ? (
-                    <View style={styles.pinBadge}>
-                      <UCIcon name="push-pin" size={12} color="#B45309" />
-                      <Text style={styles.pinText}>Ghim</Text>
-                    </View>
-                  ) : null}
-                </View>
-
-                {/* Card Content */}
-                <Text style={styles.cardTitle}>{item.title}</Text>
-                <Text style={styles.cardBody} numberOfLines={3}>
-                  {item.body}
-                </Text>
-
-                {/* Card Footer */}
-                <View style={styles.cardFooter}>
-                  <TouchableOpacity
-                    style={[styles.votePill, hasVoted && styles.votePillActive]}
-                    onPress={() => handleVote(item.id)}
-                    activeOpacity={0.7}
-                  >
-                    <UCIcon
-                      name="arrow-upward"
-                      size={14}
-                      color={hasVoted ? '#FFFFFF' : colors.primary}
-                    />
-                    <Text style={[styles.voteText, hasVoted && styles.voteTextActive]}>
-                      {item.voteScore}
-                    </Text>
-                  </TouchableOpacity>
-
-                  <View style={styles.commentPill}>
-                    <UCIcon name="chat-bubble-outline" size={14} color="#64748B" />
-                    <Text style={styles.commentText}>{item.replyCount} thảo luận</Text>
-                  </View>
-
-                  {item.hasAiAnswer ? (
-                    <View style={styles.aiAnswerBadge}>
-                      <UCIcon name="auto-awesome" size={12} color="#0369A1" />
-                      <Text style={styles.aiAnswerText}>Đã có lời giải AI</Text>
-                    </View>
-                  ) : null}
-                </View>
-              </UCGlassCard>
-            );
-          })}
-        </View>
-      )}
-    </ScrollView>
+        {/* Feed Cards */}
+        {loading ? (
+          <View style={styles.loadingBox}>
+            <ActivityIndicator size="large" color={colors.primary} />
+          </View>
+        ) : (
+          <View style={styles.listWrap}>
+            {filteredFeed.map((item, index) => (
+              <DiscussionCard
+                key={item.id}
+                item={item}
+                index={index}
+                hasVoted={!!votedMap[item.id]}
+                onVote={handleVote}
+              />
+            ))}
+          </View>
+        )}
+      </ScrollView>
+    </UCScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  scrollView: {
     flex: 1,
-    backgroundColor: '#F4F6FC',
   },
   scrollContent: {
     padding: spacing.md,
@@ -249,12 +187,12 @@ const styles = StyleSheet.create({
   filterPillActive: {
     backgroundColor: colors.primary,
     borderColor: colors.primary,
-    ...shadows.glass,
+    ...shadows.ambientNavy,
   },
   filterText: {
     color: '#475569',
     fontSize: 13,
-    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
   },
   filterTextActive: {
     color: '#FFFFFF',
@@ -265,123 +203,5 @@ const styles = StyleSheet.create({
   },
   listWrap: {
     gap: spacing.md,
-  },
-  feedCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: spacing.md,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    ...shadows.sm,
-  },
-  cardMetaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.sm,
-  },
-  authorAvatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#E0F2FE',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: spacing.sm,
-  },
-  authorInitial: {
-    color: colors.primary,
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  metaTextWrap: {
-    flex: 1,
-  },
-  authorName: {
-    color: colors.onSurface,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  workspaceTag: {
-    color: '#94A3B8',
-    fontSize: 11,
-  },
-  pinBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FEF3C7',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: radii.full,
-    gap: 3,
-  },
-  pinText: {
-    color: '#B45309',
-    fontSize: 11,
-    fontWeight: '600',
-  },
-  cardTitle: {
-    color: colors.primary,
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 6,
-    lineHeight: 22,
-  },
-  cardBody: {
-    color: '#475569',
-    fontSize: 13,
-    lineHeight: 19,
-    marginBottom: spacing.md,
-  },
-  cardFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: '#F1F5F9',
-    paddingTop: spacing.sm,
-    gap: spacing.sm,
-  },
-  votePill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#EFF6FF',
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    borderRadius: radii.full,
-    gap: 4,
-  },
-  votePillActive: {
-    backgroundColor: colors.primary,
-  },
-  voteText: {
-    color: colors.primary,
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  voteTextActive: {
-    color: '#FFFFFF',
-  },
-  commentPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  commentText: {
-    color: '#64748B',
-    fontSize: 12,
-  },
-  aiAnswerBadge: {
-    marginLeft: 'auto',
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#E0F2FE',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: radii.full,
-    gap: 4,
-  },
-  aiAnswerText: {
-    color: '#0369A1',
-    fontSize: 11,
-    fontWeight: '600',
   },
 });

@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 /**
  * Resolution state of a question — the single most useful signal in the feed.
  *

@@ -31,7 +31,6 @@ interface KnowledgeStudioProps {
 
 export const KnowledgeStudio: React.FC<KnowledgeStudioProps> = ({
   workspaceId,
-  workspaceName: _workspaceName = 'Kho tri thức',
   citations = [],
   selectedCitation = null,
   savedNotes = [],

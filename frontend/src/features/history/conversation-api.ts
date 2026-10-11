@@ -1,4 +1,5 @@
 import { fetchJson } from '../../lib/api-client';
+import type { CitationItem, AnswerSection } from '../chat/chat-types';
 
 export interface ConversationItem {
   id: string;
@@ -13,19 +14,18 @@ export interface ConversationItem {
 export interface MessageItem {
   id: string;
   conversationId: string;
+  operationId?: string | null;
   role: 'USER' | 'ASSISTANT';
   content: string;
+  sequence?: number | undefined;
+  redacted?: boolean | undefined;
+  knowledgeMode?: 'STRICT' | 'EXPANDED' | undefined;
+  sections?: AnswerSection[] | undefined;
   intent?: string | null;
   refusalCode?: string | null;
   providerModel?: string | null;
   createdAt: string;
-  citations?: Array<{
-    documentId?: string;
-    fileName?: string;
-    locator?: string;
-    excerpt?: string;
-    score?: number;
-  }>;
+  citations?: CitationItem[];
 }
 
 
@@ -39,6 +39,15 @@ export interface PageResponse<T> {
   totalPages: number;
   number: number;
   size: number;
+  snapshotSequence?: number | undefined;
+}
+
+/** Reads older messages against a stable sequence snapshot. */
+export function fetchConversationMessages(workspaceId: string, conversationId: string, page = 0, size = 20,
+  snapshotSequence?: number): Promise<PageResponse<MessageItem>> {
+  const query = new URLSearchParams({ page: String(page), size: String(size) });
+  if (snapshotSequence !== undefined) query.set('snapshotSequence', String(snapshotSequence));
+  return fetchJson(`/workspaces/${workspaceId}/conversations/${conversationId}/messages?${query}`);
 }
 
 export async function fetchWorkspaceConversations(

@@ -1,55 +1,34 @@
-/**
- * Route guards based on authentication state (UI Spec §2).
- * AuthGuard: redirects to /login if not authenticated.
- * GuestGuard: redirects to /workspaces if already authenticated.
- */
-
 import { Navigate } from 'react-router-dom';
-
-import type { ReactNode } from 'react';
-
 import { useAuth } from './auth-context';
+import type { ReactNode } from 'react';
+interface GuardProps { readonly children: ReactNode }
 
-interface GuardProps {
-  readonly children: ReactNode;
+/** Holds navigation while refresh and authoritative /me are pending. */
+function SessionLoading() {
+  return <div role="status" aria-live="polite">Đang xác minh phiên đăng nhập…</div>;
 }
 
-/**
- * Wraps authenticated-only routes. Redirects to /login if no token.
- */
+/** Requires both a valid access session and an active resolved identity. */
 export function AuthGuard({ children }: GuardProps) {
-  const { isAuthenticated } = useAuth();
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
+  const { isAuthenticated, isLoading } = useAuth();
+  if (isLoading) return <SessionLoading />;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
   return <>{children}</>;
 }
 
-/**
- * Wraps guest-only routes (login, register). Redirects to /workspaces if authenticated.
- */
+/** Prevents authenticated users from returning to credential forms. */
 export function GuestGuard({ children }: GuardProps) {
-  const { isAuthenticated } = useAuth();
-
-  if (isAuthenticated) {
-    return <Navigate to="/workspaces" replace />;
-  }
-
+  const { isAuthenticated, isLoading } = useAuth();
+  if (isLoading) return <SessionLoading />;
+  if (isAuthenticated) return <Navigate to="/workspaces" replace />;
   return <>{children}</>;
 }
 
-/**
- * Wraps admin-only routes. Redirects to /forbidden if user is not ADMIN.
- */
+/** Uses only the authoritative system role; names never grant permissions. */
 export function AdminGuard({ children }: GuardProps) {
-  const { user } = useAuth();
-
-  if (user && user.systemRole !== 'ADMIN') {
-    return <Navigate to="/forbidden" replace />;
-  }
-
+  const { user, isAuthenticated, isLoading } = useAuth();
+  if (isLoading) return <SessionLoading />;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (user?.systemRole !== 'ADMIN' || user.status !== 'ACTIVE') return <Navigate to="/forbidden" replace />;
   return <>{children}</>;
 }
-

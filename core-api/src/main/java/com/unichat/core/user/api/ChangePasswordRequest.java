@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Size;
  */
 public record ChangePasswordRequest(
     @NotBlank(message = "Mật khẩu hiện tại không được để trống")
+    @Size(max = 128)
     String currentPassword,
 
     @NotBlank(message = "Mật khẩu mới không được để trống")

@@ -18,5 +18,16 @@ public record QuestionResponse(
         String requestId,
         Double evidenceScore,
         Boolean singleSourceWarning,
-        String warningMessage
-) {}
+        String warningMessage,
+        UUID operationId,
+        String knowledgeMode,
+        List<AnswerSection> sections
+) {
+    /** Retains source compatibility for existing internal consumers. */
+    public QuestionResponse(UUID messageId, UUID conversationId, String decision, String answer,
+            String intent, String strategyVersion, List<CitationResponse> citations, String refusalCode,
+            String requestId, Double evidenceScore, Boolean singleSourceWarning, String warningMessage) {
+        this(messageId, conversationId, decision, answer, intent, strategyVersion, citations, refusalCode,
+                requestId, evidenceScore, singleSourceWarning, warningMessage, null, "STRICT", List.of());
+    }
+}

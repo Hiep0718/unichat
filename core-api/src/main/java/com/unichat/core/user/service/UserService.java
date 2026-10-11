@@ -26,10 +26,16 @@ public class UserService {
     private final UserRepository userRepository;
     private final Clock clock;
     private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
-    public UserService(UserRepository userRepository, Clock clock, org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
+    private final TokenService tokenService;
+    private final com.unichat.core.admin.service.AuditService auditService;
+    /** Composes profile persistence and atomic password/session invalidation. */
+    public UserService(UserRepository userRepository, Clock clock, org.springframework.security.crypto.password.PasswordEncoder passwordEncoder,
+            TokenService tokenService, com.unichat.core.admin.service.AuditService auditService) {
         this.userRepository = userRepository;
         this.clock = clock;
         this.passwordEncoder = passwordEncoder;
+        this.tokenService = tokenService;
+        this.auditService = auditService;
     }
 
     /**
@@ -70,7 +76,7 @@ public class UserService {
      */
     @Transactional
     public void changePassword(UUID userId, com.unichat.core.user.api.ChangePasswordRequest request) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.lockById(userId)
                 .orElseThrow(() -> new NotFoundError("Người dùng không tồn tại"));
 
         if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
@@ -78,7 +84,10 @@ public class UserService {
         }
 
         user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
+        user.invalidateCredentials();
         user.setUpdatedAt(Instant.now(clock));
         userRepository.save(user);
+        tokenService.revokeAllTokensByUser(userId);
+        auditService.record(userId, "AUTH_PASSWORD_CHANGE", "USER", userId, "SUCCESS");
     }
 }

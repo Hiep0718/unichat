@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -6,45 +6,40 @@ import {
   ScrollView,
   RefreshControl,
   TouchableOpacity,
-  ActivityIndicator,
+  TextInput,
 } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
+import { router } from 'expo-router';
 import { colors, spacing, radii } from '../../src/design/tokens';
 import { typography } from '../../src/design/typography';
-import { shadows } from '../../src/design/shadows';
 import { UCIcon } from '../../src/components/uc-icon';
-import { UCBadge } from '../../src/components/uc-badge';
 import { UCGlassCard } from '../../src/components/uc-glass-card';
+import { UCScreenContainer } from '../../src/components/uc-screen-container';
+import { UCSkeletonList } from '../../src/components/uc-skeleton';
 import { useAuth } from '../../src/features/auth/auth-context';
-import { fetchJson } from '../../src/lib/api-client';
-
-interface WorkspaceItem {
-  id: string;
-  name: string;
-  description?: string;
-  visibility: 'PUBLIC' | 'PRIVATE';
-  documentCount: number;
-  memberCount: number;
-  userRole?: 'OWNER' | 'ADMIN' | 'MEMBER' | 'VIEWER' | null;
-}
-
-interface PageResponse<T> {
-  content: T[];
-  totalElements: number;
-}
+import { useToast } from '../../src/lib/toast-context';
+import { workspaceApi } from '../../src/features/workspaces/workspace-api';
+import { WorkspaceItem } from '../../src/features/workspaces/workspace-types';
+import { WorkspaceHero } from '../../src/features/workspaces/components/workspace-hero';
+import { WorkspaceCard } from '../../src/features/workspaces/components/workspace-card';
+import { CreateWorkspaceModal } from '../../src/features/workspaces/create-workspace-modal';
 
 export default function WorkspaceTabScreen() {
   const { user } = useAuth();
+  const { showToast } = useToast();
   const [tab, setTab] = useState<'mine' | 'explore'>('mine');
   const [myWorkspaces, setMyWorkspaces] = useState<WorkspaceItem[]>([]);
   const [publicWorkspaces, setPublicWorkspaces] = useState<WorkspaceItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   const loadData = useCallback(async () => {
     try {
       const [mineRes, exploreRes] = await Promise.allSettled([
-        fetchJson<PageResponse<WorkspaceItem>>('/api/v1/workspaces?page=0&size=20'),
-        fetchJson<PageResponse<WorkspaceItem>>('/api/v1/workspaces/explore?page=0&size=20'),
+        workspaceApi.getWorkspaces({ page: 0, size: 20 }),
+        workspaceApi.getExploreWorkspaces({ page: 0, size: 20 }),
       ]);
 
       if (mineRes.status === 'fulfilled') {
@@ -70,444 +65,323 @@ export default function WorkspaceTabScreen() {
 
   const handleJoin = async (workspaceId: string) => {
     try {
-      await fetchJson(`/api/v1/workspaces/${workspaceId}/join`, { method: 'POST' });
+      await workspaceApi.joinWorkspace(workspaceId);
+      showToast({ message: 'Tham gia không gian thành công!', type: 'success' });
       await loadData();
       setTab('mine');
-    } catch {
-      // Handled silently
+    } catch (err: any) {
+      showToast({ message: err.message || 'Không thể tham gia không gian', type: 'error' });
     }
   };
 
-  const currentList = tab === 'mine' ? myWorkspaces : publicWorkspaces;
-  const userInitial = (user?.email || 'U').charAt(0).toUpperCase();
+  const handleWorkspacePress = (workspaceId: string) => {
+    router.push(`/workspace/${workspaceId}` as any);
+  };
+
+  const totalDocuments = useMemo(() => {
+    return myWorkspaces.reduce((acc, ws) => acc + (ws.documentCount || 0), 0);
+  }, [myWorkspaces]);
+
+  const rawList = tab === 'mine' ? myWorkspaces : publicWorkspaces;
+
+  const currentList = useMemo(() => {
+    if (!searchQuery.trim()) return rawList;
+    const q = searchQuery.toLowerCase().trim();
+    return rawList.filter(
+      (ws) =>
+        ws.name.toLowerCase().includes(q) ||
+        (ws.description && ws.description.toLowerCase().includes(q))
+    );
+  }, [rawList, searchQuery]);
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.scrollContent}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-    >
-      {/* Liquid Glass Hero Card */}
-      <UCGlassCard variant="navy" style={styles.heroGlassCard} glow>
-        <View style={styles.heroTopRow}>
-          <View style={styles.avatarCircle}>
-            <Text style={styles.avatarText}>{userInitial}</Text>
-          </View>
-          <View style={styles.heroUserText}>
-            <Text style={styles.heroGreeting}>Xin chào,</Text>
-            <Text style={styles.heroEmail} numberOfLines={1}>
-              {user?.email || 'Sinh viên UniChat'}
-            </Text>
-          </View>
-          <View style={styles.statusBadge}>
-            <View style={styles.greenDot} />
-            <Text style={styles.statusText}>AI Active</Text>
-          </View>
-        </View>
+    <UCScreenContainer>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      >
+        {/* Liquid Glass Hero Header */}
+        <WorkspaceHero
+          email={user?.email}
+          displayName={user?.displayName}
+          workspaceCount={myWorkspaces.length}
+          documentCount={totalDocuments}
+          onQuickChat={() => router.push('/(tabs)/chat' as any)}
+          onCreateWorkspace={() => setIsModalOpen(true)}
+        />
 
-        <View style={styles.heroTagRow}>
-          <View style={styles.heroPill}>
-            <UCIcon name="auto-awesome" size={13} color="#57DFFE" />
-            <Text style={styles.heroPillText}>RAG Chuẩn xác</Text>
+        {/* Liquid Glass Search & Filter Bar */}
+        <Animated.View entering={FadeInUp.delay(50).duration(260)} style={styles.searchSection}>
+          <View style={styles.searchBar}>
+            <UCIcon name="search" size={18} color={colors.outline} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Tìm kiếm không gian học tập..."
+              placeholderTextColor={colors.outline}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              returnKeyType="search"
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity onPress={() => setSearchQuery('')} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                <UCIcon name="close" size={16} color={colors.outline} />
+              </TouchableOpacity>
+            )}
           </View>
-          <View style={styles.heroPill}>
-            <UCIcon name="menu-book" size={13} color="#ACEDFF" />
-            <Text style={styles.heroPillText}>Giáo trình số</Text>
-          </View>
-          <View style={styles.heroPill}>
-            <UCIcon name="verified-user" size={13} color="#ACEDFF" />
-            <Text style={styles.heroPillText}>Trích dẫn 100%</Text>
-          </View>
-        </View>
-      </UCGlassCard>
+        </Animated.View>
 
-      {/* Glass Segment Filter */}
-      <View style={styles.segmentContainer}>
-        <TouchableOpacity
-          style={[styles.segmentBtn, tab === 'mine' && styles.segmentBtnActive]}
-          onPress={() => setTab('mine')}
-          activeOpacity={0.8}
-        >
-          <UCIcon
-            name="folder-shared"
-            size={18}
-            color={tab === 'mine' ? colors.primary : colors.outline}
-          />
-          <Text style={[styles.segmentText, tab === 'mine' && styles.segmentTextActive]}>
-            Của tôi ({myWorkspaces.length})
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.segmentBtn, tab === 'explore' && styles.segmentBtnActive]}
-          onPress={() => setTab('explore')}
-          activeOpacity={0.8}
-        >
-          <UCIcon
-            name="explore"
-            size={18}
-            color={tab === 'explore' ? colors.primary : colors.outline}
-          />
-          <Text style={[styles.segmentText, tab === 'explore' && styles.segmentTextActive]}>
-            Khám phá ({publicWorkspaces.length})
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Workspaces List or Empty State */}
-      {loading ? (
-        <View style={styles.loadingBox}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={styles.loadingText}>Đang tải không gian làm việc...</Text>
-        </View>
-      ) : currentList.length > 0 ? (
-        <View style={styles.listContainer}>
-          {currentList.map((ws) => (
-            <UCGlassCard key={ws.id} variant="light" style={styles.workspaceCard}>
-              <View style={styles.cardHeader}>
-                <View style={styles.cardTitleWrap}>
-                  <Text style={styles.cardTitle} numberOfLines={1}>
-                    {ws.name}
-                  </Text>
-                  <Text style={styles.cardDesc} numberOfLines={2}>
-                    {ws.description || 'Không gian học tập & nghiên cứu tài liệu.'}
-                  </Text>
-                </View>
-                <UCBadge
-                  label={ws.visibility === 'PUBLIC' ? 'Công khai' : 'Riêng tư'}
-                  variant={ws.visibility === 'PUBLIC' ? 'secondary' : 'neutral'}
-                  size="sm"
+        {/* Liquid Glass Tab Switcher & Create Action */}
+        <Animated.View entering={FadeInUp.delay(90).duration(280)}>
+          <View style={styles.actionRow}>
+            <View style={styles.segmentContainer}>
+              <TouchableOpacity
+                style={[styles.segmentBtn, tab === 'mine' && styles.segmentBtnActive]}
+                onPress={() => setTab('mine')}
+                activeOpacity={0.8}
+              >
+                <UCIcon
+                  name="folder-shared"
+                  size={16}
+                  color={tab === 'mine' ? colors.primary : colors.outline}
                 />
-              </View>
+                <Text style={[styles.segmentText, tab === 'mine' && styles.segmentTextActive]}>
+                  Của tôi ({myWorkspaces.length})
+                </Text>
+              </TouchableOpacity>
 
-              <View style={styles.cardStatsRow}>
-                <View style={styles.statItem}>
-                  <UCIcon name="description" size={15} color={colors.outline} />
-                  <Text style={styles.statText}>{ws.documentCount || 0} tài liệu</Text>
-                </View>
-                <View style={styles.statItem}>
-                  <UCIcon name="group" size={15} color={colors.outline} />
-                  <Text style={styles.statText}>{ws.memberCount || 1} thành viên</Text>
-                </View>
-                {tab === 'explore' ? (
-                  <TouchableOpacity
-                    style={styles.joinBtn}
-                    onPress={() => handleJoin(ws.id)}
-                    activeOpacity={0.8}
-                  >
-                    <Text style={styles.joinBtnText}>Tham gia</Text>
-                    <UCIcon name="add" size={16} color="#FFFFFF" />
-                  </TouchableOpacity>
-                ) : (
-                  <View style={styles.openPill}>
-                    <Text style={styles.openPillText}>Vào học</Text>
-                    <UCIcon name="arrow-forward" size={14} color={colors.primary} />
-                  </View>
-                )}
-              </View>
-            </UCGlassCard>
-          ))}
-        </View>
-      ) : (
-        <UCGlassCard variant="light" style={styles.emptyCard}>
-          <View style={styles.emptyCircle}>
-            <UCIcon name="school" size={38} color={colors.primary} />
-          </View>
-          <Text style={styles.emptyTitle}>
-            {tab === 'mine' ? 'Chưa có Không gian nào' : 'Không có Không gian mới'}
-          </Text>
-          <Text style={styles.emptySubtitle}>
-            {tab === 'mine'
-              ? 'Hãy tham gia các Không gian học tập công khai để bắt đầu hỏi đáp AI và đọc giáo trình.'
-              : 'Tất cả Không gian công khai đã được bạn tham gia.'}
-          </Text>
-          {tab === 'mine' && publicWorkspaces.length > 0 ? (
+              <TouchableOpacity
+                style={[styles.segmentBtn, tab === 'explore' && styles.segmentBtnActive]}
+                onPress={() => setTab('explore')}
+                activeOpacity={0.8}
+              >
+                <UCIcon
+                  name="explore"
+                  size={16}
+                  color={tab === 'explore' ? colors.primary : colors.outline}
+                />
+                <Text style={[styles.segmentText, tab === 'explore' && styles.segmentTextActive]}>
+                  Khám phá ({publicWorkspaces.length})
+                </Text>
+              </TouchableOpacity>
+            </View>
+
             <TouchableOpacity
-              style={styles.emptyCtaBtn}
-              onPress={() => setTab('explore')}
+              style={styles.createBtn}
+              onPress={() => setIsModalOpen(true)}
               activeOpacity={0.8}
             >
-              <Text style={styles.emptyCtaText}>Khám phá không gian mẫu</Text>
-              <UCIcon name="arrow-forward" size={16} color="#FFFFFF" />
+              <UCIcon name="add" size={20} color="#FFFFFF" />
             </TouchableOpacity>
-          ) : (
-            <TouchableOpacity style={styles.emptyCtaOutline} onPress={onRefresh} activeOpacity={0.8}>
-              <Text style={styles.emptyCtaOutlineText}>Tải lại dữ liệu</Text>
-            </TouchableOpacity>
-          )}
-        </UCGlassCard>
-      )}
-    </ScrollView>
+          </View>
+        </Animated.View>
+
+        {/* Workspaces List */}
+        {loading ? (
+          <UCSkeletonList count={3} />
+        ) : currentList.length > 0 ? (
+          <View style={styles.listContainer}>
+            {currentList.map((ws, index) => (
+              <WorkspaceCard
+                key={ws.id}
+                workspace={ws}
+                mode={tab}
+                index={index}
+                onPress={handleWorkspacePress}
+                onJoin={handleJoin}
+              />
+            ))}
+          </View>
+        ) : (
+          <UCGlassCard variant="light" style={styles.emptyCard} entering="fade">
+            <View style={styles.emptyCircle}>
+              <UCIcon name="school" size={38} color={colors.primary} />
+            </View>
+            <Text style={styles.emptyTitle}>
+              {searchQuery.trim()
+                ? 'Không tìm thấy kết quả'
+                : tab === 'mine'
+                ? 'Chưa có Không gian nào'
+                : 'Không có Không gian mới'}
+            </Text>
+            <Text style={styles.emptySubtitle}>
+              {searchQuery.trim()
+                ? `Không có không gian nào khớp với "${searchQuery}". Thử từ khóa khác.`
+                : tab === 'mine'
+                ? 'Hãy tạo mới hoặc khám phá không gian học tập công khai để bắt đầu hỏi đáp AI.'
+                : 'Tất cả Không gian công khai đã được bạn tham gia.'}
+            </Text>
+            {tab === 'mine' && publicWorkspaces.length > 0 && !searchQuery.trim() ? (
+              <TouchableOpacity
+                style={styles.emptyCtaBtn}
+                onPress={() => setTab('explore')}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.emptyCtaText}>Khám phá không gian mẫu</Text>
+                <UCIcon name="arrow-forward" size={16} color="#FFFFFF" />
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity style={styles.emptyCtaOutline} onPress={onRefresh} activeOpacity={0.8}>
+                <Text style={styles.emptyCtaOutlineText}>Tải lại dữ liệu</Text>
+              </TouchableOpacity>
+            )}
+          </UCGlassCard>
+        )}
+      </ScrollView>
+
+      {/* Workspace Creation Modal */}
+      <CreateWorkspaceModal
+        visible={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={() => {
+          loadData();
+          setTab('mine');
+        }}
+      />
+    </UCScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F4F6FC',
-  },
+  scrollView: { flex: 1 },
   scrollContent: {
-    padding: spacing.md,
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.sm,
     paddingBottom: 110,
   },
-  heroGlassCard: {
-    marginBottom: spacing.md,
-    borderRadius: 24,
+  searchSection: {
+    marginBottom: spacing.sm + 4,
   },
-  heroTopRow: {
+  searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: spacing.md,
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    borderRadius: radii.xl,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm + 2,
+    borderWidth: 1.2,
+    borderColor: 'rgba(226, 232, 248, 0.85)',
+    gap: spacing.sm,
   },
-  avatarCircle: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
-    backgroundColor: '#1E3A8A',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#57DFFE',
-    marginRight: spacing.sm + 4,
-  },
-  avatarText: {
-    color: '#FFFFFF',
-    fontSize: 20,
-    fontWeight: '700',
-  },
-  heroUserText: {
+  searchInput: {
     flex: 1,
+    ...typography.bodyMd,
+    color: colors.onSurface,
+    padding: 0,
   },
-  heroGreeting: {
-    color: '#ACEDFF',
-    fontSize: 13,
-    fontWeight: '500',
-  },
-  heroEmail: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700',
-    marginTop: 1,
-  },
-  statusBadge: {
+  actionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.12)',
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    borderRadius: radii.full,
-  },
-  greenDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 4,
-    backgroundColor: '#10B981',
-    marginRight: 6,
-  },
-  statusText: {
-    color: '#E0F2FE',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  heroTagRow: {
-    flexDirection: 'row',
-    gap: spacing.xs + 2,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.12)',
-    paddingTop: spacing.sm + 2,
-  },
-  heroPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: radii.full,
-    gap: 4,
-  },
-  heroPillText: {
-    color: '#F0F9FF',
-    fontSize: 11,
-    fontWeight: '500',
+    justifyContent: 'space-between',
+    marginBottom: spacing.md,
+    gap: spacing.sm,
   },
   segmentContainer: {
+    flex: 1,
     flexDirection: 'row',
-    backgroundColor: 'rgba(255, 255, 255, 0.75)',
-    borderWidth: 1.2,
-    borderColor: 'rgba(226, 232, 248, 0.9)',
-    borderRadius: 16,
-    padding: 3,
-    marginBottom: spacing.md,
+    backgroundColor: 'rgba(231, 238, 254, 0.65)',
+    borderRadius: radii.full,
+    padding: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(226, 232, 248, 0.8)',
   },
   segmentBtn: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 10,
-    borderRadius: 13,
+    paddingVertical: 7,
+    borderRadius: radii.full,
     gap: 6,
   },
   segmentBtnActive: {
     backgroundColor: '#FFFFFF',
-    ...shadows.glass,
+    shadowColor: '#00236F',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 2,
   },
   segmentText: {
-    color: colors.outline,
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '500',
+    color: colors.outline,
   },
   segmentTextActive: {
     color: colors.primary,
+    fontWeight: '700',
   },
-  loadingBox: {
+  createBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: spacing.xxl,
-    gap: spacing.sm,
-  },
-  loadingText: {
-    color: colors.outline,
-    fontSize: 14,
+    shadowColor: '#00236F',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.22,
+    shadowRadius: 8,
+    elevation: 4,
   },
   listContainer: {
-    gap: spacing.sm + 4,
-  },
-  workspaceCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: spacing.md,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    ...shadows.sm,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: spacing.sm,
-    gap: spacing.sm,
-  },
-  cardTitleWrap: {
-    flex: 1,
-  },
-  cardTitle: {
-    color: colors.primary,
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 4,
-  },
-  cardDesc: {
-    color: '#64748B',
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  cardStatsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: '#F1F5F9',
-    paddingTop: spacing.sm + 2,
-    marginTop: spacing.xs,
-  },
-  statItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginRight: spacing.md,
-    gap: 4,
-  },
-  statText: {
-    color: '#64748B',
-    fontSize: 12,
-  },
-  joinBtn: {
-    marginLeft: 'auto',
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.primary,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: radii.full,
-    gap: 4,
-  },
-  joinBtnText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  openPill: {
-    marginLeft: 'auto',
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#EFF6FF',
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    borderRadius: radii.full,
-    gap: 4,
-  },
-  openPillText: {
-    color: colors.primary,
-    fontSize: 12,
-    fontWeight: '600',
+    paddingBottom: spacing.sm,
   },
   emptyCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
     padding: spacing.xl,
+    borderRadius: radii['2xl'],
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
     marginTop: spacing.sm,
-    ...shadows.sm,
+    backgroundColor: '#FFFFFF',
   },
   emptyCircle: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: '#EFF6FF',
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: colors.surfaceContainer,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.md,
   },
   emptyTitle: {
-    color: colors.primary,
-    fontSize: 18,
+    ...typography.headlineMd,
+    color: colors.onSurface,
     fontWeight: '700',
     marginBottom: spacing.xs,
+    textAlign: 'center',
   },
   emptySubtitle: {
-    color: '#64748B',
-    fontSize: 13,
+    ...typography.bodyMd,
+    color: colors.onSurfaceVariant,
     textAlign: 'center',
-    lineHeight: 19,
-    maxWidth: 280,
+    lineHeight: 20,
     marginBottom: spacing.lg,
   },
   emptyCtaBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.primary,
-    paddingVertical: 12,
     paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
     borderRadius: radii.full,
-    gap: 6,
-    ...shadows.sm,
+    gap: spacing.sm,
   },
   emptyCtaText: {
+    ...typography.labelMd,
     color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   emptyCtaOutline: {
-    paddingVertical: 10,
     paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm + 2,
     borderRadius: radii.full,
     borderWidth: 1,
     borderColor: colors.outlineVariant,
   },
   emptyCtaOutlineText: {
-    color: colors.onSurfaceVariant,
-    fontSize: 13,
+    ...typography.labelSm,
+    color: colors.outline,
     fontWeight: '600',
   },
 });

@@ -4,44 +4,32 @@
 
 .notification-bell {
   position: relative;
-}
-
-.notification-bell__btn {
-  width: 40px;
-  height: 40px;
-  border: none;
-  border-radius: 50%;
-  background: transparent;
-  color: var(--color-on-surface-variant);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background var(--transition-fast), color var(--transition-fast);
-  position: relative;
-}
-
-.notification-bell__btn:hover {
-  background: var(--color-surface-container-high);
-  color: var(--color-on-surface);
+  width: 100%;
 }
 
 .notification-bell__badge {
   position: absolute;
-  top: 4px;
-  right: 4px;
-  min-width: 18px;
-  height: 18px;
+  top: -5px;
+  right: -7px;
+  min-width: 17px;
+  height: 17px;
   border-radius: var(--radius-full);
   background: var(--color-error);
   color: var(--color-on-error);
   font: var(--font-label-sm);
   font-size: 10px;
+  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0 4px;
   animation: badgePop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 0 0 2px var(--color-surface);
+  z-index: 2;
+}
+
+.side-nav__item--active .notification-bell__badge {
+  box-shadow: 0 0 0 2px #4f46e5;
 }
 
 @keyframes badgePop {
@@ -51,23 +39,21 @@
 
 /* ---------- Dropdown ---------- */
 .notification-dropdown {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  width: min(380px, 92vw);
-  max-height: 420px;
+  position: fixed;
+  width: min(380px, calc(100vw - 32px));
+  max-height: min(480px, calc(100vh - 32px));
   background: var(--color-surface-container-lowest);
   border: 1px solid var(--color-outline-variant);
   border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-xl);
+  box-shadow: 0 16px 40px -6px rgba(15, 23, 42, 0.18), 0 4px 14px rgba(15, 23, 42, 0.08);
   overflow: hidden;
-  z-index: 300;
-  animation: dropdownSlide 0.15s ease;
+  z-index: 1000;
+  animation: dropdownSlide 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes dropdownSlide {
-  from { opacity: 0; transform: translateY(-8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateX(-8px) scale(0.98); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
 }
 
 .notification-dropdown__header {

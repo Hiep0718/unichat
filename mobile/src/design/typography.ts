@@ -60,4 +60,11 @@ export const typography = {
     fontSize: 13,
     lineHeight: 18,
   } as TextStyle,
+
+  headlineHero: {
+    fontFamily: 'Inter_800ExtraBold',
+    fontSize: 32,
+    lineHeight: 40,
+    letterSpacing: -0.7,
+  } as TextStyle,
 } as const;

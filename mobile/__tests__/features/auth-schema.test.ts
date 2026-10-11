@@ -26,15 +26,13 @@ describe('Auth Validation Schemas (Zod v4)', () => {
       }
     });
 
-    it('should reject password with less than 12 characters', () => {
+    it('should accept a nonempty legacy login password without transforming it', () => {
       const result = loginSchema.safeParse({
         email: 'student@unichat.vn',
         password: 'short',
       });
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error.issues[0].message).toBe('Mật khẩu phải từ 12 ký tự trở lên');
-      }
+      expect(result.success).toBe(true);
+      if (result.success) expect(result.data.password).toBe('short');
     });
   });
 

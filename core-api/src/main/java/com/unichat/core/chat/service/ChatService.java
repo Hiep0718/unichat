@@ -1,222 +1,45 @@
 package com.unichat.core.chat.service;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
-
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import com.unichat.core.chat.api.AskQuestionRequest;
-import com.unichat.core.chat.api.CitationResponse;
+import com.unichat.core.chat.api.ChatOperationResponse;
 import com.unichat.core.chat.api.QuestionResponse;
-import com.unichat.core.chat.domain.Conversation;
-import com.unichat.core.chat.domain.ConversationRepository;
-import com.unichat.core.chat.domain.Message;
-import com.unichat.core.chat.domain.MessageRepository;
-import com.unichat.core.common.error.NotFoundError;
-import com.unichat.core.document.domain.DocumentRepository;
-import com.unichat.core.shared.util.UuidGenerator;
-import com.unichat.core.workspace.domain.WorkspaceMemberRepository;
-import com.unichat.core.workspace.domain.WorkspaceMemberStatus;
-import com.unichat.core.workspace.domain.WorkspaceRepository;
+import com.unichat.core.common.error.UnauthenticatedError;
 
-/**
- * Orchestrates RAG questioning, conversation sessions, and internal AI service calls.
- */
+/** Nonstream facade over the same durable operation used by SSE. */
 @Service
 public class ChatService {
-
-    private final WorkspaceRepository workspaceRepository;
-    private final WorkspaceMemberRepository workspaceMemberRepository;
-    private final DocumentRepository documentRepository;
-    private final ConversationRepository conversationRepository;
-    private final MessageRepository messageRepository;
-    private final com.unichat.core.chat.domain.CitationHistoryRepository citationHistoryRepository;
-    private final CitationExtractor citationExtractor;
-    private final ConversationHistoryBuilder conversationHistoryBuilder;
-    private final com.unichat.core.shared.config.ServiceTokenIssuer serviceTokenIssuer;
-    private final RestTemplate restTemplate;
-    private final Clock clock;
-
-    @Value("${unichat.ai-service.url:http://localhost:8000}")
-    private String aiServiceUrl;
-
-    public ChatService(
-            WorkspaceRepository workspaceRepository,
-            WorkspaceMemberRepository workspaceMemberRepository,
-            DocumentRepository documentRepository,
-            ConversationRepository conversationRepository,
-            MessageRepository messageRepository,
-            com.unichat.core.chat.domain.CitationHistoryRepository citationHistoryRepository,
-            CitationExtractor citationExtractor,
-            ConversationHistoryBuilder conversationHistoryBuilder,
-            com.unichat.core.shared.config.ServiceTokenIssuer serviceTokenIssuer,
-            Clock clock) {
-        this.workspaceRepository = workspaceRepository;
-        this.workspaceMemberRepository = workspaceMemberRepository;
-        this.documentRepository = documentRepository;
-        this.conversationRepository = conversationRepository;
-        this.messageRepository = messageRepository;
-        this.citationHistoryRepository = citationHistoryRepository;
-        this.citationExtractor = citationExtractor;
-        this.conversationHistoryBuilder = conversationHistoryBuilder;
-        this.serviceTokenIssuer = serviceTokenIssuer;
-        this.restTemplate = new RestTemplate();
-        this.clock = clock;
+    private final ChatOperationService operations;
+    private final ChatOperationRunner runner;
+    /** Uses shared reservation and inference rather than a second idempotency cache. */
+    public ChatService(ChatOperationService operations,ChatOperationRunner runner) {
+        this.operations=operations;this.runner=runner;
     }
-
-    /**
-     * Handles asking a question in a workspace with authorized RAG retrieval.
-     */
-    @Transactional
-    public QuestionResponse askQuestion(UUID userId, UUID workspaceId, AskQuestionRequest request, String requestId) {
-        validateAccess(userId, workspaceId);
-
-        Instant now = Instant.now(clock);
-
-        // Get or create conversation
-        Conversation conversation;
-        if (request.conversationId() != null) {
-            conversation = conversationRepository.findByUserIdAndIdAndStatus(userId, request.conversationId(), "ACTIVE")
-                    .orElseThrow(() -> new NotFoundError("Hội thoại không tồn tại"));
-        } else {
-            String title = request.question().length() > 50 ? request.question().substring(0, 47) + "..." : request.question();
-            conversation = new Conversation(UuidGenerator.generateV7(), workspaceId, userId, title, now);
-            conversationRepository.save(conversation);
-        }
-
-        // Build conversation history and load summary before saving new user message
-        List<Map<String, String>> conversationHistory = conversationHistoryBuilder.buildHistoryPayload(conversation.getId());
-        String conversationSummary = conversationHistoryBuilder.getSummary(conversation);
-
-        // Save User Message
-        Message userMessage = new Message(UuidGenerator.generateV7(), conversation.getId(), "USER", request.question(), null, null, null, now);
-        messageRepository.save(userMessage);
-
-        // Get authorized document IDs
-        List<UUID> allowedDocUuids = documentRepository.findAllowedDocumentIdsForWorkspaces(List.of(workspaceId));
-        List<String> allowedDocIds = allowedDocUuids.stream().map(UUID::toString).toList();
-
-        // Call internal AI Service endpoint /internal/v1/retrieval/answers
-        Map<String, Object> aiRequest = conversationHistoryBuilder.buildAiRequestBody(
-                workspaceId,
-                allowedDocIds,
-                request.question(),
-                requestId,
-                request.allowExternalKnowledge() != null ? request.allowExternalKnowledge() : true,
-                conversationHistory,
-                conversationSummary
-        );
-
-        Map<String, Object> aiResponse = callAiService(aiRequest);
-
-        String decision = (String) aiResponse.getOrDefault("decision", "REFUSE");
-        String answerText = (String) aiResponse.get("answer");
-        String intent = (String) aiResponse.getOrDefault("intent", "FACT");
-        String refusalCode = (String) aiResponse.get("refusalCode");
-        String refusalReason = (String) aiResponse.get("refusalReason");
-        Double evidenceScore = aiResponse.get("evidenceScore") instanceof Number n ? n.doubleValue() : null;
-        Boolean singleSourceWarning = aiResponse.get("singleSourceWarning") instanceof Boolean b ? b : null;
-        String warningMessage = (String) aiResponse.get("warningMessage");
-
-        String assistantContent = answerText != null ? answerText : (refusalReason != null ? refusalReason : "Không có câu trả lời");
-        String providerModel = (String) aiResponse.getOrDefault("provider", "gemini-2.5-flash");
-
-        // Save Assistant Message
-        UUID assistantMessageId = UuidGenerator.generateV7();
-        Message assistantMessage = new Message(
-                assistantMessageId, conversation.getId(), "ASSISTANT", assistantContent, intent, refusalCode, providerModel, Instant.now(clock));
-        messageRepository.save(assistantMessage);
-
-        conversation.setUpdatedAt(Instant.now(clock));
-        conversationRepository.save(conversation);
-
-        List<CitationResponse> citations = citationExtractor.extract(aiResponse.get("citations"), workspaceId);
-
-        // Persist citation history
-        persistCitations(assistantMessageId, citations);
-
-        // Persist compacted summary if generated
-        String compactedSummary = (String) aiResponse.get("compactedSummary");
-        if (compactedSummary != null && !compactedSummary.isBlank()) {
-            boolean updated = conversationHistoryBuilder.persistSummary(conversation.getId(), compactedSummary, conversation.getSummaryVersion());
-            if (updated) {
-                conversation.setSummary(compactedSummary);
-                conversation.setSummaryVersion(conversation.getSummaryVersion() + 1);
-            }
-        }
-
-        return new QuestionResponse(
-                assistantMessageId,
-                conversation.getId(),
-                decision,
-                answerText,
-                intent,
-                "v1.0",
-                citations,
-                refusalCode,
-                requestId,
-                evidenceScore,
-                singleSourceWarning,
-                warningMessage
-        );
-    }
-
-    @SuppressWarnings("unchecked")
-    private Map<String, Object> callAiService(Map<String, Object> aiRequest) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("Authorization", serviceTokenIssuer.issueToken());
-        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(aiRequest, headers);
-
-        try {
-            ResponseEntity<Map> response = restTemplate.postForEntity(
-                    aiServiceUrl + "/internal/v1/retrieval/answers", entity, Map.class);
-            return response.getBody() != null ? (Map<String, Object>) response.getBody() : Map.of();
-        } catch (Exception e) {
-            return Map.of(
-                    "decision", "REFUSE",
-                    "intent", "UNKNOWN",
-                    "strategyVersion", "v1.0",
-                    "refusalCode", "PROVIDER_UNAVAILABLE",
-                    "refusalReason", "Dịch vụ AI hiện không khả dụng. Vui lòng thử lại sau.",
-                    "citations", List.of()
-            );
+    /** Starts a new operation, or returns current canonical status without another AI call. */
+    public ChatOperationResponse ask(ChatActor actor,UUID workspaceId,AskQuestionRequest request,UUID key,String requestId) {
+        var reservation=operations.reserve(actor,workspaceId,request,key,requestId);
+        if (!reservation.created()) return operations.status(actor,workspaceId,reservation.operation().id());
+        var future=runner.start(reservation.operation(),false,(event,payload) -> { });
+        try { return future.get(25,TimeUnit.SECONDS); }
+        catch (TimeoutException error) { return operations.status(actor,workspaceId,reservation.operation().id()); }
+        catch (InterruptedException error) { Thread.currentThread().interrupt();throw new IllegalStateException("Chat request interrupted",error); }
+        catch (java.util.concurrent.ExecutionException error) {
+            if (error.getCause() instanceof RuntimeException expected) throw expected;
+            throw new IllegalStateException("Chat execution failed",error.getCause());
         }
     }
-
-    private void persistCitations(UUID assistantMessageId, List<CitationResponse> citations) {
-        if (citations.isEmpty()) {
-            return;
+    /** Existing in-process consumers still require a current authenticated user session. */
+    public QuestionResponse askQuestion(UUID userId,UUID workspaceId,AskQuestionRequest request,String requestId) {
+        if (!(SecurityContextHolder.getContext().getAuthentication() instanceof JwtAuthenticationToken token)) {
+            throw new UnauthenticatedError("Phiên đăng nhập không hợp lệ.");
         }
-        int ordinal = 1;
-        for (CitationResponse c : citations) {
-            UUID docId = c.documentId() != null ? c.documentId() : UuidGenerator.generateV7();
-            com.unichat.core.chat.domain.CitationHistory ch = new com.unichat.core.chat.domain.CitationHistory(
-                    UuidGenerator.generateV7(), assistantMessageId, docId,
-                    "chunk-" + ordinal, c.fileName() != null ? c.fileName() : "Tài liệu",
-                    "LOCATOR", c.locator() != null ? c.locator() : "",
-                    c.excerpt() != null ? c.excerpt() : "", String.valueOf(c.score()), ordinal++
-            );
-            citationHistoryRepository.save(ch);
-        }
-    }
-
-    private void validateAccess(UUID userId, UUID workspaceId) {
-        workspaceRepository.findById(workspaceId)
-                .orElseThrow(() -> new NotFoundError("Workspace không tồn tại"));
-
-        workspaceMemberRepository.findByWorkspaceIdAndUserIdAndStatus(workspaceId, userId, WorkspaceMemberStatus.ACTIVE)
-                .orElseThrow(() -> new NotFoundError("Workspace không tồn tại"));
+        var actor=ChatActor.from(token.getToken());
+        if (!actor.userId().equals(userId)) throw new UnauthenticatedError("Phiên đăng nhập không hợp lệ.");
+        return ask(actor,workspaceId,request,UUID.randomUUID(),requestId).result();
     }
 }

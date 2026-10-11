@@ -3,9 +3,11 @@
 Logs audit-compliant retrieval trace records without storing raw chunk text or sensitive questions.
 """
 
-from dataclasses import asdict, dataclass, field
-from datetime import datetime, timezone
+import json
 import logging
+from dataclasses import asdict, dataclass, field
+from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any
 
 logger = logging.getLogger("unichat.retrieval_trace")
@@ -27,16 +29,11 @@ class RetrievalTrace:
     refusal_code: str | None = None
     provider: str = "none"
     latency_ms: float = 0.0
-    timestamp_utc: str = field(
-        default_factory=lambda: datetime.now(timezone.utc).isoformat()
-    )
+    timestamp_utc: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
-
-import json
-from pathlib import Path
 
 TRACE_DIR = Path(__file__).parent.parent.parent / "data" / "traces"
 

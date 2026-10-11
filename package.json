@@ -22,5 +22,8 @@
     "test:mobile": "npm run test --workspace mobile",
     "lint:mobile": "npm run lint --workspace mobile",
     "typecheck:mobile": "npm run typecheck --workspace mobile"
+  },
+  "dependencies": {
+    "safe-buffer": "^5.2.1"
   }
 }

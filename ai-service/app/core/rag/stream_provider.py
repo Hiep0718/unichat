@@ -1,267 +1,144 @@
-"""Streaming RAG Provider using official google-genai SDK generate_content_stream.
+"""Bounded streaming bridge with provisional claims and a private terminal result."""
 
-Yields Server-Sent Events (SSE) formatted strings:
-- event: metadata
-- event: token
-- event: done
-- event: error
-"""
-
+import asyncio
 import json
 import logging
-import os
-from typing import AsyncGenerator, Any
+import re
+import threading
+from collections.abc import AsyncGenerator
+from typing import Any
 
-from google import genai
-from google.genai import types
-
-from app.core.rag.citation_validator import validate_citations
-from app.core.rag.conversation_memory import (
-    ConversationContext,
-    ConversationMessage,
-    acompact_conversation,
-    build_conversation_prompt,
-    check_compaction_needed,
-)
-from app.core.rag.llm_provider import (
-    MAX_SINGLE_CHUNK_CHARS,
-    get_candidate_gemini_models,
-    get_gemini_api_keys,
-)
-from app.core.rag.prompt_builder import build_rag_prompt, build_system_prompt
-from app.core.rag.retrieval_engine import RetrievedChunkCandidate
+from app.core.rag.answer_pipeline import complete_answer, prepare_answer
+from app.core.rag.contracts import RetrievalAnswerRequest
 
 logger = logging.getLogger(__name__)
+_TEXT_VALUE = re.compile(r'"text"\s*:\s*("(?:[^"\\]|\\.)*")')
+
+
+class StreamDeliveryClosed(RuntimeError):
+    """Stop an upstream attempt when its private Core subscription has closed."""
 
 
 def format_sse(event: str, data: dict[str, Any]) -> str:
-    """Format data payload as SSE string."""
+    """Serialize a complete UTF-8 SSE frame with no synthetic success on EOF."""
     return f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
 
 
-async def generate_rag_answer_stream(
-    question: str,
-    candidates: list[RetrievedChunkCandidate],
-    intent: str = "FACT",
-    strategy_version: str = "v1.0",
-    request_id: str = "",
-    allowed_document_ids: list[str] | None = None,
-    allow_external_knowledge: bool = True,
-    evidence_score: float | None = None,
-    conversation_history: list[dict[str, str]] | None = None,
-    conversation_summary: str | None = None,
-    single_source_warning: bool = False,
-    warning_message: str | None = None,
-) -> AsyncGenerator[str, None]:
-    """Async generator yielding SSE formatted strings for streaming RAG answers."""
-    context_blocks = []
-    citations = []
+class ProvisionalClaims:
+    """Extract completed text fields only; raw JSON is never shown as user prose."""
 
-    for idx, c in enumerate(candidates, start=1):
-        text = c.text[:MAX_SINGLE_CHUNK_CHARS]
-        context_blocks.append(
-            f"[{idx}] (Tài liệu: {c.document_id}, Vị trí: {c.locator_value}):\n{text}"
-        )
-        citations.append({
-            "citationId": str(idx),
-            "documentId": c.document_id,
-            "locator": c.locator_value,
-            "excerpt": text[:200],
-            "score": c.similarity,
-        })
+    def __init__(self) -> None:
+        self.buffer = ""
+        self.emitted = 0
+        self.sequence = 0
+        self.attempt_id = ""
 
-    allowed_ids = allowed_document_ids or [c.document_id for c in candidates if c.document_id]
-
-    if not validate_citations(citations, allowed_ids):
-        logger.warning("Citation validation failed for retrieved candidates in stream.")
-        yield format_sse("metadata", {
-            "decision": "REFUSE",
-            "intent": intent,
-            "strategyVersion": strategy_version,
-            "refusalCode": "REJECTED_CITATIONS",
-            "refusalReason": "Xác thực trích dẫn thất bại.",
-            "citations": [],
-            "evidenceScore": evidence_score,
-            "requestId": request_id,
-        })
-        yield format_sse("done", {
-            "messageId": request_id,
-            "refusalCode": "REJECTED_CITATIONS",
-            "providerModel": "rejected-citations",
-        })
-        return
-
-    # 1. Real-time RAG Pipeline Execution Thought Events (Initial steps)
-    yield format_sse("thought", {
-        "stepIndex": 1,
-        "stepKey": "INTENT",
-        "title": "Initiating Request & Intent Analysis",
-        "detail": f"Đã phân tích ý định (Phân loại: {intent}), bóc tách từ khóa chuyên môn và khoanh vùng phạm vi tri thức RAG.",
-    })
-
-    yield format_sse("thought", {
-        "stepIndex": 2,
-        "stepKey": "RETRIEVAL",
-        "title": "Retrieving & Grounding Sources",
-        "detail": f"Đã quét kho tài liệu Vector DB, bóc tách thành công {len(citations)} trích dẫn tri thức có điểm tương đồng cao nhất.",
-    })
-
-    compacted_summary: str | None = None
-    conversation_prompt: str | None = None
-
-    if conversation_history or conversation_summary:
-        raw_messages = [
-            ConversationMessage(role=m.get("role", "user"), content=m.get("content", ""))
-            for m in (conversation_history or [])
-            if m.get("content")
-        ]
-        # When summary already exists, keep most recent turns as uncompacted window
-        conv_messages = raw_messages[-10:] if conversation_summary else raw_messages
-        conv_context = ConversationContext(
-            summary=conversation_summary,
-            recent_messages=conv_messages,
-        )
-
-        if check_compaction_needed(conv_context):
-            yield format_sse("thought", {
-                "stepIndex": 3,
-                "stepKey": "COMPACTION",
-                "title": "Compacting Conversation Context",
-                "detail": "Đang tóm tắt lịch sử hội thoại để tối ưu ngữ cảnh...",
-            })
-            try:
-                compacted_summary = await acompact_conversation(
-                    conv_messages,
-                    existing_summary=conversation_summary,
+    def observe(self, kind: str, payload: dict[str, Any]) -> list[tuple[str, dict[str, Any]]]:
+        """Map provider events to temporary text/reset events, independent of final validation."""
+        if kind == "attempt":
+            self.attempt_id = str(payload["attemptId"])
+            return [("pipeline-step", {"stepKey": "GENERATION", "attemptId": self.attempt_id})]
+        if kind == "reset":
+            self.buffer, self.emitted = "", 0
+            return [("reset", {**payload, "attemptId": self.attempt_id})]
+        if kind != "raw":
+            return []
+        self.buffer += str(payload["delta"])
+        values = _TEXT_VALUE.findall(self.buffer)
+        frames: list[tuple[str, dict[str, Any]]] = []
+        for value in values[self.emitted :]:
+            self.sequence += 1
+            frames.append(
+                (
+                    "token",
+                    {
+                        "delta": json.loads(value) + "\n\n",
+                        "provisional": True,
+                        "attemptId": self.attempt_id,
+                        "sequence": self.sequence,
+                    },
                 )
-                conv_context.summary = compacted_summary
-                conv_context.recent_messages = conv_messages[-4:]
-            except Exception as comp_err:
-                logger.warning("Compaction failed in streaming provider: %s", comp_err)
+            )
+        self.emitted = len(values)
+        return frames
 
-        conversation_prompt = build_conversation_prompt(conv_context)
 
-    context_str = "\n\n".join(context_blocks)
-    system_prompt = build_system_prompt(allow_external_knowledge, single_source_warning)
-    full_prompt = build_rag_prompt(system_prompt, context_str, question, conversation_prompt)
+async def generate_rag_answer_stream(request: RetrievalAnswerRequest) -> AsyncGenerator[str]:
+    """Run SDK work off-loop and bound buffered events; terminal result is private to Core."""
+    loop = asyncio.get_running_loop()
+    queue: asyncio.Queue[tuple[str, dict[str, Any]] | None] = asyncio.Queue(maxsize=32)
+    closed = threading.Event()
+    provisional = ProvisionalClaims()
 
-    yield format_sse("thought", {
-        "stepIndex": 4 if compacted_summary else 3,
-        "stepKey": "SYNTHESIS",
-        "title": "Synthesizing Key Concepts",
-        "detail": f"Đang hợp nhất {len(candidates)} khối bằng chứng trích dẫn và truyền sang Gemini LLM để tổng hợp bài viết chuyên sâu...",
-    })
+    def emit(kind: str, payload: dict[str, Any]) -> None:
+        if closed.is_set():
+            raise StreamDeliveryClosed("SUBSCRIPTION_CLOSED")
+        pending = asyncio.run_coroutine_threadsafe(queue.put((kind, payload)), loop)
+        try:
+            pending.result(timeout=5)
+        except TimeoutError as error:
+            pending.cancel()
+            raise StreamDeliveryClosed("SUBSCRIPTION_BACKPRESSURE") from error
 
-    gemini_keys = get_gemini_api_keys()
-    candidate_models = get_candidate_gemini_models()
+    def observe(kind: str, payload: dict[str, Any]) -> None:
+        for event, data in provisional.observe(kind, payload):
+            emit(event, data)
 
-    if not gemini_keys:
-        logger.error("No GEMINI_API_KEY configured for streaming.")
-        yield format_sse("metadata", {
-            "decision": "REFUSE",
-            "intent": intent,
-            "strategyVersion": strategy_version,
-            "refusalCode": "PROVIDER_UNAVAILABLE",
-            "refusalReason": "Dịch vụ AI chưa được cấu hình API Key.",
-            "citations": citations,
-            "evidenceScore": evidence_score,
-            "requestId": request_id,
-        })
-        yield format_sse("done", {
-            "messageId": request_id,
-            "refusalCode": "PROVIDER_UNAVAILABLE",
-            "providerModel": "provider-unavailable",
-        })
-        return
-
-    config = types.GenerateContentConfig(
-        max_output_tokens=8192,
-        temperature=0.3,
-    )
-
-    success_stream = False
-    metadata_sent = False
-    used_model_name = candidate_models[0] if candidate_models else "gemini-2.5-flash"
-
-    for k_idx, key in enumerate(gemini_keys, start=1):
-        if success_stream:
-            break
-
-        client = genai.Client(api_key=key)
-
-        for m_idx, model in enumerate(candidate_models, start=1):
-            try:
-                logger.info(
-                    "Attempting Gemini SSE streaming generation (Key #%d/%d, Model #%d/%d: %s)...",
-                    k_idx, len(gemini_keys), m_idx, len(candidate_models), model
-                )
-                stream = client.models.generate_content_stream(
-                    model=model,
-                    contents=full_prompt,
-                    config=config,
-                )
-
-                used_model_name = model
-
-                for chunk in stream:
-                    if not metadata_sent:
-                        yield format_sse("thought", {
-                            "stepIndex": 5 if compacted_summary else 4,
-                            "stepKey": "GENERATION",
-                            "title": "Verifying Citations & Formatting Output",
-                            "detail": f"Đã xác thực trích dẫn [1], [2], đang stream trực tiếp câu trả lời và định dạng sơ đồ Mermaid...",
-                        })
-                        meta_payload: dict[str, Any] = {
-                            "decision": "ANSWER",
-                            "intent": intent,
-                            "strategyVersion": strategy_version,
-                            "citations": citations,
-                            "evidenceScore": evidence_score,
-                            "providerModel": used_model_name,
-                            "requestId": request_id,
-                            "singleSourceWarning": single_source_warning,
-                            "warningMessage": warning_message,
-                        }
-                        if compacted_summary:
-                            meta_payload["compactedSummary"] = compacted_summary
-                        yield format_sse("metadata", meta_payload)
-                        metadata_sent = True
-
-                    if chunk.text:
-                        yield format_sse("token", {"delta": chunk.text})
-
-                success_stream = True
+    task = asyncio.create_task(asyncio.to_thread(_execute_stream, request, emit, observe, closed))
+    try:
+        while True:
+            item = await _next_frame(queue, task)
+            if item is None:
                 break
+            yield format_sse(item[0], item[1])
+            if item[0] in ("result", "error"):
+                break
+    finally:
+        closed.set()
+        task.cancel()
 
-            except Exception as e:
-                logger.warning(
-                    "Gemini SSE streaming Key #%d, Model '%s' error: %s. Trying next...",
-                    k_idx, model, e
-                )
-                if metadata_sent:
-                    break
 
-    if success_stream:
-        yield format_sse("done", {
-            "messageId": request_id,
-            "refusalCode": None,
-            "providerModel": used_model_name,
-        })
-    else:
-        logger.error("All Gemini streaming candidates failed.")
-        if not metadata_sent:
-            yield format_sse("metadata", {
-                "decision": "REFUSE",
-                "intent": intent,
-                "strategyVersion": strategy_version,
-                "refusalCode": "PROVIDER_UNAVAILABLE",
-                "refusalReason": "Tất cả các dịch vụ LLM hiện tại không thể phản hồi.",
-                "citations": citations,
-                "evidenceScore": evidence_score,
-                "requestId": request_id,
-            })
-        yield format_sse("done", {
-            "messageId": request_id,
-            "refusalCode": "PROVIDER_UNAVAILABLE",
-            "providerModel": "provider-unavailable",
-        })
+async def _next_frame(
+    queue: asyncio.Queue[tuple[str, dict[str, Any]] | None], task: asyncio.Task[None]
+) -> tuple[str, dict[str, Any]] | None:
+    if not queue.empty():
+        return queue.get_nowait()
+    if task.done():
+        return None
+    pending = asyncio.create_task(queue.get())
+    try:
+        done, _ = await asyncio.wait((pending, task), return_when=asyncio.FIRST_COMPLETED)
+        return pending.result() if pending in done else None
+    finally:
+        if not pending.done():
+            pending.cancel()
+
+
+def _execute_stream(
+    request: RetrievalAnswerRequest, emit: Any, observe: Any, closed: threading.Event
+) -> None:
+    try:
+        emit(
+            "metadata",
+            {
+                "operationId": str(request.operationId),
+                "requestId": request.requestId,
+                "knowledgeMode": "EXPANDED" if request.allowExternalKnowledge else "STRICT",
+                "provisional": True,
+            },
+        )
+        emit("pipeline-step", {"stepKey": "RETRIEVAL"})
+        prepared = prepare_answer(request)
+        emit("pipeline-step", {"stepKey": "EVIDENCE", "decision": prepared.response.decision})
+        result = complete_answer(prepared, observer=observe)
+        if result.decision == "REFUSE":
+            emit("reset", {"reason": result.refusalCode})
+        emit("pipeline-step", {"stepKey": "VALIDATION"})
+        emit("result", result.model_dump(mode="json"))
+    except StreamDeliveryClosed:
+        logger.info("stream_closed request_id=%s", request.requestId)
+    except Exception as error:
+        logger.error("stream_failed request_id=%s code=%s", request.requestId, type(error).__name__)
+        if not closed.is_set():
+            emit("reset", {"reason": "RETRIEVAL_UNAVAILABLE"})
+            emit("error", {"code": "RETRIEVAL_UNAVAILABLE", "requestId": request.requestId})

@@ -1,164 +1,63 @@
-/**
- * Generic API client and types for UniChat.
- * Token storage is managed externally via registerTokenAccessor (ADR-005).
- */
+import { ApiError, readApiResponse } from './api-error';
+import { getApiBaseUrl, refreshAccessToken } from './cookie-session';
+import { assertSessionGeneration, getSessionSnapshot, invalidateSession, storeAccessToken } from './session-store';
 
-export function getApiBaseUrl(): string {
-  const customBase = import.meta.env.VITE_API_BASE_URL as string | undefined;
-  if (customBase) {
-    return customBase.endsWith('/') ? customBase.slice(0, -1) : customBase;
-  }
-  return '';
+export { ApiError, getApiBaseUrl };
+const compatibility = { clear: () => {}, set: (token: string) => { void token; } };
+
+/** Legacy consumers register notifications; the memory store remains authoritative. */
+export function registerTokenAccessor(getter: () => string | null, setter: (token: string) => void, clearer: () => void): void {
+  compatibility.set = setter;
+  compatibility.clear = clearer;
+  const token = getter();
+  if (token && token !== getSessionSnapshot().token) storeAccessToken(token);
 }
 
-const API_BASE = `${getApiBaseUrl()}/api/v1`;
+/** Reads the current memory-only access token. */
+export const getAccessToken = (): string | null => getSessionSnapshot().token;
 
-/** Registered accessor — getter for current in-memory token. */
-let getToken: () => string | null = () => null;
-
-/** Registered accessor — setter when refresh succeeds. */
-let setToken: (token: string) => void = () => {};
-
-/** Registered accessor — clearer on auth failure. */
-let clearToken: () => void = () => {};
-
-/**
- * Registers callbacks so the api-client can read/write the access token
- * without depending on React context directly.
- *
- * @param getter returns current access token from memory
- * @param setter stores a refreshed access token back into memory
- * @param clearer removes the access token (triggers logout)
- */
-export function registerTokenAccessor(
-  getter: () => string | null,
-  setter: (token: string) => void,
-  clearer: () => void,
-): void {
-  getToken = getter;
-  setToken = setter;
-  clearToken = clearer;
-}
-
-export function getAccessToken(): string | null {
-  return getToken();
-}
-
-
-export class ApiError extends Error {
-  public status: number;
-  public data: unknown;
-
-  constructor(status: number, message: string, data?: unknown) {
-    super(message);
-    this.name = 'ApiError';
-    this.status = status;
-    this.data = data;
-  }
-}
-
-/**
- * Fetches a binary resource that needs the bearer token.
- *
- * `<img src>` and friends cannot send an Authorization header, so anything
- * behind auth has to be read this way and turned into a blob URL.
- *
- * @throws ApiError when the request fails, carrying the status so a caller can
- *         tell "not set" (404) apart from a real failure
- */
-export async function fetchBlob(path: string): Promise<Blob> {
-  const token = getToken();
-  const response = await fetch(`${API_BASE}${path}`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
+/** Uses one auth coordinator for JSON, binary, FormData and SSE requests. */
+export async function fetchAuthorized(endpoint: string, options: RequestInit = {}): Promise<Response> {
+  const snapshot = getSessionSnapshot();
+  const send = (token: string | null) => fetch(`${getApiBaseUrl()}/api/v1${endpoint}`, {
+    ...options, credentials: 'include', headers: requestHeaders(options, token),
   });
-
-  if (!response.ok) {
-    throw new ApiError(response.status, `Không tải được dữ liệu (HTTP ${response.status})`);
-  }
-  return response.blob();
+  const response = await send(snapshot.token);
+  assertSessionGeneration(snapshot.generation);
+  if (response.status !== 401 || endpoint.startsWith('/auth/')) return response;
+  const token = getSessionSnapshot().revision !== snapshot.revision && getAccessToken()
+    ? getAccessToken() as string : await refreshAccessToken();
+  assertSessionGeneration(snapshot.generation);
+  compatibility.set(token);
+  const retry = await send(token);
+  assertSessionGeneration(snapshot.generation);
+  if (retry.status === 401) { invalidateSession(); compatibility.clear(); }
+  return retry;
 }
 
-export async function fetchJson<T>(
-  endpoint: string,
-  options: RequestInit = {}
-): Promise<T> {
+function requestHeaders(options: RequestInit, token: string | null): Headers {
   const headers = new Headers(options.headers);
-  if (!headers.has('Content-Type')) {
-    headers.set('Content-Type', 'application/json');
-  }
-
-  const token = getToken();
-  if (token) {
-    headers.set('Authorization', `Bearer ${token}`);
-  }
-
-  const response = await fetch(`${API_BASE}${endpoint}`, {
-    ...options,
-    headers,
-  });
-
-  // Handle unauthorized (expired token) and make sure it's not the auth endpoints themselves
-  if (response.status === 401 && endpoint !== '/auth/refresh' && endpoint !== '/auth/login') {
-    try {
-      // Try to refresh the token
-      const refreshResponse = await fetch(`${API_BASE}/auth/refresh`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (refreshResponse.ok) {
-        const refreshData = await refreshResponse.json();
-        const newToken = refreshData.accessToken;
-        setToken(newToken);
-
-        // Retry the original request with the new token
-        headers.set('Authorization', `Bearer ${newToken}`);
-        const retryResponse = await fetch(`${API_BASE}${endpoint}`, {
-          ...options,
-          headers,
-        });
-
-        return handleResponse<T>(retryResponse);
-      } else {
-        // Refresh token expired or invalid, log out
-        clearToken();
-        window.location.href = '/login';
-        throw new ApiError(response.status, 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
-      }
-    } catch (refreshError) {
-      clearToken();
-      window.location.href = '/login';
-      throw refreshError;
-    }
-  }
-
-  return handleResponse<T>(response);
+  const formData = typeof FormData !== 'undefined' && options.body instanceof FormData;
+  if (!headers.has('Content-Type') && !formData) headers.set('Content-Type', 'application/json');
+  if (token) headers.set('Authorization', `Bearer ${token}`);
+  else headers.delete('Authorization');
+  return headers;
 }
 
-async function handleResponse<T>(response: Response): Promise<T> {
-  let data;
-  try {
-    data = await response.json();
-  } catch {
-    data = null;
-  }
+/** Fetches JSON or no-content API responses, suppressing stale identities. */
+export async function fetchJson<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  const generation = getSessionSnapshot().generation;
+  const data = await readApiResponse<T>(await fetchAuthorized(endpoint, options));
+  assertSessionGeneration(generation);
+  return data;
+}
 
-  if (!response.ok) {
-    let message = data?.detail || data?.title || data?.message || 'Đã xảy ra lỗi hệ thống';
-    
-    // Extract first validation error if present (RFC 7807 Problem Detail format)
-    if (data?.fieldErrors && typeof data.fieldErrors === 'object') {
-      const fieldErrorsObj = data.fieldErrors as Record<string, unknown>;
-      const fieldMessages = Object.values(fieldErrorsObj).flat();
-      if (fieldMessages.length > 0) {
-        message = fieldMessages[0] as string;
-      }
-    }
-
-    throw new ApiError(response.status, message, data);
-  }
-
-  return data as T;
+/** Fetches a protected binary resource with the same refresh and race policy. */
+export async function fetchBlob(path: string, options: RequestInit = {}): Promise<Blob> {
+  const generation = getSessionSnapshot().generation;
+  const response = await fetchAuthorized(path, options);
+  if (!response.ok) throw new ApiError(response.status, 'Không tải được dữ liệu');
+  const blob = await response.blob();
+  assertSessionGeneration(generation);
+  return blob;
 }

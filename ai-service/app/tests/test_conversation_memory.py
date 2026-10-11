@@ -3,7 +3,6 @@
 import pytest
 
 from app.core.rag.conversation_memory import (
-    CONVERSATION_TOKEN_BUDGET,
     ConversationContext,
     ConversationMessage,
     build_conversation_prompt,
@@ -12,11 +11,12 @@ from app.core.rag.conversation_memory import (
     estimate_token_count,
     truncate_assistant_content,
 )
+from app.core.rag.generation_policy import GenerationPolicyError
 from app.core.rag.intent_detector import IntentEnum, detect_intent
 from app.core.rag.prompt_builder import build_rag_prompt, build_system_prompt
 
 
-def test_estimate_token_count():
+def test_estimate_token_count() -> None:
     assert estimate_token_count("") == 0
     assert estimate_token_count("Hello") == 2
     # Vietnamese text ratio ~2 chars/token
@@ -25,7 +25,7 @@ def test_estimate_token_count():
     assert estimate_token_count(vn_text) == expected
 
 
-def test_truncate_assistant_content():
+def test_truncate_assistant_content() -> None:
     assert truncate_assistant_content("") == ""
 
     # Should keep short content as is
@@ -47,7 +47,7 @@ def test_truncate_assistant_content():
     assert res.endswith("...")
 
 
-def test_build_conversation_prompt():
+def test_build_conversation_prompt() -> None:
     # Empty context
     empty_ctx = ConversationContext()
     assert build_conversation_prompt(empty_ctx) == ""
@@ -72,7 +72,7 @@ def test_build_conversation_prompt():
     assert "- Gợi ý" not in prompt2
 
 
-def test_check_compaction_needed():
+def test_check_compaction_needed() -> None:
     # Short conversation does not need compaction
     short_ctx = ConversationContext(
         recent_messages=[
@@ -93,7 +93,7 @@ def test_check_compaction_needed():
     assert check_compaction_needed(long_ctx) is True
 
 
-def test_compact_conversation_fallback_without_keys(monkeypatch):
+def test_compact_conversation_should_require_explicit_operation_policy(monkeypatch: pytest.MonkeyPatch) -> None:
     # Ensure no Gemini keys
     monkeypatch.setenv("GEMINI_API_KEY", "")
     monkeypatch.setenv("GEMINI_API_KEYS", "")
@@ -103,12 +103,11 @@ def test_compact_conversation_fallback_without_keys(monkeypatch):
         ConversationMessage(role="user", content="Khái niệm Vector Embedding"),
         ConversationMessage(role="assistant", content="Vector Embedding là biểu diễn vector"),
     ]
-    summary = compact_conversation(messages, existing_summary="Tóm tắt trước")
-    assert "Tóm tắt trước" in summary
-    assert "Khái niệm Vector Embedding" in summary
+    with pytest.raises(GenerationPolicyError, match="OPERATION_POLICY_REQUIRED"):
+        compact_conversation(messages, existing_summary="Tóm tắt trước")
 
 
-def test_prompt_builder_shared_functions():
+def test_prompt_builder_shared_functions() -> None:
     # Test build_system_prompt
     sys_prompt_ext = build_system_prompt(allow_external_knowledge=True)
     assert "chuyên gia AI tri thức cao cấp UniChat" in sys_prompt_ext
@@ -125,7 +124,7 @@ def test_prompt_builder_shared_functions():
     assert "CÂU HỎI: QUESTION" in full
 
 
-def test_intent_detector_clarify_bypass():
+def test_intent_detector_clarify_bypass() -> None:
     question = "cái đó là gì"
 
     # Without conversation context: must trigger CLARIFY

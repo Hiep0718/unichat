@@ -1,17 +1,23 @@
-import { ReactNode } from 'react';
+import { ReactNode, useCallback } from 'react';
 import {
   View,
-  TouchableOpacity,
   StyleSheet,
   ViewStyle,
   StyleProp,
   Platform,
+  Pressable,
 } from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  FadeInUp,
+} from 'react-native-reanimated';
 import { BlurView } from 'expo-blur';
-import { glass, radii, spacing, colors } from '../design/tokens';
+import { glass, radii, spacing } from '../design/tokens';
 import { shadows } from '../design/shadows';
+import { useMicroBounce } from '../design/animations';
 
 export type GlassVariant = 'light' | 'heavy' | 'navy' | 'teal';
+export type GlassEntering = 'fade' | 'slide' | 'none';
 
 export interface UCGlassCardProps {
   children: ReactNode;
@@ -20,12 +26,17 @@ export interface UCGlassCardProps {
   style?: StyleProp<ViewStyle>;
   contentStyle?: StyleProp<ViewStyle>;
   glow?: boolean;
+  /** Entrance animation type */
+  entering?: GlassEntering;
+  /** Stagger index for entrance delay */
+  enteringIndex?: number;
 }
 
 /**
  * Modern iOS Liquid Glass Card Component.
  * Implements Apple-style glassmorphism with specular border highlights,
- * diffuse ambient shadows, and translucent frosted depth via native UIBlurView.
+ * diffuse ambient shadows, micro-bounce press interaction,
+ * and translucent frosted depth via native UIBlurView.
  */
 export function UCGlassCard({
   children,
@@ -34,13 +45,35 @@ export function UCGlassCard({
   style,
   contentStyle,
   glow = false,
+  entering = 'none',
+  enteringIndex = 0,
 }: UCGlassCardProps) {
+  const { scale, pressIn, pressOut } = useMicroBounce(0.97);
+
+  const animatedScale = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const handlePressIn = useCallback(() => {
+    if (onPress) pressIn();
+  }, [onPress, pressIn]);
+
+  const handlePressOut = useCallback(() => {
+    if (onPress) pressOut();
+  }, [onPress, pressOut]);
+
   const containerStyles: StyleProp<ViewStyle> = [
     styles.base,
     styles[variant],
     glow && styles.glow,
     style,
   ];
+
+  const enteringAnimation = entering === 'slide'
+    ? FadeInUp.delay(enteringIndex * 60).springify().damping(18).stiffness(180)
+    : entering === 'fade'
+    ? FadeInUp.delay(enteringIndex * 60).duration(280)
+    : undefined;
 
   const content = (
     <>
@@ -68,19 +101,30 @@ export function UCGlassCard({
     </>
   );
 
-  if (onPress) {
-    return (
-      <TouchableOpacity
-        activeOpacity={0.82}
-        onPress={onPress}
-        style={containerStyles}
-      >
+  const wrappedContent = onPress ? (
+    <Pressable
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      onPress={onPress}
+      style={containerStyles}
+    >
+      <Animated.View style={animatedScale}>
         {content}
-      </TouchableOpacity>
+      </Animated.View>
+    </Pressable>
+  ) : (
+    <View style={containerStyles}>{content}</View>
+  );
+
+  if (enteringAnimation) {
+    return (
+      <Animated.View entering={enteringAnimation}>
+        {wrappedContent}
+      </Animated.View>
     );
   }
 
-  return <View style={containerStyles}>{content}</View>;
+  return wrappedContent;
 }
 
 const styles = StyleSheet.create({
@@ -126,13 +170,13 @@ const styles = StyleSheet.create({
     backgroundColor: glass.surfaceNavy,
     borderWidth: 1.2,
     borderColor: glass.borderNavy,
-    ...shadows.xl,
+    ...shadows.ambientNavy,
   },
   teal: {
     backgroundColor: glass.surfaceTeal,
     borderWidth: 1.2,
     borderColor: 'rgba(172, 237, 255, 0.35)',
-    ...shadows.lg,
+    ...shadows.ambientTeal,
   },
   glow: {
     ...shadows.glassGlow,

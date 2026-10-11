@@ -59,4 +59,29 @@ export const shadows = {
     shadowRadius: 16,
     elevation: 6,
   } as ViewStyle,
+
+  /** Colored ambient glow shadows for liquid glass depth */
+  ambientNavy: {
+    shadowColor: '#00236F',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.20,
+    shadowRadius: 24,
+    elevation: 8,
+  } as ViewStyle,
+
+  ambientTeal: {
+    shadowColor: '#00687A',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 20,
+    elevation: 6,
+  } as ViewStyle,
+
+  ambientCyan: {
+    shadowColor: '#57DFFE',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.30,
+    shadowRadius: 18,
+    elevation: 6,
+  } as ViewStyle,
 } as const;

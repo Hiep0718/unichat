@@ -1,3 +1,4 @@
+import { authRequest, loginSession, logoutSession } from '../../lib/native-session';
 import { fetchJson } from '../../lib/api-client';
 import { generateIdempotencyKey } from '../../lib/idempotency';
 import {
@@ -17,10 +18,7 @@ export const authApi = {
    * Log in user and receive both accessToken and refreshToken in response body.
    */
   login: (data: LoginRequest): Promise<MobileLoginResponse> => {
-    return fetchJson<MobileLoginResponse>('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
+    return loginSession(data);
   },
 
   /**
@@ -39,14 +37,8 @@ export const authApi = {
   /**
    * Revoke active session using body-transmitted refresh token.
    */
-  logout: (refreshToken: string): Promise<void> => {
-    return fetchJson<void>('/auth/logout', {
-      method: 'POST',
-      headers: {
-        'Idempotency-Key': generateIdempotencyKey(),
-      },
-      body: JSON.stringify({ refreshToken }),
-    });
+  logout: (_refreshToken?: string): Promise<void> => {
+    return logoutSession();
   },
 
   /**
@@ -62,19 +54,13 @@ export const authApi = {
    * Request a 6-digit OTP code for password reset.
    */
   forgotPassword: (data: ForgotPasswordRequest): Promise<void> => {
-    return fetchJson<void>('/auth/forgot-password', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
+    return authRequest('/auth/forgot-password', data);
   },
 
   /**
    * Reset password with valid OTP code.
    */
   resetPassword: (data: ResetPasswordRequest): Promise<void> => {
-    return fetchJson<void>('/auth/reset-password', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
+    return authRequest('/auth/reset-password', data);
   },
 };

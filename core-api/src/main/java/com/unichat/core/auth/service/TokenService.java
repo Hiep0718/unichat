@@ -1,177 +1,71 @@
 package com.unichat.core.auth.service;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.SecureRandom;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Base64;
+import java.util.List;
 import java.util.UUID;
-
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import com.unichat.core.auth.config.JwtProperties;
+import com.unichat.core.auth.domain.RefreshFamily;
+import com.unichat.core.auth.domain.RefreshFamilyRepository;
 import com.unichat.core.auth.domain.RefreshToken;
 import com.unichat.core.auth.domain.RefreshTokenRepository;
-import com.unichat.core.common.error.ConflictError;
 import com.unichat.core.common.error.UnauthenticatedError;
 import com.unichat.core.user.domain.User;
-import com.unichat.core.shared.util.UuidGenerator;
-import com.unichat.core.auth.config.JwtProperties;
 
-/**
- * Manages JWT generation and opaque refresh token lifecycle.
- */
+/** Issues short-lived credentials bound to a durable, revocable session. */
 @Service
 public class TokenService {
-
-    private final JwtEncoder jwtEncoder;
-    private final RefreshTokenRepository refreshTokenRepository;
+    private final JwtEncoder encoder;
+    private final RefreshTokenRepository tokens;
+    private final RefreshFamilyRepository families;
+    private final RefreshTransactions transactions;
     private final Clock clock;
-    private final JwtProperties jwtProperties;
-    private final SecureRandom secureRandom = new SecureRandom();
-
-    public TokenService(
-            JwtEncoder jwtEncoder,
-            RefreshTokenRepository refreshTokenRepository,
-            Clock clock,
-            JwtProperties jwtProperties) {
-        this.jwtEncoder = jwtEncoder;
-        this.refreshTokenRepository = refreshTokenRepository;
-        this.clock = clock;
-        this.jwtProperties = jwtProperties;
+    private final JwtProperties properties;
+    /** Uses existing signing material and explicit session persistence. */
+    public TokenService(JwtEncoder encoder, RefreshTokenRepository tokens,
+            RefreshFamilyRepository families, RefreshTransactions transactions, Clock clock, JwtProperties properties) {
+        this.encoder = encoder; this.tokens = tokens; this.families = families;
+        this.transactions = transactions; this.clock = clock; this.properties = properties;
     }
-
-    /**
-     * Generates a signed RS256 JWT access token.
-     */
-    public String generateAccessToken(User user) {
+    /** Signs an RS256 access token with issuer, audience, sid and security revision. */
+    public String generateAccessToken(User user, UUID familyId) {
         Instant now = Instant.now(clock);
-        JwtClaimsSet claims = JwtClaimsSet.builder()
-                .issuer("unichat-core-api")
-                .issuedAt(now)
-                .expiresAt(now.plus(jwtProperties.accessTokenTtlSeconds(), ChronoUnit.SECONDS))
-                .subject(user.getId().toString())
-                .claim("email", user.getEmail())
-                .claim("scope", user.getSystemRole().name())
-                .build();
-        return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+        JwtClaimsSet claims = JwtClaimsSet.builder().issuer("unichat-core-api")
+                .audience(List.of("unichat-client")).issuedAt(now)
+                .expiresAt(now.plusSeconds(Math.min(900, properties.accessTokenTtlSeconds())))
+                .subject(user.getId().toString()).claim("email", user.getEmail())
+                .claim("scope", user.getSystemRole().name()).claim("sid", familyId.toString())
+                .claim("securityVersion", user.getSecurityVersion()).build();
+        return encoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
     }
-
-    /**
-     * Creates and persists a new RefreshToken in a family.
-     */
+    /** Creates a new family and its first 256-bit opaque credential. */
     @Transactional
     public String createRefreshToken(UUID userId, UUID familyId) {
-        String rawToken = generateOpaqueToken();
-        String hash = hashToken(rawToken);
-        Instant now = Instant.now(clock);
-        Instant expiresAt = now.plus(7, ChronoUnit.DAYS);
-
-        RefreshToken token = new RefreshToken(
-                UuidGenerator.generateV7(),
-                userId,
-                familyId,
-                hash,
-                expiresAt
-        );
-        refreshTokenRepository.save(token);
+        Instant expiry = Instant.now(clock).plus(7, ChronoUnit.DAYS);
+        String rawToken = TokenHash.generate();
+        families.saveAndFlush(new RefreshFamily(familyId, userId, expiry));
+        tokens.save(new RefreshToken(UUID.randomUUID(), userId, familyId, TokenHash.digest(rawToken), expiry));
         return rawToken;
     }
-
-    /**
-     * Rotates a refresh token (reuse detection and family revocation).
-     */
-    @Transactional
-    public String rotateRefreshToken(String rawToken) {
-        String hash = hashToken(rawToken);
-        RefreshToken token = refreshTokenRepository.findByTokenHash(hash)
-                .orElseThrow(() -> new UnauthenticatedError("Token không hợp lệ"));
-
-        Instant now = Instant.now(clock);
-        if (token.getExpiresAt().isBefore(now) || token.getRevokedAt() != null) {
-            throw new UnauthenticatedError("Token đã hết hạn hoặc bị thu hồi");
-        }
-
-        // Reuse detection
-        if (token.getUsedAt() != null) {
-            // Revoke entire family
-            refreshTokenRepository.findByFamilyId(token.getFamilyId()).forEach(t -> {
-                if (t.getRevokedAt() == null) {
-                    t.setRevokedAt(now);
-                }
-            });
-            throw new UnauthenticatedError("Phát hiện Token đã được sử dụng trước đó. Tất cả token trong phiên đã bị thu hồi.");
-        }
-
-        token.setUsedAt(now);
-        String nextRaw = generateOpaqueToken();
-        String nextHash = hashToken(nextRaw);
-        RefreshToken nextToken = new RefreshToken(
-                UuidGenerator.generateV7(),
-                token.getUserId(),
-                token.getFamilyId(),
-                nextHash,
-                token.getExpiresAt()
-        );
-        token.setReplacedById(nextToken.getId());
-        refreshTokenRepository.save(token);
-        refreshTokenRepository.save(nextToken);
-
-        return nextRaw;
+    /** Returns rotated credentials after the mutation transaction has committed. */
+    public AuthService.TokenPair refresh(String rawToken) {
+        var result = transactions.rotate(rawToken);
+        if (!result.accepted()) throw new UnauthenticatedError("Phiên đăng nhập không còn hợp lệ.");
+        return new AuthService.TokenPair(generateAccessToken(result.user(), result.familyId()), result.rawToken());
     }
-
-    /**
-     * Revokes all tokens in the family of the given token.
-     */
-    @Transactional
-    public void revokeFamily(String rawToken) {
-        String hash = hashToken(rawToken);
-        refreshTokenRepository.findByTokenHash(hash).ifPresent(token -> {
-            Instant now = Instant.now(clock);
-            refreshTokenRepository.findByFamilyId(token.getFamilyId()).forEach(t -> {
-                if (t.getRevokedAt() == null) {
-                    t.setRevokedAt(now);
-                }
-            });
-        });
-    }
-
-    /**
-     * Revokes all active tokens for a specific user.
-     */
+    /** Idempotently revokes the token family, including a concurrent successor. */
+    public void revokeFamily(String rawToken) { transactions.revoke(rawToken); }
+    /** Revokes every session; account mutation callers already hold the user row lock. */
     @Transactional
     public void revokeAllTokensByUser(UUID userId) {
         Instant now = Instant.now(clock);
-        refreshTokenRepository.findByUserIdAndRevokedAtIsNull(userId).forEach(t -> {
-            t.setRevokedAt(now);
-        });
-    }
-
-    public UUID getUserIdFromRefreshToken(String rawToken) {
-        String hash = hashToken(rawToken);
-        return refreshTokenRepository.findByTokenHash(hash)
-                .map(RefreshToken::getUserId)
-                .orElseThrow(() -> new UnauthenticatedError("Token không hợp lệ"));
-    }
-
-    private String generateOpaqueToken() {
-        byte[] bytes = new byte[32];
-        secureRandom.nextBytes(bytes);
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
-    }
-
-    private String hashToken(String token) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(token.getBytes(StandardCharsets.UTF_8));
-            return Base64.getEncoder().encodeToString(hash);
-        } catch (Exception e) {
-            throw new IllegalStateException("Hashing failed", e);
-        }
+        families.revokeByUser(userId, now);
+        tokens.findByUserIdAndRevokedAtIsNull(userId).forEach(token -> token.setRevokedAt(now));
     }
 }

@@ -8,15 +8,17 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import Animated, { FadeInUp, FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { colors, glass, spacing, radii } from '../../src/design/tokens';
+import { colors, spacing } from '../../src/design/tokens';
 import { typography } from '../../src/design/typography';
 import { shadows } from '../../src/design/shadows';
 import { UCTextInput } from '../../src/components/uc-text-input';
 import { UCButton } from '../../src/components/uc-button';
 import { UCIcon } from '../../src/components/uc-icon';
 import { UCGlassCard } from '../../src/components/uc-glass-card';
+import { UCAnimatedBackground } from '../../src/components/uc-animated-background';
 import { useAuth } from '../../src/features/auth/auth-context';
 import { loginSchema } from '../../src/features/auth/auth-schema';
 
@@ -63,10 +65,8 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.root}>
-      {/* Liquid Ambient Background Orbs */}
-      <View style={styles.ambientOrbCyan} />
-      <View style={styles.ambientOrbNavy} />
-      <View style={styles.ambientOrbTeal} />
+      {/* Animated Ambient Background Orbs */}
+      <UCAnimatedBackground />
 
       <SafeAreaView style={styles.safeArea}>
         <KeyboardAvoidingView
@@ -79,7 +79,10 @@ export default function LoginScreen() {
             showsVerticalScrollIndicator={false}
           >
             {/* Brand Header */}
-            <View style={styles.header}>
+            <Animated.View
+              entering={FadeInDown.delay(100).springify().damping(16).stiffness(140)}
+              style={styles.header}
+            >
               <View style={styles.logoBadgeContainer}>
                 <View style={styles.logoBadge}>
                   <UCIcon name="school" size={42} color="#FFFFFF" />
@@ -94,73 +97,78 @@ export default function LoginScreen() {
               <Text style={[styles.brandSubtitle, typography.bodyMd]}>
                 Nền tảng Tri thức Học thuật AI
               </Text>
-            </View>
+            </Animated.View>
 
             {/* Liquid Glass Form Card */}
-            <UCGlassCard variant="heavy" style={styles.glassFormCard} glow>
-              {generalError ? (
-                <View style={styles.errorBox}>
-                  <UCIcon name="error-outline" size={18} color={colors.error} />
-                  <Text style={[styles.generalErrorText, typography.bodySm]}>
-                    {generalError}
-                  </Text>
+            <Animated.View entering={FadeInUp.delay(200).springify().damping(18).stiffness(160)}>
+              <UCGlassCard variant="heavy" style={styles.glassFormCard} glow>
+                {generalError ? (
+                  <View style={styles.errorBox}>
+                    <UCIcon name="error-outline" size={18} color={colors.error} />
+                    <Text style={[styles.generalErrorText, typography.bodySm]}>
+                      {generalError}
+                    </Text>
+                  </View>
+                ) : null}
+
+                <UCTextInput
+                  label="Email học thuật hoặc cá nhân"
+                  placeholder="ten@truong.edu.vn"
+                  value={email}
+                  onChangeText={setEmail}
+                  error={errors.email}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  icon="mail-outline"
+                />
+
+                <UCTextInput
+                  label="Mật khẩu"
+                  placeholder="Tối thiểu 12 ký tự"
+                  value={password}
+                  onChangeText={setPassword}
+                  error={errors.password}
+                  isPassword
+                  icon="lock-outline"
+                />
+
+                <View style={styles.rowBetween}>
+                  <TouchableOpacity
+                    style={styles.demoChip}
+                    onPress={fillDemoAccount}
+                    activeOpacity={0.7}
+                  >
+                    <UCIcon name="flash-on" size={14} color={colors.primary} />
+                    <Text style={styles.demoChipText}>Thử tài khoản mẫu</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.forgotPasswordLink}
+                    onPress={() => router.push('/(auth)/forgot-password')}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={[styles.linkText, typography.labelSm]}>
+                      Quên mật khẩu?
+                    </Text>
+                  </TouchableOpacity>
                 </View>
-              ) : null}
 
-              <UCTextInput
-                label="Email học thuật hoặc cá nhân"
-                placeholder="ten@truong.edu.vn"
-                value={email}
-                onChangeText={setEmail}
-                error={errors.email}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-                icon="mail-outline"
-              />
-
-              <UCTextInput
-                label="Mật khẩu"
-                placeholder="Tối thiểu 12 ký tự"
-                value={password}
-                onChangeText={setPassword}
-                error={errors.password}
-                isPassword
-                icon="lock-outline"
-              />
-
-              <View style={styles.rowBetween}>
-                <TouchableOpacity
-                  style={styles.demoChip}
-                  onPress={fillDemoAccount}
-                  activeOpacity={0.7}
-                >
-                  <UCIcon name="flash-on" size={14} color={colors.primary} />
-                  <Text style={styles.demoChipText}>Thử tài khoản mẫu</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.forgotPasswordLink}
-                  onPress={() => router.push('/(auth)/forgot-password')}
-                  activeOpacity={0.7}
-                >
-                  <Text style={[styles.linkText, typography.labelSm]}>
-                    Quên mật khẩu?
-                  </Text>
-                </TouchableOpacity>
-              </View>
-
-              <UCButton
-                title="Đăng nhập"
-                onPress={handleLogin}
-                loading={isLoading}
-                size="lg"
-                style={styles.submitBtn}
-              />
-            </UCGlassCard>
+                <UCButton
+                  title="Đăng nhập"
+                  onPress={handleLogin}
+                  loading={isLoading}
+                  size="lg"
+                  style={styles.submitBtn}
+                />
+              </UCGlassCard>
+            </Animated.View>
 
             {/* Footer */}
-            <View style={styles.footerLinkContainer}>
+            <Animated.View
+              entering={FadeInUp.delay(350).duration(280)}
+              style={styles.footerLinkContainer}
+            >
               <Text style={[styles.footerText, typography.bodyMd]}>
                 Chưa có tài khoản?{' '}
               </Text>
@@ -172,7 +180,7 @@ export default function LoginScreen() {
                   Đăng ký ngay
                 </Text>
               </TouchableOpacity>
-            </View>
+            </Animated.View>
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
@@ -187,34 +195,6 @@ const styles = StyleSheet.create({
   },
   safeArea: {
     flex: 1,
-  },
-  // Ambient Glowing Orbs
-  ambientOrbCyan: {
-    position: 'absolute',
-    top: -80,
-    right: -60,
-    width: 260,
-    height: 260,
-    borderRadius: 130,
-    backgroundColor: 'rgba(87, 223, 254, 0.28)',
-  },
-  ambientOrbNavy: {
-    position: 'absolute',
-    top: 220,
-    left: -100,
-    width: 320,
-    height: 320,
-    borderRadius: 160,
-    backgroundColor: 'rgba(0, 35, 111, 0.12)',
-  },
-  ambientOrbTeal: {
-    position: 'absolute',
-    bottom: -60,
-    right: -40,
-    width: 280,
-    height: 280,
-    borderRadius: 140,
-    backgroundColor: 'rgba(0, 104, 122, 0.16)',
   },
   keyboardView: {
     flex: 1,
@@ -240,14 +220,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.35,
-    shadowRadius: 18,
-    elevation: 8,
     borderWidth: 1.5,
     borderColor: 'rgba(255, 255, 255, 0.3)',
     overflow: 'hidden',
+    ...shadows.ambientNavy,
   },
   logoBadgeSpecular: {
     position: 'absolute',
@@ -269,14 +245,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 2,
     borderColor: '#FFFFFF',
-    shadowColor: '#57DFFE',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
-    shadowRadius: 6,
+    ...shadows.ambientCyan,
   },
   brandTitle: {
     color: colors.primary,
-    fontWeight: '800',
+    fontFamily: 'Inter_800ExtraBold',
     letterSpacing: -0.5,
   },
   brandSubtitle: {
@@ -320,7 +293,7 @@ const styles = StyleSheet.create({
   },
   demoChipText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
     color: colors.primary,
   },
   forgotPasswordLink: {
@@ -328,7 +301,7 @@ const styles = StyleSheet.create({
   },
   linkText: {
     color: colors.primary,
-    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
   },
   submitBtn: {
     marginTop: spacing.xs,
@@ -344,6 +317,6 @@ const styles = StyleSheet.create({
   },
   signUpText: {
     color: colors.primary,
-    fontWeight: '700',
+    fontFamily: 'Inter_700Bold',
   },
 });

@@ -76,9 +76,16 @@ def evaluate_evidence(
     # Single source warning for multi-perspective intents (COMPARISON, SUMMARY, REASONING)
     single_source_warning = False
     warning_message = None
-    if num_source_groups == 1 and intent in (IntentEnum.COMPARISON, IntentEnum.SUMMARY, IntentEnum.REASONING):
+    if num_source_groups == 1 and intent in (
+        IntentEnum.COMPARISON,
+        IntentEnum.SUMMARY,
+        IntentEnum.REASONING,
+    ):
         single_source_warning = True
-        warning_message = "Nội dung được tổng hợp từ 1 nguồn tài liệu duy nhất. Khuyến nghị kiểm chứng lại với các tài liệu đối sánh khác."
+        warning_message = (
+            "Nội dung được tổng hợp từ 1 nguồn tài liệu duy nhất. "
+            "Khuyến nghị kiểm chứng lại với các tài liệu đối sánh khác."
+        )
 
     top_sim = candidates[0].similarity if candidates else 0.0
     top3_sims = [c.similarity for c in candidates[:3]]
