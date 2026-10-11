@@ -6,8 +6,10 @@ from fastapi.testclient import TestClient
 
 from app.core.rag.retrieval_engine import RetrievedChunkCandidate, retrieve_chunks
 from app.core.rag.strategy_selector import get_strategy
+from app.core.security import verify_service_jwt
 from app.main import app
 
+app.dependency_overrides[verify_service_jwt] = lambda: {"requestId": "req-test"}
 client = TestClient(app)
 
 

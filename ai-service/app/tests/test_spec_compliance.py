@@ -6,9 +6,12 @@ import pytest
 from app.core.rag.citation_validator import validate_citations
 from app.core.rag.intent_detector import IntentEnum, detect_intent, get_config_hash
 from app.core.rag.retrieval_trace import RetrievalTrace, record_trace
+from app.core.security import verify_service_jwt
 from app.main import create_app
 
-client = TestClient(create_app())
+_test_app = create_app()
+_test_app.dependency_overrides[verify_service_jwt] = lambda: {"requestId": "req-test"}
+client = TestClient(_test_app)
 
 
 def test_config_hash_and_clarify_detection() -> None:
@@ -66,13 +69,12 @@ def test_liveness_and_readiness_endpoints() -> None:
     assert res_ready.json()["service"] == "ai-service"
 
 
+from app.tests.plan_v2_fixtures import payload
+
+
 def test_retrieval_answer_clarify_flow() -> None:
-    payload = {
-        "workspaceId": "ws-100",
-        "allowedDocumentIds": ["doc-1"],
-        "question": "nó là gì",
-    }
-    response = client.post("/internal/v1/retrieval/answers", json=payload)
+    req_body = payload(question="nó là gì")
+    response = client.post("/internal/v1/retrieval/answers", json=req_body)
     assert response.status_code == 200
     data = response.json()
     assert data["decision"] == "CLARIFY"

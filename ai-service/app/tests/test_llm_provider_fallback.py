@@ -1,61 +1,150 @@
-from unittest.mock import patch
+"""Transient-only fallback and durable attempt policies without external providers."""
+
+import time
+from datetime import UTC, datetime, timedelta
+from typing import Any
+from unittest.mock import Mock, patch
 
 import httpx
+import pytest
 
-from app.core.rag.llm_provider import generate_rag_answer
-from app.core.rag.retrieval_engine import RetrievedChunkCandidate
-
-
-@patch("app.core.rag.llm_provider.ENABLE_OLLAMA_FALLBACK", True)
-def test_generate_rag_answer_gemini_failure_fallback_to_ollama() -> None:
-    candidates = [
-        RetrievedChunkCandidate("chunk1", "doc1", "Đoạn trích tri thức CSDL", 0.85, "PDF_PAGE", "page:1", "hash1")
-    ]
-
-    dummy_request = httpx.Request("POST", "https://localhost")
-    dummy_response = httpx.Response(429, request=dummy_request)
-    err = httpx.HTTPStatusError("429 Too Many Requests", request=dummy_request, response=dummy_response)
-
-    # Mock Gemini call_gemini_api to raise exception (HTTP 429 / 503)
-    # Mock Ollama call_ollama_fallback to succeed
-    with patch("app.core.rag.llm_provider.call_gemini_api", side_effect=err):
-        with patch("app.core.rag.llm_provider.call_ollama_fallback", return_value="Câu trả lời từ Ollama Local"):
-            res = generate_rag_answer("Hỏi đáp CSDL", candidates)
-            assert res["provider"] == "ollama-local"
-            assert "Ollama Local" in res["answer"]
-            assert len(res["citations"]) == 1
+from app.core.rag.generation_policy import GenerationPolicy, GenerationPolicyError
+from app.core.rag.key_registry import ProviderKey
+from app.core.rag.provider_gateway import (
+    AttemptBudget,
+    ProviderFailure,
+    ProviderResult,
+    classify_failure,
+    generate,
+)
+from app.core.service_security import ServiceSecurityError
+from app.tests.plan_v2_fixtures import policy
 
 
-@patch("app.core.rag.llm_provider.ENABLE_OLLAMA_FALLBACK", True)
-def test_generate_rag_answer_all_llms_fail_returns_refuse() -> None:
-    candidates = [
-        RetrievedChunkCandidate("chunk1", "doc1", "Đoạn trích trích xuất trực tiếp", 0.90, "PDF_PAGE", "page:1", "hash1")
-    ]
-
-    # Mock both Gemini and Ollama calls to fail
-    with patch("app.core.rag.llm_provider.call_gemini_api", side_effect=Exception("Gemini Outage")):
-        with patch("app.core.rag.llm_provider.call_ollama_fallback", side_effect=Exception("Ollama Offline")):
-            res = generate_rag_answer("Hỏi đáp CSDL", candidates)
-            assert res["provider"] == "provider-unavailable"
-            assert res["answer"] is None
-            assert res["validationFailed"] is True
+def fake_policy() -> Mock:
+    context = Mock(spec=GenerationPolicy)
+    context.request_id = "request-id"
+    context.operation_id = "operation-id"
+    context.checkpoint.return_value = 30.0
+    return context
 
 
-def test_generate_rag_answer_multi_key_retry_success() -> None:
-    candidates = [
-        RetrievedChunkCandidate("chunk1", "doc1", "Đoạn trích tri thức CSDL", 0.85, "PDF_PAGE", "page:1", "hash1")
-    ]
+@pytest.mark.parametrize("status,transient", [(401, False), (403, False), (400, False),
+                                             (429, True), (500, True), (503, True)])
+def test_should_classify_only_retryable_http_failures(status: int, transient: bool) -> None:
+    request = httpx.Request("POST", "https://provider.invalid")
+    error = httpx.HTTPStatusError("redacted", request=request,
+                                 response=httpx.Response(status, request=request))
+    assert classify_failure(error).transient is transient
 
-    # First call with Key 1 fails (Rate Limit 429), second call with Key 2 succeeds
-    err_429 = Exception("429 RESOURCE_EXHAUSTED: Quota exceeded")
-    success_return = ("Trả lời thành công từ API Key 2 [1].", "gemini-3.5-flash")
 
-    with patch("app.core.rag.llm_provider.get_gemini_api_keys", return_value=["key_primary"]):
-        with patch("app.core.rag.llm_provider.get_candidate_gemini_models", return_value=["gemini-3.5-flash", "gemini-2.5-flash"]):
-            with patch("app.core.rag.llm_provider.call_gemini_api", side_effect=[err_429, success_return]) as mock_call:
-                res = generate_rag_answer("Hỏi đáp CSDL", candidates)
-                assert mock_call.call_count == 2
-                assert res["answer"] == "Trả lời thành công từ API Key 2 [1]."
-                assert res["provider"] == "gemini-3.5-flash"
+@pytest.mark.parametrize("code,transient", [("PROVIDER_AUTH", False), ("SAFETY", False),
+                                          ("PROVIDER_TIMEOUT", True)])
+def test_should_fallback_only_for_transient_errors(monkeypatch: pytest.MonkeyPatch, code: str, transient: bool) -> None:
+    monkeypatch.setenv("ENABLE_OLLAMA_FALLBACK", "true")
+    context = fake_policy()
+    events = []
+    result = ProviderResult("answer", "ollama", "local", "ollama-local")
+    with patch("app.core.rag.provider_gateway.configured_keys",
+               return_value=[ProviderKey("primary", "PRIMARY", "secret")]):
+        with patch("app.core.rag.provider_gateway._gemini",
+                   side_effect=ProviderFailure(code, transient)) as primary:
+            with patch("app.core.rag.provider_gateway._ollama", return_value=result) as fallback:
+                if transient:
+                    assert generate("prompt", context,
+                                    observer=lambda kind, data: events.append(kind)) == result
+                else:
+                    with pytest.raises(ProviderFailure):
+                        generate("prompt", context)
+    assert primary.call_count == 1
+    assert fallback.call_count == int(transient)
+    assert context.record.call_args_list[0].args[0]["phase"] == "START"
+    assert len(context.record.call_args_list) == (4 if transient else 2)
+    if transient:
+        assert events.count("reset") == 1
+
+
+def test_should_never_call_model_without_durable_attempt_start() -> None:
+    context = fake_policy()
+    context.record.side_effect = ServiceSecurityError("CORE_POLICY_UNAVAILABLE")
+    with patch("app.core.rag.provider_gateway.configured_keys",
+               return_value=[ProviderKey("primary", "PRIMARY", "secret")]):
+        with patch("app.core.rag.provider_gateway._gemini") as model:
+            with pytest.raises(ServiceSecurityError):
+                generate("private prompt", context)
+    model.assert_not_called()
+
+
+def test_should_checkpoint_again_before_fallback_and_limit_fallback_across_retries(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("ENABLE_OLLAMA_FALLBACK", "true")
+    context = fake_policy()
+    budget = AttemptBudget()
+    with patch("app.core.rag.provider_gateway.configured_keys",
+               return_value=[ProviderKey("primary", "PRIMARY", "secret")]):
+        with patch("app.core.rag.provider_gateway._gemini",
+                   side_effect=ProviderFailure("PROVIDER_TIMEOUT", True)):
+            with patch("app.core.rag.provider_gateway._ollama",
+                       return_value=ProviderResult("answer", "ollama", "local", "local")) as fallback:
+                generate("prompt", context, budget=budget)
+                with pytest.raises(ProviderFailure):
+                    generate("same prompt", context, budget=budget)
+    assert fallback.call_count == 1
+    assert context.checkpoint.call_count >= 5
+
+
+def test_should_stop_when_core_revokes_policy_between_attempts(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("ENABLE_OLLAMA_FALLBACK", "true")
+    context = fake_policy()
+    context.checkpoint.side_effect = [30, 30, GenerationPolicyError("CORE_POLICY_DENIED")]
+    with patch("app.core.rag.provider_gateway.configured_keys",
+               return_value=[ProviderKey("primary", "PRIMARY", "secret")]):
+        with patch("app.core.rag.provider_gateway._gemini",
+                   side_effect=ProviderFailure("PROVIDER_TIMEOUT", True)):
+            with patch("app.core.rag.provider_gateway._ollama") as fallback:
+                with pytest.raises(GenerationPolicyError):
+                    generate("prompt", context)
+    fallback.assert_not_called()
+
+
+def test_should_keep_unmeasured_usage_null() -> None:
+    context = fake_policy()
+    with patch("app.core.rag.provider_gateway.configured_keys",
+               return_value=[ProviderKey("primary", "PRIMARY", "secret")]):
+        with patch("app.core.rag.provider_gateway._gemini",
+                   return_value=ProviderResult("answer", "gemini", "test", "primary")):
+            generate("prompt", context)
+    event = context.record.call_args.args[0]
+    assert event["inputTokens"] is None
+    assert event["outputTokens"] is None
+    assert "prompt" not in event and "secret" not in str(event)
+
+
+def test_should_reject_cloud_denied_and_expired_operations_without_core_calls() -> None:
+    with patch("app.core.rag.generation_policy.call_core") as core:
+        with pytest.raises(GenerationPolicyError):
+            GenerationPolicy("id", "op", False, time.time() + 120).checkpoint("CHAT")
+        with pytest.raises(GenerationPolicyError):
+            GenerationPolicy("id", "op", True, time.time() - 1).checkpoint("CHAT")
+    core.assert_not_called()
+
+
+@pytest.mark.parametrize("response", [
+    {"allowed": False, "cloudAllowed": True},
+    {"allowed": True, "cloudAllowed": False},
+    {"allowed": True, "cloudAllowed": True, "deadlineAt": "bad"},
+    {"allowed": True, "cloudAllowed": True,
+     "deadlineAt": (datetime.now(UTC) - timedelta(seconds=1)).isoformat()},
+])
+def test_should_fail_closed_on_unavailable_or_invalid_core_checkpoint(response: dict[str, Any]) -> None:
+    with patch("app.core.rag.generation_policy.call_core", return_value=response):
+        with pytest.raises(GenerationPolicyError):
+            policy().checkpoint("CHAT")
+
+
+def test_should_respect_core_remaining_deadline_and_attempt_timeout() -> None:
+    deadline = datetime.now(UTC) + timedelta(seconds=8)
+    response = {"allowed": True, "cloudAllowed": True, "deadlineAt": deadline.isoformat()}
+    with patch("app.core.rag.generation_policy.call_core", return_value=response):
+        assert 0 < policy().checkpoint("CHAT") <= 8
 
 

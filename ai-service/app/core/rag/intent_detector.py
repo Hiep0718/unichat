@@ -1,9 +1,10 @@
 import hashlib
-import os
+import logging
 import re
 import unicodedata
 from enum import StrEnum
 from pathlib import Path
+
 import yaml  # type: ignore[import-untyped]
 
 
@@ -93,17 +94,44 @@ def _load_rules() -> list[tuple[IntentEnum, str, str, list[str]]]:
             _CACHED_RULES = rules
             _CACHED_HASH = current_hash
             return rules
-        except Exception:
-            pass
+        except Exception as error:
+            logging.getLogger(__name__).warning(
+                "intent_rules_load_failed code=%s", type(error).__name__
+            )
 
     # Hardcoded fallback rules if YAML loading fails
     fallback_rules: list[tuple[IntentEnum, str, str, list[str]]] = [
-        (IntentEnum.OUT_OF_SCOPE, "RULE_OOS_HACK", r"(hack|override|jailbreak|giai ma mat khau|tan cong|system prompt)", []),
-        (IntentEnum.COMPARISON, "RULE_COMPARE_VS", r"(so sanh|khac nhau|giong nhau|uu nhược diem|uu va nhieu|giua .* va .*|khac gi)", []),
-        (IntentEnum.SUMMARY, "RULE_SUMMARY_ALL", r"(tom tat|tong quan|y chinh|noi dung chinh|tom luoc)", []),
+        (
+            IntentEnum.OUT_OF_SCOPE,
+            "RULE_OOS_HACK",
+            r"(hack|override|jailbreak|giai ma mat khau|tan cong|system prompt)",
+            [],
+        ),
+        (
+            IntentEnum.COMPARISON,
+            "RULE_COMPARE_VS",
+            r"(so sanh|khac nhau|giong nhau|uu nhược diem|uu va nhieu|giua .* va .*|khac gi)",
+            [],
+        ),
+        (
+            IntentEnum.SUMMARY,
+            "RULE_SUMMARY_ALL",
+            r"(tom tat|tong quan|y chinh|noi dung chinh|tom luoc)",
+            [],
+        ),
         (IntentEnum.DEFINITION, "RULE_DEF_WHAT", r"(la gi|dinh nghia|khai niem|the nao la)", []),
-        (IntentEnum.REASONING, "RULE_REASON_WHY", r"(tai sao|vi sao|nguyen nhan|anh huong|tac dong|nhu the nao)", []),
-        (IntentEnum.FACT, "RULE_FACT_EXPLICIT", r"(\bai\b|khi nao|bao nhieu|o dau|thoi gian|ngay thang|nam nao|may gio)", [r"(tai sao|vi sao|the nao)"]),
+        (
+            IntentEnum.REASONING,
+            "RULE_REASON_WHY",
+            r"(tai sao|vi sao|nguyen nhan|anh huong|tac dong|nhu the nao)",
+            [],
+        ),
+        (
+            IntentEnum.FACT,
+            "RULE_FACT_EXPLICIT",
+            r"(\bai\b|khi nao|bao nhieu|o dau|thoi gian|ngay thang|nam nao|may gio)",
+            [r"(tai sao|vi sao|the nao)"],
+        ),
     ]
     _CACHED_RULES = fallback_rules
     _CACHED_HASH = current_hash
@@ -113,7 +141,9 @@ def _load_rules() -> list[tuple[IntentEnum, str, str, list[str]]]:
 def detect_intent(question: str, has_conversation_context: bool = False) -> IntentResult:
     config_hash = get_config_hash()
     if not (3 <= len(question.strip()) <= 2000):
-        return IntentResult(IntentEnum.OUT_OF_SCOPE, "RULE_INVALID_LENGTH", 1.0, question.strip(), config_hash)
+        return IntentResult(
+            IntentEnum.OUT_OF_SCOPE, "RULE_INVALID_LENGTH", 1.0, question.strip(), config_hash
+        )
 
     normalized = unicodedata.normalize("NFC", question.strip())
     shadow_text = remove_vietnamese_accent(normalized)
@@ -122,7 +152,9 @@ def detect_intent(question: str, has_conversation_context: bool = False) -> Inte
     # Bypass ambiguous pronoun CLARIFY when conversation history provides context
     if not has_conversation_context:
         if re.search(r"^(cai do|no|thang do|cho do|cho nay) (la gi|nhu the nao)$", shadow_text):
-            return IntentResult(IntentEnum.CLARIFY, "RULE_AMBIGUOUS_PRONOUN", 0.95, normalized, config_hash)
+            return IntentResult(
+                IntentEnum.CLARIFY, "RULE_AMBIGUOUS_PRONOUN", 0.95, normalized, config_hash
+            )
 
     rules = _load_rules()
     for intent, rule_id, pattern, negative_patterns in rules:
@@ -135,4 +167,3 @@ def detect_intent(question: str, has_conversation_context: bool = False) -> Inte
 
     # Fallback to FACT
     return IntentResult(IntentEnum.FACT, "FACT_DEFAULT", 0.70, normalized, config_hash)
-
