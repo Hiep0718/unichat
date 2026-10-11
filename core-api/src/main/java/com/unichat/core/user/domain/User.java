@@ -9,6 +9,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 
 /**
  * Core User entity containing credentials, system roles, and account state.
@@ -16,6 +17,12 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "users")
 public class User {
+    @Version
+    @Column(name = "version", nullable = false)
+    private long version;
+
+    @Column(name = "security_version", nullable = false)
+    private long securityVersion;
 
     @Id
     @Column(name = "id", nullable = false)
@@ -102,6 +109,15 @@ public class User {
     public UUID getId() {
         return id;
     }
+
+    /** Current optimistic mutation version. */
+    public long getVersion() { return version; }
+
+    /** Security revision embedded in access tokens. */
+    public long getSecurityVersion() { return securityVersion; }
+
+    /** Invalidates all previously issued access credentials. */
+    public void invalidateCredentials() { securityVersion++; }
 
     public String getEmail() {
         return email;

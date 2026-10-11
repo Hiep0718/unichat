@@ -10,6 +10,19 @@ permissions:
   contents: read
 
 jobs:
+  mobile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.18.0
+          cache: npm
+      - run: npm ci
+      - run: npm run lint:mobile
+      - run: npm run typecheck:mobile
+      - run: npm run test:mobile -- --runInBand --coverage
+
   frontend:
     runs-on: ubuntu-latest
     steps:
@@ -38,6 +51,8 @@ jobs:
           cache: maven
       - run: chmod +x mvnw
       - run: ./mvnw -B verify
+      - name: Disposable PostgreSQL transaction and race gate
+        run: ./mvnw -B '-Dtest=*PostgresIT' test
 
   ai-service:
     runs-on: ubuntu-latest

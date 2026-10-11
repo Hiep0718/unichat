@@ -6,8 +6,11 @@
 #>
 param(
     [Parameter(Mandatory=$true)]
-    [ValidateSet('chromadb', 'ai-service', 'core-api', 'frontend')]
-    [string]$Service
+    [ValidateSet('chromadb', 'ai-service', 'core-api', 'frontend', 'mobile')]
+    [string]$Service,
+
+    [Parameter(Mandatory=$false)]
+    [int]$Port = 0
 )
 
 Set-StrictMode -Version Latest
@@ -26,7 +29,12 @@ $cfg = @{
     'ai-service' = @{ Title = 'AI Service'; Port = 8001 }
     'core-api'   = @{ Title = 'Core API';   Port = 8082 }
     'frontend'   = @{ Title = 'Frontend';   Port = 5173 }
+    'mobile'     = @{ Title = 'Expo App';   Port = 8085 }
 }[$Service]
+
+if ($Port -gt 0) {
+    $cfg.Port = $Port
+}
 
 $host.UI.RawUI.WindowTitle = "$($cfg.Title) - UniChat Dev"
 
@@ -100,8 +108,7 @@ function Start-ServiceProcess {
             if (Test-Path $jdk) { $env:JAVA_HOME = $jdk }
             $mvnw = Join-Path $rootDir 'core-api\mvnw.cmd'
             $coreDir = Join-Path $rootDir 'core-api'
-            $jvmArgs = "-Dspring-boot.run.jvmArguments=`"-DPOSTGRES_URL=$env:POSTGRES_URL -DPOSTGRES_USER=$env:POSTGRES_USER -DPOSTGRES_PASSWORD=$env:POSTGRES_PASSWORD -DAI_SERVICE_BASE_URL=$env:AI_SERVICE_BASE_URL`""
-            return Start-Process -FilePath $mvnw -ArgumentList @('spring-boot:run', $jvmArgs) -WorkingDirectory $coreDir -NoNewWindow -PassThru
+            return Start-Process -FilePath $mvnw -ArgumentList 'spring-boot:run' -WorkingDirectory $coreDir -NoNewWindow -PassThru
         }
         'frontend' {
             $toolsNode = Join-Path $rootDir '.tools\node-v24.18.0-win-x64'
@@ -113,6 +120,17 @@ function Start-ServiceProcess {
             if (Test-Path $toolsNpm) { $npm = $toolsNpm }
             $feDir = Join-Path $rootDir 'frontend'
             return Start-Process -FilePath $npm -ArgumentList 'run dev' -WorkingDirectory $feDir -NoNewWindow -PassThru
+        }
+        'mobile' {
+            $toolsNode = Join-Path $rootDir '.tools\node-v24.18.0-win-x64'
+            if (Test-Path $toolsNode) {
+                $env:PATH = "$toolsNode;$env:PATH"
+            }
+            $npm = 'npm.cmd'
+            $toolsNpm = Join-Path $toolsNode 'npm.cmd'
+            if (Test-Path $toolsNpm) { $npm = $toolsNpm }
+            $mobileDir = Join-Path $rootDir 'mobile'
+            return Start-Process -FilePath $npm -ArgumentList "run dev -- --port $($cfg.Port)" -WorkingDirectory $mobileDir -NoNewWindow -PassThru
         }
     }
 }

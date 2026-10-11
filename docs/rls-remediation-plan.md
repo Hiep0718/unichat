@@ -1,11 +1,11 @@
 # RLS Remediation Plan
 Date: 2026-07-22
-Updated: 2026-07-22
+Updated: 2026-09-23
 Author: Hiep / AI-assisted
 
 ## 1. Mở đầu — Bối cảnh
 
-Supabase linter báo cáo tất cả bảng trong schema `public` đang **tắt Row-Level Security (RLS)**. Dù UniChat sử dụng Supabase **chỉ làm managed PostgreSQL host** (không dùng Supabase Auth hay PostgREST cho business logic), Supabase vẫn expose PostgREST API tại `https://<project-ref>.supabase.co/rest/v1/` cùng với các role tự tạo (`anon`, `authenticated`, `service_role`). Nếu API key bị lộ, bất kỳ ai cũng có thể đọc/ghi dữ liệu qua PostgREST.
+Supabase linter báo cáo các bảng trong schema `public` bị cảnh báo `rls_disabled_in_public` (Table publicly accessible). Dù UniChat sử dụng Supabase **chỉ làm managed PostgreSQL host** (không dùng Supabase Auth hay PostgREST cho business logic), Supabase vẫn expose PostgREST API tại `https://<project-ref>.supabase.co/rest/v1/` cùng với các role tự tạo (`anon`, `authenticated`, `service_role`). Nếu API key bị lộ, bất kỳ ai cũng có thể đọc/ghi dữ liệu qua PostgREST nếu bảng không có RLS.
 
 ### Kiến trúc truy cập dữ liệu UniChat
 
@@ -20,7 +20,7 @@ PostgreSQL (Supabase hosted, private network — ADR-003)
 ```
 
 - **Client không bao giờ kết nối trực tiếp đến PostgreSQL.**
-- Core API kết nối PostgreSQL bằng DB role `postgres.<project-id>` (superuser, BYPASSRLS) qua Supabase Pooler.
+- Core API kết nối PostgreSQL bằng DB role `postgres.<project-id>` (có cờ `BYPASSRLS: true`) qua Supabase Pooler.
 - Authorization logic hoàn toàn do Core API xử lý trước khi thực thi SQL.
 - RLS đóng vai trò **defense-in-depth** (lớp bảo vệ cuối cùng), không phải authorization layer chính.
 
@@ -32,16 +32,18 @@ PostgreSQL (Supabase hosted, private network — ADR-003)
 
 ## 3. Mục tiêu
 
-- Bật RLS trên mọi bảng `public`.
-- Tạo policy `deny_all` chặn mọi non-superuser access.
-- Thu hồi (`REVOKE`) toàn bộ quyền của `anon`, `authenticated`, `service_role` trên schema `public`.
-- Đóng gói vào Flyway migration có version hóa.
+- Bật RLS trên toàn bộ 30 bảng `public`.
+- Tạo policy `deny_all` chặn mọi non-superuser/non-BYPASSRLS access.
+- Thu hồi (`REVOKE`) toàn bộ quyền của `anon`, `authenticated`, `service_role` trên schema `public` (tables, sequences, routines).
+- Áp dụng `ALTER DEFAULT PRIVILEGES` để tự động bảo vệ các bảng mới trong tương lai.
+- Đóng gói vào Flyway migration có version hóa (`V6` và `V23`).
 - Xác minh Core API vẫn hoạt động bình thường sau khi bật RLS.
 
 ## 4. Phạm vi
 
-18 bảng trong schema `public` (đã loại `resource_jobs` — xem Ghi chú):
+Toàn bộ 30 bảng trong schema `public`:
 
+### Phase 1 (Migration V6 - tháng 07/2026 - 17 bảng nghiệp vụ ban đầu):
 - public.users
 - public.refresh_tokens
 - public.workspaces
@@ -59,11 +61,25 @@ PostgreSQL (Supabase hosted, private network — ADR-003)
 - public.rate_limit_buckets
 - public.audit_events
 - public.password_reset_otps
+
+### Phase 2 (Migration V23 - tháng 09/2026 - 13 bảng tính năng mới & metadata):
+- public.workspace_categories (từ V7.1)
+- public.document_reviews (từ V7.1)
+- public.discussions (từ V8)
+- public.discussion_replies (từ V8)
+- public.reactions (từ V8)
+- public.notifications (từ V8)
+- public.studio_notes (từ V11)
+- public.bookmarks
+- public.direct_conversations
+- public.direct_messages
+- public.post_attachments
+- public.post_reads
 - public.flyway_schema_history
 
 Ghi chú:
 - `resource_jobs` đã bị xóa bởi migration `V5__drop_resource_jobs.sql` theo ADR-007 (RabbitMQ thay thế).
-- `flyway_schema_history` được bao gồm vì Core API role (superuser) tự bypass RLS khi Flyway chạy migration.
+- `community_channels`, `community_messages`, `community_ai_responses` đã bị xóa bởi `V9__reddit_vote_score.sql`.
 
 ## 5. Giả định
 
@@ -221,15 +237,24 @@ Lưu ý: Flyway không hỗ trợ rollback tự động — rollback phải ch�
 
 ## 10. Checklist
 
-- [ ] Chạy khảo sát roles & quyền hiện tại (Bước 1)
-- [ ] Xác minh Core API DB role có `BYPASSRLS` hoặc `SUPERUSER`
-- [ ] Apply migration `V5__drop_resource_jobs.sql`
-- [ ] Apply migration `V6__enable_rls_defense_in_depth.sql`
-- [ ] Chạy integration tests Core API → tất cả pass
-- [ ] Kiểm thử PostgREST API Supabase với `anon` key → trả `403` hoặc `[]`
-- [ ] Smoke test frontend → Core API → DB flow
-- [ ] Chạy Supabase linter → không còn cảnh báo RLS
-- [ ] Cập nhật `docs/specifications/data-model.md` — loại bỏ `resource_jobs`
+### Phase 1 (Migration V6 - Đã hoàn thành 07/2026):
+- [x] Chạy khảo sát roles & quyền hiện tại (Bước 1)
+- [x] Xác minh Core API DB role có `BYPASSRLS` hoặc `SUPERUSER`
+- [x] Apply migration `V5__drop_resource_jobs.sql`
+- [x] Apply migration `V6__enable_rls_defense_in_depth.sql`
+- [x] Chạy integration tests Core API → tất cả pass
+- [x] Kiểm thử PostgREST API Supabase với `anon` key → trả `403` hoặc `[]`
+- [x] Smoke test frontend → Core API → DB flow
+- [x] Cập nhật `docs/specifications/data-model.md` — loại bỏ `resource_jobs`
+
+### Phase 2 (Migration V23 - Đã hoàn thành 09/2026):
+- [x] Khảo sát và phát hiện 13 bảng mới chưa có RLS gây cảnh báo `rls_disabled_in_public`
+- [x] Xác minh DB role `postgres` giữ nguyên cờ `BYPASSRLS: true`
+- [x] Tạo và áp dụng `V23__enable_rls_defense_in_depth_v2.sql`
+- [x] Áp dụng `ALTER DEFAULT PRIVILEGES` chặn rò rỉ quyền trên bảng/sequence/routine tương lai
+- [x] Kiểm tra chẩn đoán DB: 30/30 bảng đã bật RLS, 0 quyền cho `anon/authenticated/service_role`
+- [x] Chạy toàn bộ 66 unit & integration test Core API → tất cả pass (0 failures)
+- [x] Kiểm tra truy vấn Core API trên các bảng mới → 100% OK
 
 ## 11. Timeline ước tính
 
@@ -246,7 +271,8 @@ Lưu ý: Flyway không hỗ trợ rollback tự động — rollback phải ch�
 | Migration | Mục đích |
 |---|---|
 | `V5__drop_resource_jobs.sql` | Xóa bảng deprecated `resource_jobs` (ADR-007) |
-| `V6__enable_rls_defense_in_depth.sql` | Enable RLS + deny_all + revoke PostgREST roles |
+| `V6__enable_rls_defense_in_depth.sql` | Phase 1: Enable RLS + deny_all + revoke PostgREST roles (17 bảng) |
+| `V23__enable_rls_defense_in_depth_v2.sql` | Phase 2: Enable RLS + deny_all cho 13 bảng còn lại + revoke + alter default privileges |
 
 ## 13. Tài liệu tham khảo
 
@@ -257,3 +283,4 @@ Lưu ý: Flyway không hỗ trợ rollback tự động — rollback phải ch�
 - ADR-004 (Authorization owner): `docs/specifications/architecture-decision.md`
 - ADR-005 (Authentication): `docs/specifications/architecture-decision.md`
 - ADR-007 (RabbitMQ thay resource_jobs): `docs/specifications/architecture-decision.md`
+

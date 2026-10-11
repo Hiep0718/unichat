@@ -59,6 +59,7 @@ Script tự kiểm tra prerequisites và port, mở từng service trong tab Win
 | AI Service | 8001 | 🔵 Xanh dương |
 | Core API | 8082 | 🟢 Xanh lá |
 | Frontend | 5173 | 🟡 Vàng |
+| Mobile (Expo) | 8081 / 8085 | 🟠 Cam |
 
 PostgreSQL, Document Storage và RabbitMQ sử dụng cloud (Supabase / CloudAMQP), không cần chạy local.
 

@@ -7,14 +7,16 @@
  * Renders only inside a workspace and only for roles that can approve.
  */
 import { usePendingApprovalCount } from '../document-hooks';
-import { useWorkspace } from '../../workspaces/workspace-context';
+import { useOptionalWorkspace } from '../../workspaces/workspace-context';
 import './pending-approval-badge.css';
 
 /** Counts above this are shown as "9+" so the pill keeps its size. */
 const MAX_DISPLAYED = 9;
 
 export function PendingApprovalBadge() {
-  const { workspace, canEdit } = useWorkspace();
+  const wsCtx = useOptionalWorkspace();
+  const workspace = wsCtx?.workspace;
+  const canEdit = wsCtx?.canEdit ?? false;
   const { data } = usePendingApprovalCount(workspace?.id ?? '', canEdit);
 
   const count = data?.pendingCount ?? 0;

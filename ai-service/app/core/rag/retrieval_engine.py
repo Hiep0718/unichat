@@ -20,6 +20,8 @@ class RetrievedChunkCandidate:
         locator_type: str,
         locator_value: str,
         content_hash: str,
+        ingestion_version: int | None = None,
+        document_content_hash: str | None = None,
     ) -> None:
         self.chunk_id = chunk_id
         self.document_id = document_id
@@ -28,6 +30,9 @@ class RetrievedChunkCandidate:
         self.locator_type = locator_type
         self.locator_value = locator_value
         self.content_hash = content_hash
+        self.ingestion_version = ingestion_version
+        self.document_content_hash = document_content_hash
+
 
 def retrieve_chunks(
     workspace_id: str,
@@ -116,7 +121,14 @@ def _query_single_collection(
                     locator_type=meta.get("locator_type", "UNKNOWN"),
                     locator_value=meta.get("locator_value", ""),
                     content_hash=meta.get("content_hash", ""),
+                    ingestion_version=_source_version(meta.get("ingestion_version")),
+                    document_content_hash=meta.get("document_content_hash"),
                 )
             )
 
     return candidates[: strategy.max_chunks]
+
+
+def _source_version(value: object) -> int | None:
+    # Vector schema labels such as v2.0 cannot prove a document ingestion version.
+    return value if type(value) is int and value > 0 else None

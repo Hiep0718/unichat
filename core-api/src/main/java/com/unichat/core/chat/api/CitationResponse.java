@@ -10,5 +10,14 @@ public record CitationResponse(
         String fileName,
         String locator,
         String excerpt,
-        double score
-) {}
+        double score,
+        String citationId,
+        String chunkId,
+        Integer ingestionVersion,
+        String contentHash
+) {
+    /** Supports legacy consumers without inventing provenance. */
+    public CitationResponse(UUID documentId, String fileName, String locator, String excerpt, double score) {
+        this(documentId, fileName, locator, excerpt, score, null, null, null, null);
+    }
+}

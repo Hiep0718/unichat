@@ -1,102 +1,66 @@
 package com.unichat.core.chat.service;
 
 import java.time.Clock;
-import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import com.unichat.core.chat.api.StudioNoteRequest;
 import com.unichat.core.chat.api.StudioNoteResponse;
-import com.unichat.core.chat.domain.Conversation;
-import com.unichat.core.chat.domain.ConversationRepository;
 import com.unichat.core.chat.domain.StudioNote;
 import com.unichat.core.chat.domain.StudioNoteRepository;
 import com.unichat.core.common.error.NotFoundError;
+import com.unichat.core.common.error.ValidationError;
 
-/**
- * Service managing Studio Notes generated in user conversation sessions.
- */
+/** Protects existing saved notes through ownership and inherited source dependencies. */
 @Service
 public class StudioNoteService {
-
-    private final StudioNoteRepository studioNoteRepository;
-    private final ConversationRepository conversationRepository;
+    private final StudioNoteRepository notes;
+    private final ChatConversationStore conversations;
+    private final ChatAccessService access;
+    private final ChatMessageStore messages;
     private final Clock clock;
-
-    public StudioNoteService(
-            StudioNoteRepository studioNoteRepository,
-            ConversationRepository conversationRepository,
-            Clock clock) {
-        this.studioNoteRepository = studioNoteRepository;
-        this.conversationRepository = conversationRepository;
-        this.clock = clock;
+    /** Receives read-only source policy, never a generator or ingestion service. */
+    public StudioNoteService(StudioNoteRepository notes,ChatConversationStore conversations,ChatAccessService access,
+            ChatMessageStore messages,Clock clock) {
+        this.notes=notes;this.conversations=conversations;this.access=access;this.messages=messages;this.clock=clock;
     }
-
-    /**
-     * Lists all studio notes for a specific conversation.
-     */
-    @Transactional(readOnly = true)
-    public List<StudioNoteResponse> getNotesForConversation(UUID workspaceId, UUID conversationId, UUID userId) {
-        Conversation conv = conversationRepository.findById(conversationId)
-                .orElseThrow(() -> new NotFoundError("Cuộc trò chuyện không tồn tại"));
-
-        if (!conv.getWorkspaceId().equals(workspaceId)) {
-            throw new NotFoundError("Cuộc trò chuyện không thuộc workspace này");
-        }
-
-        return studioNoteRepository.findByConversationIdOrderByCreatedAtDesc(conversationId)
-                .stream()
-                .map(StudioNoteResponse::new)
-                .collect(Collectors.toList());
+    /** Pages only owned notes and withholds all derived content when provenance is invalid. */
+    @Transactional(readOnly=true)
+    public Page<StudioNoteResponse> getNotesForConversation(UUID workspaceId,UUID conversationId,ChatActor actor,Pageable pageable) {
+        var sources=access.read(actor,workspaceId);
+        conversations.requireOwner(actor.userId(),workspaceId,conversationId,false);
+        return notes.findByConversationIdAndUserIdOrderByCreatedAtDescIdDesc(conversationId,actor.userId(),pageable)
+                .map(note -> new StudioNoteResponse(note,readable(note,sources)));
     }
-
-    /**
-     * Creates a new Studio Note linked to a conversation.
-     */
+    /** Saves a chat note inheriting a genuine final source message. */
     @Transactional
-    public StudioNoteResponse createNote(UUID workspaceId, UUID conversationId, UUID userId, StudioNoteRequest req) {
-        Conversation conv = conversationRepository.findById(conversationId)
-                .orElseThrow(() -> new NotFoundError("Cuộc trò chuyện không tồn tại"));
-
-        if (!conv.getWorkspaceId().equals(workspaceId)) {
-            throw new NotFoundError("Cuộc trò chuyện không thuộc workspace này");
+    public StudioNoteResponse createNote(UUID workspaceId,UUID conversationId,ChatActor actor,StudioNoteRequest request) {
+        conversations.lockActor(actor.userId());
+        conversations.requireOwner(actor.userId(),workspaceId,conversationId,true);
+        conversations.lockSources(actor,workspaceId);
+        var sources=access.read(actor,workspaceId);
+        if (request.getSourceMessageId()==null || !messages.sourceMessage(request.getSourceMessageId(),conversationId,sources)) {
+            throw new ValidationError("Ghi chú phải liên kết với câu trả lời còn quyền đọc.");
         }
-
-        UUID noteId = UUID.randomUUID();
-        Instant now = clock.instant();
-
-        StudioNote note = new StudioNote(
-                noteId,
-                conversationId,
-                workspaceId,
-                userId,
-                req.getNoteType() != null ? req.getNoteType() : "CHAT_NOTE",
-                req.getTitle(),
-                req.getContent(),
-                req.getMetadata(),
-                now
-        );
-
-        StudioNote saved = studioNoteRepository.save(note);
-        return new StudioNoteResponse(saved);
+        var note=new StudioNote(UUID.randomUUID(),conversationId,workspaceId,actor.userId(),request.getNoteType(),
+                request.getTitle(),request.getContent(),request.getMetadata(),clock.instant());
+        note.bindSource(request.getSourceMessageId(),sources.fingerprint());
+        return new StudioNoteResponse(notes.save(note),true);
     }
-
-    /**
-     * Deletes a Studio Note by ID.
-     */
+    /** Deletes only an owned note within the exact path binding. */
     @Transactional
-    public void deleteNote(UUID workspaceId, UUID conversationId, UUID noteId, UUID userId) {
-        StudioNote note = studioNoteRepository.findById(noteId)
-                .orElseThrow(() -> new NotFoundError("Ghi chú không tồn tại"));
-
-        if (!note.getConversationId().equals(conversationId) || !note.getWorkspaceId().equals(workspaceId)) {
-            throw new NotFoundError("Ghi chú không thuộc hội thoại này");
-        }
-
-        studioNoteRepository.delete(note);
+    public void deleteNote(UUID workspaceId,UUID conversationId,UUID noteId,ChatActor actor) {
+        access.read(actor,workspaceId);
+        conversations.requireOwner(actor.userId(),workspaceId,conversationId,true);
+        var note=notes.findById(noteId).filter(value -> value.getConversationId().equals(conversationId)
+                && value.getWorkspaceId().equals(workspaceId) && value.getUserId().equals(actor.userId()))
+                .orElseThrow(() -> new NotFoundError("Ghi chú không tồn tại."));
+        notes.delete(note);
+    }
+    private boolean readable(StudioNote note,ChatSourceSnapshot sources) {
+        return note.getSourceMessageId()!=null && sources.fingerprint().equals(note.getSourceFingerprint())
+                && messages.sourceMessage(note.getSourceMessageId(),note.getConversationId(),sources);
     }
 }

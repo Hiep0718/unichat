@@ -66,3 +66,7 @@ export function useWorkspace(): WorkspaceContextState {
   }
   return context;
 }
+
+export function useOptionalWorkspace(): WorkspaceContextState | null {
+  return useContext(WorkspaceContext);
+}

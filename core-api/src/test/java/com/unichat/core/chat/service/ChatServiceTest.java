@@ -1,117 +1,40 @@
 package com.unichat.core.chat.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.time.Clock;
-import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
-
-import org.junit.jupiter.api.BeforeEach;
+import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.Test;
-
+import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.junit.jupiter.api.Assertions.*;
 import com.unichat.core.chat.api.AskQuestionRequest;
-import com.unichat.core.chat.domain.Conversation;
-import com.unichat.core.chat.domain.ConversationRepository;
-import com.unichat.core.chat.domain.Message;
-import com.unichat.core.chat.domain.MessageRepository;
-import com.unichat.core.common.error.NotFoundError;
-import com.unichat.core.document.domain.DocumentRepository;
-import com.unichat.core.workspace.domain.Workspace;
-import com.unichat.core.workspace.domain.WorkspaceMember;
-import com.unichat.core.workspace.domain.WorkspaceMemberRepository;
-import com.unichat.core.workspace.domain.WorkspaceMemberStatus;
-import com.unichat.core.workspace.domain.WorkspaceRepository;
-import com.unichat.core.workspace.domain.WorkspaceRole;
-import com.unichat.core.workspace.domain.WorkspaceVisibility;
+import com.unichat.core.chat.api.ChatOperationResponse;
+import com.unichat.core.common.error.UnauthenticatedError;
 
 class ChatServiceTest {
-
-    private WorkspaceRepository workspaceRepository;
-    private WorkspaceMemberRepository workspaceMemberRepository;
-    private DocumentRepository documentRepository;
-    private ConversationRepository conversationRepository;
-    private MessageRepository messageRepository;
-    private com.unichat.core.chat.domain.CitationHistoryRepository citationHistoryRepository;
-    private CitationExtractor citationExtractor;
-    private ConversationHistoryBuilder conversationHistoryBuilder;
-    private com.unichat.core.shared.config.ServiceTokenIssuer serviceTokenIssuer;
-    private ChatService chatService;
-
-    @BeforeEach
-    void setUp() {
-        workspaceRepository = mock(WorkspaceRepository.class);
-        workspaceMemberRepository = mock(WorkspaceMemberRepository.class);
-        documentRepository = mock(DocumentRepository.class);
-        conversationRepository = mock(ConversationRepository.class);
-        messageRepository = mock(MessageRepository.class);
-        citationHistoryRepository = mock(com.unichat.core.chat.domain.CitationHistoryRepository.class);
-        citationExtractor = mock(CitationExtractor.class);
-        conversationHistoryBuilder = mock(ConversationHistoryBuilder.class);
-        serviceTokenIssuer = mock(com.unichat.core.shared.config.ServiceTokenIssuer.class);
-        org.mockito.Mockito.when(serviceTokenIssuer.issueToken()).thenReturn("Bearer test-token");
-        org.mockito.Mockito.when(conversationHistoryBuilder.buildHistoryPayload(any())).thenReturn(List.of());
-        org.mockito.Mockito.when(conversationHistoryBuilder.buildAiRequestBody(any(), any(), any(), any(), any(Boolean.class), any(), any()))
-                .thenReturn(new java.util.HashMap<>());
-        chatService = new ChatService(
-                workspaceRepository,
-                workspaceMemberRepository,
-                documentRepository,
-                conversationRepository,
-                messageRepository,
-                citationHistoryRepository,
-                citationExtractor,
-                conversationHistoryBuilder,
-                serviceTokenIssuer,
-                Clock.systemUTC()
-        );
+    private final ChatOperationService operations=mock(ChatOperationService.class);
+    private final ChatOperationRunner runner=mock(ChatOperationRunner.class);
+    private final ChatService service=new ChatService(operations,runner);
+    private final AskQuestionRequest request=new AskQuestionRequest("Câu hỏi tiếng Việt",null,false);
+    @Test void shouldReplaySameKeyWithoutCallingProviderAgain() {
+        var operation=ChatFixture.operation(true);
+        var status=new ChatOperationResponse(operation.id(),"RUNNING",operation.conversationId(),null,null);
+        when(operations.reserve(ChatFixture.ACTOR,ChatFixture.WORKSPACE,request,operation.key(),"request-test"))
+                .thenReturn(new ChatOperationService.Reservation(operation,false));
+        when(operations.status(ChatFixture.ACTOR,ChatFixture.WORKSPACE,operation.id())).thenReturn(status);
+        assertSame(status,service.ask(ChatFixture.ACTOR,ChatFixture.WORKSPACE,request,operation.key(),"request-test"));
+        verifyNoInteractions(runner);
     }
-
-
-    @Test
-    void shouldAskQuestionSuccessfully() {
-        var userId = UUID.randomUUID();
-        var workspaceId = UUID.randomUUID();
-        var workspace = new Workspace(workspaceId, userId, "Class Workspace", "", WorkspaceVisibility.PRIVATE, false, Instant.now());
-        var member = new WorkspaceMember(workspaceId, userId, WorkspaceRole.EDITOR, WorkspaceMemberStatus.ACTIVE, userId);
-
-        when(workspaceRepository.findById(workspaceId)).thenReturn(Optional.of(workspace));
-        when(workspaceMemberRepository.findByWorkspaceIdAndUserIdAndStatus(workspaceId, userId, WorkspaceMemberStatus.ACTIVE))
-                .thenReturn(Optional.of(member));
-        when(documentRepository.findAllowedDocumentIdsForWorkspaces(List.of(workspaceId))).thenReturn(List.of(UUID.randomUUID()));
-        when(documentRepository.findByWorkspaceIdExcludingDeleting(any(), any())).thenReturn(new org.springframework.data.domain.PageImpl<>(List.of()));
-
-        var request = new AskQuestionRequest("Khái niệm Vector Embedding là gì?", null, true);
-
-        var response = chatService.askQuestion(userId, workspaceId, request, "req-999");
-
-        assertNotNull(response);
-        assertNotNull(response.messageId());
-        assertNotNull(response.conversationId());
-        verify(conversationRepository, atLeastOnce()).save(any(Conversation.class));
-        verify(messageRepository, atLeastOnce()).save(any(Message.class));
+    @Test void shouldStartOnlyNewReservation() {
+        var operation=ChatFixture.operation(true);
+        var status=new ChatOperationResponse(operation.id(),"COMPLETED",operation.conversationId(),null,null);
+        when(operations.reserve(any(),any(),any(),any(),any())).thenReturn(new ChatOperationService.Reservation(operation,true));
+        when(runner.start(eq(operation),eq(false),any())).thenReturn(CompletableFuture.completedFuture(status));
+        assertSame(status,service.ask(ChatFixture.ACTOR,ChatFixture.WORKSPACE,request,operation.key(),"request-test"));
+        verify(runner,times(1)).start(eq(operation),eq(false),any());
     }
-
-    @Test
-    void shouldThrowNotFoundErrorWhenUserNotMember() {
-        var userId = UUID.randomUUID();
-        var workspaceId = UUID.randomUUID();
-        var workspace = new Workspace(workspaceId, UUID.randomUUID(), "Class Workspace", "", WorkspaceVisibility.PRIVATE, false, Instant.now());
-
-        when(workspaceRepository.findById(workspaceId)).thenReturn(Optional.of(workspace));
-        when(workspaceMemberRepository.findByWorkspaceIdAndUserIdAndStatus(workspaceId, userId, WorkspaceMemberStatus.ACTIVE))
-                .thenReturn(Optional.empty());
-
-        var request = new AskQuestionRequest("Hỏi đáp RAG", null, true);
-
-        assertThrows(NotFoundError.class, () -> chatService.askQuestion(userId, workspaceId, request, "req-999"));
+    @Test void shouldDenyLegacyInvocationWithoutAuthenticatedSession() {
+        org.springframework.security.core.context.SecurityContextHolder.clearContext();
+        assertThrows(UnauthenticatedError.class,() -> service.askQuestion(ChatFixture.ACTOR.userId(),ChatFixture.WORKSPACE,request,UUID.randomUUID().toString()));
+        verifyNoInteractions(operations,runner);
     }
 }

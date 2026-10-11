@@ -29,13 +29,17 @@ class UserServiceTest {
     private Clock clock;
     private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
     private UserService userService;
+    private com.unichat.core.auth.service.TokenService tokenService;
+    private com.unichat.core.admin.service.AuditService auditService;
 
     @BeforeEach
     void setUp() {
         userRepository = mock(UserRepository.class);
         clock = Clock.fixed(Instant.parse("2026-07-16T00:00:00Z"), ZoneOffset.UTC);
         passwordEncoder = mock(org.springframework.security.crypto.password.PasswordEncoder.class);
-        userService = new UserService(userRepository, clock, passwordEncoder);
+        tokenService = mock(com.unichat.core.auth.service.TokenService.class);
+        auditService = mock(com.unichat.core.admin.service.AuditService.class);
+        userService = new UserService(userRepository, clock, passwordEncoder, tokenService, auditService);
     }
 
     @Test
@@ -72,7 +76,7 @@ class UserServiceTest {
         var user = new User(userId, "test@unichat.com", "old_hash", SystemRole.USER, UserStatus.ACTIVE, Instant.now(clock));
         var request = new com.unichat.core.user.api.ChangePasswordRequest("current_password", "new_password_123");
 
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(userRepository.lockById(userId)).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("current_password", "old_hash")).thenReturn(true);
         when(passwordEncoder.encode("new_password_123")).thenReturn("new_hash");
 
@@ -81,6 +85,9 @@ class UserServiceTest {
 
         // Assert
         assertEquals("new_hash", user.getPasswordHash());
+        assertEquals(1, user.getSecurityVersion());
+        verify(tokenService).revokeAllTokensByUser(userId);
+        verify(auditService).record(userId, "AUTH_PASSWORD_CHANGE", "USER", userId, "SUCCESS");
         verify(userRepository).save(user);
     }
 
@@ -91,7 +98,7 @@ class UserServiceTest {
         var user = new User(userId, "test@unichat.com", "old_hash", SystemRole.USER, UserStatus.ACTIVE, Instant.now(clock));
         var request = new com.unichat.core.user.api.ChangePasswordRequest("wrong_password", "new_password_123");
 
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(userRepository.lockById(userId)).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("wrong_password", "old_hash")).thenReturn(false);
 
         // Act & Assert

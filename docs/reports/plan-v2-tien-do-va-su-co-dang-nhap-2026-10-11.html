@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PLAN V2 TIEN DO VA SU CO DANG NHAP 2026 10 11</title>
+  <style>
+    
+:root {
+  --bg-color: #0d1117;
+  --text-color: #c9d1d9;
+  --accent-color: #58a6ff;
+  --border-color: #30363d;
+  --code-bg: #161b22;
+  --blockquote-bg: #151b23;
+  --alert-note-bg: rgba(56, 139, 253, 0.15);
+  --alert-note-border: #388bfd;
+  --alert-tip-bg: rgba(63, 185, 80, 0.15);
+  --alert-tip-border: #3fb950;
+  --alert-warning-bg: rgba(210, 153, 34, 0.15);
+  --alert-warning-border: #d29922;
+  --alert-caution-bg: rgba(248, 81, 73, 0.15);
+  --alert-caution-border: #f85149;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text-color);
+  background-color: var(--bg-color);
+  margin: 0;
+  padding: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+.container {
+  width: 100%;
+  max-width: 900px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #f0f6fc;
+  font-weight: 600;
+  line-height: 1.25;
+  margin-top: 24px;
+  margin-bottom: 16px;
+}
+
+h1 { font-size: 2em; padding-bottom: 0.3em; border-bottom: 1px solid var(--border-color); }
+h2 { font-size: 1.5em; padding-bottom: 0.3em; border-bottom: 1px solid var(--border-color); }
+h3 { font-size: 1.25em; }
+
+p, ul, ol {
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+a {
+  color: var(--accent-color);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+  font-size: 85%;
+  background-color: rgba(110, 118, 129, 0.4);
+  padding: 0.2em 0.4em;
+  border-radius: 6px;
+}
+
+pre {
+  background-color: var(--code-bg);
+  padding: 16px;
+  border-radius: 6px;
+  overflow: auto;
+  border: 1px solid var(--border-color);
+}
+
+pre code {
+  background-color: transparent;
+  padding: 0;
+  font-size: 100%;
+  color: #e6edf3;
+  border-radius: 0;
+}
+
+blockquote {
+  margin: 0 0 16px 0;
+  padding: 0 1em;
+  color: #8b949e;
+  border-left: 0.25em solid #30363d;
+  background-color: var(--blockquote-bg);
+  padding: 8px 16px;
+  border-radius: 0 6px 6px 0;
+}
+
+table {
+  border-spacing: 0;
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+table th, table td {
+  padding: 6px 13px;
+  border: 1px solid var(--border-color);
+}
+
+table tr {
+  background-color: var(--bg-color);
+  border-top: 1px solid var(--border-color);
+}
+
+table tr:nth-child(2n) {
+  background-color: #161b22;
+}
+
+table th {
+  font-weight: 600;
+  background-color: #161b22;
+}
+
+hr {
+  height: 0.25em;
+  padding: 0;
+  margin: 24px 0;
+  background-color: var(--border-color);
+  border: 0;
+}
+
+/* Alert styles */
+.alert {
+  padding: 15px;
+  margin-bottom: 20px;
+  border: 1px solid transparent;
+  border-left-width: 5px;
+  border-radius: 4px;
+}
+
+.alert-note {
+  background-color: var(--alert-note-bg);
+  border-color: var(--alert-note-border);
+}
+
+.alert-tip {
+  background-color: var(--alert-tip-bg);
+  border-color: var(--alert-tip-border);
+}
+
+.alert-warning {
+  background-color: var(--alert-warning-bg);
+  border-color: var(--alert-warning-border);
+}
+
+.alert-caution {
+  background-color: var(--alert-caution-bg);
+  border-color: var(--alert-caution-border);
+}
+
+.alert-title {
+  font-weight: bold;
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  color: #fff;
+}
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Plan V2 — Tiến độ và sự cố đăng nhập local (11/10/2026)</h1>
+<h2>Trạng thái thực tế</h2>
+<p><strong>Core API đã vượt qua lỗi biên dịch khiến <code>dev.ps1</code> dừng trước khi mở cổng 8082; Flyway V34/V35 đã áp dụng thành công theo phê duyệt của người dùng. Chưa có bằng chứng đăng nhập end-to-end thành công trên máy người dùng.</strong> Lệnh <code>mvn -o -B test-compile</code> trong <code>core-api</code> → <code>BUILD SUCCESS</code> lúc 16:50 (UTC+7). Core sau đó kết nối shared PostgreSQL và JPA validate thành công, nhưng môi trường chạy công cụ không mở được Java loopback selector để khởi động Tomcat.</p>
+<p>Log người dùng cung cấp chỉ ra <code>AuthPostgresIT.java:53</code> gọi <code>assertFalse</code> với giá trị generic <code>Boolean</code>; Java chọn overload không xác định giữa <code>boolean</code> và <code>BooleanSupplier</code>. Vì Maven <code>spring-boot:run</code> biên dịch cả test source, Core dừng trước lúc kiểm tra mật khẩu hoặc chạy Flyway. Đã ép kết quả thành <code>boolean</code> rõ ràng. Bộ 38 test auth/security/Flyway liên quan và toàn bộ 279 Core unit tests sau đó PASS. Testcontainers chỉ phục vụ integration test và <strong>không phải điều kiện để khởi động local qua PowerShell</strong>.</p>
+<p><code>dev-service.ps1</code> hiện truyền cấu hình DB bằng environment kế thừa từ <code>.env</code>, thay vì đưa URL, username và password vào JVM arguments. Cách này tránh lộ bí mật trong command line và lỗi tách đối số khi JDBC URL có ký tự <code>&amp;</code>. Thay đổi có thể đảo lại bằng cách khôi phục đúng một dòng runner; không tác động schema. Đường Flyway startup cũng đã bỏ lệnh tự ghi đè checksum V23 trong <code>flyway<em>schema</em>history</code>; chỉ migration versioned mới được phép thay đổi schema sau gate.</p>
+<p>Kiểm tra DB <strong>chỉ đọc</strong> ban đầu cho thấy shared Supabase ở V33, có các cột account/session/OTP của Plan V2. Sau khi người dùng cho phép, Core Flyway áp dụng đúng V34 và V35 lúc 16:57 (UTC+7). Truy vấn chỉ đọc sau đó xác nhận hai migration thành công, <code>chat<em>operations.first</em>token<em>at</code>, <code>password</em>reset<em>otps.purpose</code> và hai marker <code>security</em>telemetry_coverage</code> đều hiện diện. Có 1 ADMIN ACTIVE, 3 USER ACTIVE và 1 USER LOCKED trong kiểm tra trước đó, nhưng chưa biết tài khoản người báo lỗi nên không thể kết luận tài khoản đó bị khóa.</p>
+<p>Core lần đầu sau migration dừng khi khởi tạo <code>java.net.http.HttpClient</code>; đã chuyển HTTP client của chat AI và Supabase Storage sang khởi tạo khi dùng, có test bảo vệ. Core lần thứ hai đi qua Flyway/JPA nhưng Tomcat không mở được Java NIO selector với lỗi <code>Unable to establish loopback connection</code>. Cùng lỗi tái hiện bằng <code>Selector.open()</code> và <code>HttpClient.newHttpClient()</code> độc lập trên JDK 17/21 ở môi trường chạy công cụ; đây chưa phải bằng chứng PowerShell trực tiếp của người dùng cũng lỗi.</p>
+<p>Sau đó người dùng cung cấp request từ trang login: <code>POST /api/v1/auth/logout</code>, Origin <code>http://127.0.0.1:5173</code>, HTTP 403. Nguyên nhân: client có dấu chờ đăng xuất nên dọn cookie trước login; <code>dev.ps1</code> mở web bằng <code>127.0.0.1</code>, trong khi allowlist Core mặc định chỉ chứa <code>localhost</code>. Đã cho phép đúng Origin 127 local khi không có allowlist riêng, giữ production/allowlist cấu hình nguyên tắc cũ. Đồng thời refresh 400/401 và login bị từ chối không còn tự tạo dấu chờ logout, nên lần đăng nhập tiếp theo đi thẳng tới <code>/auth/login</code>. Core security-chain test xác nhận logout→login từ Origin 127 PASS và Origin lạ vẫn 403; toàn bộ 282 Core unit tests, 3 web cookie-session tests, web typecheck và scoped lint PASS. Cần restart Core rồi thử login trên trình duyệt để nghiệm thu HTTP thực tế.</p>
+<h2>Tasklist 37 mã của Plan V2</h2>
+<p>Quy ước: <strong>Code</strong> = phần triển khai đã có và có kiểm tra hẹp; <strong>Một phần</strong> = còn contract/test/gate; <strong>Chưa nghiệm thu</strong> = chưa đủ bằng chứng để đánh dấu VERIFIED. Không mã nào dưới đây được tự động coi là release-ready.</p>
+<table>
+<thead>
+<tr>
+<th>Mã</th>
+<th>Tiến độ</th>
+<th>Việc đã làm / việc còn để đóng task</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SET-01</td>
+<td>Code</td>
+<td>Đã chụp branch/dirty baseline và giữ thay đổi người khác; còn đối chiếu exact write set cuối đợt.</td>
+</tr>
+<tr>
+<td>SET-02</td>
+<td>Một phần</td>
+<td>Đã kiểm runtime local và Maven; Docker/Testcontainers không có daemon, iPhone/Expo thực tế chưa kiểm.</td>
+</tr>
+<tr>
+<td>CHAT-01</td>
+<td>Một phần</td>
+<td>Core/AI/web/mobile có DTO và SSE contract; còn fixture liên dịch vụ/API examples/ADR đồng bộ.</td>
+</tr>
+<tr>
+<td>AZ-01</td>
+<td>Code</td>
+<td>Method security, admin guard và bỏ ngoại lệ email/tên; cần HTTP integration đầy đủ.</td>
+</tr>
+<tr>
+<td>AUT-01</td>
+<td>Một phần</td>
+<td>Validation/typed errors đã bổ sung; cần phủ mọi input và RFC7807 endpoint.</td>
+</tr>
+<tr>
+<td>AZ-02</td>
+<td>Một phần</td>
+<td>Source ACL, owner, cloud policy và recheck đã code; live retrieval metadata và revoke giữa inference chưa nghiệm thu.</td>
+</tr>
+<tr>
+<td>AZ-03</td>
+<td>Một phần</td>
+<td>Note ownership/provenance và source redaction đã code; cần DB/HTTP IDOR test.</td>
+</tr>
+<tr>
+<td>AZ-04</td>
+<td>Một phần</td>
+<td>Service JWT, nonce, checkpoint và private endpoints đã code; cần DB multiworker/replay integration.</td>
+</tr>
+<tr>
+<td>AZ-05</td>
+<td>Một phần</td>
+<td>Durable rate/concurrency leases đã code; cần thử tải/race qua HTTP và DB thật.</td>
+</tr>
+<tr>
+<td>AUT-02</td>
+<td>Code</td>
+<td>Failed-login commit, manual/temporary lock đã code; PostgreSQL race test viết nhưng chưa chạy.</td>
+</tr>
+<tr>
+<td>AUT-03</td>
+<td>Code</td>
+<td>Refresh rotation, reuse revoke, family checks đã code; PostgreSQL race test viết nhưng chưa chạy.</td>
+</tr>
+<tr>
+<td>AUT-04</td>
+<td>Một phần</td>
+<td>HMAC OTP, cooldown, atomic reset và revoke đã code; SMTP/error/race integration còn thiếu.</td>
+</tr>
+<tr>
+<td>AUT-05</td>
+<td>Code</td>
+<td>securityVersion, status/family validation và revocation đã code; cần HTTP/DB integration.</td>
+</tr>
+<tr>
+<td>AUT-06</td>
+<td>Một phần</td>
+<td>Cookie/native split, Origin/CORS/CSRF đã code; cần kiểm profile production và browser E2E.</td>
+</tr>
+<tr>
+<td>AUT-07</td>
+<td>Một phần</td>
+<td>Web bootstrap/generation/cookie coordinator đã code; cần hai-tab Playwright và login thật.</td>
+</tr>
+<tr>
+<td>AUT-08</td>
+<td>Một phần</td>
+<td>Native SecureStore refresh-only/generation/logout tombstone đã code; iPhone thực tế chưa nghiệm thu.</td>
+</tr>
+<tr>
+<td>CHAT-02</td>
+<td>Một phần</td>
+<td>Short transaction/sequence/conditional commit đã code; crash, cancel và delete race DB thật chưa chạy.</td>
+</tr>
+<tr>
+<td>CHAT-03</td>
+<td>Một phần</td>
+<td>Operation binding, idempotency, status/replay/lease đã code; cần HTTP/DB recovery test.</td>
+</tr>
+<tr>
+<td>CHAT-04</td>
+<td>Code</td>
+<td>Strict/expanded mode và evidence gate đã code; live corpus và full client E2E chưa kiểm.</td>
+</tr>
+<tr>
+<td>CHAT-05</td>
+<td>Một phần</td>
+<td>Citation schema/validator/hash/version/locator đã code; live ingestion metadata chưa tương thích đầy đủ nên fail-closed.</td>
+</tr>
+<tr>
+<td>CHAT-06</td>
+<td>Một phần</td>
+<td>Provider policy/fallback/checkpoint/telemetry đã code; cần Core-AI contract và DB integration.</td>
+</tr>
+<tr>
+<td>CHAT-07</td>
+<td>Một phần</td>
+<td>SSE provisional/reset/final/done, cancellation và progress đã code; slow client/disconnect E2E chưa chạy.</td>
+</tr>
+<tr>
+<td>CHAT-08</td>
+<td>Một phần</td>
+<td>Source-safe history/summary và compaction adapter đã code; cần revoke/version race thật.</td>
+</tr>
+<tr>
+<td>CHAT-09</td>
+<td>Một phần</td>
+<td>Web chat state, mode, citations/history và an toàn render đã code; Playwright chưa PASS.</td>
+</tr>
+<tr>
+<td>MOB-01</td>
+<td>Một phần</td>
+<td>Native SSE/retry/status recovery đã code và Jest PASS; background/foreground trên iPhone chưa chạy.</td>
+</tr>
+<tr>
+<td>MOB-02</td>
+<td>Một phần</td>
+<td>Conversation/message pagination và states đã code; lịch sử nhiều trang với API thật chưa nghiệm thu.</td>
+</tr>
+<tr>
+<td>MOB-03</td>
+<td>Một phần</td>
+<td>Citation sheet/labels và redaction đã code; source revoke trên iPhone chưa kiểm.</td>
+</tr>
+<tr>
+<td>ADM-01</td>
+<td>Một phần</td>
+<td>User list/role/status/version/self-guard đã code; concurrent last-admin DB test chưa chạy.</td>
+</tr>
+<tr>
+<td>ADM-02</td>
+<td>Một phần</td>
+<td>Core auth/chat metrics và NO_DATA contract đã code; số liệu live cần đối soát.</td>
+</tr>
+<tr>
+<td>ADM-03</td>
+<td>Một phần</td>
+<td>Provider attempts/coverage/window đã code; V35 chưa có trên shared DB.</td>
+</tr>
+<tr>
+<td>ADM-04</td>
+<td>Một phần</td>
+<td>Audit storage/emitters và filters đã code; transaction fault tests còn thiếu.</td>
+</tr>
+<tr>
+<td>ADM-05</td>
+<td>Một phần</td>
+<td>Key ID/resolver/prompt và bỏ demo success đã code; provider thực/key B chưa kiểm live.</td>
+</tr>
+<tr>
+<td>ADM-06</td>
+<td>Một phần</td>
+<td>Web dashboard states/navigation đã code; browser E2E còn thiếu.</td>
+</tr>
+<tr>
+<td>QA-01</td>
+<td>Chưa nghiệm thu</td>
+<td>Core 282 unit tests PASS; PostgreSQL/Testcontainers và endpoint matrix chưa chạy đầy đủ.</td>
+</tr>
+<tr>
+<td>QA-02</td>
+<td>Một phần</td>
+<td>AI 131 scoped pytest PASS, mypy strict 86 files PASS, Ruff scoped PASS; full contract/fault gate còn thiếu.</td>
+</tr>
+<tr>
+<td>QA-03</td>
+<td>Chưa nghiệm thu</td>
+<td>Mobile Jest 22 suites/73 tests PASS; web full Vitest còn 1 App test lỗi; Playwright/iPhone chưa chạy.</td>
+</tr>
+<tr>
+<td>QA-04</td>
+<td>Chưa nghiệm thu</td>
+<td>CI có DB test gate; chưa có traceability/evidence và release runbook cuối.</td>
+</tr>
+</tbody>
+</table>
+<h2>Ưu tiên khôi phục đăng nhập</h2>
+<ol>
+<li><strong>P0 — đã xử lý lỗi chặn biên dịch:</strong> giữ <code>AuthPostgresIT</code> compile-safe, xác nhận <code>test-compile</code> và Core unit tests PASS.</li>
+<li><strong>P0 — shared DB đã cập nhật:</strong> V34 thêm <code>chat<em>operations.first</em>token<em>at</code> và index terminal; V35 thêm <code>password</em>reset<em>otps.purpose</code>, bảng <code>security</em>telemetry_coverage</code> và hai marker khởi đầu. Flyway history ghi thành công đúng hai version, không sửa checksum migration cũ. Rollback ứng dụng: giữ schema additive, không drop dữ liệu hoặc quay ngược session đã revoke.</li>
+<li><strong>P0 — restart và kiểm login thật trên PowerShell người dùng:</strong> nạp lại Core và web sau sửa local Origin, xác nhận <code>/auth/logout</code> 204 (nếu còn dấu chờ), <code>/auth/login</code> 200 và <code>/users/me</code> 200. Nếu vẫn 401/403, lấy request ID, response body và log Core để phân biệt sai mật khẩu, LOCKED, CSRF, keypair/session hay lỗi khác.</li>
+<li><strong>P0 — kiểm cấu hình JWT:</strong> local hiện có public key nhưng thiếu private key; fallback tạo keypair tạm chỉ dành cho <code>APP_ENV=local</code>. Token access cũ sẽ không còn hợp lệ sau restart, refresh phải cấp token mới. Production yêu cầu cả cặp khóa hợp lệ.</li>
+<li><strong>P1 — đóng Plan V2:</strong> chạy PostgreSQL integration/race, web Playwright, Core-AI contract, live source ACL và Expo iPhone. Chỉ đánh dấu VERIFIED khi có bằng chứng mới cho từng gate.</li>
+</ol>
+<h2>Điều chưa thể kết luận</h2>
+<ul>
+<li>Migration và Core unit tests PASS không có nghĩa Core đã phục vụ port 8082 hay bạn của người dùng đăng nhập thành công.</li>
+<li>Không có Docker local không chặn <code>dev.ps1</code>; chỉ chặn chạy bộ integration Testcontainers.</li>
+<li>Số liệu tài khoản DB không xác định tài khoản của người báo lỗi. Không tự mở khóa/reset mật khẩu người dùng.</li>
+<li>V34/V35 đã được áp dụng theo phê duyệt cụ thể; mọi mutation shared DB tiếp theo vẫn cần gate riêng của dự án.</li>
+</ul>
+
+  </div>
+</body>
+</html>

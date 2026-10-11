@@ -60,8 +60,39 @@
 .chat-header__main {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   min-width: 0;
+}
+
+.chat-header__back-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md, 8px);
+  background: var(--color-surface-container-low, #f1f5f9);
+  color: var(--color-on-surface-variant, #475569);
+  border: 1px solid var(--color-outline-variant, #e2e8f0);
+  text-decoration: none;
+  transition: all var(--transition-fast, 0.15s ease);
+  flex-shrink: 0;
+}
+
+.chat-header__back-btn:hover {
+  background: var(--color-surface-container-high, #e2e8f0);
+  color: var(--color-primary, #00687a);
+  transform: translateX(-2px);
+}
+
+.chat-header__workspace-link {
+  text-decoration: none;
+  transition: color var(--transition-fast, 0.15s ease);
+}
+
+.chat-header__workspace-link:hover {
+  text-decoration: underline;
+  color: var(--color-secondary, #0284c7);
 }
 
 .chat-header__icon-badge {

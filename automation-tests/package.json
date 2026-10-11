@@ -6,6 +6,9 @@
   "scripts": {
     "test": "npx playwright test --config=playwright.config.ts",
     "test:headed": "npx playwright test --config=playwright.config.ts --headed",
-    "report": "npx playwright show-report ./reports/html-report"
+    "test:benchmark": "npx playwright test specs/07-rag-benchmark-120.spec.ts --config=playwright.config.ts --project=benchmark",
+    "test:benchmark:headed": "npx playwright test specs/07-rag-benchmark-120.spec.ts --config=playwright.config.ts --project=benchmark --headed",
+    "report": "npx playwright show-report ./reports/html-report",
+    "report:benchmark": "start ./reports/benchmark/benchmark-report.html"
   }
 }

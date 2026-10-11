@@ -1,28 +1,33 @@
-import { Icon } from '../../components/icon';
-
-export function AdminMetricPage() {
-  return (
-    <div style={{ padding: '2rem', maxWidth: '1000px', margin: '0 auto' }}>
-      <header style={{ marginBottom: '2rem' }}>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0f172a', margin: '0 0 0.5rem 0' }}>
-          Metrics Hệ thống
-        </h1>
-        <p style={{ fontSize: '0.875rem', color: '#64748b', margin: 0 }}>
-          Theo dõi tổng quan tài nguyên, ingestion job và Prometheus metrics.
-        </p>
-      </header>
-
-      <div style={{ background: '#f8fafc', padding: '3rem 2rem', borderRadius: '0.75rem', border: '1px solid #e2e8f0', textAlign: 'center' }}>
-        <Icon name="analytics" size={48} style={{ color: '#0284c7', marginBottom: '1rem' }} />
-        <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: '#0f172a', marginBottom: '0.5rem' }}>
-          Tính năng Metrics đang được hoàn thiện
-        </h2>
-        <p style={{ fontSize: '0.875rem', color: '#64748b', maxWidth: '500px', margin: '0 auto 1.5rem auto' }}>
-          Theo spec §9, các chỉ số số lượng tài liệu, ingestion status, và system metrics không chứa nội dung sẽ được tổng hợp khi backend hoàn tất endpoint `/admin/metrics`.
-        </p>
-      </div>
-    </div>
-  );
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { fetchJson } from '../../lib/api-client';
+import { getSessionSnapshot } from '../../lib/session-store';
+interface Metrics {
+  status: string; completeness: string; sampleCount: number; updatedAt: string; retainedFrom: string | null;
+  totalUsers: number; activeUsers: number; lockedUsers: number; adminUsers: number;
+  loginSuccess: number; loginFailure: number; chatCompleted: number; chatFailed: number; chatCancelled: number;
+  answerCount: number; refusalCount: number; clarifyCount: number;
+  p95LatencyMs: number | null; ttftMs: number | null; latencySampleCount: number; ttftSampleCount: number;
 }
 
+/** Displays auth and logical chat measurements without workspace/post counters. */
+export function AdminMetricPage() {
+  const [days, setDays] = useState(28);
+  const { data, error, isPending } = useQuery({ retry: false,
+    queryKey: ['admin-system-metrics', getSessionSnapshot().generation, days],
+    queryFn: () => fetchJson<Metrics>(`/admin/metrics?days=${days}`) });
+  return <section><h2>Metrics đăng nhập và chat AI</h2>
+    <label>Khoảng thời gian <select value={days} onChange={(event) => setDays(Number(event.target.value))}>
+      {[1, 7, 28, 45].map((value) => <option key={value} value={value}>{value} ngày</option>)}</select></label>
+    {isPending && <p role="status">Đang tải số liệu…</p>}{error && <p role="alert">{error.message}</p>}
+    {data && <><p>{data.status} · {data.sampleCount} mẫu · {data.completeness} · Cập nhật {data.updatedAt}</p>
+      <dl><dt>Người dùng / ACTIVE / khóa / ADMIN</dt><dd>{data.totalUsers} / {data.activeUsers} / {data.lockedUsers} / {data.adminUsers}</dd>
+        <dt>Đăng nhập thành công / thất bại</dt><dd>{data.loginSuccess} / {data.loginFailure}</dd>
+        <dt>Chat hoàn tất / thất bại / hủy</dt><dd>{data.chatCompleted} / {data.chatFailed} / {data.chatCancelled}</dd>
+        <dt>ANSWER / CLARIFY / REFUSE</dt><dd>{data.answerCount} / {data.clarifyCount} / {data.refusalCount}</dd>
+        <dt>Độ trễ p95</dt><dd>{data.p95LatencyMs ?? '—'} ms ({data.latencySampleCount} mẫu)</dd>
+        <dt>TTFT trung bình</dt><dd>{data.ttftMs ?? '—'} ms ({data.ttftSampleCount} mẫu)</dd></dl>
+      <p>Dữ liệu giữ từ: {data.retainedFrom ?? '—'}</p></>}
+  </section>;
+}
 export default AdminMetricPage;

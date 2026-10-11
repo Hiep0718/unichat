@@ -1,145 +1,60 @@
 /* eslint-disable react-refresh/only-export-components */
-/**
- * Authentication context — stores access token in memory only (ADR-005).
- * Never persists token to localStorage, sessionStorage, or cookies.
- * Registers a token accessor with api-client for Bearer header injection.
- */
-
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
-
+import { createContext, useContext, useEffect, useSyncExternalStore } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { restoreCookieSession, resolveSessionUser } from '../../lib/cookie-session';
+import { getSessionSnapshot, invalidateSession, storeAccessToken, storeSessionUser, subscribeSession } from '../../lib/session-store';
 import type { ReactNode } from 'react';
-
-import { registerTokenAccessor } from '../../lib/api-client';
-import { authApi } from './api/auth-api';
-
-interface UserProfile {
-  readonly id: string;
-  readonly email: string;
-  /** The name others see; distinct from the @mention handle. */
-  readonly displayName: string;
-  readonly systemRole: 'USER' | 'ADMIN';
-  readonly status: 'ACTIVE' | 'LOCKED';
-}
+import type { SessionUser } from '../../lib/session-store';
 
 interface AuthState {
-  /** Current access token held in memory. */
   readonly token: string | null;
-  /** Current authenticated user profile. */
-  readonly user: UserProfile | null;
-  /** Whether the user has an active access token. */
+  readonly user: SessionUser | null;
   readonly isAuthenticated: boolean;
-  /** Stores a new access token in memory. */
-  readonly setToken: (token: string, user?: UserProfile) => void;
-  /** Sets user profile manually. */
-  readonly setUser: (user: UserProfile | null) => void;
-  /** Clears the access token from memory. */
+  readonly isLoading?: boolean;
+  readonly sessionError?: string | null;
+  readonly setToken: (token: string, user?: SessionUser) => void;
+  readonly setUser: (user: SessionUser | null) => void;
   readonly clearToken: () => void;
 }
-
 const AuthContext = createContext<AuthState | null>(null);
+const bootstrap = { pending: null as Promise<void> | null };
 
-interface AuthProviderProps {
-  readonly children: ReactNode;
-}
-
-/**
- * Wraps the component tree with in-memory access token state.
- * Registers a token accessor with the api-client module on mount.
- */
-export function AuthProvider({ children }: AuthProviderProps) {
-  const [token, setTokenState] = useState<string | null>(null);
-  const [user, setUserState] = useState<UserProfile | null>(null);
-
-  const setToken = useCallback((newToken: string, newUser?: UserProfile) => {
-    setTokenState(newToken);
-    if (newUser) {
-      setUserState(newUser);
+/** Gates every protected route on an authoritative active /me identity. */
+export function AuthProvider({ children }: { readonly children: ReactNode }) {
+  const queryClient = useQueryClient();
+  const snapshot = useSyncExternalStore(subscribeSession, getSessionSnapshot, getSessionSnapshot);
+  useEffect(() => {
+    if (!bootstrap.pending) {
+      bootstrap.pending = restoreCookieSession().catch((error: unknown) => {
+        if (getSessionSnapshot().status === 'restoring') {
+          invalidateSession('recovery', error instanceof Error ? error.message : 'Không thể khôi phục phiên');
+        }
+      });
     }
   }, []);
-
-  const setUser = useCallback((newUser: UserProfile | null) => {
-    setUserState(newUser);
-  }, []);
-
-  const clearToken = useCallback(() => {
-    setTokenState(null);
-    setUserState(null);
-  }, []);
-
-  // Register accessor so api-client can read/write token without React coupling
-  useEffect(() => {
-    registerTokenAccessor(
-      () => token,
-      (refreshed: string) => setTokenState(refreshed),
-      () => {
-        setTokenState(null);
-        setUserState(null);
-      },
-    );
-  }, [token]);
-
-  // Resolve the profile whenever a token arrives without one. Login only stores
-  // the token, so without this `user` stays null and anything keyed on the
-  // current user id (such as accepting an answer on your own post) never works.
-  useEffect(() => {
-    if (!token || user) return;
-
-    let cancelled = false;
-    authApi
-      .getMe()
-      .then((profile) => {
-        if (!cancelled) {
-          setUserState({
-            id: profile.id,
-            email: profile.email,
-            displayName: profile.displayName,
-            systemRole: profile.systemRole,
-            status: profile.status,
-          });
-        }
-      })
-      .catch(() => {
-        // Leaving the profile unset is safe: the token still authenticates
-        // requests, only user-specific UI stays hidden.
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [token, user]);
-
-  const value = useMemo<AuthState>(
-    () => ({
-      token,
-      user,
-      isAuthenticated: token !== null,
-      setToken,
-      setUser,
-      clearToken,
-    }),
-    [token, user, setToken, setUser, clearToken],
-  );
-
-  return (
-    <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-  );
+  useEffect(() => { queryClient.clear(); }, [snapshot.generation, queryClient]);
+  const value: AuthState = {
+    token: snapshot.token, user: snapshot.user, isAuthenticated: snapshot.status === 'authenticated',
+    isLoading: snapshot.status === 'restoring', sessionError: snapshot.error,
+    setToken: acceptToken, setUser: storeSessionUser, clearToken: () => { invalidateSession(); },
+  };
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-/**
- * Hook to access authentication state. Must be used within AuthProvider.
- */
+function acceptToken(token: string, user?: SessionUser): void {
+  const generation = getSessionSnapshot().generation;
+  storeAccessToken(token, generation);
+  if (user) { storeSessionUser(user, generation); return; }
+  void resolveSessionUser(generation).catch((error: unknown) => {
+    if (getSessionSnapshot().generation === generation) {
+      invalidateSession('recovery', error instanceof Error ? error.message : 'Không thể xác minh danh tính');
+    }
+  });
+}
+
+/** Reads the shared memory-only authentication state. */
 export function useAuth(): AuthState {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within an AuthProvider');
   return context;
 }
-

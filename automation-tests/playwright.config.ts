@@ -18,7 +18,7 @@ export default defineConfig({
     ['list'],
   ],
   use: {
-    baseURL: process.env.BASE_URL || 'http://localhost:5173',
+    baseURL: process.env.BASE_URL || 'http://127.0.0.1:5173',
     video: 'on',
     screenshot: 'on',
     trace: 'on',
@@ -28,10 +28,23 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
+    {
+      name: 'benchmark',
+      testMatch: /07-rag-benchmark/,
+      timeout: 14_400_000, // 4 hours per test
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 1440, height: 900 },
+        video: 'on',
+        screenshot: 'on',
+        trace: 'on',
+      },
+    },
   ],
+  globalTimeout: 0, // unlimited for full benchmark suite
   webServer: {
     command: 'npm run dev --prefix ../frontend',
-    url: 'http://localhost:5173',
+    url: 'http://127.0.0.1:5173',
     reuseExistingServer: true,
     timeout: 30000,
   },

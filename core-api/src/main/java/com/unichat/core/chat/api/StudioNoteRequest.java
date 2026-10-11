@@ -21,6 +21,9 @@ public class StudioNoteRequest {
 
     private String metadata;
 
+    @jakarta.validation.constraints.NotNull(message = "Ghi chú phải liên kết với một câu trả lời đã hoàn tất")
+    private java.util.UUID sourceMessageId;
+
     public StudioNoteRequest() {}
 
     public StudioNoteRequest(String noteType, String title, String content, String metadata) {
@@ -61,4 +64,9 @@ public class StudioNoteRequest {
     public void setMetadata(String metadata) {
         this.metadata = metadata;
     }
+
+    /** Identifies the verified final turn whose provenance this note inherits. */
+    public java.util.UUID getSourceMessageId() { return sourceMessageId; }
+    /** Binds a chat-derived note to its source turn. */
+    public void setSourceMessageId(java.util.UUID sourceMessageId) { this.sourceMessageId = sourceMessageId; }
 }

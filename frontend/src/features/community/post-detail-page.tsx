@@ -90,7 +90,7 @@ export function PostDetailPage() {
       .catch(() => {
         // Read receipts are supplementary; the post still works without them.
       });
-  }, [postId, workspaceId, discussion?.id]);
+  }, [postId, workspaceId, discussion]);
 
   const handleAddReply = async (body: string, parentId?: string) => {
     if (!workspaceId || !discussion) return;

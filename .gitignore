@@ -42,6 +42,8 @@ htmlcov/
 .coverage
 coverage.xml
 ai-service/data/
+ai-service/app/data/
+core-api/start-core-api.ps1
 
 # Logs
 logs/

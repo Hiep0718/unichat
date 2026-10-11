@@ -19,6 +19,12 @@ export function WorkspaceShell() {
   useEffect(() => {
     if (!workspaceId) return;
 
+    try {
+      localStorage.setItem('unichat_active_workspace_id', workspaceId);
+    } catch {
+      // LocalStorage might be restricted
+    }
+
     let mounted = true;
 
     fetchWorkspace(workspaceId)

@@ -188,6 +188,21 @@
   color: var(--color-on-surface);
 }
 
+.group-tab--ai {
+  color: #0284c7;
+  font-weight: 700;
+}
+
+.group-tab--ai .material-symbols-outlined {
+  color: #0284c7;
+}
+
+.group-tab--ai:hover {
+  color: #0369a1;
+  background: #f0f9ff;
+  border-radius: var(--radius-sm, 6px);
+}
+
 .group-tab--active {
   color: var(--color-primary);
   border-bottom-color: var(--color-primary);

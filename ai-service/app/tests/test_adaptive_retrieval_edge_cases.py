@@ -20,16 +20,17 @@ def test_intent_detection_accent_insensitivity() -> None:
     assert res_accent.intent == IntentEnum.SUMMARY
     assert res_no_accent.intent == IntentEnum.SUMMARY
 
-def test_evidence_gate_comparison_requires_multiple_sources() -> None:
+def test_evidence_gate_comparison_single_source_warning() -> None:
     strategy = get_strategy(IntentEnum.COMPARISON)
-    # Single document source provided for a comparison intent
+    # Single document source provided for a comparison intent allows answer with warning
     candidates = [
         RetrievedChunkCandidate("chunk1", "doc1", "Thông tin 1", 0.90, "PDF_PAGE", "page:1", "h1"),
         RetrievedChunkCandidate("chunk2", "doc1", "Thông tin 2", 0.88, "PDF_PAGE", "page:2", "h2"),
     ]
     gate_res = evaluate_evidence(IntentEnum.COMPARISON, strategy, candidates)
-    assert gate_res.decision == DecisionEnum.REFUSE
-    assert "Thiếu nguồn thông tin đối sánh" in (gate_res.refusal_reason or "")
+    assert gate_res.decision == DecisionEnum.ANSWER
+    assert gate_res.single_source_warning is True
+    assert "1 nguồn tài liệu" in (gate_res.warning_message or "")
 
 def test_evidence_gate_low_similarity_rejection() -> None:
     strategy = get_strategy(IntentEnum.FACT)

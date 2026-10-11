@@ -2,11 +2,12 @@
  * About tab of a group — what this space is for, and how its AI assistant
  * relates to the files inside it.
  */
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 
 import { Icon } from '../../../components/icon';
 import { useWorkspace } from '../workspace-context';
 import { useWorkspace as useWorkspaceQuery } from '../workspace-hooks';
+import '../group-page.css';
 import './group-about-tab.css';
 
 const ROLE_LABEL: Record<string, string> = {
@@ -51,6 +52,16 @@ export function GroupAboutTab() {
           kèm trích dẫn tới đúng tài liệu. Thành viên đóng góp thêm tệp ở tab đó;
           tệp được duyệt sẽ trở thành nguồn mà trợ lý có thể trích dẫn.
         </p>
+        <div style={{ marginTop: '16px' }}>
+          <Link
+            to={`/workspaces/${workspaceId}/chat`}
+            className="group-page__assistant"
+            style={{ textDecoration: 'none' }}
+          >
+            <Icon name="auto_awesome" size={18} />
+            Bắt đầu hỏi Trợ lý AI ngay
+          </Link>
+        </div>
       </section>
 
       <section className="group-about__card">

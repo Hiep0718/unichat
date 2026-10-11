@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TASK THUC THI AUTH PHAN QUYEN CHAT AI ADMIN 2026 10 10</title>
+  <style>
+    
+:root {
+  --bg-color: #0d1117;
+  --text-color: #c9d1d9;
+  --accent-color: #58a6ff;
+  --border-color: #30363d;
+  --code-bg: #161b22;
+  --blockquote-bg: #151b23;
+  --alert-note-bg: rgba(56, 139, 253, 0.15);
+  --alert-note-border: #388bfd;
+  --alert-tip-bg: rgba(63, 185, 80, 0.15);
+  --alert-tip-border: #3fb950;
+  --alert-warning-bg: rgba(210, 153, 34, 0.15);
+  --alert-warning-border: #d29922;
+  --alert-caution-bg: rgba(248, 81, 73, 0.15);
+  --alert-caution-border: #f85149;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text-color);
+  background-color: var(--bg-color);
+  margin: 0;
+  padding: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+.container {
+  width: 100%;
+  max-width: 900px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #f0f6fc;
+  font-weight: 600;
+  line-height: 1.25;
+  margin-top: 24px;
+  margin-bottom: 16px;
+}
+
+h1 { font-size: 2em; padding-bottom: 0.3em; border-bottom: 1px solid var(--border-color); }
+h2 { font-size: 1.5em; padding-bottom: 0.3em; border-bottom: 1px solid var(--border-color); }
+h3 { font-size: 1.25em; }
+
+p, ul, ol {
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+a {
+  color: var(--accent-color);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+  font-size: 85%;
+  background-color: rgba(110, 118, 129, 0.4);
+  padding: 0.2em 0.4em;
+  border-radius: 6px;
+}
+
+pre {
+  background-color: var(--code-bg);
+  padding: 16px;
+  border-radius: 6px;
+  overflow: auto;
+  border: 1px solid var(--border-color);
+}
+
+pre code {
+  background-color: transparent;
+  padding: 0;
+  font-size: 100%;
+  color: #e6edf3;
+  border-radius: 0;
+}
+
+blockquote {
+  margin: 0 0 16px 0;
+  padding: 0 1em;
+  color: #8b949e;
+  border-left: 0.25em solid #30363d;
+  background-color: var(--blockquote-bg);
+  padding: 8px 16px;
+  border-radius: 0 6px 6px 0;
+}
+
+table {
+  border-spacing: 0;
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+table th, table td {
+  padding: 6px 13px;
+  border: 1px solid var(--border-color);
+}
+
+table tr {
+  background-color: var(--bg-color);
+  border-top: 1px solid var(--border-color);
+}
+
+table tr:nth-child(2n) {
+  background-color: #161b22;
+}
+
+table th {
+  font-weight: 600;
+  background-color: #161b22;
+}
+
+hr {
+  height: 0.25em;
+  padding: 0;
+  margin: 24px 0;
+  background-color: var(--border-color);
+  border: 0;
+}
+
+/* Alert styles */
+.alert {
+  padding: 15px;
+  margin-bottom: 20px;
+  border: 1px solid transparent;
+  border-left-width: 5px;
+  border-radius: 4px;
+}
+
+.alert-note {
+  background-color: var(--alert-note-bg);
+  border-color: var(--alert-note-border);
+}
+
+.alert-tip {
+  background-color: var(--alert-tip-bg);
+  border-color: var(--alert-tip-border);
+}
+
+.alert-warning {
+  background-color: var(--alert-warning-bg);
+  border-color: var(--alert-warning-border);
+}
+
+.alert-caution {
+  background-color: var(--alert-caution-bg);
+  border-color: var(--alert-caution-border);
+}
+
+.alert-title {
+  font-weight: bold;
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  color: #fff;
+}
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Checklist thực thi — auth, phân quyền, chat AI và admin</h1>
+<p>Ngày: 10/10/2026. 37 task, trạng thái đề xuất/chưa nghiệm thu. Scope web/Core/AI + auth/chat trên mobile theo xác nhận của người dùng.</p>
+<p><a href="file:///D:/codex-workspace/unichat/docs/reports/ke-hoach-auth-phan-quyen-chat-ai-admin-2026-10-10.md">Kế hoạch tổng, dependency và gates</a>. Mỗi task phải có exact write set trước khi code, test đồng hành và evidence sau khi chạy; task M/L tiếp tục chia nhỏ nếu vượt một logical change.</p>
+<p>P0 là điều kiện nghiệm thu cốt lõi; P1 hoàn thiện chức năng trong phạm vi, vẫn cần làm trước khi bàn giao đầy đủ. S: một boundary/module; M: nhiều lớp hoặc client-server; L: cần design và chia thành nhiều thay đổi nhỏ. Thứ tự theo phụ thuộc, không chỉ theo số task.</p>
+<h2>1. Chuẩn bị — 2 task</h2>
+<h3>SET-01 — P0/S — Khóa scope và baseline; từ G01/G03/T04 một phần</h3>
+<ul>
+<li>Làm: inventory auth/security/chat/admin/mobile auth-chat; lưu diff/hash vùng dự kiến sửa; ghi lỗi liên quan và lỗi của owner khác; tạo rollback checklist mỗi task; giữ original backlog.</li>
+<li>Đầu ra: scope manifest + requirement/API delta + baseline evidence; không sửa community/workspace, không nhận ownership ngoài bốn chức năng.</li>
+<li>Test/AC: mọi path thuộc workspace; write set tường minh; raw secrets không xuất vào report; danh sách ngoại phạm vi được đánh dấu để release gate không che lỗi. Phụ thuộc: —.</li>
+</ul>
+<h3>SET-02 — P0/M — Khôi phục kiểm tra local và fake dependencies; từ G02/T01/T02 một phần</h3>
+<ul>
+<li>Làm: kiểm JDK/Maven/Python/Node đã có; xác minh cache hiện hành; cô lập TestClient RabbitMQ startup; tạo mock vector/provider/mail/clock và disposable DB profile; không cài thêm tự động.</li>
+<li>Đầu ra: commands lint/typecheck/test/coverage/build cho từng scope; blocker cụ thể nếu runtime/cache thiếu; fixtures USER/ADMIN/LOCKED, ACL revoke, ANSWER/CLARIFY/REFUSE.</li>
+<li>Test/AC: không network provider/cloud/SMTP/shared DB; compile được phần sẽ sửa hoặc ghi blocked rõ; DB fixture không tự sửa migration checksum. Phụ thuộc: SET-01.</li>
+</ul>
+<h2>2. Đăng nhập và phiên — 8 task</h2>
+<h3>AUT-01 — P0/M — Schema auth và lỗi thống nhất; từ S05/G01 một phần</h3>
+<ul>
+<li>Làm: email normalize một chỗ; password policy 12–128; Zod/Jakarta schemas đồng bộ web/mobile; validate cả body refresh/logout; client không suy quyền từ user nhập; giữ full dấu thông báo.</li>
+<li>Đầu ra: DTO/schema + error-code matrix 400/401/403/409/429; register/login/reset/change-password hiện có dùng cùng policy.</li>
+<li>Test/AC: blank/invalid Unicode/length boundary; email case-insensitive unique; không log password/OTP/token; validation RFC7807. Phụ thuộc: SET-02.</li>
+</ul>
+<h3>AUT-02 — P0/M — Failed-login transaction và loại khóa; từ S05</h3>
+<ul>
+<li>Làm: tách phần cập nhật counter/temporary lock khỏi exception rollback; phân biệt khóa do admin với lock 15 phút do sai mật khẩu; reset counters sau login hợp lệ; trạng thái mail/password errors tường minh.</li>
+<li>Đầu ra: focused auth transaction service/result; clock injectable; failedLoginCount/lockedUntil lưu thực sau 401.</li>
+<li>Test/AC: 5 lần sai tăng DB và lock; expiry auto-unlock chỉ temporary lock; admin lock không tự mở; transaction integration thật. Phụ thuộc: AUT-01.</li>
+</ul>
+<h3>AUT-03 — P0/M — Refresh rotation atomic và chống reuse; từ S05/C03</h3>
+<ul>
+<li>Làm: lưu hash opaque token; khóa/compare-and-swap rotation; commit family revoke trước trả401; xử lý concurrent token reuse theo contract; hết hạn/dọn records; logout idempotency không lưu raw refresh vào requestHash.</li>
+<li>Đầu ra: RefreshToken lifecycle rõ ACTIVE/USED/REVOKED/EXPIRED; không duy trì hai successor hợp lệ; auth routes không tự refresh lặp.</li>
+<li>Test/AC: hai refresh đồng thời, replay, expiry, family revoke, logout repeated; persistence assertions sau failure; kiểm raw token không nằm DB/log/idempotency record. Phụ thuộc: AUT-02.</li>
+</ul>
+<h3>AUT-04 — P1/M — OTP/reset/đổi mật khẩu và mail failure; từ S05</h3>
+<ul>
+<li>Làm: hash OTP, one-time consume, giới hạn attempts/resend/expiry 5 phút; mail adapter có delivery failure trạng thái; reset/change password gọi session invalidation; response forgot-password thống nhất.</li>
+<li>Đầu ra: OTP/service tests và UI cooldown/lỗi rõ trên web/native; không expose email có tồn tại.</li>
+<li>Test/AC: invalid/reused/expired OTP, concurrent reset, mail fail, wrong current password; không network SMTP; password update không để session cũ hợp lệ. Phụ thuộc: AUT-03, AUT-05.</li>
+</ul>
+<h3>AUT-05 — P0/M — Thu hồi access/refresh khi lock/role/password đổi; từ S04</h3>
+<ul>
+<li>Làm: chốt ADR securityVersion/session epoch và account validator; JWT issuer/audience/expiry strict; update version+revoke families cùng transaction; role/status được kiểm ở Core cả khi token còn hạn.</li>
+<li>Đầu ra: cơ chế revocation có migration mới nếu được duyệt; account ACTIVE/LOCKED semantics rõ; logout policy current-family so với global invalidation tách bạch.</li>
+<li>Test/AC: token cấp trước lock/demotion/reset/password change bị deny; unlock không phục hồi token cũ; concurrent last-admin updates giữ invariant. Phụ thuộc: AUT-03, AZ-01; DB mutation approval riêng.</li>
+</ul>
+<h3>AUT-06 — P0/M — Cookie/CORS/Origin/CSRF đúng client; từ S03</h3>
+<ul>
+<li>Làm: env allowlist; xác định web cookie và native body transport; HttpOnly/Secure/SameSite + credentialed fetch đúng; cookie body precedence và client header validate; guard Origin/CSRF với cookie mutations; TLS production.</li>
+<li>Đầu ra: local/test/prod profile contract; protected auth transport; refresh cookie không lọt sang mobile-response path sai client mode.</li>
+<li>Test/AC: hostile origin, missing/mismatched CSRF, localhost/device config, cross-origin credentials, cookie flags, malformed refresh body; không wildcard credentials production. Phụ thuộc: AUT-01, AUT-03.</li>
+</ul>
+<h3>AUT-07 — P0/M — Web auth bootstrap và refresh một lần; từ S04/G01</h3>
+<ul>
+<li>Làm: INITIALIZING/READY/ANONYMOUS/ERROR; refresh-on-launch rồi gọi /me; single-flight 401 và một retry; 403 không logout; shared fetch JSON/blob/SSE dùng cùng session; logout abort requests và clear user caches.</li>
+<li>Đầu ra: auth context/guard/API client testable; routing đợi identity; token trong memory; failure không để user=null nhưng coi admin authenticated.</li>
+<li>Test/AC: reload, 10 request 401 đồng thời→1 refresh; failed refresh không loop; cached profile user A không xuất cho user B; network offline không tự coi token valid. Phụ thuộc: AUT-05, AUT-06, AZ-01.</li>
+</ul>
+<h3>AUT-08 — P0/M — Mobile auth/session lifecycle; từ M05/S04 một phần</h3>
+<ul>
+<li>Làm: native refresh token Keychain/Keystore; sync rotated token với AuthContext; restore/foreground validate session; cancellation on logout; cleanup profile/query/chat state; phân biệt Expo web storage với native và thống nhất memory-access policy.</li>
+<li>Đầu ra: login/register/reset/change-password routes hiện có đồng bộ session state; secure-store/API-client interfaces rõ; không nhận mobile account/feed redesign.</li>
+<li>Test/AC: app reopen, expired access, parallel401, revoke while background, corrupt stored profile, secure-store failure, offline logout; Jest + native smoke. Phụ thuộc: AUT-05, AUT-06.</li>
+</ul>
+<h2>3. Phân quyền — 5 task</h2>
+<h3>AZ-01 — P0/M — RBAC admin thật ở API/service/UI; từ S01</h3>
+<ul>
+<li>Làm: bỏ email/displayName exception; mapping JWT authority chuẩn và current account status; bật method security khi dùng annotation; guard web fail-closed lúc load; quyền USER/ADMIN có một nguồn sự thật.</li>
+<li>Đầu ra: shared AdminAuthorizationPolicy và tests cho user/metrics/audit/AI Studio; deny direct API; không phát triển admin workspace/document nghiệp vụ.</li>
+<li>Test/AC: email chứa admin/taolahiep vẫn USER trả 403; ADMIN locked trả 403/401 đúng contract; missing identity không mở dashboard; protected routes không bị bỏ sót. Phụ thuộc: SET-02.</li>
+</ul>
+<h3>AZ-02 — P0/M — Chat resource ownership và reauthorization; từ C01/W01 phần READ/ASK</h3>
+<ul>
+<li>Làm: conversation phải cùng user+workspace; read ACL adapter từ module sẵn có; kiểm allowed docs/status/version trước AI, trước mỗi batch emit và trước commit; active user check; đừng tạo authorization owner thứ hai ở AI.</li>
+<li>Đầu ra: ChatAccessContext/port và atomic permission-read contract; status/revoke/not-found error không lộ private resource; chỉ đọc workspace/document metadata.</li>
+<li>Test/AC: đổi path workspace, user B, revoked membership, deleted doc, lock mid-inference; unauthorized provider calls = 0; output sau revoke bị chặn; fixtures đủ không cần CRUD workspace. Phụ thuộc: AUT-05, SET-02.</li>
+</ul>
+<h3>AZ-03 — P0/S — Ownership Studio Notes hiện có; từ W04</h3>
+<ul>
+<li>Làm: list/create/delete kiểm conversation owner và ACL còn hiệu lực; note.userId/conversationId/workspaceId khớp; nguồn invalid không leak excerpt; dùng cùng ChatAuthorizationPolicy.</li>
+<li>Đầu ra: existing note endpoints được bảo vệ; không xây quiz/podcast/slides tools mới.</li>
+<li>Test/AC: user B không list/create/delete note của A; ID note tráo conversation trả 404; revoke quyền nguồn không đọc note cũ theo retention contract. Phụ thuộc: AZ-01; hoàn thiện ACL dùng AZ-02.</li>
+</ul>
+<h3>AZ-04 — P0/L — Service JWT cho chat và AI metrics; từ S02</h3>
+<ul>
+<li>Làm: chốt serialization/bodyHash và replay-store port; ký/verify RS256, exp≤60s, iss/aud/kid, method/path/requestId/key; Core AI Studio phải gửi Authorization; invalid credentials fail trước retrieval/telemetry/key-ping.</li>
+<li>Đầu ra: signer/verifier + contract tests; private health exception tường minh; không dùng chuỗi bắt đầu ey hoặc shared dev-secret làm JWT; không thêm replay backend/package ngầm.</li>
+<li>Test/AC: fake/tampered/expired/wrong audience/body/path/reused jti; concurrent replay; Auth header hiện thiếu ở AdminAiStudioService được bổ sung; outbound mocked. Phụ thuộc: SET-02, CHAT-01; design chia signer/verifier/replay thành logical changes.</li>
+</ul>
+<h3>AZ-05 — P0/M — Rate limits scope auth/chat/admin; từ S06 một phần</h3>
+<ul>
+<li>Làm: login/register 5/phút/IP+account; hỏi 20/phút/user và tối đa 2 concurrent; admin/ping/prompt 5/phút/user; OTP resend/attempt policies ghi contract; bucket/lease durable; có cleanup.</li>
+<li>Đầu ra: RateLimitPort/service và RFC7807 RATE_LIMITED/Retry-After; retry operation đã hoàn tất không charge lại.</li>
+<li>Test/AC: boundary window/fake clock, release concurrency permit sau cancel/error/crash lease; 429 không gọi provider; không rate-limit upload/evaluation ngoài scope. Phụ thuộc: AUT-02, AZ-01; chat integration dùng CHAT-03.</li>
+</ul>
+<h2>4. Chat Core/AI/Web — 9 task</h2>
+<h3>CHAT-01 — P0/M — Contract câu hỏi/history/citation/SSE; từ G03/C03/R04</h3>
+<ul>
+<li>Làm: thống nhất schemas question 3–2000 ký tự, requestId, operationId, messageId, decision, provider, strategy/hash, citation metadata; history pagination theo ADR019; định nghĩa statuses/replay/cancel; cập nhật Core/web/native DTO cùng delta.</li>
+<li>Đầu ra: API examples/SSE fixtures typed, ADR candidate cho stream provisional/final và operation model; planned migration list, không tự mutate DB.</li>
+<li>Test/AC: schema malformed và boundary; event fixtures cùng hình dạng ở web/mobile/AI; không cursor ignored; links/version docs thống nhất. Phụ thuộc: SET-01.</li>
+</ul>
+<h3>CHAT-02 — P0/M — Persistence atomic và done sau commit; từ C02</h3>
+<ul>
+<li>Làm: AI call ngoài transaction dài; transaction service persist user/assistant/citations/trace/summary theo operation states; error dùng Result/typed class; repository save không được swallow; publication done sau commit.</li>
+<li>Đầu ra: stored assistantMessageId là final ID; không persist partial answer như hoàn tất; lỗi có requestId và state đọc lại được.</li>
+<li>Test/AC: DB fail trước/sau AI không half-assistant/citations; reload ngay sau done thấy result; ACL revocation trước commit deny; <code>@Transactional</code> proxy thực sự được gọi. Phụ thuộc: CHAT-01, AZ-02.</li>
+</ul>
+<h3>CHAT-03 — P0/M — Idempotency và status/replay; từ C03</h3>
+<ul>
+<li>Làm: bắt buộc key trên ask/stream; reserve atomically trước provider theo user + logical operation <code>chat.ask</code> + workspace/conversation + bodyHash; hai route dùng chung namespace; hash không chứa transport flags; hợp nhất retry/status/replay và expiry policy.</li>
+<li>Đầu ra: operation status/replay endpoint theo CHAT-01; không tạo message/user question hai lần; request cancelled/failed retry rule tường minh.</li>
+<li>Test/AC: concurrent duplicates → 1 call; cùng key khác question/options/context → 409; stream lỗi rồi nonstream retry cùng key trả operation cũ; late success rồi retry trả result cũ; không replay private output sau revoke. Phụ thuộc: CHAT-02, AZ-05.</li>
+</ul>
+<h3>CHAT-04 — P0/M — Evidence Gate và chế độ grounded; từ R01/R02</h3>
+<ul>
+<li>Làm: grounded-only default theo spec; ngoại tri thức nếu giữ phải opt-in và label riêng; intent/strategy/source-group rules version hóa; empty/weak/OOS/ambiguous dẫn CLARIFY/REFUSE phù hợp.</li>
+<li>Đầu ra: deterministic gate dùng fake candidates; COMPARISON source groups theo approved spec hoặc ADR mới đã duyệt; không tune research dataset.</li>
+<li>Test/AC: no allowed docs/no evidence không gọi LLM; one-source comparison không quietly pass; tiếng Việt có/không dấu và negative technical keywords; thresholds boundary. Phụ thuộc: CHAT-01, AZ-02.</li>
+</ul>
+<h3>CHAT-05 — P0/L — Citation/claim validator và metadata thật; từ R03/R04</h3>
+<ul>
+<li>Làm: structured output claims/citationIds; validate chunk/hash/locator/excerpt/allowlist; schema/citation invalid retry đúng 1 lần cùng evidence; truyền chunkId/contentHash thật tới history; bỏ tên file fallback sang nguồn khác.</li>
+<li>Đầu ra: response final verified; invalid output→REFUSE; citation lookup theo document ID đúng scope; không chunk-N hoặc score thay hash; design chia validator và persistence mapping.</li>
+<li>Test/AC: bogus citation/hash, factual claim vô nguồn, doc thứ 11+, DOCX/TXT/PDF locators, Unicode excerpt, deleted/redacted source; retry budget; fake vector/provider. Phụ thuộc: CHAT-02, CHAT-04; source metadata external fixture contract.</li>
+</ul>
+<h3>CHAT-06 — P0/M — Provider/fallback/config và trace; từ R05/R06</h3>
+<ul>
+<li>Làm: provider/model/prompt/strategy/hash/temperature snapshot; streaming và nonstream error taxonomy thống nhất; timeout/429/5xx mới fallback; Ollama cùng evidence; trace request/model/latency/tokens không raw contents.</li>
+<li>Đầu ra: provider port injectable, không model hopping ngầm; embedding revision là contract yêu cầu owner vector cung cấp; telemetry request IDs và stats thật.</li>
+<li>Test/AC: auth/validation/safety/gate refusal không fallback; fallback at-most-once; error trước/sau partial; actual reported token counts, unavailable để null không estimate giả. Phụ thuộc: AZ-04, CHAT-04/05.</li>
+</ul>
+<h3>CHAT-07 — P0/M — SSE lifecycle/cancel/backpressure; từ C04</h3>
+<ul>
+<li>Làm: abort propagate client→Core→AI; timeout/EOF/disconnect/incomplete states; bounded executor; UTF-8 fragmentation/multiline event parser; provisional UI tới final validation; không ghép tokens hai model.</li>
+<li>Đầu ra: cancel/status/error contract; final done sau CHAT-02 commit; failed citation retract/refuse provisional answer; permission check theo AZ-02.</li>
+<li>Test/AC: missing done không success; abort không persist complete; disconnect retry không duplicate; slow client không tăng memory vô hạn; provider fake async và clock. Phụ thuộc: CHAT-03, CHAT-05/06.</li>
+</ul>
+<h3>CHAT-08 — P1/M — Memory và compaction đúng conversation; từ C05</h3>
+<ul>
+<li>Làm: token budget/summary limit/version locking; latest turns và summary dùng chung prompt; đại từ follow-up phải retrieval đúng context; revoke/source removal không giữ context forbidden; thu gọn summary policy.</li>
+<li>Đầu ra: history/summary isolated; compaction status hiển thị như bước pipeline, không hiển thị private chain-of-thought; short-term trong một conversation.</li>
+<li>Test/AC: concurrent turns, summary version conflict, follow-up “nó”, user/conversation isolation, limit boundary, deleted source; không long-term memory hoặc new research tuning. Phụ thuộc: CHAT-02, CHAT-05/06.</li>
+</ul>
+<h3>CHAT-09 — P1/M — Chat/history web UX và safe rendering; từ C06/G01</h3>
+<ul>
+<li>Làm: sending/streaming/cancel/retry/refuse/clarify; valid conversation IDs; paginated history/messages, stable scroll/order; citation focus/full locator; safe Markdown/LaTeX/Mermaid; cleanup listeners/caches.</li>
+<li>Đầu ra: scoped components/hooks tách file vượt chuẩn kèm tests; request-key giữ qua retry; legacy page routes compatible; không sửa community/workspace UI.</li>
+<li>Test/AC: long conversation/reload/copy/citation/403/429/provider down; raw HTML/javascript/SVG payload không chạy; keyboard/focus; scoped lint/build/Vitest + Playwright. Phụ thuộc: AUT-07, CHAT-07/08.</li>
+</ul>
+<h2>5. Chat AI mobile — 3 task</h2>
+<h3>MOB-01 — P0/M — Mobile stream và retry cùng operation; từ C03/C04/M04 phần chat</h3>
+<ul>
+<li>Làm: giữ operation/key qua stream error; hỏi status trước nonstream fallback; AuthContext nhận token rotation; app background/unmount/logout abort; sync metadata/decision/refusal final; không tạo hỏi lại mới tự động.</li>
+<li>Đầu ra: hook/state machine theo Core contract; request resume/failed state rõ; final answer only after validated done.</li>
+<li>Test/AC: timeout sau server commit không message đôi; partial error→no mixed answer; background foreground/reconnect/cancel; Jest SSE fragmentation+same-key fallback. Phụ thuộc: AUT-08, CHAT-03/07.</li>
+</ul>
+<h3>MOB-02 — P1/M — History mobile phân trang đúng Core; từ C06/M04 phần chat</h3>
+<ul>
+<li>Làm: bỏ adapter nhận cursor rồi mất page state; page/size hoặc contract mới thực sự hỗ trợ; history list/load-more/message order/conversation delete; set empty/error states đúng server.</li>
+<li>Đầu ra: &gt;20 conversation và long messages truy cập đủ; reload canonical messages; no sample/fake conversation fallback trên request lỗi.</li>
+<li>Test/AC: page2 khác page1; unique IDs/stable ordering; revoked conversation deny; cancel navigation không set stale state; native keyboard/scroll smoke. Phụ thuộc: MOB-01, CHAT-01/02.</li>
+</ul>
+<h3>MOB-03 — P1/S — Citation/refusal mobile chính xác; từ R04/M04 phần citation</h3>
+<ul>
+<li>Làm: dùng score/locator/excerpt thật; không fallback 85% hoặc nhãn validated khi chưa valid; hiển thị REFUSE/CLARIFY reason; open document source qua port có sẵn nếu được phép, otherwise locator rõ.</li>
+<li>Đầu ra: citation sheet safe/full dấu + accessibility; file viewer/download implementation của owner document không thành task mobile này.</li>
+<li>Test/AC: score 0/unknown giữ đúng nghĩa; deleted/revoked source không mở; wrong document không hiển thị; sheet focus/close/native smoke. Phụ thuộc: CHAT-05, MOB-01; source-open contract cần owner cung cấp.</li>
+</ul>
+<h2>6. Dashboard admin web — 6 task</h2>
+<h3>ADM-01 — P0/M — User management/role/lock nghiệp vụ thật; từ A03 phần user/S01/S04</h3>
+<ul>
+<li>Làm: typed filters/query/page/status/role; debounce 300 ms; protect last admin/concurrent mutation; updates invoke security invalidation; confirmation và response error; user ID input validated.</li>
+<li>Đầu ra: user list/role/lock/unlock hoạt động; manual locked state không temporary auto-unlock; audit cho mọi mutation.</li>
+<li>Test/AC: USER trả 403; inactive admin deny; last-admin invariant concurrent; old token denied sau demote/lock; filter/page results đúng DB; UI rollback khi fail. Phụ thuộc: AZ-01, AUT-05, ADM-04.</li>
+</ul>
+<h3>ADM-02 — P1/M — System metrics của auth/chat/AI; từ A02 giới hạn</h3>
+<ul>
+<li>Làm: <code>/admin/metrics</code> typed aggregate: active/locked users, login failures, chat completed/refused/failed, latency/TTFT,token usage và dependency freshness; filters thời gian; không quản lý/count chi tiết workspace/documents.</li>
+<li>Đầu ra: repository/service aggregate metadata; placeholder system metrics page thành data states; operator không nhìn private chat contents.</li>
+<li>Test/AC: zero/null/no-data không100% giả; fixture counts và timezones đúng; p95 có sample semantics rõ; ADMIN-only; query performance measured; pagination nếu list. Phụ thuộc: AZ-01, CHAT-06, ADM-04.</li>
+</ul>
+<h3>ADM-03 — P1/M — AI telemetry/biểu đồ có nguồn và retention; từ A04</h3>
+<ul>
+<li>Làm: dùng record hiện có, kiểm file persistence cap 500/atomic writes; chốt storage/retention/multiworker design; record streaming/nonstream/fallback actual usage; filters key/model/days; tách RAG và quick prompt categories.</li>
+<li>Đầu ra: requests/success/errors 429/503/tokens/models charts + lastUpdated/no-data/error; không hiển thị current quota hay billing nếu provider không cung cấp.</li>
+<li>Test/AC: restart/retention/concurrent records, correct input/output token totals, denied user, all-model/key filters, unknown provider usage; mask không lộ key ngắn. Phụ thuộc: CHAT-06/07, AZ-04.</li>
+</ul>
+<h3>ADM-04 — P0/M — Audit thật cho auth/permission/chat/admin; từ A01</h3>
+<ul>
+<li>Làm: append-only AuditPort/service/repository; controllers chỉ map DTO; events LOGIN<em>FAILED/SESSION</em>REVOKED/ROLE<em>CHANGED/USER</em>LOCKED/AI<em>CHECK/CHAT</em>ERROR phù hợp privacy; tách endpoint audit khỏi controller hỗn hợp.</li>
+<li>Đầu ra: filter actor/action/outcome/from/to/page20/max100; replace events hardcode; transaction-safe audit semantics; requestId xuyên flow; log failure không được swallow.</li>
+<li>Test/AC: actual mutation→event, zero DB→empty, restart còn event; USER trả 403; no prompt/token/email enumeration/private chunks; audit rollback/failure policy có integration tests. Phụ thuộc: SET-02, AZ-01.</li>
+</ul>
+<h3>ADM-05 — P1/M — Test key/quick prompt không thành công giả; từ A04/S02</h3>
+<ul>
+<li>Làm: bỏ fallback HEALTHY 280 ms/ready 420 ms và token estimate; validate keyIndex/model allowlist,prompt length,timeout; service token authenticated; rate-limited explicit action; provider error schema và actual usage.</li>
+<li>Đầu ra: real HEALTHY/RATE_LIMITED/ERROR/UNAVAILABLE; không ping mặc định khi page open; secret masked; prompt kiểm tra không lấy nội dung chat private.</li>
+<li>Test/AC: AI down → unavailable, 429→rate-limited; invalid model/index trả 400; USER trả 403; raw key hidden; mocks không paid calls; latency measured injected clock. Phụ thuộc: AZ-01/04/05, ADM-03.</li>
+</ul>
+<h3>ADM-06 — P1/M — Dashboard shell/filter/data states/accessibility; từ G01/A02/A04</h3>
+<ul>
+<li>Làm: hoàn thiện user/AI Studio/metrics/audit navigation; reconnect/refresh UI; date/model/key filters validated; empty/error/loading; status badge theo actual freshness, không online giả; responsive charts/tables.</li>
+<li>Đầu ra: dashboard web bốn screens trong scope; giữ admin workspace/document routes hiện có của owner khác, không nhận việc hoàn thiện chúng; UI split nếu vượt chuẩn.</li>
+<li>Test/AC: filters round-trip stable, stale requests không overwrite; protected page không flash cho USER; keyboard/focus/table loading; Vitest/Playwright + scoped lint/build. Phụ thuộc: ADM-01…05, AUT-07.</li>
+</ul>
+<h2>7. Regression, CI và bàn giao — 4 task</h2>
+<h3>QA-01 — P0/L — Core API/DB negative/race/fault suites; từ T01 một phần</h3>
+<ul>
+<li>Làm: integration cho auth/admin/chat/note; reusable permission fixtures; test rollback login/reuse, concurrent rotate,last admin,idempotency,reauthorize,commit failure; API401/403/404/409/429 contracts.</li>
+<li>Đầu ra: JUnit/Testcontainers/WireMock reports + JaCoCo scope line/branch ≥80%; logical suites theo module; không full workspace/document integrations.</li>
+<li>Test/AC: DB assertions thật sau failure; deterministic clock/provider; migrations mới fresh/upgrade DB pass; all selected endpoint happy+validation+authn+authz+failure. Phụ thuộc: AUT/AZ/CHAT Core tasks hoàn tất; tests viết từ từng task.</li>
+</ul>
+<h3>QA-02 — P0/M — AI security/generation/stream suites; từ R03/R05/T01</h3>
+<ul>
+<li>Làm: service JWT contract; schema/claims/citation/provider budget; fake vector/model; memory context isolation; async stream cancel/error; no RabbitMQ startup trong fixtures.</li>
+<li>Đầu ra: Ruff/mypy/pytest reports + core logic coverage≥80%; module fixtures reusable; production code không có “test simulation fallback”.</li>
+<li>Test/AC: no outbound network, wrong allowlist/replay before LLM, fixed evidence retry 1; stream stats trustworthy; no test writing traces/telemetry vào real data path. Phụ thuộc: AZ-04, CHAT-04…08.</li>
+</ul>
+<h3>QA-03 — P0/L — Web E2E và mobile auth/chat regression; từ T02/M05 một phần</h3>
+<ul>
+<li>Làm: web login→chat→citation→reload→logout; USER admin denial; ADMIN role/lock/audit/AI failure; mobile session/stream/history/citation integration và native smoke; accessibility/Unicode.</li>
+<li>Đầu ra: Playwright fake-profile reports/video + Vitest/Jest + native device/build checklist; route fixtures không cần CRUD workspace/posts.</li>
+<li>Test/AC: Expo web E2E không được coi native evidence; expired/revoked session và duplicated question tests; no cloud credentials/provider; tests flaky có root cause, không skip. Phụ thuộc: AUT-07/08, CHAT-09, MOB-01…03, ADM-06.</li>
+</ul>
+<h3>QA-04 — P0/M — Scope CI/docs/demo và delivery evidence; từ T03/G03/O03 một phần</h3>
+<ul>
+<li>Làm: CI selected lint/typecheck/build/JUnit/pytest/Vitest/Jest/Playwright/coverage; generated API examples; CHANGELOG/ADRs/decisions/evidence; contracts/rollback and four-module demo; phối hợp global regressions với owner.</li>
+<li>Đầu ra: signed-off write-set/evidence package; truthful scoped-complete vs global-release-ready; no dependency installs, DB shared mutations hoặc delivery tự động.</li>
+<li>Test/AC: scoped gates pass; global fail ngoài scope có owner/blocker rõ, release không declared ready; source ≤300/complexUI ≤500, logic ≤30/render ≤100; commit/push/deploy chỉ sau approval. Phụ thuộc: QA-01/02/03.</li>
+</ul>
+<h2>8. Mapping tasklist gốc và phần bỏ khỏi kế hoạch</h2>
+<table>
+<thead>
+<tr>
+<th>Backlog gốc</th>
+<th>Xử lý trong kế hoạch cá nhân</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>G01/G02/G03</td>
+<td>Giữ phần liên quan auth/chat/admin/mobile auth-chat; không sửa lint/behavior community/workspace</td>
+</tr>
+<tr>
+<td>G04/G05</td>
+<td>Schema integrity/RLS/Chroma remediation là phụ thuộc cần phối hợp; không biến thành nhiệm vụ sửa cả DB/vector infrastructure</td>
+</tr>
+<tr>
+<td>S01…S06</td>
+<td>Giữ security core; S04 bỏ Work Chat socket, S06 bỏ upload/evaluation rate-limit</td>
+</tr>
+<tr>
+<td>W01/W04</td>
+<td>Chỉ lấy READ/ASK ACL cho chat và note ownership; không Workspace lifecycle/member/contribution policy</td>
+</tr>
+<tr>
+<td>W02/W03, D01…D08</td>
+<td>Ngoài phạm vi; document metadata/download/status/redaction dùng contract từ owner</td>
+</tr>
+<tr>
+<td>R01…R06</td>
+<td>Giữ grounding/citation/provider/trace phục vụ chat; ingestion/embedding lifecycle không nhận; R07 calibration research ngoài scope</td>
+</tr>
+<tr>
+<td>C01…C06</td>
+<td>Giữ chat AI, chuyển thành tasks Core/AI/web/mobile ở trên</td>
+</tr>
+<tr>
+<td>A01/A02/A04</td>
+<td>Giữ audit/metrics/AI Studio; A03 chỉ phần user-account đã tách ADM-01, workspace/document admin ngoài scope</td>
+</tr>
+<tr>
+<td>E01…E06, P01…P04</td>
+<td>Ngoài phạm vi: research Evaluation, community và Work Chat/DM</td>
+</tr>
+<tr>
+<td>M01/M02/M03</td>
+<td>Ngoài phạm vi: mobile community/workspace; M04 chỉ chat/history/citation, M05 chỉ auth/session</td>
+</tr>
+<tr>
+<td>K01/K02/K03</td>
+<td>Ngoài phạm vi mới; chỉ AZ-03 bảo vệ Studio Notes đã tồn tại trong chat</td>
+</tr>
+<tr>
+<td>T01…T04, O01…O03</td>
+<td>Giữ testing/refactor/CI/docs theo đúng scope; full infra/backup/deletion/research demo bàn giao owner khác</td>
+</tr>
+</tbody>
+</table>
+<p>Các test và thao tác đọc quyền có thể dùng workspace/document IDs làm fixture. Chúng là tiêu chí bảo mật của chat, không phải phát triển chức năng workspace hoặc bài viết.</p>
+
+  </div>
+</body>
+</html>

@@ -20,6 +20,7 @@ These rules are mandatory for every human and AI contributor.
 - Prefer `const`; never use `var`.
 - Keep TypeScript strict and Python mypy strict.
 - No production `console.log`; use structured logging.
+- Don't be afraid of the effort.
 
 ## Testing
 

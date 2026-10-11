@@ -139,6 +139,26 @@ public final class GlobalErrorHandler {
         return response(fileError, request, Map.of());
     }
 
+    /**
+     * Handles type mismatches for path variables and request parameters.
+     *
+     * @param error   type mismatch exception
+     * @param request current request
+     * @return validation problem response
+     */
+    @ExceptionHandler(org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ProblemDetail> handleMethodArgumentTypeMismatch(
+            org.springframework.web.method.annotation.MethodArgumentTypeMismatchException error,
+            HttpServletRequest request) {
+        var paramName = error.getName();
+        var validationError = new ValidationError(String.format("Tham số '%s' không hợp lệ.", paramName));
+        logExpected(validationError, request);
+        return response(
+                validationError,
+                request,
+                Map.of(paramName, List.of("Giá trị tham số không đúng định dạng yêu cầu.")));
+    }
+
 
     /**
      * Handles unexpected failures with a safe response and detailed server log.
@@ -161,6 +181,10 @@ public final class GlobalErrorHandler {
             HttpServletRequest request,
             Map<String, List<String>> fieldErrors) {
         var problem = problemDetailFactory.create(error, request, fieldErrors);
+        if (error instanceof com.unichat.core.shared.ratelimit.RateLimitError limited) {
+            return ResponseEntity.status(error.getStatus())
+                    .header("Retry-After", Long.toString(limited.getRetryAfter())).body(problem);
+        }
         return ResponseEntity.status(error.getStatus()).body(problem);
     }
 

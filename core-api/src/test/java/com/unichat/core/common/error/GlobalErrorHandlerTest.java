@@ -140,9 +140,28 @@ class GlobalErrorHandlerTest {
                 org.hamcrest.Matchers.containsString("database-password"))));
     }
 
+    @Test
+    void shouldReturnValidationProblemWhenPathParameterTypeMismatches() throws Exception {
+        // Arrange and Act
+        var result = mockMvc.perform(get("/test/type-mismatch/not-a-valid-uuid")
+            .header(RequestIdFilter.REQUEST_ID_HEADER, REQUEST_ID));
+
+        // Assert
+        result
+            .andExpect(status().isUnprocessableContent())
+            .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
+            .andExpect(jsonPath("$.detail").value("Tham số 'id' không hợp lệ."))
+            .andExpect(jsonPath("$.fieldErrors.id[0]").value("Giá trị tham số không đúng định dạng yêu cầu."));
+    }
+
     @RestController
     @RequestMapping("/test")
     private static final class FailureController {
+
+        @GetMapping("/type-mismatch/{id}")
+        String typeMismatch(@org.springframework.web.bind.annotation.PathVariable("id") java.util.UUID id) {
+            return id.toString();
+        }
 
         @GetMapping("/missing")
         String missing() {

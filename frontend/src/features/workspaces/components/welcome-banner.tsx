@@ -19,9 +19,9 @@ function getGreeting(): string {
 }
 
 /**
- * Extracts a display name from the user's email.
+ * Extracts a fallback display name from the user's email if displayName is not setup.
  */
-function getDisplayName(email: string): string {
+function getEmailFallback(email: string): string {
   const localPart = email.split('@')[0] ?? email;
   return localPart.charAt(0).toUpperCase() + localPart.slice(1);
 }
@@ -33,13 +33,15 @@ export function WelcomeBanner() {
   const { user } = useAuth();
 
   const greeting = getGreeting();
-  const displayName = user?.email ? getDisplayName(user.email) : '';
+  const displayName =
+    user?.displayName?.trim() ||
+    (user?.email ? getEmailFallback(user.email) : '');
 
   return (
     <section className="welcome-banner" aria-label="Lời chào">
       <div className="welcome-banner__content">
         <h2 className="welcome-banner__greeting">
-          {greeting}, {displayName}
+          {greeting}{displayName ? `, ${displayName}` : ''}
           <span className="welcome-banner__emoji" aria-hidden="true">👋</span>
         </h2>
         <p className="welcome-banner__subtitle">

@@ -1,7 +1,8 @@
 /**
  * Authentication API endpoints and types.
  */
-import { fetchJson, getAccessToken } from '../../../lib/api-client';
+import { fetchJson, fetchAuthorized } from '../../../lib/api-client';
+import { cookieRequest, loginCookieSession, logoutCookieSession } from '../../../lib/cookie-session';
 import type { AvatarColorKey } from '../../../components/entity-avatar';
 
 export interface LoginRequest {
@@ -40,10 +41,7 @@ export const authApi = {
    * Log in user and receive access token (refresh token is set via HttpOnly cookie).
    */
   login: (data: LoginRequest): Promise<AuthResponse> => {
-    return fetchJson('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
+    return loginCookieSession(data);
   },
 
   /**
@@ -69,10 +67,8 @@ export const authApi = {
   uploadAvatar: async (file: File): Promise<void> => {
     const body = new FormData();
     body.append('file', file);
-    const token = getAccessToken();
-    const response = await fetch('/api/v1/users/me/avatar', {
+    const response = await fetchAuthorized('/users/me/avatar', {
       method: 'PUT',
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
       body,
     });
     if (!response.ok) {
@@ -103,28 +99,20 @@ export const authApi = {
    * Log out the current user session.
    */
   logout: (): Promise<void> => {
-    return fetchJson('/auth/logout', {
-      method: 'POST',
-    });
+    return logoutCookieSession();
   },
 
   /**
    * Initiate forgot password flow by requesting an OTP.
    */
   forgotPassword: (data: { email: string }): Promise<void> => {
-    return fetchJson('/auth/forgot-password', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
+    return cookieRequest('/auth/forgot-password', data);
   },
 
   /**
    * Complete password reset using email, OTP, and new password.
    */
   resetPassword: (data: { email: string; otp: string; newPassword: string }): Promise<void> => {
-    return fetchJson('/auth/reset-password', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
+    return cookieRequest('/auth/reset-password', data);
   },
 };

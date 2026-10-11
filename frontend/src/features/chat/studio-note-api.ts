@@ -8,11 +8,13 @@ export interface StudioNoteDto {
   noteType: string;
   title: string;
   content: string;
+  redacted?: boolean;
   metadata?: string | null | undefined;
   createdAt: string;
 }
 
 export interface CreateStudioNotePayload {
+  sourceMessageId: string;
   noteType: string;
   title: string;
   content: string;
@@ -24,10 +26,12 @@ export interface CreateStudioNotePayload {
  */
 export async function fetchConversationStudioNotes(
   workspaceId: string,
-  conversationId: string
-): Promise<StudioNoteDto[]> {
-  const url = `/workspaces/${encodeURIComponent(workspaceId)}/conversations/${encodeURIComponent(conversationId)}/studio-notes`;
-  return fetchJson<StudioNoteDto[]>(url);
+  conversationId: string,
+  page = 0,
+  size = 20
+): Promise<{ content: StudioNoteDto[]; totalPages: number; totalElements: number; number: number; size: number }> {
+  const url = `/workspaces/${encodeURIComponent(workspaceId)}/conversations/${encodeURIComponent(conversationId)}/studio-notes?page=${page}&size=${size}`;
+  return fetchJson(url);
 }
 
 /**
