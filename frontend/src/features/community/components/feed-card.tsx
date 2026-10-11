@@ -67,6 +67,9 @@ export function FeedCard({
   pinned = false,
 }: FeedCardProps) {
   const [showComments, setShowComments] = useState(false);
+  // Held locally so accepting an answer updates the card's status chip without
+  // refetching the feed, which would lose the reader's scroll position.
+  const [acceptedReplyId, setAcceptedReplyId] = useState(post.acceptedReplyId);
   // Held locally so posting a comment updates the count without refetching the
   // whole feed, which would also lose the reader's scroll position.
   const [replyCount, setReplyCount] = useState(post.replyCount);
@@ -74,7 +77,7 @@ export function FeedCard({
   // Resolution state only means something for questions; an announcement is
   // never "unanswered".
   const isQuestion = post.label === 'QUESTION';
-  const status = resolveAnswerStatus(post.replyCount, post.hasAcceptedAnswer);
+  const status = resolveAnswerStatus(post.replyCount, acceptedReplyId !== null);
 
   return (
     <article className={`feed-card ${pinned ? 'feed-card--pinned' : ''}`}>
@@ -179,7 +182,10 @@ export function FeedCard({
         <InlineComments
           workspaceId={post.workspaceId}
           discussionId={post.id}
+          postAuthorId={post.authorId}
+          acceptedReplyId={acceptedReplyId}
           onReplyCountChange={setReplyCount}
+          onAcceptedReplyChange={setAcceptedReplyId}
         />
       )}
     </article>

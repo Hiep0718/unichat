@@ -40,7 +40,7 @@ function toFeedPost(d: DiscussionResponse): FeedPostResponse {
     replyCount: d.replyCount,
     reactions: d.reactions,
     backgroundKey: d.backgroundKey,
-    hasAcceptedAnswer: d.acceptedReplyId !== null,
+    acceptedReplyId: d.acceptedReplyId,
     // Bookmarks are a feed concept; the group list neither shows nor sets them.
     isBookmarked: false,
     createdAt: d.createdAt,

@@ -23,7 +23,8 @@ public record FeedPostResponse(
     ReactionSummary reactions,
     /** Colour preset behind the post, null for an ordinary one. */
     String backgroundKey,
-    boolean hasAcceptedAnswer,
+    /** The reply the asker accepted, null while the question is open. */
+    UUID acceptedReplyId,
     boolean isBookmarked,
     Instant createdAt,
     /** Files attached to the post, so the card can preview images. */

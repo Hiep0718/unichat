@@ -254,4 +254,16 @@ public class DiscussionController {
         return ResponseEntity.ok(
                 discussionService.acceptReply(workspaceId, discussionId, replyId, userId));
     }
+
+    /** Takes back the accepted answer, returning the question to the open set. */
+    @DeleteMapping("/{discussionId}/accept-reply")
+    public ResponseEntity<DiscussionResponse> clearAcceptedReply(
+            @PathVariable UUID workspaceId,
+            @PathVariable UUID discussionId,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        UUID userId = UUID.fromString(jwt.getSubject());
+        return ResponseEntity.ok(
+                discussionService.clearAcceptedReply(workspaceId, discussionId, userId));
+    }
 }

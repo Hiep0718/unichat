@@ -317,6 +317,35 @@ public class DiscussionService {
     }
 
     /**
+     * Takes back the accepted answer, returning the question to the unanswered
+     * set.
+     *
+     * <p>Accepting used to be one-way: there was no path back, so a misclick
+     * was permanent and a better answer arriving later could not take over.
+     * A collaborative product should not have an action that cannot be undone.
+     *
+     * <p>Only the author, for the same reason they alone may accept: only the
+     * person who asked knows whether their problem is actually settled.
+     */
+    @Transactional
+    public DiscussionResponse clearAcceptedReply(UUID workspaceId, UUID discussionId, UUID userId) {
+        verifyMembership(workspaceId, userId);
+
+        Discussion discussion = requirePost(workspaceId, discussionId);
+        if (!discussion.getAuthorId().equals(userId)) {
+            throw new AuthorizationError("Chỉ tác giả mới gỡ được lời giải đã chấp nhận");
+        }
+
+        discussion.setAcceptedReplyId(null);
+        discussion.setUpdatedAt(Instant.now());
+        discussionRepository.save(discussion);
+
+        String authorName = userRepository.findById(userId)
+                .map(User::getDisplayName).orElse("Người dùng");
+        return DiscussionResponse.from(discussion, authorName, null);
+    }
+
+    /**
      * Requires an active membership. Filtering on status matters: a member whose
      * access was revoked still satisfies a plain workspace-and-user lookup.
      */
