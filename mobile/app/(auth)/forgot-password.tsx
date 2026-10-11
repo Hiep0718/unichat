@@ -9,6 +9,7 @@ import {
   Platform,
   Alert,
 } from 'react-native';
+import Animated, { FadeInUp, FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { colors, spacing } from '../../src/design/tokens';
@@ -17,6 +18,7 @@ import { UCTextInput } from '../../src/components/uc-text-input';
 import { UCButton } from '../../src/components/uc-button';
 import { UCIcon } from '../../src/components/uc-icon';
 import { UCGlassCard } from '../../src/components/uc-glass-card';
+import { UCAnimatedBackground } from '../../src/components/uc-animated-background';
 import { authApi } from '../../src/features/auth/auth-api';
 import { forgotPasswordSchema, resetPasswordSchema } from '../../src/features/auth/auth-schema';
 
@@ -95,9 +97,8 @@ export default function ForgotPasswordScreen() {
 
   return (
     <View style={styles.root}>
-      {/* Liquid Ambient Background Orbs */}
-      <View style={styles.ambientOrbCyan} />
-      <View style={styles.ambientOrbNavy} />
+      {/* Animated Ambient Background Orbs */}
+      <UCAnimatedBackground />
 
       <SafeAreaView style={styles.safeArea}>
         <KeyboardAvoidingView
@@ -110,17 +111,22 @@ export default function ForgotPasswordScreen() {
             showsVerticalScrollIndicator={false}
           >
             {/* Back Button */}
-            <TouchableOpacity
-              style={styles.backBtn}
-              onPress={() => (step === 'RESET_PASSWORD' ? setStep('REQUEST_OTP') : router.back())}
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              accessibilityLabel="Quay lại"
-            >
-              <UCIcon name="arrow-back" size={22} color={colors.primary} />
-            </TouchableOpacity>
+            <Animated.View entering={FadeInDown.delay(50).duration(280)}>
+              <TouchableOpacity
+                style={styles.backBtn}
+                onPress={() => (step === 'RESET_PASSWORD' ? setStep('REQUEST_OTP') : router.back())}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel="Quay lại"
+              >
+                <UCIcon name="arrow-back" size={22} color={colors.primary} />
+              </TouchableOpacity>
+            </Animated.View>
 
-            <View style={styles.header}>
+            <Animated.View
+              entering={FadeInDown.delay(100).springify().damping(16).stiffness(140)}
+              style={styles.header}
+            >
               <Text style={[styles.title, typography.headlineXl]}>
                 {step === 'REQUEST_OTP' ? 'Quên mật khẩu' : 'Đặt lại mật khẩu'}
               </Text>
@@ -129,84 +135,86 @@ export default function ForgotPasswordScreen() {
                   ? 'Nhập email tài khoản để nhận mã OTP xác thực'
                   : `Mã OTP đã được gửi đến ${email}`}
               </Text>
-            </View>
+            </Animated.View>
 
             {/* Liquid Glass Form Card */}
-            <UCGlassCard variant="heavy" style={styles.glassFormCard} glow>
-              {generalError ? (
-                <View style={styles.errorBox}>
-                  <UCIcon name="error-outline" size={18} color={colors.error} />
-                  <Text style={[styles.generalErrorText, typography.bodySm]}>
-                    {generalError}
-                  </Text>
-                </View>
-              ) : null}
+            <Animated.View entering={FadeInUp.delay(200).springify().damping(18).stiffness(160)}>
+              <UCGlassCard variant="heavy" style={styles.glassFormCard} glow>
+                {generalError ? (
+                  <View style={styles.errorBox}>
+                    <UCIcon name="error-outline" size={18} color={colors.error} />
+                    <Text style={[styles.generalErrorText, typography.bodySm]}>
+                      {generalError}
+                    </Text>
+                  </View>
+                ) : null}
 
-              {step === 'REQUEST_OTP' ? (
-                <>
-                  <UCTextInput
-                    label="Email đã đăng ký"
-                    placeholder="ten@truong.edu.vn"
-                    value={email}
-                    onChangeText={setEmail}
-                    error={errors.email}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    icon="mail-outline"
-                  />
+                {step === 'REQUEST_OTP' ? (
+                  <>
+                    <UCTextInput
+                      label="Email đã đăng ký"
+                      placeholder="ten@truong.edu.vn"
+                      value={email}
+                      onChangeText={setEmail}
+                      error={errors.email}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      icon="mail-outline"
+                    />
 
-                  <UCButton
-                    title="Gửi mã OTP"
-                    onPress={handleRequestOtp}
-                    loading={isLoading}
-                    size="lg"
-                    style={styles.submitBtn}
-                  />
-                </>
-              ) : (
-                <>
-                  <UCTextInput
-                    label="Mã OTP (6 chữ số)"
-                    placeholder="123456"
-                    value={otp}
-                    onChangeText={setOtp}
-                    error={errors.otp}
-                    keyboardType="number-pad"
-                    maxLength={6}
-                    icon="pin"
-                  />
+                    <UCButton
+                      title="Gửi mã OTP"
+                      onPress={handleRequestOtp}
+                      loading={isLoading}
+                      size="lg"
+                      style={styles.submitBtn}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <UCTextInput
+                      label="Mã OTP (6 chữ số)"
+                      placeholder="123456"
+                      value={otp}
+                      onChangeText={setOtp}
+                      error={errors.otp}
+                      keyboardType="number-pad"
+                      maxLength={6}
+                      icon="pin"
+                    />
 
-                  <UCTextInput
-                    label="Mật khẩu mới"
-                    placeholder="Tối thiểu 12 ký tự"
-                    value={newPassword}
-                    onChangeText={setNewPassword}
-                    error={errors.newPassword}
-                    isPassword
-                    icon="lock-outline"
-                  />
+                    <UCTextInput
+                      label="Mật khẩu mới"
+                      placeholder="Tối thiểu 12 ký tự"
+                      value={newPassword}
+                      onChangeText={setNewPassword}
+                      error={errors.newPassword}
+                      isPassword
+                      icon="lock-outline"
+                    />
 
-                  <UCTextInput
-                    label="Xác nhận mật khẩu mới"
-                    placeholder="Nhập lại mật khẩu mới"
-                    value={confirmPassword}
-                    onChangeText={setConfirmPassword}
-                    error={errors.confirmPassword}
-                    isPassword
-                    icon="lock-outline"
-                  />
+                    <UCTextInput
+                      label="Xác nhận mật khẩu mới"
+                      placeholder="Nhập lại mật khẩu mới"
+                      value={confirmPassword}
+                      onChangeText={setConfirmPassword}
+                      error={errors.confirmPassword}
+                      isPassword
+                      icon="lock-outline"
+                    />
 
-                  <UCButton
-                    title="Cập nhật mật khẩu"
-                    onPress={handleResetPassword}
-                    loading={isLoading}
-                    size="lg"
-                    style={styles.submitBtn}
-                  />
-                </>
-              )}
-            </UCGlassCard>
+                    <UCButton
+                      title="Cập nhật mật khẩu"
+                      onPress={handleResetPassword}
+                      loading={isLoading}
+                      size="lg"
+                      style={styles.submitBtn}
+                    />
+                  </>
+                )}
+              </UCGlassCard>
+            </Animated.View>
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
@@ -221,24 +229,6 @@ const styles = StyleSheet.create({
   },
   safeArea: {
     flex: 1,
-  },
-  ambientOrbCyan: {
-    position: 'absolute',
-    top: -60,
-    right: -60,
-    width: 260,
-    height: 260,
-    borderRadius: 130,
-    backgroundColor: 'rgba(87, 223, 254, 0.25)',
-  },
-  ambientOrbNavy: {
-    position: 'absolute',
-    bottom: -80,
-    left: -60,
-    width: 300,
-    height: 300,
-    borderRadius: 150,
-    backgroundColor: 'rgba(0, 35, 111, 0.12)',
   },
   keyboardView: {
     flex: 1,
@@ -264,7 +254,7 @@ const styles = StyleSheet.create({
   },
   title: {
     color: colors.primary,
-    fontWeight: '800',
+    fontFamily: 'Inter_800ExtraBold',
     letterSpacing: -0.5,
   },
   subtitle: {

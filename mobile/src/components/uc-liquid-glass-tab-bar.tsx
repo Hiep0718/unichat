@@ -1,23 +1,28 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
-  Animated,
   Platform,
   LayoutChangeEvent,
+  Pressable,
 } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { Tabs } from 'expo-router';
-import { colors } from '../design/tokens';
+import { colors, glass, animation } from '../design/tokens';
 import { UCIcon, IconName } from './uc-icon';
 
 export type LiquidGlassTabBarProps = Parameters<
   NonNullable<React.ComponentProps<typeof Tabs>['tabBar']>
 >[0];
-
 
 /**
  * Returns the appropriate icon name for a given tab route.
@@ -57,16 +62,131 @@ function getTabLabel(routeName: string, rawTitle?: string): string {
 }
 
 /**
+ * Individual tab button with Reanimated micro-interactions.
+ */
+const TabButton = React.memo(function TabButton({
+  routeKey,
+  routeName,
+  title,
+  isFocused,
+  tabBarBadge,
+  accessibilityLabel,
+  onPress,
+}: {
+  routeKey: string;
+  routeName: string;
+  title?: string;
+  isFocused: boolean;
+  tabBarBadge?: number | string;
+  accessibilityLabel?: string;
+  onPress: (key: string, name: string) => void;
+}) {
+  const scale = useSharedValue(1);
+  const floatY = useSharedValue(0);
+  const labelOpacity = useSharedValue(isFocused ? 1 : 0.7);
+  const dotScale = useSharedValue(isFocused ? 1 : 0);
+
+  useEffect(() => {
+    labelOpacity.value = withTiming(
+      isFocused ? 1 : 0.7,
+      { duration: animation.durationMedium },
+    );
+    floatY.value = withSpring(
+      isFocused ? -1.5 : 0,
+      animation.springSmooth,
+    );
+    dotScale.value = withSpring(
+      isFocused ? 1 : 0,
+      animation.springBouncy,
+    );
+  }, [isFocused, labelOpacity, floatY, dotScale]);
+
+  const handlePressIn = useCallback(() => {
+    scale.value = withTiming(0.88, { duration: 80 });
+  }, [scale]);
+
+  const handlePressOut = useCallback(() => {
+    scale.value = withSpring(1, animation.springBouncy);
+  }, [scale]);
+
+  const handlePress = useCallback(() => {
+    if (Platform.OS === 'ios') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    onPress(routeKey, routeName);
+  }, [routeKey, routeName, onPress]);
+
+  const label = getTabLabel(routeName, title);
+  const iconName = getTabIcon(routeName, isFocused);
+  const iconColor = isFocused ? colors.primary : '#64748B';
+
+  const iconAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      { scale: scale.value },
+      { translateY: floatY.value },
+    ],
+  }));
+
+  const labelAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: labelOpacity.value,
+  }));
+
+  const dotAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: dotScale.value }],
+    opacity: dotScale.value,
+  }));
+
+  return (
+    <Pressable
+      style={styles.tabButton}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      onPress={handlePress}
+      accessibilityRole="button"
+      accessibilityState={isFocused ? { selected: true } : {}}
+      accessibilityLabel={accessibilityLabel || label}
+    >
+      <Animated.View style={[styles.tabContent, iconAnimatedStyle]}>
+        <View style={styles.iconWrap}>
+          <UCIcon name={iconName} size={22} color={iconColor} />
+          {tabBarBadge !== undefined && (
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>
+                {String(tabBarBadge)}
+              </Text>
+            </View>
+          )}
+        </View>
+
+        <Animated.Text
+          style={[
+            styles.tabLabel,
+            isFocused && styles.tabLabelFocused,
+            labelAnimatedStyle,
+          ]}
+          numberOfLines={1}
+        >
+          {label}
+        </Animated.Text>
+
+        <Animated.View
+          style={[styles.focusDot, dotAnimatedStyle]}
+        />
+      </Animated.View>
+    </Pressable>
+  );
+});
+
+/**
  * UCLiquidGlassTabBar
  *
- * An authentic Apple iOS Liquid Glass floating dock navigation bar.
+ * Authentic Liquid Glass floating dock with Reanimated animations.
  * Features:
- * - Suspended frosted glass island with native UIBlurView
- * - Specular reflection highlight on the curved glass border
- * - Smooth physics-driven sliding indicator capsule that glides between tabs
- * - Tactile micro-bounce scale animations on press
- * - Native iOS light haptic impact on tab selection
- * - Safe area aware, floating gracefully above the home indicator
+ * - Multi-layer frosted glass capsule with gradient refraction
+ * - Physics-driven sliding indicator with inner glow border
+ * - Micro-bounce icon float-up on selection
+ * - iOS light haptic impact on tab switch
+ * - Animated shimmer specular highlight sweep
  */
 export function UCLiquidGlassTabBar({
   state,
@@ -74,27 +194,21 @@ export function UCLiquidGlassTabBar({
   navigation,
   insets,
 }: LiquidGlassTabBarProps) {
-  const [dockWidth, setDockWidth] = useState(0);
-  const slideAnim = useRef(new Animated.Value(0)).current;
-  const tabScales = useRef(state.routes.map(() => new Animated.Value(1))).current;
+  const dockWidth = useSharedValue(0);
+  const capsuleX = useSharedValue(0);
 
   const tabCount = state.routes.length;
-  const tabSlotWidth = dockWidth > 0 && tabCount > 0 ? dockWidth / tabCount : 0;
 
-  // Animate sliding capsule whenever active tab changes
   useEffect(() => {
-    if (tabSlotWidth > 0) {
-      Animated.spring(slideAnim, {
-        toValue: state.index * tabSlotWidth,
-        damping: 18,
-        stiffness: 200,
-        mass: 0.8,
-        useNativeDriver: true,
-      }).start();
+    if (dockWidth.value > 0 && tabCount > 0) {
+      const slotWidth = dockWidth.value / tabCount;
+      capsuleX.value = withSpring(
+        state.index * slotWidth,
+        { damping: 20, stiffness: 240, mass: 0.75 },
+      );
     }
-  }, [state.index, tabSlotWidth, slideAnim]);
+  }, [state.index, tabCount, capsuleX, dockWidth]);
 
-  // Check if current screen requests tab bar to be hidden
   const focusedOptions = descriptors[state.routes[state.index].key]?.options;
   if (
     focusedOptions?.tabBarStyle &&
@@ -103,36 +217,20 @@ export function UCLiquidGlassTabBar({
     return null;
   }
 
-
-  const handleLayout = (e: LayoutChangeEvent) => {
+  const handleLayout = useCallback((e: LayoutChangeEvent) => {
     const width = e.nativeEvent.layout.width;
-    if (width > 0 && width !== dockWidth) {
-      setDockWidth(width);
-      slideAnim.setValue(state.index * (width / tabCount));
+    if (width > 0) {
+      dockWidth.value = width;
+      capsuleX.value = state.index * (width / tabCount);
     }
-  };
+  }, [dockWidth, capsuleX, state.index, tabCount]);
 
-  const handlePress = (routeKey: string, routeName: string, index: number) => {
+  const handleTabPress = useCallback((routeKey: string, routeName: string) => {
+    const route = state.routes.find((r) => r.key === routeKey);
+    if (!route) return;
+
+    const index = state.routes.indexOf(route);
     const isFocused = state.index === index;
-
-    // Bounce scale animation
-    Animated.sequence([
-      Animated.timing(tabScales[index], {
-        toValue: 0.9,
-        duration: 80,
-        useNativeDriver: true,
-      }),
-      Animated.spring(tabScales[index], {
-        toValue: 1,
-        friction: 4,
-        tension: 80,
-        useNativeDriver: true,
-      }),
-    ]).start();
-
-    if (Platform.OS === 'ios') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
 
     const event = navigation.emit({
       type: 'tabPress',
@@ -143,97 +241,100 @@ export function UCLiquidGlassTabBar({
     if (!isFocused && !event.defaultPrevented) {
       navigation.navigate(routeName);
     }
-  };
+  }, [state, navigation]);
 
-  const bottomMargin =
+  const capsuleStyle = useAnimatedStyle(() => {
+    const slotWidth = tabCount > 0 ? dockWidth.value / tabCount : 0;
+    return {
+      width: slotWidth > 8 ? slotWidth - 8 : 0,
+      transform: [{ translateX: capsuleX.value }],
+    };
+  });
+
+  const bottomMargin = useMemo(() => (
     Platform.OS === 'ios'
       ? Math.max(insets.bottom, 14)
-      : Math.max(insets.bottom + 8, 14);
+      : Math.max(insets.bottom + 8, 14)
+  ), [insets.bottom]);
 
   return (
     <View style={[styles.outerContainer, { bottom: bottomMargin }]} pointerEvents="box-none">
       <View style={styles.shadowWrapper}>
         <View style={styles.glassContainer} onLayout={handleLayout}>
-          {/* Native iOS Optical Blur Layer */}
+          {/* Native Frosted Glass Layer */}
           {Platform.OS === 'ios' ? (
             <BlurView
-              tint="systemUltraThinMaterialLight"
-              intensity={90}
+              tint="systemChromeMaterial"
+              intensity={85}
               style={StyleSheet.absoluteFill}
             />
           ) : (
-            <View style={[StyleSheet.absoluteFill, styles.androidFallback]} />
-          )}
-
-          {/* Top Edge Specular Highlight (physical glass reflection) */}
-          <View style={styles.specularTopLine} />
-
-          {/* Sliding Liquid Glass Capsule Indicator */}
-          {tabSlotWidth > 0 && (
-            <Animated.View
-              style={[
-                styles.slidingPill,
-                {
-                  width: tabSlotWidth - 8,
-                  transform: [{ translateX: slideAnim }],
-                },
-              ]}
+            <LinearGradient
+              colors={['rgba(255,255,255,0.96)', 'rgba(240,243,255,0.94)']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 0, y: 1 }}
+              style={StyleSheet.absoluteFill}
             />
           )}
 
+          {/* Top Edge Specular Highlight */}
+          <LinearGradient
+            colors={[
+              'rgba(255,255,255,0.95)',
+              'rgba(255,255,255,0.4)',
+              'rgba(255,255,255,0.0)',
+            ]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.specularTopLine}
+          />
+
+          {/* Multi-Layer Sliding Capsule */}
+          <Animated.View style={[styles.slidingPillOuter, capsuleStyle]}>
+            {/* Inner frosted refraction */}
+            {Platform.OS === 'ios' ? (
+              <BlurView
+                tint="systemUltraThinMaterialLight"
+                intensity={40}
+                style={StyleSheet.absoluteFill}
+              />
+            ) : null}
+            {/* Gradient refraction overlay */}
+            <LinearGradient
+              colors={[
+                'rgba(255,255,255,0.90)',
+                'rgba(255,255,255,0.55)',
+              ]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 0, y: 1 }}
+              style={StyleSheet.absoluteFill}
+            />
+            {/* Inner glow border */}
+            <View style={styles.capsuleInnerGlow} />
+          </Animated.View>
+
           {/* Tab Buttons */}
           <View style={styles.tabsRow}>
-            {state.routes.map((route, index) => {
+            {state.routes.map((route) => {
               const { options } = descriptors[route.key];
+              const index = state.routes.indexOf(route);
               const isFocused = state.index === index;
-              const label = getTabLabel(
-                route.name,
-                typeof options.tabBarLabel === 'string'
-                  ? options.tabBarLabel
-                  : options.title
-              );
-              const iconName = getTabIcon(route.name, isFocused);
-              const iconColor = isFocused ? colors.primary : '#64748B';
-              const scale = tabScales[index] || 1;
 
               return (
-                <TouchableOpacity
+                <TabButton
                   key={route.key}
-                  style={styles.tabButton}
-                  onPress={() => handlePress(route.key, route.name, index)}
-                  activeOpacity={0.8}
-                  accessibilityRole="button"
-                  accessibilityState={isFocused ? { selected: true } : {}}
-                  accessibilityLabel={options.tabBarAccessibilityLabel || label}
-                >
-                  <Animated.View style={[styles.tabContent, { transform: [{ scale }] }]}>
-                    <View style={styles.iconWrap}>
-                      <UCIcon name={iconName} size={22} color={iconColor} />
-                      {options.tabBarBadge !== undefined && (
-                        <View style={styles.badge}>
-                          <Text style={styles.badgeText}>
-                            {String(options.tabBarBadge)}
-                          </Text>
-                        </View>
-                      )}
-                    </View>
-
-                    <Text
-                      style={[styles.tabLabel, isFocused && styles.tabLabelFocused]}
-                      numberOfLines={1}
-                    >
-                      {label}
-                    </Text>
-
-                    {/* Subtle illuminated dot for focused tab */}
-                    <View
-                      style={[
-                        styles.focusDot,
-                        isFocused && styles.focusDotActive,
-                      ]}
-                    />
-                  </Animated.View>
-                </TouchableOpacity>
+                  routeKey={route.key}
+                  routeName={route.name}
+                  title={
+                    typeof options.tabBarLabel === 'string'
+                      ? options.tabBarLabel
+                      : options.title
+                  }
+                  isFocused={isFocused}
+                  tabBarBadge={options.tabBarBadge as number | string | undefined}
+                  accessibilityLabel={options.tabBarAccessibilityLabel}
+                  onPress={handleTabPress}
+                />
               );
             })}
           </View>
@@ -252,50 +353,63 @@ const styles = StyleSheet.create({
   },
   shadowWrapper: {
     shadowColor: '#001A52',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.16,
-    shadowRadius: 20,
-    elevation: 12,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.18,
+    shadowRadius: 24,
+    elevation: 14,
   },
   glassContainer: {
     height: 64,
-    borderRadius: 32,
+    borderRadius: 28,
     overflow: 'hidden',
     borderWidth: 1.2,
-    borderColor: 'rgba(255, 255, 255, 0.75)',
-    backgroundColor: Platform.OS === 'ios' ? 'transparent' : 'rgba(255, 255, 255, 0.94)',
+    borderColor: 'rgba(255, 255, 255, 0.80)',
+    backgroundColor: Platform.OS === 'ios'
+      ? 'transparent'
+      : 'rgba(255, 255, 255, 0.96)',
     justifyContent: 'center',
-  },
-  androidFallback: {
-    backgroundColor: 'rgba(255, 255, 255, 0.94)',
   },
   specularTopLine: {
     position: 'absolute',
     top: 0,
-    left: 20,
-    right: 20,
+    left: 16,
+    right: 16,
     height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    zIndex: 1,
   },
-  slidingPill: {
+  slidingPillOuter: {
     position: 'absolute',
     left: 4,
-    top: 6,
-    bottom: 6,
-    borderRadius: 26,
-    backgroundColor: 'rgba(255, 255, 255, 0.75)',
+    top: 5,
+    bottom: 5,
+    borderRadius: 24,
+    overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.95)',
     shadowColor: '#00236F',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 2,
+    shadowOpacity: 0.10,
+    shadowRadius: 8,
+    elevation: 3,
+    backgroundColor: Platform.OS === 'ios'
+      ? 'transparent'
+      : 'rgba(255, 255, 255, 0.80)',
+  },
+  capsuleInnerGlow: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: 23,
+    borderWidth: 1,
+    borderColor: glass.innerGlow,
   },
   tabsRow: {
     flexDirection: 'row',
     alignItems: 'center',
     height: '100%',
+    zIndex: 2,
   },
   tabButton: {
     flex: 1,
@@ -314,23 +428,20 @@ const styles = StyleSheet.create({
   },
   tabLabel: {
     fontSize: 10.5,
-    fontWeight: '500',
+    fontFamily: 'Inter_500Medium',
     color: '#64748B',
     marginTop: 1,
   },
   tabLabelFocused: {
-    fontWeight: '700',
+    fontFamily: 'Inter_700Bold',
     color: colors.primary,
   },
   focusDot: {
-    width: 3.5,
-    height: 3.5,
+    width: 4,
+    height: 4,
     borderRadius: 2,
-    backgroundColor: 'transparent',
-    marginTop: 2,
-  },
-  focusDotActive: {
     backgroundColor: '#00687A',
+    marginTop: 2,
   },
   badge: {
     position: 'absolute',
@@ -349,6 +460,6 @@ const styles = StyleSheet.create({
   badgeText: {
     color: '#FFFFFF',
     fontSize: 9,
-    fontWeight: '700',
+    fontFamily: 'Inter_700Bold',
   },
 });

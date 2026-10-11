@@ -13,7 +13,6 @@ export const loginSchema = z.object({
   password: z
     .string()
     .min(1, 'Mật khẩu không được để trống')
-    .min(12, 'Mật khẩu phải từ 12 ký tự trở lên')
     .max(128, 'Mật khẩu tối đa 128 ký tự'),
 });
 
@@ -52,7 +51,7 @@ export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 export const resetPasswordSchema = z
   .object({
     email: z.string().email(),
-    otp: z.string().length(6, 'Mã OTP gồm 6 chữ số'),
+    otp: z.string().regex(/^[0-9]{6}$/, 'Mã OTP gồm đúng 6 chữ số'),
     newPassword: z
       .string()
       .min(12, 'Mật khẩu phải từ 12 ký tự trở lên')

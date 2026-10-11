@@ -1,8 +1,3 @@
-jest.mock('react-test-renderer/package.json', () => ({
-  version: '19.2.3',
-}));
-
-
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import { UCLiquidGlassTabBar, LiquidGlassTabBarProps } from '../../src/components/uc-liquid-glass-tab-bar';

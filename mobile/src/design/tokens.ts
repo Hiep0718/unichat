@@ -78,6 +78,7 @@ export const glass = {
   surface: 'rgba(255, 255, 255, 0.78)',
   surfaceHeavy: 'rgba(255, 255, 255, 0.88)',
   surfaceLight: 'rgba(255, 255, 255, 0.55)',
+  surfaceUltraLight: 'rgba(255, 255, 255, 0.35)',
   surfaceNavy: 'rgba(0, 35, 111, 0.92)',
   surfaceTeal: 'rgba(0, 104, 122, 0.88)',
   border: 'rgba(255, 255, 255, 0.85)',
@@ -85,12 +86,37 @@ export const glass = {
   borderAccent: 'rgba(144, 168, 255, 0.35)',
   borderNavy: 'rgba(182, 196, 255, 0.28)',
   highlight: 'rgba(255, 255, 255, 0.95)',
+  highlightShimmer: 'rgba(255, 255, 255, 0.6)',
+  innerGlow: 'rgba(87, 223, 254, 0.12)',
+  refractionStart: 'rgba(255, 255, 255, 0.4)',
+  refractionEnd: 'rgba(255, 255, 255, 0.0)',
   ambientNavy: '#00236F',
   ambientTeal: '#00687A',
   ambientCyan: '#57DFFE',
+  ambientViolet: 'rgba(144, 168, 255, 0.25)',
+} as const;
+
+/**
+ * Centralized animation configuration for liquid glass motion.
+ * Spring configs tuned for native-feel physics on iOS/Android.
+ */
+export const animation = {
+  /** Smooth settling — cards, capsules, layout shifts */
+  springSmooth: { damping: 22, stiffness: 180, mass: 0.9 },
+  /** Bouncy tactile — buttons, tab icons, micro-interactions */
+  springBouncy: { damping: 14, stiffness: 200, mass: 0.7 },
+  /** Snappy precise — sliding indicators, focus transitions */
+  springSnappy: { damping: 28, stiffness: 350, mass: 0.6 },
+  /** Durations in ms */
+  durationFast: 150,
+  durationMedium: 280,
+  durationSlow: 450,
+  /** Stagger delay per item for list entrance animations */
+  staggerDelay: 60,
 } as const;
 
 export type ColorToken = keyof typeof colors;
 export type SpacingToken = keyof typeof spacing;
 export type RadiiToken = keyof typeof radii;
 export type GlassToken = keyof typeof glass;
+export type AnimationToken = keyof typeof animation;

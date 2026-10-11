@@ -26,7 +26,7 @@ export interface ResetPasswordRequest {
 
 export interface MobileLoginResponse {
   accessToken: string;
-  refreshToken: string;
+  refreshToken?: string;
   tokenType: string;
   expiresIn: number;
 }
@@ -34,9 +34,13 @@ export interface MobileLoginResponse {
 export interface UserResponse {
   id: string;
   email: string;
-  role: 'USER' | 'ADMIN';
-  status: 'ACTIVE' | 'LOCKED' | 'PENDING';
-  createdAt: string;
+  displayName?: string;
+  hasAvatar?: boolean;
+  avatarColor?: string | null;
+  role?: 'USER' | 'ADMIN';
+  systemRole?: 'USER' | 'ADMIN';
+  status?: 'ACTIVE' | 'LOCKED' | 'PENDING';
+  createdAt?: string;
 }
 
 // Workspace DTOs
@@ -63,76 +67,8 @@ export interface DocumentItem {
   errorMessage?: string | null;
 }
 
-// Chat & Citation DTOs
-export interface CitationItem {
-  citationId?: string;
-  documentId: string;
-  fileName?: string;
-  locator: string;
-  excerpt: string;
-  score: number;
-}
-
-export interface QuestionResponse {
-  messageId: string;
-  conversationId: string;
-  decision: 'ANSWER' | 'CLARIFY' | 'REFUSE';
-  answer: string | null;
-  intent: string;
-  strategyVersion: string;
-  citations: CitationItem[];
-  refusalCode: string | null;
-  refusalReason?: string | null;
-  providerModel?: string | null;
-  evidenceScore?: number | null;
-  singleSourceWarning?: boolean;
-  warningMessage?: string | null;
-  requestId: string;
-}
-
-export interface AskQuestionPayload {
-  question: string;
-  conversationId?: string;
-  allowExternalKnowledge?: boolean;
-}
-
-// SSE Streaming Payloads
-export interface SseMetadataPayload {
-  conversationId?: string;
-  decision?: 'ANSWER' | 'CLARIFY' | 'REFUSE';
-  intent?: string;
-  strategyVersion?: string;
-  citations?: CitationItem[];
-  refusalCode?: string | null;
-  refusalReason?: string | null;
-  providerModel?: string;
-  evidenceScore?: number | null;
-  singleSourceWarning?: boolean;
-  warningMessage?: string | null;
-  requestId?: string;
-}
-
-export interface SseThoughtPayload {
-  stepIndex: number;
-  stepKey: string;
-  title: string;
-  detail: string;
-}
-
-export interface SseDonePayload {
-  messageId: string;
-  conversationId?: string;
-  refusalCode?: string | null;
-  providerModel?: string;
-}
-
-export interface StreamQuestionCallbacks {
-  onMetadata?: (metadata: SseMetadataPayload) => void;
-  onThought?: (thought: SseThoughtPayload) => void;
-  onToken?: (delta: string) => void;
-  onDone?: (done: SseDonePayload) => void;
-  onError?: (error: Error) => void;
-}
+export type { CitationItem, QuestionResponse, AskQuestionPayload, SseMetadataPayload, SseThoughtPayload, SseDonePayload, StreamQuestionCallbacks, AnswerSection, ChatOperation } from '../features/chat/chat-types';
+import type { CitationItem, AnswerSection } from '../features/chat/chat-types';
 
 // Conversation History DTOs
 export interface ConversationItem {
@@ -146,9 +82,15 @@ export interface ConversationItem {
 export interface MessageItem {
   id: string;
   conversationId: string;
+  operationId?: string | null;
   sender: 'USER' | 'ASSISTANT';
   content: string;
   citations?: CitationItem[];
+  sequence?: number;
+  redacted?: boolean;
+  knowledgeMode?: 'STRICT' | 'EXPANDED';
+  sections?: AnswerSection[];
+  provisional?: boolean;
   intent?: string | null;
   refusalCode?: string | null;
   createdAt: string;

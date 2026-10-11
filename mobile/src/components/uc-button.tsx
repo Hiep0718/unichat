@@ -1,14 +1,18 @@
+import { useCallback } from 'react';
 import {
-  TouchableOpacity,
   Text,
   ActivityIndicator,
   StyleSheet,
   ViewStyle,
-  TextStyle,
+  Platform,
+  Pressable,
 } from 'react-native';
+import Animated, { useAnimatedStyle } from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
 import { glass, colors, radii, spacing } from '../design/tokens';
 import { shadows } from '../design/shadows';
 import { typography } from '../design/typography';
+import { useMicroBounce } from '../design/animations';
 import { UCIcon, IconName } from './uc-icon';
 
 type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'glass';
@@ -23,8 +27,13 @@ interface UCButtonProps {
   disabled?: boolean;
   icon?: IconName;
   style?: ViewStyle;
+  testID?: string;
 }
 
+/**
+ * Tactile button with Reanimated micro-bounce press animation.
+ * Primary and danger variants trigger light haptic feedback on iOS.
+ */
 export function UCButton({
   title,
   onPress,
@@ -34,8 +43,30 @@ export function UCButton({
   disabled = false,
   icon,
   style,
+  testID,
 }: UCButtonProps) {
   const isInteractive = !disabled && !loading;
+  const { scale, pressIn, pressOut } = useMicroBounce(0.96);
+
+  const animatedScale = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const handlePressIn = useCallback(() => {
+    if (isInteractive) pressIn();
+  }, [isInteractive, pressIn]);
+
+  const handlePressOut = useCallback(() => {
+    if (isInteractive) pressOut();
+  }, [isInteractive, pressOut]);
+
+  const handlePress = useCallback(() => {
+    if (!isInteractive) return;
+    if (Platform.OS === 'ios' && (variant === 'primary' || variant === 'danger')) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    onPress();
+  }, [isInteractive, variant, onPress]);
 
   const buttonStyles: ViewStyle[] = [
     styles.base,
@@ -48,30 +79,33 @@ export function UCButton({
   const textColor = getTextColor(variant, disabled);
 
   return (
-    <TouchableOpacity
-      activeOpacity={0.82}
-      style={buttonStyles}
-      onPress={onPress}
+    <Pressable
+      testID={testID}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      onPress={handlePress}
       disabled={!isInteractive}
     >
-      {loading ? (
-        <ActivityIndicator size="small" color={textColor} />
-      ) : (
-        <>
-          {icon ? (
-            <UCIcon
-              name={icon}
-              size={size === 'sm' ? 16 : 20}
-              color={textColor}
-              style={styles.icon}
-            />
-          ) : null}
-          <Text style={[styles.text, typography.labelMd, { color: textColor }]}>
-            {title}
-          </Text>
-        </>
-      )}
-    </TouchableOpacity>
+      <Animated.View style={[buttonStyles, animatedScale]}>
+        {loading ? (
+          <ActivityIndicator size="small" color={textColor} />
+        ) : (
+          <>
+            {icon ? (
+              <UCIcon
+                name={icon}
+                size={size === 'sm' ? 16 : 20}
+                color={textColor}
+                style={styles.icon}
+              />
+            ) : null}
+            <Text style={[styles.text, typography.labelMd, { color: textColor }]}>
+              {title}
+            </Text>
+          </>
+        )}
+      </Animated.View>
+    </Pressable>
   );
 }
 
