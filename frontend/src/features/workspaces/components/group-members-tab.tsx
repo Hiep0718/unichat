@@ -9,9 +9,15 @@ import { useWorkspace } from '../workspace-context';
 
 export function GroupMembersTab() {
   const { workspaceId = '' } = useParams<{ workspaceId: string }>();
-  const { isOwner } = useWorkspace();
+  const { isOwner, workspace } = useWorkspace();
 
-  return <MemberTable workspaceId={workspaceId} isOwner={isOwner} />;
+  return (
+    <MemberTable
+      workspaceId={workspaceId}
+      isOwner={isOwner}
+      visibility={workspace?.visibility}
+    />
+  );
 }
 
 export default GroupMembersTab;

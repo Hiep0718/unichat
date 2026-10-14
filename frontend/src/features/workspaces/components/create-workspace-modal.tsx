@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { createWorkspaceSchema, CreateWorkspaceFormValues } from '../workspace-schema';
 import type { WorkspaceDto } from '../workspace-schema';
 import { createWorkspace, CreateWorkspacePayload } from '../workspace-api';
+import { VISIBILITY_OPTIONS } from '../workspace-visibility';
 import './create-workspace-modal.css';
 
 interface CreateWorkspaceModalProps {
@@ -107,9 +108,11 @@ export function CreateWorkspaceModal({ isOpen, onClose, onSuccess }: CreateWorks
                 Quyền truy cập <span style={{ color: '#e11d48' }}>*</span>
               </label>
               <select id="visibility" className="form-select" {...register('visibility')}>
-                <option value="PRIVATE">Riêng tư (Chỉ mình tôi)</option>
-                <option value="SHARED">Được chia sẻ (Thành viên được mời)</option>
-                <option value="PUBLIC">Công khai (Tất cả người dùng đã đăng nhập)</option>
+                {VISIBILITY_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label} — {opt.description}
+                  </option>
+                ))}
               </select>
               {errors.visibility && <p className="form-error">{errors.visibility.message}</p>}
             </div>

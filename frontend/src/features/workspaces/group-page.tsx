@@ -14,8 +14,8 @@ import { GroupMark } from './components/group-mark';
 import { useWorkspace } from './workspace-context';
 import { useWorkspace as useWorkspaceQuery } from './workspace-hooks';
 import { CoverBanner } from './components/cover-banner';
+import { visibilityOption } from './workspace-visibility';
 
-import type { WorkspaceVisibility } from './workspace-context';
 import './group-page.css';
 
 /** Tabs rendered inside the group page, in reading order. */
@@ -25,18 +25,6 @@ const TABS: readonly { path: string; label: string; icon: string }[] = [
   { path: 'members', label: 'Thành viên', icon: 'group' },
   { path: 'about', label: 'Giới thiệu', icon: 'info' },
 ];
-
-const VISIBILITY_LABEL: Record<WorkspaceVisibility, string> = {
-  PUBLIC: 'Nhóm công khai',
-  SHARED: 'Nhóm được chia sẻ',
-  PRIVATE: 'Nhóm riêng tư',
-};
-
-const VISIBILITY_ICON: Record<WorkspaceVisibility, string> = {
-  PUBLIC: 'public',
-  SHARED: 'group',
-  PRIVATE: 'lock',
-};
 
 export function GroupPage() {
   const { workspaceId = '' } = useParams<{ workspaceId: string }>();
@@ -66,8 +54,8 @@ export function GroupPage() {
           <div className="group-page__titles">
             <h1 className="group-page__name">{workspace.name}</h1>
             <p className="group-page__sub">
-              <Icon name={VISIBILITY_ICON[workspace.visibility]} size={15} />
-              {VISIBILITY_LABEL[workspace.visibility]}
+              <Icon name={visibilityOption(workspace.visibility).icon} size={15} />
+              {visibilityOption(workspace.visibility).groupLabel}
               {details && (
                 <>
                   <span className="group-page__dot">·</span>

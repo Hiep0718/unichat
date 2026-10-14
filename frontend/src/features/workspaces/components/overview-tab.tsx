@@ -5,15 +5,11 @@
 
 import { Icon } from '../../../components/icon';
 
+import { visibilityOption } from '../workspace-visibility';
+
 import type { WorkspaceDto } from '../workspace-schema';
 
 import './overview-tab.css';
-
-const VISIBILITY_LABELS: Record<string, string> = {
-  PRIVATE: 'Riêng tư',
-  SHARED: 'Chia sẻ',
-  PUBLIC: 'Công khai',
-};
 
 interface OverviewTabProps {
   readonly workspace: WorkspaceDto | undefined;
@@ -98,7 +94,7 @@ export function OverviewTab({ workspace, isLoading }: OverviewTabProps) {
             <span className="overview-tab__info-label">Chế độ hiển thị</span>
             <span className="overview-tab__info-value">
               <span className={`overview-tab__visibility overview-tab__visibility--${visibilityClass}`}>
-                {VISIBILITY_LABELS[workspace.visibility] ?? workspace.visibility}
+                {visibilityOption(workspace.visibility).label}
               </span>
             </span>
           </div>

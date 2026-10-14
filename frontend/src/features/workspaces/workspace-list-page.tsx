@@ -13,6 +13,7 @@ import { WorkspaceForm } from './components/workspace-form';
 import { SkeletonCard } from './components/skeleton-card';
 import { ExploreTab } from './components/explore-tab';
 import { useWorkspaces } from './workspace-hooks';
+import { VISIBILITY_OPTIONS } from './workspace-visibility';
 
 import type { WorkspaceVisibility } from './workspace-schema';
 
@@ -24,9 +25,7 @@ type ViewMode = 'GRID' | 'LIST';
 
 const FILTER_OPTIONS: readonly { value: FilterOption; label: string }[] = [
   { value: 'ALL', label: 'Tất cả' },
-  { value: 'PRIVATE', label: 'Riêng tư' },
-  { value: 'SHARED', label: 'Được chia sẻ' },
-  { value: 'PUBLIC', label: 'Công khai' },
+  ...VISIBILITY_OPTIONS.map((option) => ({ value: option.value, label: option.label })),
 ];
 
 /** Number of skeleton cards to show during loading. */

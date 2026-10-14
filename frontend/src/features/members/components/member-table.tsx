@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import {
   WorkspaceMemberResponse,
   WorkspaceRole,
@@ -8,14 +9,22 @@ import {
   removeWorkspaceMember,
 } from '../member-api';
 import { addMemberSchema } from '../member-schema';
+import { allowsMembers } from '../../workspaces/workspace-visibility';
+import type { WorkspaceVisibility } from '../../workspaces/workspace-schema';
 import './member-table.css';
 
 interface MemberTableProps {
   workspaceId: string;
   isOwner: boolean;
+  /**
+   * Decides whether this workspace may hold members at all. Optional so the
+   * table still renders where the level is not to hand; the Core API refuses
+   * the request either way, and this only spares the owner the round trip.
+   */
+  visibility?: WorkspaceVisibility | undefined;
 }
 
-export const MemberTable: React.FC<MemberTableProps> = ({ workspaceId, isOwner }) => {
+export const MemberTable: React.FC<MemberTableProps> = ({ workspaceId, isOwner, visibility }) => {
   const [members, setMembers] = useState<WorkspaceMemberResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -57,6 +66,10 @@ export const MemberTable: React.FC<MemberTableProps> = ({ workspaceId, isOwner }
       isMounted = false;
     };
   }, [workspaceId]);
+
+  // A PRIVATE workspace holds nobody but its owner, so the invite button is
+  // replaced with the way out rather than left to fail on submit.
+  const canInvite = visibility === undefined || allowsMembers(visibility);
 
   const handleAddMember = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,12 +117,23 @@ export const MemberTable: React.FC<MemberTableProps> = ({ workspaceId, isOwner }
     <div className="member-management">
       <div className="member-management__header">
         <h3 className="member-management__title">Thành viên Workspace ({members.length})</h3>
-        {isOwner && (
+        {isOwner && canInvite && (
           <button className="member-management__add-btn" onClick={() => setIsModalOpen(true)}>
             + Thêm thành viên
           </button>
         )}
       </div>
+
+      {isOwner && !canInvite && (
+        <p className="member-management__private-notice">
+          Workspace đang ở chế độ <strong>Riêng tư</strong> nên chỉ mình bạn truy cập được.
+          Hãy{' '}
+          <Link to={`/workspaces/${workspaceId}/settings`}>
+            chuyển sang chế độ Chia sẻ
+          </Link>{' '}
+          để mời thành viên.
+        </p>
+      )}
 
       <div className="member-table-container">
         <table className="member-table">

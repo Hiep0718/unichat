@@ -5,6 +5,7 @@ import { useWorkspace } from '../workspaces/workspace-context';
 import { updateWorkspace, deleteWorkspace } from '../workspaces/workspace-api';
 import { MemberTable } from '../members/components/member-table';
 import { Icon } from '../../components/icon';
+import { VISIBILITY_OPTIONS } from '../workspaces/workspace-visibility';
 
 type SettingsTab = 'general' | 'access' | 'privacy' | 'danger';
 
@@ -226,9 +227,11 @@ export function WorkspaceSettingsPage() {
                 disabled={savingVisibility}
                 style={{ width: '100%', padding: '0.625rem', border: '1px solid #cbd5e1', borderRadius: '0.375rem' }}
               >
-                <option value="PRIVATE">PRIVATE — Chỉ duy nhất Owner truy cập</option>
-                <option value="SHARED">SHARED — Owner chỉ định danh sách người dùng được truy cập</option>
-                <option value="PUBLIC">PUBLIC — Tất cả người dùng đã đăng nhập đều có quyền Đọc & Hỏi</option>
+                {VISIBILITY_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label} — {opt.description}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -243,7 +246,7 @@ export function WorkspaceSettingsPage() {
 
           <div style={{ background: '#ffffff', padding: '1.5rem', borderRadius: '0.5rem', border: '1px solid #e2e8f0' }}>
             <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: '#0f172a', marginBottom: '1rem' }}>Danh sách Thành viên</h3>
-            <MemberTable workspaceId={workspace.id} isOwner={isOwner} />
+            <MemberTable workspaceId={workspace.id} isOwner={isOwner} visibility={workspace.visibility} />
           </div>
         </div>
       )}

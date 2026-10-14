@@ -18,6 +18,7 @@
 import { Link } from 'react-router-dom';
 
 import { MemberFaces } from './member-faces';
+import { visibilityOption } from '../workspace-visibility';
 import { WorkspaceCover } from './workspace-cover';
 import { Icon } from '../../../components/icon';
 import { formatRelativeTime } from '../../../lib/format-time';
@@ -40,12 +41,6 @@ interface WorkspaceCardProps {
   readonly animationIndex?: number;
 }
 
-const BADGE_CONFIG: Record<WorkspaceVisibility, { icon: string; label: string }> = {
-  PUBLIC: { icon: 'public', label: 'Công khai' },
-  PRIVATE: { icon: 'lock', label: 'Riêng tư' },
-  SHARED: { icon: 'group_add', label: 'Được chia sẻ' },
-};
-
 /**
  * Renders a single workspace card: picture behind, identity and activity over.
  */
@@ -61,7 +56,7 @@ export function WorkspaceCard({
   updatedAt,
   animationIndex = 0,
 }: WorkspaceCardProps) {
-  const badge = BADGE_CONFIG[visibility];
+  const badge = visibilityOption(visibility);
 
   return (
     <Link

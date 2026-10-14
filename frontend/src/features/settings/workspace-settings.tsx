@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { Icon } from '../../components/icon';
 import { useDeleteWorkspace, useUpdateWorkspace } from '../workspaces/workspace-hooks';
+import { VISIBILITY_OPTIONS } from '../workspaces/workspace-visibility';
 
 import type { WorkspaceDto, WorkspaceVisibility } from '../workspaces/workspace-schema';
 
@@ -123,16 +124,6 @@ function GeneralForm({
 
 /* ─── Access Form ────────────────────────────────────────── */
 
-const VISIBILITY_OPTIONS: {
-  value: WorkspaceVisibility;
-  title: string;
-  description: string;
-}[] = [
-  { value: 'PRIVATE', title: 'Riêng tư', description: 'Chỉ thành viên được mời mới truy cập được' },
-  { value: 'SHARED', title: 'Chia sẻ', description: 'Thành viên được mời có thể truy cập qua link' },
-  { value: 'PUBLIC', title: 'Công khai', description: 'Bất kỳ ai đăng nhập đều có thể xem' },
-];
-
 function AccessForm({
   workspace,
   workspaceId,
@@ -187,7 +178,7 @@ function AccessForm({
                 onChange={() => setVisibility(opt.value)}
               />
               <div className="settings-form__radio-info">
-                <span className="settings-form__radio-title">{opt.title}</span>
+                <span className="settings-form__radio-title">{opt.label}</span>
                 <span className="settings-form__radio-desc">{opt.description}</span>
               </div>
             </label>

@@ -172,3 +172,23 @@
   font: var(--font-label-md);
   cursor: pointer;
 }
+
+/* Shown instead of the invite button when the workspace is PRIVATE: the level
+   has to change before anyone can be added, so the notice carries that route
+   rather than letting the owner discover it from a rejected form. */
+.member-management__private-notice {
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-outline-variant, #cbd5e1);
+  border-left: 3px solid var(--color-primary, #00236f);
+  border-radius: var(--radius-md, 0.5rem);
+  background: var(--color-surface-variant, #f1f5f9);
+  color: var(--color-on-surface, #0f172a);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.member-management__private-notice a {
+  color: var(--color-primary, #00236f);
+  font-weight: 600;
+}
