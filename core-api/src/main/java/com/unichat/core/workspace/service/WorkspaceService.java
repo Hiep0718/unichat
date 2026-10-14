@@ -143,6 +143,8 @@ public class WorkspaceService {
             if (!WorkspaceRole.OWNER.equals(member.getRole())) {
                 throw new AuthorizationError("Chỉ chủ sở hữu mới có quyền đổi chế độ hiển thị");
             }
+            WorkspaceVisibilityPolicy.requireCanChangeTo(
+                    request.visibility(), activeMemberCountOf(workspaceId));
             workspace.setVisibility(request.visibility());
             workspace.incrementPermissionVersion();
         }
@@ -228,6 +230,44 @@ public class WorkspaceService {
         workspaceRepository.save(workspace);
 
         return toResponse(workspace, WorkspaceRole.VIEWER);
+    }
+
+    /**
+     * Changes a workspace's visibility on an administrator's authority.
+     *
+     * <p>Separate from {@link #updateWorkspace} because an administrator is
+     * moderating someone else's workspace: they hold no membership in it and
+     * carry no {@code expectedVersion} from a form they never opened. The
+     * authority itself is checked by the admin controller's own guard.
+     *
+     * <p>What it does not skip is {@link WorkspaceVisibilityPolicy}. Writing to
+     * the repository directly was how this path used to drop a populated
+     * workspace to PRIVATE, leaving its members in a workspace labelled as
+     * holding nobody.
+     *
+     * @param workspaceId the workspace being moderated
+     * @param visibility  the level to apply
+     * @return the workspace as it now stands
+     * @throws NotFoundError if no such workspace exists
+     */
+    @Transactional
+    public WorkspaceResponse setVisibilityAsAdmin(UUID workspaceId, WorkspaceVisibility visibility) {
+        Workspace workspace = workspaceRepository.findById(workspaceId)
+                .orElseThrow(() -> new NotFoundError("Workspace không tồn tại"));
+
+        WorkspaceVisibilityPolicy.requireCanChangeTo(visibility, activeMemberCountOf(workspaceId));
+        workspace.setVisibility(visibility);
+        workspace.incrementPermissionVersion();
+        workspace.setUpdatedAt(Instant.now(clock));
+        workspaceRepository.save(workspace);
+
+        return toResponse(workspace, roleOf(workspace, workspace.getOwnerId()));
+    }
+
+    /** Members still holding access, the owner included. */
+    private long activeMemberCountOf(UUID workspaceId) {
+        return workspaceMemberRepository
+                .countByWorkspaceIdAndStatus(workspaceId, WorkspaceMemberStatus.ACTIVE);
     }
 
     private WorkspaceMember checkAccess(UUID userId, UUID workspaceId) {

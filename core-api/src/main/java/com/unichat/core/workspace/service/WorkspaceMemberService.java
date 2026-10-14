@@ -63,10 +63,14 @@ public class WorkspaceMemberService {
 
     /**
      * Adds a new member to a workspace by email.
+     *
+     * @throws com.unichat.core.common.error.ValidationError when the workspace
+     *         is PRIVATE, which by definition holds nobody but its owner
      */
     @Transactional
     public WorkspaceMemberResponse addMember(UUID currentUserId, UUID workspaceId, AddWorkspaceMemberRequest request) {
         Workspace workspace = validateOwnerAccess(currentUserId, workspaceId);
+        WorkspaceVisibilityPolicy.requireCanAddMember(workspace.getVisibility());
 
         User targetUser = userRepository.findByEmailIgnoreCase(request.email())
                 .orElseThrow(() -> new NotFoundError("Không tìm thấy người dùng với email này"));

@@ -123,6 +123,82 @@ class WorkspaceServiceTest {
     }
 
     @Test
+    void shouldRefuseDroppingToPrivateWhileOtherMembersRemain() {
+        var ownerId = UUID.randomUUID();
+        var workspaceId = UUID.randomUUID();
+        var workspace = givenOwnedWorkspace(workspaceId, ownerId, WorkspaceVisibility.SHARED);
+        givenActiveMembers(workspaceId, 3);
+
+        var request = new UpdateWorkspaceRequest(
+                null, null, WorkspaceVisibility.PRIVATE, null, workspace.getVersion());
+
+        assertThrows(ConflictError.class,
+                () -> workspaceService.updateWorkspace(ownerId, workspaceId, request));
+        assertEquals(WorkspaceVisibility.SHARED, workspace.getVisibility());
+    }
+
+    @Test
+    void shouldAllowDroppingToPrivateOnceTheOwnerIsAlone() {
+        var ownerId = UUID.randomUUID();
+        var workspaceId = UUID.randomUUID();
+        var workspace = givenOwnedWorkspace(workspaceId, ownerId, WorkspaceVisibility.SHARED);
+        givenActiveMembers(workspaceId, 1);
+
+        var request = new UpdateWorkspaceRequest(
+                null, null, WorkspaceVisibility.PRIVATE, null, workspace.getVersion());
+
+        var response = workspaceService.updateWorkspace(ownerId, workspaceId, request);
+
+        assertEquals(WorkspaceVisibility.PRIVATE, response.visibility());
+    }
+
+    @Test
+    void shouldApplyTheSameRuleWhenAnAdministratorChangesVisibility() {
+        var ownerId = UUID.randomUUID();
+        var workspaceId = UUID.randomUUID();
+        var workspace = givenOwnedWorkspace(workspaceId, ownerId, WorkspaceVisibility.PUBLIC);
+        givenActiveMembers(workspaceId, 4);
+
+        assertThrows(ConflictError.class,
+                () -> workspaceService.setVisibilityAsAdmin(workspaceId, WorkspaceVisibility.PRIVATE));
+        assertEquals(WorkspaceVisibility.PUBLIC, workspace.getVisibility());
+    }
+
+    @Test
+    void shouldLetAnAdministratorPublishAWorkspaceTheyAreNotAMemberOf() {
+        var ownerId = UUID.randomUUID();
+        var workspaceId = UUID.randomUUID();
+        var workspace = givenOwnedWorkspace(workspaceId, ownerId, WorkspaceVisibility.SHARED);
+        givenActiveMembers(workspaceId, 4);
+
+        var response = workspaceService.setVisibilityAsAdmin(workspaceId, WorkspaceVisibility.PUBLIC);
+
+        assertEquals(WorkspaceVisibility.PUBLIC, response.visibility());
+        assertEquals(1L, workspace.getPermissionVersion());
+        verify(workspaceRepository).save(workspace);
+    }
+
+    /** A workspace whose owner is an ACTIVE member, as every workspace has. */
+    private Workspace givenOwnedWorkspace(UUID workspaceId, UUID ownerId, WorkspaceVisibility visibility) {
+        var workspace = new Workspace(
+                workspaceId, ownerId, "Test Workspace", "", visibility, false, Instant.now(clock));
+        var owner = new WorkspaceMember(
+                workspaceId, ownerId, WorkspaceRole.OWNER, WorkspaceMemberStatus.ACTIVE, ownerId);
+
+        when(workspaceRepository.findById(workspaceId)).thenReturn(Optional.of(workspace));
+        when(workspaceMemberRepository
+                .findByWorkspaceIdAndUserIdAndStatus(workspaceId, ownerId, WorkspaceMemberStatus.ACTIVE))
+                .thenReturn(Optional.of(owner));
+        return workspace;
+    }
+
+    private void givenActiveMembers(UUID workspaceId, long count) {
+        when(workspaceMemberRepository
+                .countByWorkspaceIdAndStatus(workspaceId, WorkspaceMemberStatus.ACTIVE))
+                .thenReturn(count);
+    }
+
+    @Test
     void shouldThrowAuthorizationErrorWhenNonOwnerDeletes() {
         // Arrange
         var userId = UUID.randomUUID();

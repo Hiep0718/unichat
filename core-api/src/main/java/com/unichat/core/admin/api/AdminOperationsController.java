@@ -24,9 +24,12 @@ import com.unichat.core.common.error.NotFoundError;
 import com.unichat.core.document.domain.Document;
 import com.unichat.core.document.domain.DocumentRepository;
 import com.unichat.core.document.domain.DocumentStatus;
+import com.unichat.core.workspace.api.WorkspaceResponse;
 import com.unichat.core.workspace.domain.Workspace;
 import com.unichat.core.workspace.domain.WorkspaceRepository;
 import com.unichat.core.workspace.domain.WorkspaceVisibility;
+import com.unichat.core.workspace.service.WorkspaceService;
+import com.unichat.core.workspace.service.WorkspaceVisibilityPolicy;
 
 /**
  * Controller for extended Admin Operations: Workspace moderation, Document ingestion retry, and Audit events.
@@ -38,12 +41,15 @@ public class AdminOperationsController {
 
     private final WorkspaceRepository workspaceRepository;
     private final DocumentRepository documentRepository;
+    private final WorkspaceService workspaceService;
 
     public AdminOperationsController(
             WorkspaceRepository workspaceRepository,
-            DocumentRepository documentRepository) {
+            DocumentRepository documentRepository,
+            WorkspaceService workspaceService) {
         this.workspaceRepository = workspaceRepository;
         this.documentRepository = documentRepository;
+        this.workspaceService = workspaceService;
     }
 
     /**
@@ -72,26 +78,24 @@ public class AdminOperationsController {
     }
 
     /**
-     * Toggles workspace visibility (PUBLIC <-> PRIVATE).
+     * Changes a workspace's visibility (PRIVATE, SHARED or PUBLIC).
+     *
+     * <p>Goes through {@link WorkspaceService} rather than writing to the
+     * repository, so moderating a workspace obeys the same rules an owner does:
+     * notably that a workspace holding other people cannot be dropped to
+     * PRIVATE. An unknown level is answered with a 400 naming what is accepted.
      */
     @PatchMapping("/workspaces/{id}/visibility")
-    @Transactional
     public ResponseEntity<Map<String, Object>> toggleWorkspaceVisibility(
             @PathVariable("id") UUID id,
             @RequestBody Map<String, String> body) {
-        Workspace workspace = workspaceRepository.findById(id)
-                .orElseThrow(() -> new NotFoundError("Không gian làm việc không tồn tại"));
-
-        String nextVisibility = body.get("visibility");
-        if (nextVisibility != null && !nextVisibility.isBlank()) {
-            workspace.setVisibility(WorkspaceVisibility.valueOf(nextVisibility.toUpperCase()));
-            workspaceRepository.save(workspace);
-        }
+        WorkspaceVisibility next = WorkspaceVisibilityPolicy.parse(body.get("visibility"));
+        WorkspaceResponse workspace = workspaceService.setVisibilityAsAdmin(id, next);
 
         return ResponseEntity.ok(Map.of(
-                "id", workspace.getId(),
-                "name", workspace.getName(),
-                "visibility", workspace.getVisibility().name()));
+                "id", workspace.id(),
+                "name", workspace.name(),
+                "visibility", workspace.visibility().name()));
     }
 
     /**
