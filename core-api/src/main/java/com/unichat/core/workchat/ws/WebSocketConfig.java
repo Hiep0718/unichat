@@ -1,12 +1,13 @@
 package com.unichat.core.workchat.ws;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+
+import com.unichat.core.shared.config.AllowedOrigins;
 
 /**
  * STOMP over WebSocket for Work Chat.
@@ -21,19 +22,24 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private final StompAuthChannelInterceptor authInterceptor;
+    private final AllowedOrigins allowedOrigins;
 
-    @Value("${unichat.frontend-origin:http://localhost:5173}")
-    private String frontendOrigin;
-
-    public WebSocketConfig(StompAuthChannelInterceptor authInterceptor) {
+    public WebSocketConfig(StompAuthChannelInterceptor authInterceptor,
+                           AllowedOrigins allowedOrigins) {
         this.authInterceptor = authInterceptor;
+        this.allowedOrigins = allowedOrigins;
     }
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         // An allowlist rather than a wildcard: a socket that any origin may open
         // is a socket any page the user visits can open on their behalf.
-        registry.addEndpoint("/ws/work-chat").setAllowedOrigins(frontendOrigin);
+        //
+        // The same list CORS uses. It used to be a separate single-valued
+        // setting, so opening the app on a LAN address or a tunnel let HTTP
+        // through and refused the socket — which reads as live delivery being
+        // broken rather than as one more origin to configure.
+        registry.addEndpoint("/ws/work-chat").setAllowedOrigins(allowedOrigins.asArray());
     }
 
     @Override
