@@ -57,7 +57,43 @@ Change-password yêu cầu mật khẩu hiện tại và mật khẩu mới (12�
 | PATCH | /workspaces/{workspaceId}/members/{userId} | OWNER |
 | DELETE | /workspaces/{workspaceId}/members/{userId} | OWNER |
 
-Workspace name 3–100 ký tự; description tối đa 1.000; visibility PRIVATE/SHARED/PUBLIC. Update nhận expectedVersion để optimistic locking.
+Workspace name 3–100 ký tự; description tối đa 1.000; Update nhận expectedVersion để optimistic locking.
+
+Ba mức visibility khác nhau về hành vi, không chỉ về nhãn (ADR-024):
+
+| | PRIVATE | SHARED | PUBLIC |
+|---|---|---|---|
+| `POST /workspaces/{id}/members` | **400** — không thêm được thành viên | OWNER mời bằng email | OWNER mời bằng email |
+| Hiện trong `GET /workspaces/explore` | không | không | có |
+| `POST /workspaces/{id}/join` | 403 | 403 | 200, vào làm VIEWER |
+| `GET /workspaces/{id}` và `/cover` cho người ngoài | 404 | 404 | 200 |
+| Bài viết lên feed `scope=ALL` | không | không | có |
+
+Hạ visibility xuống PRIVATE khi workspace còn thành viên ACTIVE khác trả **409**; xóa họ trước rồi mới hạ được. Luật này áp cho cả `PATCH /workspaces/{id}` lẫn `PATCH /admin/workspaces/{id}/visibility`; mức không hợp lệ trả 400.
+
+### Chủ đề workspace (ADR-027)
+
+| Method | Route | Quyền | Ghi chú |
+|---|---|---|---|
+| GET | /workspaces/topics | Đã đăng nhập | Toàn bộ từ vựng (20 giá trị): `{name, label, icon, group, groupLabel}`. Dùng cho bộ chọn khi tạo/sửa. `Cache-Control: private, max-age=300` — ngắn vì không gì xóa cache trình duyệt khi deploy |
+| GET | /workspaces/explore/topics | Đã đăng nhập | Chỉ chủ đề đang có workspace khám phá được: `{name, label, icon, count}`. Dùng cho thanh lọc ở Khám phá; không cache vì số đếm thay đổi |
+| GET | /workspaces/explore?topic=... | Đã đăng nhập | Lọc theo một chủ đề; thiếu tham số nghĩa là mọi chủ đề; giá trị lạ trả 400 |
+
+`POST /workspaces` và `PATCH /workspaces/{id}` nhận thêm `topics` (mảng tên chủ đề, tối đa 3). Trên PATCH, `null` giữ nguyên chủ đề hiện có còn mảng rỗng xóa hết. `WorkspaceResponse` trả về `topics`.
+
+Danh sách khám phá sắp theo `updatedAt DESC, id DESC` — trước đây không có `ORDER BY` nên phân trang có thể lặp hoặc bỏ sót dòng.
+
+### Link mời (ADR-025)
+
+| Method | Route | Quyền | Ghi chú |
+|---|---|---|---|
+| POST | /workspaces/{workspaceId}/invites | OWNER | `{role, expiresInDays 1–30, maxUses 1–200}`. Trả token **một lần duy nhất**; role chỉ VIEWER/EDITOR, OWNER trả 400. Workspace PRIVATE trả 400 |
+| GET | /workspaces/{workspaceId}/invites | OWNER | Danh sách link, `token` luôn null vì chỉ hash được lưu |
+| DELETE | /workspaces/{workspaceId}/invites/{inviteId} | OWNER | Thu hồi, idempotent |
+| GET | /invites/{token} | **không cần đăng nhập** | Preview: chỉ `workspaceId`, tên nhóm, tên người mời, vai trò. `Cache-Control: no-store` |
+| POST | /invites/{token}/accept | Đã đăng nhập | Tạo membership ACTIVE, tăng `used_count` và `permissionVersion` |
+
+Token sai, hết hạn, hết lượt hoặc đã thu hồi đều trả **404** với cùng một thông báo, để người lạ không phân biệt được. Lượt dùng chỉ tăng ở `accept`, không tăng ở preview — bot xem trước link của ứng dụng chat tự gọi endpoint đó.
 
 ## 4. Tài liệu
 
@@ -175,6 +211,9 @@ Mã chuẩn: VALIDATION_ERROR, UNAUTHENTICATED, FORBIDDEN, NOT_FOUND, CONFLICT, 
 | POST | /work-chat/groups/{id}/members | OWNER | `{userId}`; phải là contact của OWNER |
 | DELETE | /work-chat/groups/{id}/members/{userId} | OWNER | Không tự xóa mình |
 | POST | /work-chat/groups/{id}/leave | Participant | OWNER rời thì quyền chuyển cho người vào sớm nhất |
+| PUT | /work-chat/groups/{id}/avatar | OWNER | `multipart/form-data`, part `file`; PNG/JPEG/WebP, tối đa 2 MiB |
+| DELETE | /work-chat/groups/{id}/avatar | OWNER | Trở lại ảnh ghép từ thành viên |
+| GET | /work-chat/conversations/{id}/avatar | Participant | PNG 256x256; 404 khi nhóm chưa đặt ảnh |
 
 Tin nhắn cần có nội dung **hoặc** tệp; không có cả hai trả `VALIDATION_ERROR`. Nội dung tối đa 4000 ký tự, kiểm tra ở service nên áp dụng cho cả hai đường JSON và multipart. Giới hạn tệp: 5 tệp và tổng 20 MiB cho **mỗi tin nhắn**; allowlist PNG, JPEG, WebP, GIF, PDF, DOCX, TXT; vi phạm trả `FILE_REJECTED`.
 
@@ -188,4 +227,4 @@ Gửi và đọc tin nhắn, cùng tệp đính kèm, dùng **chung** các route
 
 `ConversationSummary` trả `kind`, `title` (tên nhóm, hoặc tên người còn lại), `otherUserId` (null với nhóm), `participants[]`, `lastMessage`, `lastMessageAt` và `unreadCount`. Tin nhắn **không** mang trạng thái đã đọc: đó là mốc nước của từng người, và `unreadCount` là hình thức duy nhất UI nhận được.
 
-Đẩy tin nhắn trực tiếp qua STOMP tại `/ws/work-chat`, destination `/user/queue/messages`; token đi trên CONNECT frame. Tin nhắn nhóm được fan-out tới từng destination của từng người chứ không qua topic chung (ADR-023). `/user/queue/conversations` báo rằng danh sách hội thoại đã đổi khi không có tin nhắn nào — được thêm vào nhóm, bị xóa, hoặc nhóm đổi tên.
+Đẩy tin nhắn trực tiếp qua STOMP tại `/ws/work-chat`, destination `/user/queue/messages`; token đi trên CONNECT frame. Tin nhắn nhóm được fan-out tới từng destination của từng người chứ không qua topic chung (ADR-023). `/user/queue/conversations` báo rằng danh sách hội thoại đã đổi khi không có tin nhắn nào — được thêm vào nhóm, bị xóa, nhóm đổi tên, hoặc nhóm đổi ảnh. Thân frame là id của hội thoại đã đổi, để client bỏ ảnh đã cache trước khi tải lại.

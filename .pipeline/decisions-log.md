@@ -1417,3 +1417,601 @@
   (version 29, then 32 and 33). The durable fix is a database per developer, or a rule that
   nothing is applied to the shared one before it is committed. Worth raising with the team
   rather than absorbing a third time.
+
+## 2026-10-11 — Version collision when Plan V2 merged into the Work Chat branch
+
+- Decision: Renumber this branch's `V30__chat_attachments.sql` and
+  `V31__group_conversations.sql` to V36 and V37, and leave main's
+  `V30__plan_v2_account_audit.sql` and `V31__plan_v2_chat_security.sql` where they are.
+  Rationale: merging origin/main produced no git conflict — the four files have
+  different names — but two files claiming one version stops Flyway at startup, so it
+  surfaced only when the application was run. Main's pair cannot move: they
+  `CREATE TABLE` and `ADD COLUMN` outright, so a fresh number re-runs them against
+  objects that already exist. This branch's pair was written idempotent precisely so
+  its numbers could move, which is what makes the renumber safe.
+- Checked read-only against the shared development database before renaming:
+  version 30 there is "chat attachments" and 31 is "group conversations", both applied
+  2026-10-09 from this branch. Main's Plan V2 V30/V31 therefore never ran under those
+  numbers; `V33__schema_catchup_v30_v31` (2026-10-10) is what created their objects,
+  and the highest version applied is 35.
+- Consequence to be aware of: on that database, versions 36 and 37 now re-apply what
+  30 and 31 already did, which `IF NOT EXISTS` makes a no-op. Rows 30 and 31 keep this
+  branch's checksums while the files at those numbers are now main's, which is a
+  checksum mismatch that `*:future` does not cover. It stays silent only because main
+  set `validate-on-migrate: false`.
+- Still open, not fixed here: that `validate-on-migrate: false`, set by main in
+  `cebe490`, contradicts both the comment directly above it and the intent of `561730a`
+  ("fail loudly when a migration version is already taken"). Turning it back on would
+  now fail on versions 30 and 31. Whoever owns Plan V2 has to decide.
+- Added `MigrationVersionTest`, which fails the build when two files claim one version.
+  Third occurrence now (29, then 32/33, then 30/31) and each was found by starting the
+  application rather than by the suite. Verified it fails on a planted duplicate.
+
+## 2026-10-11 — Group settings: a group's name and its picture
+
+- Gap found: `renameGroup` existed in `group-api.ts` and `PATCH /work-chat/groups/{id}`
+  existed on the server, but nothing in the UI ever called either — a group could only
+  be named at the moment it was created. A group picture did not exist at all.
+- Decision: Fold both into the existing members panel rather than adding a settings
+  dialog beside it, renaming it `GroupSettingsPanel`. All three things answer the same
+  question — what is this group — and two panels would mean remembering which one holds
+  the control you want.
+- Decision: Extract `SquareImageEncoder` from `AvatarService` and use it for both
+  pictures instead of copying the decode-and-redraw. That logic is what strips EXIF data
+  from a phone photo; two copies would mean one of them silently keeping GPS coordinates
+  the day the other was fixed.
+- Decision: Move the group-owner check out of `GroupConversationService` into
+  `ConversationAccess`, which the file already describes as the one home for access
+  rules. Two services administer a group now, and an owner check written twice is one
+  that can disagree with itself.
+- Decision: `ConversationSummary` carries `hasAvatar` rather than a URL. The picture
+  needs a bearer token an `<img src>` cannot send, so it is fetched as a blob; the flag
+  is what spares the list one request per row that would only come back 404.
+- Fixed while wiring it: the client ignored the body of the `/user/queue/conversations`
+  frame, which has always carried the id of the conversation that changed. Without it
+  the other members' cached blob kept serving the old picture for the rest of the
+  session, because a replaced picture is served from the same URL.
+- V38 adds `direct_conversations.avatar_storage_key`, idempotent and numbered above
+  everything applied. Starting the application applies it to the shared database.
+
+## 2026-10-11 — Two post-page defects reported from a screenshot
+
+- Fixed: a DISCUSSION post was badged "Chưa có lời giải" the moment it was posted.
+  The rule that resolution state belongs to questions alone was written into
+  `feed-card.tsx`'s markup and nowhere else, so the post page, which uses
+  `AnswerStatusBadge` instead, never knew it. Moved the rule into
+  `hasResolutionState(label)` beside the badge; the badge now renders nothing for a
+  post that is not a question, and the feed card reads the same predicate rather than
+  restating it. This is the second defect this week caused by one rule living in two
+  places, after the group-owner check.
+- Fixed: the post page's action bar showed the words "chat_bubble" and "visibility"
+  where two icons belong. `post-detail__stat` named two unrelated things — the
+  sidebar's figure-over-caption pair and the action bar's icon-beside-a-number — and
+  the sidebar's `.post-detail__stat span { font: ... }` has specificity (0,1,1), which
+  outranks the (0,1,0) of `.material-symbols-outlined` that carries the icon font. The
+  shorthand replaced the font family on the icon span, so the ligature never formed and
+  the raw icon name rendered; the sidebar's `flex-direction: column` leaked too, which
+  is why the name sat above its label. The sidebar's pair is now
+  `post-detail__sidebar-stat`. Audited every stylesheet for the same shape: those two
+  rules were the only ones, and they no longer wrap an icon.
+- Not covered by a test: the CSS cascade is not exercised under jsdom, so the icon fix
+  has no unit test. The badge fix has four.
+- Noticed, not ours: `App.test.tsx` is flaky on the untouched tree as well — it awaits a
+  lazily loaded landing page with the 1000 ms default, which the suite misses under
+  parallel load. Failed once in three clean runs.
+
+## 2026-10-11 — Group settings as a fixed third column
+
+- Fixed: the settings panel rendered under the sidebar instead of beside the thread.
+  `.work-chat` is a two-column grid and the panel is its third child, so it fell into
+  an implicit second row in column one. Added `.work-chat--with-settings`, which makes
+  it `336px minmax(0,1fr) 312px` while the panel is on screen.
+- Decision: open by default for a group rather than behind the members button. In a
+  group, who is in it and what it is called are part of reading the thread. The button
+  stays as a way to take the width back and now reads as pressed while the panel is up.
+  Switching conversations no longer closes it, which used to undo the reader's choice
+  several times a session.
+- Decision: below 1280px the thread keeps the width and the panel becomes a fixed
+  overlay anchored where its column would have been; below 900px it fills the canvas.
+  Three columns do not fit on a laptop at the sidebar's 336px.
+- UI brought in line with the page: the panel is now a lifted card like the sidebar and
+  the thread — `--radius-2xl`, `--ws-card`, `--ws-card-shadow` — rather than a flat
+  strip welded to the thread's right edge by a border. The roster scrolls between a
+  fixed header and a pinned footer, rows highlight on hover, and the picture is changed
+  by a camera badge on the avatar instead of two pills that crowded a 312px column.
+- Fixed in passing: the stacked member faces overlapped by a fixed -10px, tuned against
+  a 26px face, which swallowed half of one at the 76px size this panel uses. The
+  overlap is now proportional to the face.
+
+## 2026-10-11 — Default workspace covers: photographs instead of a derived gradient
+
+- Asked for Pinterest as the source; declined and used Unsplash instead. Pinterest is a
+  bookmarking site: almost everything on it is reposted, copyright stays with the
+  original photographer, and its terms forbid automated collection. Bundling those files
+  as product defaults in a thesis project that gets demonstrated publicly is a real
+  exposure. The Unsplash License permits commercial use with no attribution; its two
+  restrictions — no reselling unaltered copies, no competing image service — do not
+  touch this use. Attribution duties attach only to the Unsplash *API*, which this does
+  not call: the files are downloaded into the repository.
+- Decision: eight pictures, assigned by hashing the workspace id exactly as
+  `group-theme` hashes its gradient. Deterministic, stored nowhere, and the same group
+  looks the same on every device.
+- Selection rule, and the reason several candidates were rejected: a card writes its
+  name, visibility and counts in white *over* the picture. Every candidate was rendered
+  behind sample white text and inspected before choosing; three otherwise good pictures
+  were dropped for being too bright to read against, and a first set that was entirely
+  cool-toned was widened with two warm ones so cards stay distinguishable.
+- Added a scrim gradient over the picture. Legibility should not depend on which file a
+  group happens to be assigned, nor on what a member later uploads.
+- The derived gradient stays underneath rather than being deleted: it paints with no
+  request, so a card is never a grey rectangle while a picture decodes, and it is the
+  fallback when the image element itself fails. The oversized initial now appears only
+  in that last case.
+- 496 KB for eight 1200x400 JPEGs at quality 72, served as static files from
+  /covers so the bundler leaves them alone and the browser caches them across routes.
+  Provenance, licence and the selection rule are recorded in public/covers/README.md.
+
+- Dashboard greeting banner brought in line with the cards: `banner-dashboard.jpg` over
+  the navy → indigo → violet gradient that used to be the whole banner, with the
+  gradient kept underneath as the instant paint and the fallback. One fixed picture, not
+  hashed: the banner belongs to whoever is signed in, not to a group.
+  Its selection rule differs from the covers' because the strip is ~10:1 with the
+  greeting pinned left, so the left half had to be dark and flat; candidates were
+  rendered at that ratio with the real greeting over them before choosing, and the
+  banner's scrim is weighted sideways rather than to the bottom edge.
+  Cropped to 2400x240 at the source rather than letting `cover` crop a 5.6:1 file,
+  because the band `cover` keeps is not the band that was reviewed. 24 KB.
+- CSS-only, so jsdom cannot cover it. Verified instead with a production build: the CSS
+  parses, `dist/assets/*.css` carries `/covers/banner-dashboard.jpg`, and all nine files
+  ship under `dist/covers/`.
+- Note on the suite: `vitest run` chained after a build or beside eslint in one shell
+  command silently collects fewer files (186 of 193 tests once, 138 once before). Run it
+  on its own when the count matters.
+
+## 2026-10-11 — Two workspaces wore the same cover
+
+- Reproduced against the live database rather than guessed at: of ten workspaces, the
+  per-id hash put three on `cover-teal`, which is the repeat visible on the dashboard.
+  The gradient system had the same defect before the pictures existed — the first
+  screenshot in this thread shows two cards sharing one gradient.
+- More pictures does not fix it, and saying so matters more than adding them. Ten groups
+  over twenty buckets still repeat with probability above 9 in 10; over forty, above 2
+  in 3. That is the birthday problem, not a shortage. Verified with the real ids: at
+  twenty pictures the per-id hash still collided once.
+- Decision: resolve collisions across the page instead. `assignCovers` sorts the ids,
+  gives each its hashed picture or the next free one, and releases the set once every
+  picture is spoken for. Properties that make it safe to compute rather than store:
+  sorting makes it independent of how the page is sorted or filtered, so the
+  quick-access row and the grid agree; and workspace ids are UUIDv7, which sort by
+  creation time, so a new group is assigned last and never takes a picture off an
+  existing one.
+- Published through a context rather than threaded as a prop through three card
+  components. Outside a provider the hook falls back to the plain hash, which is correct
+  for a group's own page: a repeat needs two cards.
+- Twelve more pictures, twenty in all. Chosen for colour variety rather than count: the
+  candidate set was mostly near-black textures, and eight more of those would have left
+  the cards looking alike, which is the thing being fixed. Four neutrals of clearly
+  different material, eight with a colour identity the old set lacked — green, magenta,
+  violet, red. `DEFAULT_COVERS` is ordered so neighbours differ, because the resolver
+  walks the list when a first choice is taken.
+- Verified against the real ten ids: ten distinct pictures, none repeated. The test
+  file carries those ids and asserts both halves — that hashing alone still collides on
+  them, and that the assignment does not.
+
+## 2026-10-11 — The rail's group marks had the same defect
+
+- Reported from a screenshot of the left rail: two tiles the same orange. Reproduced
+  against the live ids — `groupThemeFor` put "Mongodb" and "Lập trình hướng đối tượng"
+  on `#f87171`, and "Quản lý dự án" and "Workspace Test" on `#22d3ee`. Twelve themes,
+  ten groups, each id hashed on its own: the same birthday problem the covers had.
+- `GroupMark`'s own comment promised it "takes the same colour the group's card uses".
+  That stopped being true the day the cards became photographs, which is what made the
+  rail look stale. So the mark now takes its colour from the same assignment that chose
+  the picture, rather than from a parallel palette that can disagree with it.
+- Each cover carries an accent. Sampled from the file rather than guessed: every image
+  was decoded and its pixels weighted by saturation times brightness, so the hue is the
+  one the eye takes from the card. Two corrections to the raw measurement, both from
+  reading the numbers rather than assuming: three pictures measured within ten degrees
+  of each other in the blue-greens, so the hues were pulled at least fourteen degrees
+  apart; and five pictures have no hue at all to sample (`colourfulness` at or near
+  zero — rock, plaster, silk, onyx, slate), so they take neutrals of different lightness
+  and temperature instead of a colour their card does not have.
+- The provider moved up to `AppShell`. Per page it would have been worse than the
+  duplicates: the rail and the page are on screen together, so a group drawn one colour
+  in the rail and another in the feed would contradict itself in a single glance. The
+  rail already loads the list and React Query hands the pages the same copy, so this
+  costs no extra request. The dashboard's own provider was removed as redundant; the
+  explore tab keeps a nested one, because public workspaces are not in the user's list.
+- `markBackground` has no caller left and was deleted rather than kept as a second way
+  to colour a group.
+- Verified against the ten real ids: ten distinct tiles, each paired one-to-one with its
+  picture. 208 tests, lint clean, production build clean.
+
+## 2026-10-12 — Version 38 taken on the shared database; group avatar renumbered to 39
+
+- Correction to the entry above: the group picture migration is V39, not V38.
+- The application refused to start with Hibernate reporting
+  `missing column [avatar_storage_key] in table [direct_conversations]`, while Flyway
+  had just logged "Schema public is up to date. No migration necessary" at version 38.
+  Read the history read-only: version 38 is `V38__restore_direct_messages_read_at.sql`,
+  applied 2026-10-11 15:08 from a working copy that exists in no git ref, local or on
+  origin — checked across every reachable commit. Flyway saw 38 as applied, skipped this
+  tree's V38 without a word, and the failure surfaced one layer later as a missing
+  column. Confirmed against `information_schema`: the column is genuinely absent.
+- Fourth occurrence of the same cause: 29, then 32 and 33, then 38. Each time an
+  uncommitted migration on the shared database claimed a number this tree later wanted.
+  The durable fix remains a database per developer, or a rule that nothing is applied to
+  the shared one before it is committed. Raising it after the third time was not enough.
+- Note on the cost of `validate-on-migrate: false`, which main set in `cebe490`: with
+  validation on, this would have failed at Flyway with a message naming version 38 and
+  the two scripts that disagree. With it off, Flyway skipped silently and the symptom
+  appeared as a Hibernate schema error with no mention of a migration. Turning it back
+  on is still not a one-line change, because versions 30 and 31 would then fail as
+  checksum mismatches — that is the entry from 2026-10-11 and it is still open.
+- `MigrationVersionTest` cannot catch this class of defect: it compares files to each
+  other, and the colliding script is not a file here. A test that caught it would have
+  to query the shared database, which the test rules forbid.
+- Also open, unchanged: version 38's subject is `direct_messages.read_at`, the column
+  V37 dropped when read state moved to a per-participant watermark (ADR-023). Somebody
+  is actively restoring the old per-message design on another branch. Whoever merges has
+  to pick one.
+
+## 2026-10-14 — PRIVATE and SHARED were the same thing wearing two labels
+
+- Reported from the product side: the two levels look identical in use. Confirmed in
+  code. Every branch that reads `visibility` across the whole backend is `== PUBLIC` or
+  `!= PUBLIC` — nine call sites, none mentioning SHARED. Documents, AI chat, posts and
+  attachments never read it at all; they gate purely on an ACTIVE membership row. No
+  test anywhere touched SHARED. Deleting the value and mapping it to PRIVATE would have
+  changed no behaviour.
+- The specs were no help because they never defined it: `data-model.md` and
+  `api-contracts.md` only listed the three names. So this was not drift from a spec —
+  the semantics had never been written down.
+- Worse than dead config: four screens described the levels and contradicted each other
+  and the code. Three of them promised PRIVATE meant "chỉ mình tôi" while `addMember`
+  never checked visibility, so a user who picked PRIVATE on that promise could break it
+  themselves with no warning. A fourth promised SHARED gave access "qua link" — there is
+  no invite table, endpoint or token in the repository. The copy had been pasted into
+  six components, which is how it drifted four ways.
+- Chose to make the code match the promise rather than rewrite the promise, on ADR-024.
+  One new rule carries it: PRIVATE holds nobody but its owner. SHARED becomes the level
+  that has members, PUBLIC the level anyone can join.
+- The transition rule is not optional padding. Without it the guard on `addMember` is a
+  door with no wall beside it: invite five people, drop to PRIVATE, and the workspace
+  reads "chỉ mình bạn" while five people keep reading it. Refused with 409 rather than
+  mass-revoking, because an owner cannot undo that with a click.
+- `PATCH /admin/workspaces/{id}/visibility` wrote `setVisibility` straight to the
+  repository, so it bypassed every rule an owner obeys; routed it through the service.
+  Its unguarded `valueOf` also turned any typo into a 500 — now a 400 naming the levels.
+- Left out deliberately: the invite link. It needs `workspace_invites` with a hashed
+  token, expiry and revocation, which is its own piece of work. Every UI string
+  promising a link was removed instead of left standing.
+- Verification: `mvnw test` 361/361, frontend `tsc --noEmit` clean, `eslint
+  --max-warnings 0` clean, `vitest` 213/213 (209 before, 4 new). Two existing member
+  tests had been written against PRIVATE workspaces purely as scaffolding; moved to
+  SHARED, since what they assert is "an owner may add" and not "PRIVATE permits it".
+
+## 2026-10-14 — Invite links, and the four things that had to be true first
+
+- Reported: no visible way to switch a workspace from PRIVATE to SHARED. It exists —
+  group header ⋮ → Cài đặt nhóm → tab Quyền truy cập — but three clicks behind an
+  unlabelled menu, and the notice shipped earlier today pointed at the settings page
+  without naming the tab, which lands the owner on Thông tin chung to hunt for it. The
+  tab was local state, so no link could name it. Made it `?tab=access` and pointed the
+  notice there. The visibility badge in the group header is now the way in for the one
+  person who can change it; it already stated the level.
+- `features/settings/workspace-settings.tsx` turned out to be dead: nothing has imported
+  it since it was written in a8110f3. It was edited this morning in d891b80 for nothing.
+  Deleted it along with the orphaned `settings.css`. Keeping a second copy of a settings
+  screen is precisely what produced four contradictory descriptions of the same two
+  visibility levels; recoverable from git if anyone wants it back.
+- `WorkspaceRole` was declared three separate times — workspace-context, member-api, and
+  inline in workspace-schema. Same disease, found while adding a fourth consumer. One
+  declaration now, re-exported where components already imported it.
+- Invite links (ADR-025). The gap they close is specific: `addMember` looks an email up
+  and throws NotFoundError, so a group could not invite anyone without an account. Work
+  Chat is not an alternative — it reaches only people who already share a workspace, who
+  are exactly the people needing no invitation. A link is the only invitation that
+  travels outside the product.
+- Four things had to be true before it could work at all:
+  1. A public route. The preview is unauthenticated because a login screen tells a
+     stranger neither what they were invited to nor by whom. Security config opens
+     exactly `GET /api/v1/invites/*` — method and path — so accepting still needs a
+     session.
+  2. `?redirect=` through the guards. AuthGuard navigated to `/login` with no return
+     path, so an invite opened while signed out was lost at sign-in. Validated by
+     `safeReturnTo`, which refuses absolute URLs, `//host` and the `/\host` form: a
+     redirect target the visitor controls is an open redirect.
+  3. Uses counted at accept, not at preview. Chat clients fetch link previews on their
+     own, so counting at preview would let a Zalo or Teams unfurl bot spend a
+     single-use invitation before its recipient opened it.
+  4. The preview payload kept to the question it answers. It is public to whoever holds
+     the link, bots included, so it carries the group name, the inviter and the role —
+     no documents, no member list, no member count, no description.
+- Token handling follows the refresh-token rule: 256 bits of randomness, only the
+  SHA-256 stored, raw value returned once. Plain SHA-256 rather than a password hash —
+  there is no dictionary to slow down against machine randomness, and a per-row salt
+  would make lookup by hash impossible. Role capped at VIEWER/EDITOR by a CHECK, because
+  anyone who receives a link can forward it.
+- Migration numbered V40, which was wrong and cost a failed startup; see the entry
+  below. Now V41.
+- Verification: `mvnw test` 376/376 (15 new), frontend `tsc --noEmit` clean, `eslint
+  --max-warnings 0` clean, `vitest` 231/231 (14 new). The member-table test caught the
+  changed settings link on its own, which is what it was written for.
+
+## 2026-10-16 — Fifth collision: version 40 was taken, and the app would not start
+
+- `spring-boot:run` failed with `Schema validation: missing table [workspace_invites]`.
+  Flyway had not applied this tree's `V40__workspace_invites.sql`.
+- Queried the shared database read-only. `flyway_schema_history` holds V40 "ai
+  generation admission", applied 2026-10-12 11:51 — two days before this tree's V40 was
+  written, by a script that exists in no git ref. Flyway matches history by version
+  number alone, so it treated this file as already applied and skipped it; with
+  `validate-on-migrate: false` and `*:ignored` in the ignore patterns, it said nothing.
+  `to_regclass('public.workspace_invites')` confirms the table is absent.
+- My mistake, and a specific one: choosing the number by reading
+  `db/migration/` and the previous log entry. The directory is not where numbers are
+  claimed — the shared database is. The four earlier entries (29, 32/33, 38) all say
+  this and I still picked the number the same way. Checking meant one query, which took
+  under a minute once the failure forced it.
+- Renumbered to V41. Free as of this check, with the same caveat as every time: nothing
+  stops another branch claiming it before this one is applied.
+- The durable fixes remain the two already on record and still not done — a database per
+  developer, or a rule that nothing is applied to the shared one before it is committed.
+  A third option specific to the silent part: `validate-on-migrate: true` would have
+  failed at Flyway naming version 40 and the two scripts that disagree, instead of
+  surfacing as a Hibernate error two layers away. It is still blocked by versions 30 and
+  31, which would then fail as checksum mismatches — the open entry from 2026-10-11.
+- `MigrationVersionTest` still cannot catch this: it compares files to each other, and
+  the colliding script is not a file here. A test that caught it would have to query the
+  shared database, which the test rules forbid.
+
+## 2026-10-16 — Facebook's reaction set, a button that lied, and two ways of counting
+
+- Three items raised from screenshots. The second and third turned out to be the same
+  kind of defect: a label describing something narrower or different from what the code
+  underneath actually does.
+- **Reactions → Facebook's seven.** Flagged before building that this reverses V17,
+  which removed downvoting because a negative reaction in a group where everyone knows
+  each other carries a social cost — and that the context here is sharper than a social
+  feed, since people post here precisely because the assistant failed them. Owner chose
+  the full set knowingly; recorded in ADR-026 along with the retreat path, which is
+  cheap: drop two enum values and map SAD→CARE, ANGRY→LIKE in a V42-shaped migration.
+  INSIGHTFUL and CELEBRATE are mapped to WOW and CARE rather than deleted, because
+  deleting reactions silently changes counts under posts people are still reading. Five
+  rows existed, checked before writing the migration.
+- Migration numbered V42 after querying `flyway_schema_history` — not after reading the
+  migration directory. V41 is applied, so the app ran successfully after the renumber
+  two entries above. Checking the database first is now the rule, not the lesson.
+- The picker had to change shape, not just contents: seven labelled columns are wider
+  than a phone screen. Names moved onto hover, the way Facebook does it, and stay in the
+  DOM so they are still each button's accessible name.
+- **"Đặt câu hỏi" → "Tạo bài viết."** The button opened a composer offering Câu hỏi,
+  Thảo luận and Thông báo, so the label described one of three things it does. The modal
+  already called itself "Tạo bài viết mới" and the feed overrode that heading to match
+  the narrow button; dropped the override instead, so the two agree. QUESTION stays
+  preselected, which is the common case without being the only one.
+- **Two definitions of unanswered.** `resolveAnswerStatus` has three states and calls a
+  question with replies and no accepted answer "Đang thảo luận", while `countUnanswered`
+  and `findUnanswered` keyed on `accepted_reply_id IS NULL` alone. So the tab badge
+  counted questions whose own cards said they were being discussed, and any question
+  whose author never returned to press accept stayed in the list for good — the standard
+  failure of every Q&A site. Backend now matches the frontend's own rule. Ordering
+  changed with it: `ORDER BY reply_count ASC` is meaningless once every row is zero, so
+  newest first, because an unanswered question is most likely to be answered while the
+  person who asked is still present.
+- Kept the accept mechanism and said why: it is the closing half of the P0 loop this
+  branch is named for. What is still missing is the step after it — an accepted answer
+  does not re-enter retrieval, so the assistant refuses the same question next time.
+  Checked `ai-service` for any reference; there is none. Logged as the open piece.
+- Not covered by tests, stated plainly: the `reply_count = 0` change is in a native
+  query, and there is no repository integration test for discussions — only
+  `AuthPostgresIT` and `ChatPostgresIT` exist. The rule is exercised nowhere automated.
+- Verification: `mvnw test` 382/382 (6 new, reactions had no tests at all before),
+  `vitest` 235/235 (4 new), `tsc --noEmit` clean, `eslint --max-warnings 0` clean.
+
+## 2026-10-16 — Topics for workspaces, so Khám phá can be browsed
+
+- B4 from the discovery review. The page is called Khám phá but matched only name and
+  description, so a member had to know what they were looking for before they could
+  find it — the opposite of exploring.
+- Shape: at most three topics per workspace, from a fixed vocabulary of twelve in the
+  `WorkspaceTopic` enum. Multiple rather than one because a MongoDB group is both a
+  database group and a programming group; a single column files it under whichever its
+  owner pressed first. Fixed rather than free text because free tags fragment on day
+  one — "Lập trình", "lap trinh", "Programming" — and filtering is the only reason the
+  feature exists.
+- The vocabulary is served from `GET /workspaces/topics`, not restated in the client.
+  That is a direct consequence of the visibility labels, which were pasted into six
+  components and drifted into four contradictory descriptions. This list is longer and
+  likelier to grow, so it never gets a second copy.
+- No CHECK on the topic column and no DB-level cap of three. Both would turn a product
+  judgement into a schema migration against the shared database, which is this
+  project's most error-prone operation — five version collisions so far. The enum plus
+  boundary validation already stops anything else being written by this application.
+  Stated plainly as the trade: a direct SQL writer could insert nonsense, and the chips
+  component drops any topic name it does not recognise rather than rendering it raw.
+- Loaded through `WorkspaceStatsLoader` rather than an `@ElementCollection`, so a page
+  of twenty cards costs one more grouped query and not twenty. Same reason every other
+  figure on that card is loaded there.
+- Two defects fixed on the way through, both found while reading the discovery path:
+  the explore queries had **no ORDER BY at all**, so row order was whatever Postgres
+  felt like and paging could repeat or skip a workspace — now `updatedAt DESC, id DESC`,
+  with the id making the order total; and the explore search box had **no debounce**,
+  firing a request per keystroke, while the feed page in the same codebase already did
+  the 300 ms the standards ask for.
+- Left undone deliberately: the explore page still passes a hard-coded page 0, so the
+  twenty-first public workspace cannot be browsed to. That is the pagination item from
+  the same review and is its own piece of work.
+- Migration numbered V43, chosen after querying `flyway_schema_history`. V42 is applied
+  and the reaction mapping landed correctly — `INSIGHTFUL → WOW` and `CELEBRATE → CARE`
+  both show in the data.
+- Verification: `mvnw test` 389/389 (7 new), `vitest` 242/242 (7 new), `tsc --noEmit`
+  clean, `eslint --max-warnings 0` clean. Two existing test classes needed their
+  constructor calls updated for the new repository; no assertion changed.
+
+## 2026-10-17 — Topic vocabulary widened, after checking what NotebookLM actually does
+
+- Reported from NotebookLM screenshots: our twelve topics read as narrowly academic
+  next to Google's "Sức khỏe", "Tâm lý học, hành vi và nuôi dạy con cái" and the rest.
+  Fair — six of the twelve were computer-science subfields, so a group on nutrition or
+  history had nowhere to file itself but "Khác".
+- Searched before answering rather than guessing, and the comparison turned out to be
+  with the wrong thing. Those headings belong to **Featured notebooks**, a collection
+  Google curates with partners like The Economist and The Atlantic. Users cannot put a
+  notebook there, let alone add a heading. For their own notebooks NotebookLM offers
+  **Collections** — free-form, user-named — with tags and folders still coming from
+  third-party extensions. So NotebookLM runs two different mechanisms for two different
+  jobs, and Khám phá corresponds to the curated one, where a fixed vocabulary is right.
+- Widened to twenty rather than collapsing to ten broad domains. Collapsing is what the
+  screenshots suggest, but Google's audience is the general public while this platform's
+  actual content is an IT faculty — folding six CS subfields into one "Công nghệ" chip
+  would drop nearly every workspace into the same bucket, which is the same uselessness
+  from the other direction. Kept the depth, added the eight life and humanities domains
+  that were missing.
+- Vocabulary stays in the enum. A table plus an admin screen was offered and declined:
+  for a final-year project the list stops moving once it is settled, and ADR-027 already
+  records that the column stores names rather than a foreign key, so the move costs no
+  data migration whenever it is wanted.
+- Twenty chips made a problem I had flagged at twelve materially worse: a rail where
+  most chips lead to "không có kết quả" teaches people the filter is broken. Added
+  `GET /workspaces/explore/topics`, which returns only topics with discoverable
+  workspaces behind them, with counts, scoped exactly like the discovery queries so a
+  chip's number matches the cards it produces. The picker still offers all twenty,
+  because an owner must be able to file a group under a subject nobody has used yet.
+- Reordering the enum is safe and worth stating: `@Enumerated(STRING)` and a text column
+  mean display order is free to change without touching stored rows.
+- A row written straight to the database outside the vocabulary is skipped rather than
+  crashing the rail, matching what the chips component already does on the client.
+- Verification: `mvnw test` 391/391 (2 new), `vitest` 242/242, `tsc --noEmit` clean,
+  `eslint --max-warnings 0` clean.
+
+## 2026-10-17 — The create form, and a caching trap of my own making
+
+- Two things reported from a screenshot of Tạo Workspace Mới: the form looks poor, and
+  the new topics are missing.
+- **The missing topics were partly my fault.** The screenshot shows the old twelve in
+  the old order, so that build predates the widening — but even after a restart it
+  would have stayed wrong for up to a day: `GET /workspaces/topics` set
+  `Cache-Control: private, max-age=86400`. I justified the day by "static for the life
+  of a deploy" and overlooked that nothing invalidates a browser cache on deploy, so the
+  very first change to the vocabulary would have been invisible to everyone already
+  using the product. Now 300 seconds, and the React Query `staleTime` moved from
+  `Infinity` to an hour for the same reason: a tab left open across a deploy.
+- **Banding.** Twenty chips in one wrap is a wall with nothing for the eye to rest on;
+  finding "Tâm lý" means reading all twenty. Added `WorkspaceTopicGroup` — four bands,
+  presentation only, nothing stored against it and nothing filters by it, so regrouping
+  is a label change and never a migration. Declaration order is now contiguous per band
+  and a test enforces that, because a topic stranded outside its block would render
+  under the wrong heading. Regulations moved into the work band: an internal rulebook is
+  organisational, not leftover.
+- **The form could not be submitted without scrolling.** `.modal-dialog` scrolled as one
+  piece, so growing the form pushed both the title and "Tạo Workspace" out of view. The
+  header is now pinned, the actions are a sticky footer spanning the dialog, and the
+  dialog is 560px rather than 480px, which stops every chip row wrapping twice.
+- Selected chips were a pale tint, easy to miss among a dozen. Now filled, and the icon
+  swaps to a check so the state does not rest on colour alone. The 2/3 counter moved up
+  beside the instruction; adrift at the bottom right it read as a page number.
+- The picker test had been passing while proving less than it claimed: its fixture
+  carried no group, so every option fell into one unnamed band and the assertions still
+  matched by button name. Fixed the fixture and added two tests for the banding itself.
+- Verification: `mvnw test` 393/393 (2 new), `vitest` 244/244 (2 new), `tsc --noEmit`
+  clean, `eslint --max-warnings 0` clean.
+
+## 2026-10-17 — Joining your own invite link looked like a dead button
+
+- Reported: pressing "Tham gia nhóm" leaves you on the invite page instead of opening
+  the workspace. Most likely cause found by reading the path rather than reproducing:
+  anyone testing their own link is already a member, so `accept` throws ConflictError,
+  the page renders the message and stays put. Technically correct and useless.
+- Already a member is not a failure, it is the destination. A 409 from accept now
+  navigates into the workspace, using the id the preview already returned. The error
+  banner stays for everything else.
+- Also noted while reading: `joining` was never reset on the success path, which is
+  harmless only because the component unmounts. The 409 branch returns before touching
+  it for the same reason.
+- Second question, whether a second laptop on the LAN can open the link. Three blockers,
+  all configuration rather than code:
+  1. Vite binds `127.0.0.1` in `vite.config.ts`, so nothing outside the machine can
+     reach it. `npm run dev -- --host` is enough and needs no file change.
+  2. `inviteUrlFor` builds the link from `window.location.origin`, so an owner browsing
+     via `localhost` mints a link that points at the visitor's own machine. The owner
+     has to be on the LAN address when creating it. This is correct behaviour for
+     production and a trap only in local development.
+  3. Login and register would still fail: `AuthOriginFilter` checks the browser Origin
+     on mutating auth requests against an allowlist that defaults to the localhost
+     origins, and Vite's proxy forwards the browser's Origin unchanged. Needs
+     `CORS_ALLOWED_ORIGINS` to include the LAN origin — and setting it replaces the
+     defaults rather than adding to them.
+- Did not change the Vite host default. Binding a dev server to every interface is a
+  decision about the network the machine is on, not something to switch on by default.
+- Verification: `vitest` 245/245 (1 new, covering the 409 path), `tsc --noEmit` clean,
+  `eslint --max-warnings 0` clean.
+
+## 2026-10-18 — Plan for one-to-one calling, written before any code
+
+- Asked to plan voice and video calling. Wrote
+  `docs/reports/ke-hoach-goi-1-1-webrtc-2026-10-18.md`, following the existing
+  `docs/reports/ke-hoach-*` convention rather than inventing a location.
+- Deliberately did **not** write ADR-028 yet. An ADR records a decision that was carried
+  out; writing one for an unbuilt plan would put a claim in the architecture record that
+  nothing in the codebase backs. It lands with phase 1.
+- Read the work-chat module before planning, and the plan is shaped by what is already
+  there: `StompAuthChannelInterceptor` already authenticates by JWT with the user id as
+  principal, `/user` destinations are already scoped per recipient, and
+  `ConversationAccess.requireParticipant` is already the one home for "may these two
+  talk". Signaling therefore needs no new transport and no new permission rule.
+- Split the surface: lifecycle over REST (sparse, needs RFC 7807 and integration tests),
+  SDP and ICE over STOMP (dozens of frames per call, ephemeral, latency-sensitive).
+  Signalling never touches the database; only call history does.
+- Found a blocker worth naming as phase 0: `useWorkChatSocket` is mounted only in
+  `work-chat-page.tsx:109`, so no other page holds a socket and an incoming call could
+  not be received anywhere else. Lifting it to an app-wide provider is a prerequisite,
+  not a nicety.
+- Found a latent bug while reading the same hook: it calls `getAccessToken()` once inside
+  an effect with `[]` deps, so stompjs replays the original `connectHeaders` on auto
+  reconnect. Once the 15-minute access token expires, reconnection fails silently. This
+  already affects chat today; phase 0 fixes it.
+- Chose CHECK constraints on `calls.status` and `calls.media`, which is the opposite of
+  ADR-027's choice for topics. The reasoning differs rather than contradicts: a call's
+  status is a closed state machine, while the topic vocabulary was expected to grow, and
+  it did — twice in two days.
+- Named group calling as out of scope in the plan itself rather than leaving it implicit,
+  because it needs an SFU and is the most likely way this feature swallows the schedule.
+- No code written and nothing verified by running it; this entry records a plan only.
+
+## 2026-10-18 — Phase 0 of the calling plan: one socket for the whole app
+
+- Lifted the STOMP connection out of `work-chat-page.tsx` into `StompConnection`
+  (`frontend/src/lib/stomp-connection.ts`) and `RealtimeProvider`, mounted inside
+  `AuthProvider` and above the routes. It was a property of being on the chat screen;
+  nothing else in the app had a socket, so an incoming call could not have been
+  delivered anywhere else. No user-visible change in this phase.
+- Mounted above the routes rather than in each shell, because `AppShell` and
+  `WorkspaceShell` are separate route elements: mounting per shell would tear the socket
+  down and rebuild it every time someone moved between a workspace and the main app.
+- Disconnects when `isAuthenticated` goes false. The socket is authenticated by the
+  token on its CONNECT frame, so leaving it open past sign-out would deliver one
+  person's messages into the next person's browser.
+- **Fixed the latent reconnect bug named in the plan.** The old hook read
+  `getAccessToken()` once inside an effect with `[]` deps and handed the result to
+  stompjs as `connectHeaders`, which it then replays on every automatic reconnect. Once
+  the fifteen-minute access token expired, reconnection failed silently and live
+  delivery stopped with nothing on screen saying so. Headers are now rebuilt in
+  `beforeConnect`, which runs per attempt. A rejected CONNECT also sets a flag so the
+  next attempt refreshes rather than replaying the credential the broker just refused —
+  without it, an expired token would retry itself every five seconds forever.
+- Subscriptions are held per destination with a set of handlers, re-established on each
+  connect, and shared: two features listening on one destination open one subscription.
+  A throwing handler is contained so it cannot take down a subscription other features
+  depend on. Frames published while down are dropped rather than queued, because
+  everything that will go over this socket is either ephemeral or has a REST path that
+  is the real source of truth.
+- `App.test.tsx` began failing when the suite grew to 36 files, with the Suspense
+  fallback still on screen — a lazily imported route not resolving inside the default
+  one-second `findByRole` timeout under parallel load. Confirmed it was load and not
+  interference: the two files pass together, and the suite minus the new file passes.
+  Raised that one timeout to five seconds. This flakiness was pre-existing and any
+  thirty-sixth test file would have exposed it; the assertion is unchanged.
+- Verification: `vitest` 252/252 (7 new) run twice for stability, `tsc --noEmit` clean,
+  `eslint --max-warnings 0` clean, `mvnw test` 393/393 untouched and still green.
