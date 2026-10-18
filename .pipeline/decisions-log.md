@@ -2097,3 +2097,35 @@
   Unchanged from Phase 1: nothing here has run against a real browser or a real
   database. No WebRTC code has executed — jsdom has no RTCPeerConnection, so the stubs
   prove the ordering logic, not that a call connects.
+
+## 2026-10-18 — Phase 5: the configuration a real call needs
+
+- Merged two origin allowlists into one. CORS read `CORS_ALLOWED_ORIGINS` while the
+  STOMP endpoint read a separate single-valued `unichat.frontend-origin`. Two settings
+  for one question is a trap: opening the app on a LAN address or a tunnel would let
+  HTTP through and silently refuse the socket, which reads as live delivery being broken
+  rather than as one more origin to configure. Both now use `AllowedOrigins`.
+- Found while doing it that `unichat.frontend-origin` was **never set by anything**. The
+  `.env.example` entry named `FRONTEND_ORIGIN`, which is read by ai-service's Python
+  settings and does not map to that Spring property, so the socket allowlist had always
+  been the hardcoded default. Documented which service reads which, since I misread it
+  myself.
+- `AccessSecurityChainTest` builds a narrow context without component scanning, so it
+  now registers `AllowedOrigins` by hand. Caught by the suite, not by me.
+- Opt-in HTTPS in `vite.config.ts`: a certificate is used when `DEV_TLS_KEY` and
+  `DEV_TLS_CERT` point at files that exist, and ignored otherwise. Returning undefined
+  rather than throwing on missing files matters — needing a certificate is the
+  exception, and failing the dev server for everyone else would be worse than plain
+  HTTP. Did not change the default host for the same reason as before: binding to every
+  interface is a decision about the network the machine is on.
+- Wrote `docs/runbook-thu-nghiem-goi-1-1.md`, including the part that is easy to get
+  wrong — `mvnw test` does not run `*IT`, so the Testcontainers tests need naming
+  explicitly. Three ways to test, in increasing cost: two tabs on localhost (no
+  certificate needed, since localhost is exempt from the secure-context rule), a
+  Cloudflare tunnel, or mkcert over the LAN.
+- 11 new tests for `AllowedOrigins` and `IceServerProvider`. The ICE one checks that two
+  credentials minted a second apart differ: if they matched, the signature would not be
+  covering the expiry and a leaked credential would never go stale.
+- Verification: `mvnw test` 430/430, `vitest` 280/280, `tsc --noEmit` clean,
+  `eslint --max-warnings 0` clean. Still nothing run against a browser or a database —
+  that is what the runbook is for, and it needs Docker and a second machine.
