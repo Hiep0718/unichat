@@ -2,14 +2,19 @@
 import { createContext, useContext, useMemo } from 'react';
 import type { ReactNode } from 'react';
 
-export type WorkspaceRole = 'OWNER' | 'EDITOR' | 'VIEWER';
-export type WorkspaceVisibility = 'PRIVATE' | 'SHARED' | 'PUBLIC';
+// Declared with the rest of the workspace types; re-exported because several
+// components already import them from here.
+import type { WorkspaceRole, WorkspaceVisibility } from './workspace-schema';
+
+export type { WorkspaceRole, WorkspaceVisibility };
 
 export interface WorkspaceDetails {
   readonly id: string;
   readonly name: string;
   readonly description?: string;
   readonly visibility: WorkspaceVisibility;
+  /** What the group is about; empty for groups that predate topics. */
+  readonly topics?: readonly string[];
   readonly role: WorkspaceRole;
   readonly ownerId?: string;
 }

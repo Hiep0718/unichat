@@ -8,6 +8,7 @@
 
 import { Icon } from '../../../components/icon';
 import { MemberFaces } from './member-faces';
+import { TopicChips } from './topic-chips';
 import { WorkspaceCover } from './workspace-cover';
 
 import type { WorkspaceDto } from '../workspace-schema';
@@ -47,6 +48,8 @@ export function ExploreCard({ workspace, animationIndex = 0, onJoin, isJoining }
         {workspace.description?.trim() && (
           <p className="explore-card__desc">{workspace.description}</p>
         )}
+
+        <TopicChips topics={workspace.topics} compact />
 
         <div className="explore-card__foot">
           <div className="explore-card__facts">

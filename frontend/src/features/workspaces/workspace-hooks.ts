@@ -92,10 +92,13 @@ export function useUpdateWorkspace(workspaceId: string) {
 /**
  * Fetches public workspaces the user has not yet joined.
  */
-export function usePublicWorkspaces(search = '', page = 0) {
+export function usePublicWorkspaces(search = '', page = 0, topic?: string) {
   return useQuery({
-    queryKey: workspaceKeys.explore(search, page),
-    queryFn: () => getPublicWorkspaces(page, 20, search || undefined),
+    queryKey: [...workspaceKeys.explore(search, page), topic ?? 'ALL'],
+    queryFn: () => getPublicWorkspaces(page, 20, search || undefined, topic),
+    // Keeps the previous page on screen while the next one loads, so changing
+    // a filter does not blank the grid and jump the scroll position.
+    placeholderData: (previous) => previous,
   });
 }
 

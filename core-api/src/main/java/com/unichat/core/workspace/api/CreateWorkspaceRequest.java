@@ -4,6 +4,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+import java.util.List;
+
+import com.unichat.core.workspace.domain.WorkspaceTopic;
 import com.unichat.core.workspace.domain.WorkspaceVisibility;
 
 /**
@@ -20,5 +23,12 @@ public record CreateWorkspaceRequest(
     @NotNull(message = "Chế độ hiển thị không được để trống")
     WorkspaceVisibility visibility,
 
-    Boolean cloudAllowed
+    Boolean cloudAllowed,
+
+    /**
+     * What the group is about, for the discovery page. Optional, because a
+     * group is useful before anyone has classified it.
+     */
+    @Size(max = 3, message = "Mỗi workspace chọn tối đa 3 chủ đề")
+    List<WorkspaceTopic> topics
 ) {}

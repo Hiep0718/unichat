@@ -48,6 +48,7 @@ export function CreateWorkspaceModal({ isOpen, onClose, onSuccess }: CreateWorks
         name: parsed.data.name,
         description: parsed.data.description || '',
         visibility: parsed.data.visibility,
+        topics: parsed.data.topics,
       };
 
       const created = await createWorkspace(payload);

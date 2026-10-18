@@ -6,6 +6,7 @@
 import { Icon } from '../../../components/icon';
 
 import { visibilityOption } from '../workspace-visibility';
+import { TopicChips } from './topic-chips';
 
 import type { WorkspaceDto } from '../workspace-schema';
 
@@ -98,6 +99,14 @@ export function OverviewTab({ workspace, isLoading }: OverviewTabProps) {
               </span>
             </span>
           </div>
+          {workspace.topics.length > 0 && (
+            <div className="overview-tab__info-item">
+              <span className="overview-tab__info-label">Chủ đề</span>
+              <span className="overview-tab__info-value">
+                <TopicChips topics={workspace.topics} />
+              </span>
+            </div>
+          )}
           <div className="overview-tab__info-item">
             <span className="overview-tab__info-label">Ngày tạo</span>
             <span className="overview-tab__info-value">{formatDate(workspace.createdAt)}</span>

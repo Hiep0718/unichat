@@ -55,7 +55,7 @@ describe('MemberTable visibility guidance', () => {
     expect(screen.queryByRole('button', { name: /Thêm thành viên/ })).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: /chuyển sang chế độ Chia sẻ/i })).toHaveAttribute(
       'href',
-      `/workspaces/${WORKSPACE_ID}/settings`,
+      `/workspaces/${WORKSPACE_ID}/settings?tab=access`,
     );
   });
 

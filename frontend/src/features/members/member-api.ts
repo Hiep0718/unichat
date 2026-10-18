@@ -7,7 +7,9 @@
 
 import { fetchJson } from '../../lib/api-client';
 
-export type WorkspaceRole = 'OWNER' | 'EDITOR' | 'VIEWER';
+import type { WorkspaceRole } from '../workspaces/workspace-schema';
+
+export type { WorkspaceRole };
 export type WorkspaceMemberStatus = 'ACTIVE' | 'REVOKED';
 
 export interface WorkspaceMemberResponse {

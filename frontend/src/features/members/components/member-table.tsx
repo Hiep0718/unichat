@@ -128,7 +128,7 @@ export const MemberTable: React.FC<MemberTableProps> = ({ workspaceId, isOwner, 
         <p className="member-management__private-notice">
           Workspace đang ở chế độ <strong>Riêng tư</strong> nên chỉ mình bạn truy cập được.
           Hãy{' '}
-          <Link to={`/workspaces/${workspaceId}/settings`}>
+          <Link to={`/workspaces/${workspaceId}/settings?tab=access`}>
             chuyển sang chế độ Chia sẻ
           </Link>{' '}
           để mời thành viên.

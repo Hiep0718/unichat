@@ -8,7 +8,7 @@
  *
  * Mirrors `WorkspaceVisibilityPolicy` on the Core API, which enforces it.
  */
-import type { WorkspaceVisibility } from './workspace-schema';
+import type { WorkspaceRole, WorkspaceVisibility } from './workspace-schema';
 
 export interface VisibilityOption {
   readonly value: WorkspaceVisibility;
@@ -61,6 +61,16 @@ const BY_VALUE = new Map<WorkspaceVisibility, VisibilityOption>(
 export function visibilityOption(value: WorkspaceVisibility): VisibilityOption {
   return BY_VALUE.get(value) ?? VISIBILITY_OPTIONS[0]!;
 }
+
+/**
+ * What each role means in one phrase, for the places that name a role to
+ * someone who has not joined yet and has no idea what EDITOR implies.
+ */
+export const ROLE_SUMMARY: Record<WorkspaceRole, string> = {
+  OWNER: 'Chủ sở hữu',
+  EDITOR: 'Biên tập viên — đọc, hỏi và đóng góp tài liệu',
+  VIEWER: 'Thành viên — đọc và hỏi trợ lý AI',
+};
 
 /** Whether this level allows members at all. Mirrors the Core API rule. */
 export function allowsMembers(value: WorkspaceVisibility): boolean {

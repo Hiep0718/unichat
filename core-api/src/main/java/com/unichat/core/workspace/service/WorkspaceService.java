@@ -2,6 +2,8 @@ package com.unichat.core.workspace.service;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.util.EnumMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -16,6 +18,7 @@ import com.unichat.core.common.error.ConflictError;
 import com.unichat.core.common.error.NotFoundError;
 import com.unichat.core.workspace.api.CreateWorkspaceRequest;
 import com.unichat.core.workspace.api.UpdateWorkspaceRequest;
+import com.unichat.core.workspace.api.DiscoverableTopicResponse;
 import com.unichat.core.workspace.api.WorkspaceCardStats;
 import com.unichat.core.workspace.api.WorkspaceResponse;
 import com.unichat.core.workspace.domain.Workspace;
@@ -24,6 +27,9 @@ import com.unichat.core.workspace.domain.WorkspaceMemberRepository;
 import com.unichat.core.workspace.domain.WorkspaceMemberStatus;
 import com.unichat.core.workspace.domain.WorkspaceRepository;
 import com.unichat.core.workspace.domain.WorkspaceRole;
+import com.unichat.core.workspace.domain.WorkspaceTopic;
+import com.unichat.core.workspace.domain.WorkspaceTopicAssignment;
+import com.unichat.core.workspace.domain.WorkspaceTopicRepository;
 import com.unichat.core.workspace.domain.WorkspaceVisibility;
 import com.unichat.core.shared.util.UuidGenerator;
 
@@ -36,16 +42,19 @@ public class WorkspaceService {
     private final WorkspaceRepository workspaceRepository;
     private final WorkspaceMemberRepository workspaceMemberRepository;
     private final WorkspaceStatsLoader statsLoader;
+    private final WorkspaceTopicRepository topicRepository;
     private final Clock clock;
 
     public WorkspaceService(
             WorkspaceRepository workspaceRepository,
             WorkspaceMemberRepository workspaceMemberRepository,
             WorkspaceStatsLoader statsLoader,
+            WorkspaceTopicRepository topicRepository,
             Clock clock) {
         this.workspaceRepository = workspaceRepository;
         this.workspaceMemberRepository = workspaceMemberRepository;
         this.statsLoader = statsLoader;
+        this.topicRepository = topicRepository;
         this.clock = clock;
     }
 
@@ -88,6 +97,7 @@ public class WorkspaceService {
 
         workspaceRepository.save(workspace);
         workspaceMemberRepository.save(ownerMember);
+        replaceTopics(workspaceId, request.topics());
 
         return WorkspaceResponse.from(workspace, statsLoader.loadOne(workspaceId), WorkspaceRole.OWNER);
     }
@@ -154,6 +164,11 @@ public class WorkspaceService {
             }
             workspace.setCloudAllowed(request.cloudAllowed());
         }
+        // Null means "leave them alone"; an empty list is how a group says it
+        // has none, so the two cannot be collapsed.
+        if (request.topics() != null) {
+            replaceTopics(workspaceId, request.topics());
+        }
         workspace.setUpdatedAt(Instant.now(clock));
 
         workspaceRepository.save(workspace);
@@ -185,13 +200,16 @@ public class WorkspaceService {
      *
      * @param userId   authenticated user
      * @param search   optional search term (name/description)
+     * @param topic    optional subject filter; null means every topic
      * @param pageable pagination parameters
      */
     @Transactional(readOnly = true)
-    public Page<WorkspaceResponse> getPublicWorkspaces(UUID userId, String search, Pageable pageable) {
+    public Page<WorkspaceResponse> getPublicWorkspaces(UUID userId, String search,
+                                                      WorkspaceTopic topic, Pageable pageable) {
         String searchTerm = (search == null || search.isBlank()) ? "%" : "%" + search.trim() + "%";
-        Page<Workspace> page = workspaceRepository
-                .findPublicWorkspacesExcludingMember(userId, searchTerm, pageable);
+        Page<Workspace> page = topic == null
+                ? workspaceRepository.findPublicWorkspacesExcludingMember(userId, searchTerm, pageable)
+                : workspaceRepository.findPublicWorkspacesByTopic(userId, searchTerm, topic, pageable);
         Map<UUID, WorkspaceCardStats> stats = statsForPage(page);
         return page.map(workspace -> toResponse(workspace, stats, null));
     }
@@ -262,6 +280,49 @@ public class WorkspaceService {
         workspaceRepository.save(workspace);
 
         return toResponse(workspace, roleOf(workspace, workspace.getOwnerId()));
+    }
+
+    /**
+     * Rewrites a workspace's topics.
+     *
+     * <p>Replace rather than diff: there are at most three, and working out
+     * which to add and which to remove is more code than writing them again.
+     * Duplicates in the request are ignored rather than rejected, since the
+     * primary key would reject them anyway and a client sending the same topic
+     * twice meant it once.
+     */
+    private void replaceTopics(UUID workspaceId, List<WorkspaceTopic> topics) {
+        topicRepository.deleteByWorkspaceId(workspaceId);
+        if (topics == null || topics.isEmpty()) {
+            return;
+        }
+        new LinkedHashSet<>(topics).forEach(topic ->
+                topicRepository.save(new WorkspaceTopicAssignment(workspaceId, topic)));
+    }
+
+    /**
+     * Topics that currently lead somewhere, for the discovery filter.
+     *
+     * <p>Ordered by the enum's own declaration order rather than by count, so
+     * the rail does not reshuffle itself every time somebody joins a group.
+     *
+     * @param userId the caller, whose own groups are excluded as everywhere else
+     */
+    @Transactional(readOnly = true)
+    public List<DiscoverableTopicResponse> getDiscoverableTopics(UUID userId) {
+        Map<WorkspaceTopic, Long> counts = new EnumMap<>(WorkspaceTopic.class);
+        for (Object[] row : topicRepository.countDiscoverableByTopic(userId)) {
+            // A value written straight to the database could be outside the
+            // vocabulary; it is skipped rather than crashing the whole rail.
+            try {
+                counts.put(WorkspaceTopic.parse((String) row[0]), ((Number) row[1]).longValue());
+            } catch (IllegalArgumentException ignored) {
+                continue;
+            }
+        }
+        return counts.entrySet().stream()
+                .map(entry -> DiscoverableTopicResponse.of(entry.getKey(), entry.getValue()))
+                .toList();
     }
 
     /** Members still holding access, the owner included. */

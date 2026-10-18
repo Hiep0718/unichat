@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import com.unichat.core.workspace.domain.Workspace;
 import com.unichat.core.workspace.domain.WorkspaceRole;
+import com.unichat.core.workspace.domain.WorkspaceTopic;
 import com.unichat.core.workspace.domain.WorkspaceVisibility;
 
 /**
@@ -25,6 +26,8 @@ public record WorkspaceResponse(
     long recentPostCount,
     /** A few members to draw as faces on the card, owners first. */
     List<WorkspaceCardStats.MemberFace> faces,
+    /** What the group is about. Empty for groups that predate topics. */
+    List<WorkspaceTopic> topics,
     /** True when a cover was uploaded; otherwise the card draws a gradient. */
     boolean hasCover,
     long version,
@@ -55,6 +58,7 @@ public record WorkspaceResponse(
             stats.memberCount(),
             stats.recentPostCount(),
             stats.faces(),
+            stats.topics(),
             workspace.hasCoverImage(),
             workspace.getVersion(),
             workspace.getCreatedAt(),

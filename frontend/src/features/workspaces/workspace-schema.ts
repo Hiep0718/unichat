@@ -7,6 +7,9 @@ import { z } from 'zod/v4';
 /** Workspace visibility options matching backend enum. */
 export type WorkspaceVisibility = 'PRIVATE' | 'SHARED' | 'PUBLIC';
 
+/** What a member may do, matching backend WorkspaceRole. */
+export type WorkspaceRole = 'OWNER' | 'EDITOR' | 'VIEWER';
+
 /** One member as a workspace card draws them. */
 export interface WorkspaceFace {
   readonly userId: string;
@@ -29,12 +32,14 @@ export interface WorkspaceDto {
   readonly recentPostCount: number;
   /** A few members to draw as faces on the card, owners first. */
   readonly faces: readonly WorkspaceFace[];
+  /** What the group is about. Empty for groups created before topics. */
+  readonly topics: readonly string[];
   /** True when a cover was uploaded; otherwise the card draws a gradient. */
   readonly hasCover: boolean;
   readonly version: number;
   readonly createdAt: string;
   readonly updatedAt: string;
-  readonly userRole: 'OWNER' | 'EDITOR' | 'VIEWER' | null;
+  readonly userRole: WorkspaceRole | null;
 }
 
 /** Paginated response from Spring Data Page. */
@@ -58,6 +63,13 @@ export const createWorkspaceSchema = z.object({
     .optional()
     .default(''),
   visibility: z.enum(['PRIVATE', 'SHARED', 'PUBLIC']),
+  // Names, not labels: the vocabulary lives on the server and the client only
+  // ever passes its values back. Capped to match the Core API's own limit.
+  topics: z
+    .array(z.string())
+    .max(3, 'Mỗi workspace chọn tối đa 3 chủ đề')
+    .optional()
+    .default([]),
 });
 
 /** TypeScript type inferred from the Zod schema. */
@@ -76,6 +88,7 @@ export const updateWorkspaceSchema = z.object({
     .max(1000, 'Mô tả tối đa 1000 ký tự')
     .optional(),
   visibility: z.enum(['PRIVATE', 'SHARED', 'PUBLIC']).optional(),
+  topics: z.array(z.string()).max(3, 'Mỗi workspace chọn tối đa 3 chủ đề').optional(),
   expectedVersion: z.number().optional(),
 });
 

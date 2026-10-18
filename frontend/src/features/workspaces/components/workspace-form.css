@@ -12,7 +12,7 @@
 }
 
 .modal-dialog {
-  width: min(480px, calc(100vw - 32px));
+  width: min(560px, calc(100vw - 32px));
   max-height: calc(100vh - 64px);
   overflow-y: auto;
   padding: 0;
@@ -23,11 +23,18 @@
   animation: dialog-slide-up var(--transition-normal) ease;
 }
 
+/* Pinned, because the form grew past a screen once topics arrived and the
+   title scrolling away left no clue which dialog was open. */
 .modal-dialog__header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 24px 0;
+  padding: 20px 24px 16px;
+  background: var(--color-surface-container-lowest);
+  border-bottom: 1px solid var(--color-outline-variant);
 }
 
 .modal-dialog__title {
@@ -57,8 +64,8 @@
 .workspace-form {
   display: flex;
   flex-direction: column;
-  gap: var(--stack-md);
-  padding: 20px 24px 24px;
+  gap: 22px;
+  padding: 20px 24px 0;
 }
 
 .workspace-form__field {
@@ -111,8 +118,17 @@
 
 .workspace-form__fieldset {
   border: none;
-  padding: 0;
+  padding: 18px 0 0;
   margin: 0;
+  border-top: 1px solid var(--color-outline-variant);
+}
+
+/* The legend is the section heading, so it carries more weight than the
+   inline labels above it. */
+.workspace-form__fieldset > .workspace-form__label {
+  font: var(--font-title-sm, var(--font-label-md));
+  font-weight: 600;
+  margin-bottom: 10px;
 }
 
 .workspace-form__visibility-options {
@@ -124,7 +140,7 @@
 
 .workspace-form__visibility-option {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
   padding: 12px 14px;
   border: 1px solid var(--color-outline-variant);
@@ -132,6 +148,28 @@
   cursor: pointer;
   transition: all var(--transition-fast);
   color: var(--color-on-surface-variant);
+}
+
+.workspace-form__visibility-option > .material-symbols-outlined,
+.workspace-form__visibility-option > span[class*='icon'] {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-full, 999px);
+  background: var(--color-surface-container-high);
+}
+
+.workspace-form__visibility-option--active > .material-symbols-outlined,
+.workspace-form__visibility-option--active > span[class*='icon'] {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.workspace-form__visibility-option:focus-within {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 .workspace-form__visibility-option:hover {
@@ -152,8 +190,10 @@
 
 .workspace-form__visibility-desc {
   display: block;
+  margin-top: 2px;
   font: var(--font-label-sm);
-  opacity: 0.7;
+  line-height: 1.45;
+  opacity: 0.75;
 }
 
 /* Error */
@@ -171,11 +211,21 @@
 
 /* Actions */
 
+/* Pinned to the bottom of the scrolling dialog. Before this, choosing topics
+   pushed "Tạo Workspace" off the screen and the form looked like it had no
+   way to submit. Negative margins let it span the dialog's full width while
+   the form keeps its own padding. */
 .workspace-form__actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
   display: flex;
   justify-content: flex-end;
   gap: var(--stack-sm);
-  padding-top: var(--stack-sm);
+  margin: 0 -24px;
+  padding: 14px 24px;
+  background: var(--color-surface-container-lowest);
+  border-top: 1px solid var(--color-outline-variant);
 }
 
 .workspace-form__cancel-btn {

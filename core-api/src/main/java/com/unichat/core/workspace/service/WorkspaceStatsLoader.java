@@ -4,6 +4,7 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +18,9 @@ import com.unichat.core.document.domain.DocumentRepository;
 import com.unichat.core.workspace.api.WorkspaceCardStats;
 import com.unichat.core.workspace.domain.WorkspaceMemberRepository;
 import com.unichat.core.workspace.domain.WorkspaceMemberStatus;
+import com.unichat.core.workspace.domain.WorkspaceTopic;
+import com.unichat.core.workspace.domain.WorkspaceTopicAssignment;
+import com.unichat.core.workspace.domain.WorkspaceTopicRepository;
 
 /**
  * Gathers what a page of workspace cards needs, in four queries for the page.
@@ -38,15 +42,18 @@ public class WorkspaceStatsLoader {
     private final DocumentRepository documentRepository;
     private final WorkspaceMemberRepository memberRepository;
     private final DiscussionRepository discussionRepository;
+    private final WorkspaceTopicRepository topicRepository;
     private final Clock clock;
 
     public WorkspaceStatsLoader(DocumentRepository documentRepository,
                                 WorkspaceMemberRepository memberRepository,
                                 DiscussionRepository discussionRepository,
+                                WorkspaceTopicRepository topicRepository,
                                 Clock clock) {
         this.documentRepository = documentRepository;
         this.memberRepository = memberRepository;
         this.discussionRepository = discussionRepository;
+        this.topicRepository = topicRepository;
         this.clock = clock;
     }
 
@@ -71,6 +78,8 @@ public class WorkspaceStatsLoader {
                 discussionRepository.countRecentGroupedByWorkspaceIds(workspaceIds, recentSince()));
         Map<UUID, List<WorkspaceCardStats.MemberFace>> faces = facesFrom(
                 memberRepository.findFacesForWorkspaces(workspaceIds, FACES_PER_CARD));
+        Map<UUID, List<WorkspaceTopic>> topics = topicsFrom(
+                topicRepository.findByWorkspaceIdIn(workspaceIds));
 
         Map<UUID, WorkspaceCardStats> stats = new HashMap<>();
         for (UUID id : workspaceIds) {
@@ -78,7 +87,8 @@ public class WorkspaceStatsLoader {
                     documents.getOrDefault(id, 0L),
                     members.getOrDefault(id, 0L),
                     recentPosts.getOrDefault(id, 0L),
-                    faces.getOrDefault(id, List.of())));
+                    faces.getOrDefault(id, List.of()),
+                    topics.getOrDefault(id, List.of())));
         }
         return stats;
     }
@@ -101,6 +111,19 @@ public class WorkspaceStatsLoader {
             counts.put((UUID) row[0], ((Number) row[1]).longValue());
         }
         return counts;
+    }
+
+    /** Groups a page's topic rows by workspace, in the enum's own order. */
+    private static Map<UUID, List<WorkspaceTopic>> topicsFrom(
+            List<WorkspaceTopicAssignment> rows) {
+        Map<UUID, List<WorkspaceTopic>> topics = new HashMap<>();
+        for (WorkspaceTopicAssignment row : rows) {
+            topics.computeIfAbsent(row.getWorkspaceId(), key -> new ArrayList<>())
+                    .add(row.getTopic());
+        }
+        // Declaration order, so two cards never list the same pair differently.
+        topics.values().forEach(list -> list.sort(Comparator.comparing(WorkspaceTopic::ordinal)));
+        return topics;
     }
 
     private static Map<UUID, List<WorkspaceCardStats.MemberFace>> facesFrom(List<Object[]> rows) {
