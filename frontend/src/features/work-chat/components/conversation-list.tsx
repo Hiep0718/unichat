@@ -6,9 +6,9 @@
  * first few members.
  */
 import { Icon } from '../../../components/icon';
-import { EntityAvatar } from '../../../components/entity-avatar';
+import { ConversationAvatar } from './conversation-avatar';
 import { formatRelativeTime } from '../../../lib/format-time';
-import type { ChatParticipant, Conversation } from '../work-chat-api';
+import type { Conversation } from '../work-chat-api';
 import './conversation-list.css';
 
 interface ConversationListProps {
@@ -69,36 +69,3 @@ export function ConversationList({
   );
 }
 
-/**
- * One face for a person, a small stack for a group.
- *
- * Two faces at most: a row is not wide enough for more to be recognisable, and
- * the count says how many are behind them.
- */
-function ConversationAvatar({ conversation }: { readonly conversation: Conversation }) {
-  if (conversation.kind === 'DIRECT') {
-    return <EntityAvatar name={conversation.title} size={36} shape="circle" />;
-  }
-
-  const others: ChatParticipant[] = conversation.participants
-    .filter((participant) => !participant.me)
-    .slice(0, 2);
-
-  return (
-    <span className="conversation-list__stack" aria-hidden="true">
-      {others.map((participant) => (
-        <EntityAvatar
-          key={participant.userId}
-          name={participant.name}
-          size={26}
-          shape="circle"
-        />
-      ))}
-      {conversation.participants.length > 3 && (
-        <span className="conversation-list__stack-more">
-          +{conversation.participants.length - 3}
-        </span>
-      )}
-    </span>
-  );
-}

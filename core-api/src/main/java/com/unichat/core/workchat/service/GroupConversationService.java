@@ -103,7 +103,7 @@ public class GroupConversationService {
     /** Renames a group. Only its owner may. */
     @Transactional
     public ConversationSummary rename(UUID callerId, UUID conversationId, String title) {
-        DirectConversation group = requireOwnedGroup(callerId, conversationId);
+        DirectConversation group = conversationAccess.requireGroupOwner(callerId, conversationId);
         group.rename(title);
         conversationRepository.save(group);
 
@@ -124,7 +124,7 @@ public class GroupConversationService {
      */
     @Transactional
     public List<ParticipantSummary> addMember(UUID callerId, UUID conversationId, UUID userId) {
-        requireOwnedGroup(callerId, conversationId);
+        conversationAccess.requireGroupOwner(callerId, conversationId);
         requireContact(callerId, userId);
         if (participantRepository.findByIdConversationIdAndIdUserId(conversationId, userId)
                 .isPresent()) {
@@ -147,7 +147,7 @@ public class GroupConversationService {
      */
     @Transactional
     public List<ParticipantSummary> removeMember(UUID callerId, UUID conversationId, UUID userId) {
-        requireOwnedGroup(callerId, conversationId);
+        conversationAccess.requireGroupOwner(callerId, conversationId);
         if (callerId.equals(userId)) {
             throw new ValidationError("Chủ nhóm rời nhóm bằng chức năng rời nhóm");
         }
@@ -214,18 +214,6 @@ public class GroupConversationService {
                     heir.promoteToOwner();
                     participantRepository.save(heir);
                 });
-    }
-
-    private DirectConversation requireOwnedGroup(UUID callerId, UUID conversationId) {
-        ConversationAccess.Participation participation =
-                conversationAccess.participationOf(callerId, conversationId);
-        if (!participation.conversation().isGroup()) {
-            throw new ValidationError("Cuộc trò chuyện này không phải nhóm");
-        }
-        if (!participation.participant().isOwner()) {
-            throw new AuthorizationError("Chỉ chủ nhóm mới thay đổi được nhóm");
-        }
-        return participation.conversation();
     }
 
     private void requireContact(UUID callerId, UUID userId) {

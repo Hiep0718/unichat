@@ -6,7 +6,7 @@
  * sending messages are the same calls for a group as for a one-to-one thread
  * and stay there.
  */
-import { fetchJson } from '../../lib/api-client';
+import { fetchAuthorized, fetchJson } from '../../lib/api-client';
 import type { ChatParticipant, Conversation } from './work-chat-api';
 
 /** Creates a group with the caller as its owner. */
@@ -67,4 +67,32 @@ export async function removeGroupMember(
  */
 export async function leaveGroup(conversationId: string): Promise<void> {
   await fetchJson<void>(`/work-chat/groups/${conversationId}/leave`, { method: 'POST' });
+}
+
+/**
+ * Replaces a group's picture. Only its owner may, which the server enforces.
+ *
+ * Sent as multipart rather than JSON, so the file is not base64-inflated by a
+ * third on the way up.
+ */
+export async function uploadGroupAvatar(
+  conversationId: string,
+  file: File,
+): Promise<void> {
+  const body = new FormData();
+  body.append('file', file);
+  const response = await fetchAuthorized(
+    `/work-chat/groups/${conversationId}/avatar`,
+    { method: 'PUT', body },
+  );
+  if (!response.ok) {
+    throw new Error(`Không tải được ảnh lên (HTTP ${response.status})`);
+  }
+}
+
+/** Removes the picture, leaving the drawn fallback. */
+export async function removeGroupAvatar(conversationId: string): Promise<void> {
+  await fetchJson<void>(`/work-chat/groups/${conversationId}/avatar`, {
+    method: 'DELETE',
+  });
 }

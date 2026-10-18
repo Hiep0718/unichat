@@ -6,17 +6,21 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import { Icon } from '../../components/icon';
+import { forgetGroupAvatar } from '../../components/avatar-image-cache';
 import { ContactPicker } from './components/contact-picker';
 import { ConversationList } from './components/conversation-list';
 import { GroupCreateModal } from './components/group-create-modal';
-import { GroupMembersPanel } from './components/group-members-panel';
+import { GroupSettingsPanel } from './components/group-settings-panel';
 import { MessageThread } from './components/message-thread';
 import { useWorkChatSocket } from './use-work-chat-socket';
 import {
   addGroupMember,
   createGroup,
   leaveGroup,
+  removeGroupAvatar,
   removeGroupMember,
+  renameGroup,
+  uploadGroupAvatar,
 } from './group-api';
 import {
   fetchConversations,
@@ -38,7 +42,10 @@ export function WorkChatPage() {
   const [messages, setMessages] = useState<DirectMessage[]>([]);
   const [showPicker, setShowPicker] = useState(false);
   const [showGroupForm, setShowGroupForm] = useState(false);
-  const [showMembers, setShowMembers] = useState(false);
+  // Open by default: in a group, who is in it and what it is called are part
+  // of reading the thread, not a dialog to go and fetch. Still closable, for
+  // the reader who wants the width back.
+  const [showSettings, setShowSettings] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const active = useMemo(
@@ -47,15 +54,14 @@ export function WorkChatPage() {
   );
 
   /**
-   * Opens a conversation, closing the members panel on the way.
+   * Opens a conversation.
    *
-   * Done here rather than in an effect on `activeId`: setting state from
-   * an effect body costs a second render pass for something every caller
-   * already knows it is doing.
+   * The settings panel is left as the reader put it rather than reset: it only
+   * renders for a group anyway, and closing it on every switch would undo
+   * their choice several times a session.
    */
   const selectConversation = useCallback((conversationId: string | null) => {
     setActiveId(conversationId);
-    setShowMembers(false);
   }, []);
 
   /** Refreshes the list. Called from handlers and callbacks, never as an
@@ -90,7 +96,17 @@ export function WorkChatPage() {
     void loadConversations();
   }, [activeId, loadConversations]);
 
-  const connected = useWorkChatSocket(onPushed, loadConversations);
+  /**
+   * Someone else changed a conversation. The cached picture is dropped first:
+   * a replaced one is served from the same URL, so without this the other
+   * members keep seeing the old image for the rest of the session.
+   */
+  const onListChanged = useCallback((conversationId: string) => {
+    forgetGroupAvatar(conversationId);
+    void loadConversations();
+  }, [loadConversations]);
+
+  const connected = useWorkChatSocket(onPushed, onListChanged);
 
   useEffect(() => {
     if (!activeId) {
@@ -138,9 +154,27 @@ export function WorkChatPage() {
     selectConversation(group.id);
   };
 
-  /** Membership changes come back as the new list, so the row refreshes too. */
-  const handleMembership = async (change: () => Promise<unknown>) => {
+  /**
+   * Any change to the group itself — its members, its name — followed by a
+   * reload, so the sidebar row and the thread header both follow.
+   */
+  const handleGroupChange = async (change: () => Promise<unknown>) => {
     await change();
+    await loadConversations();
+  };
+
+  /**
+   * A picture change, which also drops the cached blob.
+   *
+   * Without that the browser keeps handing out the URL it already made for
+   * the old image, and the owner sees no change until a full reload.
+   */
+  const handleAvatarChange = async (
+    change: () => Promise<unknown>,
+    conversationId: string,
+  ) => {
+    await change();
+    forgetGroupAvatar(conversationId);
     await loadConversations();
   };
 
@@ -154,8 +188,11 @@ export function WorkChatPage() {
     await loadConversations();
   };
 
+  // A third column only when there is something to put in it.
+  const settingsVisible = active?.kind === 'GROUP' && showSettings;
+
   return (
-    <div className="work-chat">
+    <div className={`work-chat ${settingsVisible ? 'work-chat--with-settings' : ''}`}>
       <aside className="work-chat__sidebar">
         <header className="work-chat__sidebar-header">
           <h1 className="work-chat__title">Tin nhắn</h1>
@@ -205,7 +242,8 @@ export function WorkChatPage() {
             conversation={active}
             messages={messages}
             onSend={handleSend}
-            onShowMembers={() => setShowMembers(true)}
+            onToggleSettings={() => setShowSettings((open) => !open)}
+            settingsOpen={showSettings}
           />
         ) : (
           <div className="work-chat__empty">
@@ -215,14 +253,19 @@ export function WorkChatPage() {
         )}
       </main>
 
-      {active && active.kind === 'GROUP' && showMembers && (
-        <GroupMembersPanel
-          title={active.title}
+      {settingsVisible && (
+        <GroupSettingsPanel
+          conversation={active}
           participants={active.participants}
-          onAdd={(userId) => handleMembership(() => addGroupMember(active.id, userId))}
-          onRemove={(userId) => handleMembership(() => removeGroupMember(active.id, userId))}
+          onAdd={(userId) => handleGroupChange(() => addGroupMember(active.id, userId))}
+          onRemove={(userId) => handleGroupChange(() => removeGroupMember(active.id, userId))}
           onLeave={handleLeave}
-          onClose={() => setShowMembers(false)}
+          onRename={(title) => handleGroupChange(() => renameGroup(active.id, title))}
+          onPickAvatar={(file) => handleAvatarChange(
+            () => uploadGroupAvatar(active.id, file), active.id)}
+          onRemoveAvatar={() => handleAvatarChange(
+            () => removeGroupAvatar(active.id), active.id)}
+          onClose={() => setShowSettings(false)}
         />
       )}
 

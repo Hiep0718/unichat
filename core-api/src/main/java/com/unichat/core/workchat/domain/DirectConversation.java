@@ -62,6 +62,15 @@ public class DirectConversation {
     @Column(name = "last_message_at")
     private Instant lastMessageAt;
 
+    /**
+     * Key of the group's uploaded picture, null when it has none.
+     *
+     * <p>Always null on a one-to-one conversation, which is drawn with the
+     * other person's own picture.
+     */
+    @Column(name = "avatar_storage_key")
+    private String avatarStorageKey;
+
     protected DirectConversation() {}
 
     private DirectConversation(UUID id, ConversationKind kind, UUID participantLow,
@@ -159,6 +168,31 @@ public class DirectConversation {
             throw new IllegalArgumentException("A group needs a name");
         }
         this.title = newTitle.trim();
+    }
+
+    public String getAvatarStorageKey() { return avatarStorageKey; }
+
+    /** Whether a picture has been uploaded, as opposed to the drawn fallback. */
+    public boolean hasAvatarImage() {
+        return avatarStorageKey != null && !avatarStorageKey.isBlank();
+    }
+
+    /**
+     * Points the group at a newly stored picture.
+     *
+     * @param storageKey the new key, or null to go back to the drawn fallback
+     * @return the key of the picture this replaced, so the caller can delete
+     *         it; null when there was none
+     * @throws IllegalStateException on a one-to-one conversation, which is
+     *                               drawn with the other person's own picture
+     */
+    public String replaceAvatar(String storageKey) {
+        if (!isGroup()) {
+            throw new IllegalStateException("A one-to-one conversation has no picture of its own");
+        }
+        String previous = this.avatarStorageKey;
+        this.avatarStorageKey = storageKey;
+        return previous;
     }
 
     /**

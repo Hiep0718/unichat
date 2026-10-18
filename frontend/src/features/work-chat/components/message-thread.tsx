@@ -7,7 +7,7 @@
 import { useMemo } from 'react';
 
 import { Icon } from '../../../components/icon';
-import { EntityAvatar } from '../../../components/entity-avatar';
+import { ConversationAvatar } from './conversation-avatar';
 import { ChatComposer } from './chat-composer';
 import { MessageBubble } from './message-bubble';
 import type { Conversation, DirectMessage } from '../work-chat-api';
@@ -21,15 +21,18 @@ interface MessageThreadProps {
     files: readonly File[],
     onProgress?: (percent: number) => void,
   ) => Promise<void>;
-  /** Opens the members panel. Only meaningful for a group. */
-  readonly onShowMembers: () => void;
+  /** Shows or hides the settings panel. Only meaningful for a group. */
+  readonly onToggleSettings: () => void;
+  /** Whether that panel is currently open, so the button can say so. */
+  readonly settingsOpen: boolean;
 }
 
 export function MessageThread({
   conversation,
   messages,
   onSend,
-  onShowMembers,
+  onToggleSettings,
+  settingsOpen,
 }: MessageThreadProps) {
   const ordered = useMemo(() => [...messages].reverse(), [messages]);
   const isGroup = conversation.kind === 'GROUP';
@@ -37,19 +40,18 @@ export function MessageThread({
   return (
     <section className="message-thread">
       <header className="message-thread__header">
-        <EntityAvatar
-          name={conversation.title}
-          size={34}
-          shape={isGroup ? 'square' : 'circle'}
-        />
+        <ConversationAvatar conversation={conversation} size={34} />
         <h2 className="message-thread__name">{conversation.title}</h2>
 
         {isGroup && (
           <button
             type="button"
-            className="message-thread__members"
-            onClick={onShowMembers}
-            aria-label="Xem thành viên nhóm"
+            className={`message-thread__members ${
+              settingsOpen ? 'message-thread__members--active' : ''
+            }`}
+            onClick={onToggleSettings}
+            aria-pressed={settingsOpen}
+            aria-label={settingsOpen ? 'Ẩn cài đặt nhóm' : 'Hiện cài đặt nhóm'}
           >
             <Icon name="group" size={18} />
             {conversation.participants.length}

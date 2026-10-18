@@ -1,0 +1,38 @@
+/* A group's own picture, cropped square by the server and masked to a circle
+   here so it sits in the same shape as the faces it replaces. */
+.conversation-avatar__image {
+  border-radius: var(--radius-full);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+/* A group's faces, overlapped so the row stays as tall as a single avatar. */
+.conversation-avatar__stack {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* Proportional, not a fixed -10px: that was tuned against a 26px face and
+   swallowed half of one at the 72px size the settings panel uses. */
+.conversation-avatar__stack > * + * {
+  margin-left: calc(var(--stack-face, 26px) * -0.38);
+}
+
+.conversation-avatar__stack > * {
+  box-shadow: 0 0 0 2px var(--ws-card);
+}
+
+.conversation-avatar__stack-more {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  margin-left: -6px;
+  padding: 0 4px;
+  border-radius: var(--radius-full);
+  background: var(--ws-chip);
+  color: var(--ws-ink-muted);
+  font: var(--font-label-sm);
+}

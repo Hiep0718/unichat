@@ -1,0 +1,149 @@
+.group-identity {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 18px 16px;
+  border-bottom: 1px solid var(--ws-line);
+}
+
+.group-identity__avatar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.group-identity__avatar-frame {
+  position: relative;
+  display: inline-flex;
+}
+
+/* Sits on the picture, the way a profile picture is changed everywhere else.
+   The ring in the card's own colour keeps it legible over a dark photo. */
+.group-identity__camera {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 2px solid var(--ws-card);
+  border-radius: var(--radius-full);
+  background: var(--ws-accent);
+  color: var(--ws-accent-ink);
+  cursor: pointer;
+  transition: filter var(--transition-fast);
+}
+
+.group-identity__camera:hover:not(:disabled) {
+  filter: brightness(1.15);
+}
+
+.group-identity__camera:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.group-identity__remove-photo {
+  padding: 2px 8px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--ws-ink-muted);
+  font: var(--font-label-sm);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.group-identity__remove-photo:hover:not(:disabled) {
+  background: var(--ws-warn-bg);
+  color: var(--ws-warn-ink);
+}
+
+/* Hidden rather than absent: the button above opens it, but screen readers
+   and tests still reach the input itself. */
+.group-identity__file {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.group-identity__name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+}
+
+.group-identity__name {
+  margin: 0;
+  overflow: hidden;
+  color: var(--ws-ink);
+  font-family: var(--font-family);
+  font-size: 15px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.group-identity__rename {
+  display: inline-flex;
+  border: none;
+  background: transparent;
+  color: var(--ws-ink-muted);
+  cursor: pointer;
+}
+
+.group-identity__form {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.group-identity__input {
+  flex: 1 1 100%;
+  min-width: 0;
+  padding: 8px 10px;
+  border: none;
+  border-radius: var(--radius-lg);
+  background: var(--ws-chip);
+  color: var(--ws-ink);
+  font: var(--font-body-md);
+  outline: none;
+}
+
+.group-identity__input:focus {
+  box-shadow: 0 0 0 2px var(--ws-accent);
+}
+
+.group-identity__save,
+.group-identity__cancel {
+  padding: 4px 10px;
+  border: 1px solid var(--ws-line);
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--ws-ink-muted);
+  font: var(--font-label-sm);
+  cursor: pointer;
+}
+
+.group-identity__save {
+  border-color: transparent;
+  background: var(--ws-accent);
+  color: var(--ws-accent-ink);
+  font-weight: 600;
+}
+
+.group-identity__save:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}

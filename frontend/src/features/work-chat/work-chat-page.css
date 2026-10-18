@@ -12,6 +12,21 @@
   background: var(--ws-canvas);
 }
 
+/* A group's settings take a third column rather than overlaying the thread.
+   Without this the panel is a third child of a two-column grid, which drops it
+   into an implicit second row under the sidebar. */
+.work-chat--with-settings {
+  grid-template-columns: 336px minmax(0, 1fr) 312px;
+}
+
+/* Not enough width for three: the thread keeps it and the panel overlays the
+   canvas from the right, where it was anyway. */
+@media (max-width: 1280px) {
+  .work-chat--with-settings {
+    grid-template-columns: 336px minmax(0, 1fr);
+  }
+}
+
 .work-chat__sidebar {
   display: flex;
   flex-direction: column;

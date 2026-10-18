@@ -19,6 +19,9 @@ import com.unichat.core.workchat.domain.ConversationKind;
  * @param lastMessage   preview of the newest message, null in an empty thread
  * @param lastMessageAt when that message arrived, null in an empty thread
  * @param unreadCount   messages from other people since the caller's watermark
+ * @param hasAvatar     whether the group has an uploaded picture to fetch;
+ *                      always false for a one-to-one conversation, which is
+ *                      drawn with the other person's own
  */
 public record ConversationSummary(
         UUID id,
@@ -28,5 +31,6 @@ public record ConversationSummary(
         List<ParticipantSummary> participants,
         String lastMessage,
         Instant lastMessageAt,
-        long unreadCount
+        long unreadCount,
+        boolean hasAvatar
 ) {}

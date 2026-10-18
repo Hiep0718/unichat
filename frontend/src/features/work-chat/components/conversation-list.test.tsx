@@ -20,6 +20,7 @@ const conversation = (overrides: Partial<Conversation> = {}): Conversation => ({
   lastMessage: 'Chào bạn nhé',
   lastMessageAt: new Date().toISOString(),
   unreadCount: 0,
+  hasAvatar: false,
   ...overrides,
 });
 

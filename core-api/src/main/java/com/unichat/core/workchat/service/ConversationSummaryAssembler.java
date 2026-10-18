@@ -105,7 +105,8 @@ public class ConversationSummaryAssembler {
                         .toList(),
                 latest == null ? null : preview(latest.getBody()),
                 conversation.getLastMessageAt(),
-                unreadCount);
+                unreadCount,
+                conversation.hasAvatarImage());
     }
 
     private static ParticipantSummary toParticipant(ConversationParticipant participant,

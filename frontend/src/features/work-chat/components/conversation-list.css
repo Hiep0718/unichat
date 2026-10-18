@@ -98,29 +98,3 @@
   color: var(--ws-ink-soft);
   font-weight: 600;
 }
-
-/* A group's faces, overlapped so the row stays as tall as a single avatar. */
-.conversation-list__stack {
-  display: flex;
-  align-items: center;
-  width: 36px;
-  flex-shrink: 0;
-}
-
-.conversation-list__stack > * + * {
-  margin-left: -10px;
-}
-
-.conversation-list__stack-more {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 20px;
-  height: 20px;
-  margin-left: -6px;
-  padding: 0 4px;
-  border-radius: var(--radius-full);
-  background: var(--ws-chip);
-  color: var(--ws-ink-muted);
-  font: var(--font-label-sm);
-}

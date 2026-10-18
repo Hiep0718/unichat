@@ -3,6 +3,7 @@ package com.unichat.core.workchat.api;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -11,10 +12,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.unichat.core.workchat.service.GroupAvatarService;
 import com.unichat.core.workchat.service.GroupConversationService;
 
 import jakarta.validation.Valid;
@@ -34,9 +39,12 @@ import jakarta.validation.Valid;
 public class GroupChatController {
 
     private final GroupConversationService groupService;
+    private final GroupAvatarService avatarService;
 
-    public GroupChatController(GroupConversationService groupService) {
+    public GroupChatController(GroupConversationService groupService,
+                               GroupAvatarService avatarService) {
         this.groupService = groupService;
+        this.avatarService = avatarService;
     }
 
     /** Creates a group with the caller as its owner. */
@@ -56,6 +64,45 @@ public class GroupChatController {
             @AuthenticationPrincipal Jwt jwt) {
         return ResponseEntity.ok(
                 groupService.rename(callerOf(jwt), conversationId, request.title()));
+    }
+
+    /** Replaces a group's picture. Only its owner may. */
+    @PutMapping("/groups/{conversationId}/avatar")
+    public ResponseEntity<Void> uploadAvatar(
+            @PathVariable UUID conversationId,
+            @RequestPart("file") MultipartFile file,
+            @AuthenticationPrincipal Jwt jwt) {
+        avatarService.upload(callerOf(jwt), conversationId, file);
+        return ResponseEntity.noContent().build();
+    }
+
+    /** Removes the picture, leaving the drawn fallback. Only the owner may. */
+    @DeleteMapping("/groups/{conversationId}/avatar")
+    public ResponseEntity<Void> removeAvatar(
+            @PathVariable UUID conversationId,
+            @AuthenticationPrincipal Jwt jwt) {
+        avatarService.remove(callerOf(jwt), conversationId);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * A group's picture, for anyone taking part in it.
+     *
+     * <p>Under /conversations rather than /groups because it is read with the
+     * conversation id the list already holds, and a caller who is not a
+     * participant is told the conversation does not exist either way.
+     */
+    @GetMapping("/conversations/{conversationId}/avatar")
+    public ResponseEntity<byte[]> avatar(
+            @PathVariable UUID conversationId,
+            @AuthenticationPrincipal Jwt jwt) {
+        byte[] image = avatarService.read(callerOf(jwt), conversationId);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_TYPE, GroupAvatarService.STORED_MEDIA_TYPE)
+                // Short and private, as for a profile picture: it changes
+                // rarely, but a stale one must not follow the group around.
+                .header(HttpHeaders.CACHE_CONTROL, "private, max-age=300")
+                .body(image);
     }
 
     /** Everyone in a conversation, of either kind. */

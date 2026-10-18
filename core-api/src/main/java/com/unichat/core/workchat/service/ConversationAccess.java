@@ -8,7 +8,9 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.unichat.core.common.error.AuthorizationError;
 import com.unichat.core.common.error.NotFoundError;
+import com.unichat.core.common.error.ValidationError;
 import com.unichat.core.workchat.domain.ConversationParticipant;
 import com.unichat.core.workchat.domain.ConversationParticipantRepository;
 import com.unichat.core.workchat.domain.DirectConversation;
@@ -68,6 +70,28 @@ public class ConversationAccess {
                 .findByIdConversationIdAndIdUserId(conversationId, callerId)
                 .orElseThrow(ConversationAccess::hidden);
         return new Participation(conversation, participant);
+    }
+
+    /**
+     * Loads a group and confirms the caller owns it.
+     *
+     * <p>Lives here rather than in one of the services because two of them now
+     * administer a group — its membership and its picture — and an owner check
+     * written twice is an owner check that can disagree with itself.
+     *
+     * @throws ValidationError    if the conversation is one-to-one, which has
+     *                            nothing to administer
+     * @throws AuthorizationError if the caller takes part but does not own it
+     */
+    public DirectConversation requireGroupOwner(UUID callerId, UUID conversationId) {
+        Participation participation = participationOf(callerId, conversationId);
+        if (!participation.conversation().isGroup()) {
+            throw new ValidationError("Cuộc trò chuyện này không phải nhóm");
+        }
+        if (!participation.participant().isOwner()) {
+            throw new AuthorizationError("Chỉ chủ nhóm mới thay đổi được nhóm");
+        }
+        return participation.conversation();
     }
 
     /** Everyone taking part, in the order they joined. */

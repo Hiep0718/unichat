@@ -46,6 +46,11 @@ export interface Conversation {
   lastMessage: string | null;
   lastMessageAt: string | null;
   unreadCount: number;
+  /**
+   * Whether the group has an uploaded picture to fetch. Always false for a
+   * one-to-one conversation, which is drawn from the other person's own.
+   */
+  hasAvatar: boolean;
 }
 
 /** Matches the server ceiling, so the picker can stop before a refusal. */

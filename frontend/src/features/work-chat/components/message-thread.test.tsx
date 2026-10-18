@@ -20,6 +20,7 @@ const conversation: Conversation = {
   lastMessage: null,
   lastMessageAt: null,
   unreadCount: 0,
+  hasAvatar: false,
 };
 
 const groupConversation: Conversation = {
@@ -54,7 +55,8 @@ describe('MessageThread', () => {
         conversation={conversation}
         messages={[]}
         onSend={async () => {}}
-        onShowMembers={() => {}}
+        onToggleSettings={() => {}}
+          settingsOpen={false}
       />,
     );
 
@@ -73,7 +75,8 @@ describe('MessageThread', () => {
         conversation={conversation}
         messages={[newer, older]}
         onSend={async () => {}}
-        onShowMembers={() => {}}
+        onToggleSettings={() => {}}
+          settingsOpen={false}
       />,
     );
 
@@ -90,7 +93,8 @@ describe('MessageThread', () => {
         conversation={conversation}
         messages={[]}
         onSend={onSend}
-        onShowMembers={() => {}}
+        onToggleSettings={() => {}}
+          settingsOpen={false}
       />,
     );
     const input = screen.getByLabelText('Nội dung tin nhắn');
@@ -112,7 +116,8 @@ describe('MessageThread', () => {
         conversation={conversation}
         messages={[]}
         onSend={onSend}
-        onShowMembers={() => {}}
+        onToggleSettings={() => {}}
+          settingsOpen={false}
       />,
     );
 
@@ -132,7 +137,8 @@ describe('MessageThread', () => {
         conversation={conversation}
         messages={[]}
         onSend={onSend}
-        onShowMembers={() => {}}
+        onToggleSettings={() => {}}
+          settingsOpen={false}
       />,
     );
     const input = screen.getByLabelText('Nội dung tin nhắn');
@@ -153,7 +159,8 @@ describe('MessageThread', () => {
         conversation={conversation}
         messages={[message()]}
         onSend={async () => {}}
-        onShowMembers={() => {}}
+        onToggleSettings={() => {}}
+          settingsOpen={false}
       />,
     );
 
@@ -168,7 +175,8 @@ describe('MessageThread', () => {
         conversation={groupConversation}
         messages={[message({ senderName: 'carol' })]}
         onSend={async () => {}}
-        onShowMembers={() => {}}
+        onToggleSettings={() => {}}
+          settingsOpen={false}
       />,
     );
 
@@ -184,7 +192,8 @@ describe('MessageThread', () => {
         conversation={conversation}
         messages={[message({ senderName: 'bob' })]}
         onSend={async () => {}}
-        onShowMembers={() => {}}
+        onToggleSettings={() => {}}
+          settingsOpen={false}
       />,
     );
 
@@ -192,23 +201,45 @@ describe('MessageThread', () => {
     expect(screen.getAllByText('bob')).toHaveLength(1);
   });
 
-  it('should offer the member list only for a group', async () => {
-    // Arrange
-    const onShowMembers = vi.fn();
+  it('should let a group hide the settings panel that starts open', async () => {
+    // Arrange: the panel is open by default, so the button's job is to take
+    // the width back rather than to go and fetch it.
+    const onToggleSettings = vi.fn();
     render(
       <MessageThread
         conversation={groupConversation}
         messages={[]}
         onSend={async () => {}}
-        onShowMembers={onShowMembers}
+        onToggleSettings={onToggleSettings}
+        settingsOpen
       />,
     );
 
     // Act
-    await userEvent.click(screen.getByLabelText('Xem thành viên nhóm'));
+    await userEvent.click(screen.getByLabelText('Ẩn cài đặt nhóm'));
 
     // Assert
-    expect(onShowMembers).toHaveBeenCalled();
+    expect(onToggleSettings).toHaveBeenCalled();
+  });
+
+  it('should offer to bring the panel back once it is closed', async () => {
+    // Arrange
+    const onToggleSettings = vi.fn();
+    render(
+      <MessageThread
+        conversation={groupConversation}
+        messages={[]}
+        onSend={async () => {}}
+        onToggleSettings={onToggleSettings}
+        settingsOpen={false}
+      />,
+    );
+
+    // Act
+    await userEvent.click(screen.getByLabelText('Hiện cài đặt nhóm'));
+
+    // Assert
+    expect(onToggleSettings).toHaveBeenCalled();
   });
 
   it('should not offer a member list in a one-to-one thread', () => {
@@ -218,7 +249,8 @@ describe('MessageThread', () => {
         conversation={conversation}
         messages={[]}
         onSend={async () => {}}
-        onShowMembers={() => {}}
+        onToggleSettings={() => {}}
+          settingsOpen={false}
       />,
     );
 
