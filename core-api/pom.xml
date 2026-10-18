@@ -143,6 +143,21 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <!--
+                        Local runs only; packaging and production are untouched.
+
+                        Without this the JVM sizes its heap at a quarter of
+                        physical RAM, so a 14 GB developer machine hands this
+                        process a 3.5 GB ceiling it never comes close to using
+                        - observed working set while serving is around 370 MB.
+                        The cost is not the heap itself but the commit charge
+                        reserved for it: on a machine whose page file is
+                        already full, G1 then fails to commit a 20 MB region
+                        and the JVM aborts before Tomcat finishes starting.
+                    -->
+                    <jvmArguments>-Xmx512m -XX:MaxMetaspaceSize=256m</jvmArguments>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
