@@ -1,0 +1,29 @@
+.call-button {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: var(--radius-full, 999px);
+  background: transparent;
+  color: var(--color-on-surface-variant, #64748b);
+  cursor: pointer;
+  transition:
+    background var(--transition-fast, 120ms),
+    color var(--transition-fast, 120ms);
+}
+
+.call-button:hover:not(:disabled) {
+  background: var(--color-surface-container-high, #e2e8f0);
+  color: var(--color-primary, #00236f);
+}
+
+.call-button:focus-visible {
+  outline: 2px solid var(--color-primary, #00236f);
+  outline-offset: 2px;
+}
+
+.call-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

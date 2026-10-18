@@ -7,6 +7,7 @@
 import { useMemo } from 'react';
 
 import { Icon } from '../../../components/icon';
+import { CallButton } from '../../calls/components/call-button';
 import { ConversationAvatar } from './conversation-avatar';
 import { ChatComposer } from './chat-composer';
 import { MessageBubble } from './message-bubble';
@@ -42,6 +43,12 @@ export function MessageThread({
       <header className="message-thread__header">
         <ConversationAvatar conversation={conversation} size={34} />
         <h2 className="message-thread__name">{conversation.title}</h2>
+
+        {/* One-to-one only: a group call needs a media server, which is not
+            built, so the button would promise something that fails. */}
+        {!isGroup && (
+          <CallButton conversationId={conversation.id} peerName={conversation.title} />
+        )}
 
         {isGroup && (
           <button
