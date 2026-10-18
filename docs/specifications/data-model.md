@@ -102,6 +102,29 @@ Embedding model: intfloat/multilingual-e5-base revision d128750597153bb5987e10b1
 - Conversation summary cập nhật bất đồng bộ hoặc sau khi stream/generate với optimistic locking (WHERE id = :id AND summary_version = :expectedVersion).
 - Delete saga idempotent; document DELETING bị loại khỏi retrieval ngay lập tức.
 
+## 7b. Cuộc gọi 1:1 (V44)
+
+Bảng `calls` chỉ lưu **lịch sử**, không lưu signaling. SDP và ICE candidate mô tả
+địa chỉ mạng và codec của một phiên chết ngay khi kết thúc, nên chúng được chuyển
+tiếp giữa hai trình duyệt và không bao giờ ghi xuống.
+
+- Khóa: `id`; `conversation_id` tham chiếu `direct_conversations` với ON DELETE CASCADE —
+  cuộc gọi là một phần của hội thoại, không phải bản ghi sống lâu hơn hội thoại.
+- `status` ∈ RINGING, ACTIVE, ENDED, DECLINED, MISSED, FAILED; `media` ∈ AUDIO, VIDEO.
+  Có CHECK constraint, **khác ADR-027**: đây là máy trạng thái đóng nên giá của
+  migration thấp còn giá trị của ràng buộc cao.
+- Năm CHECK riêng rẽ ràng buộc mốc thời gian theo trạng thái (RINGING không có mốc nào;
+  ACTIVE phải có `answered_at` và chưa có `ended_at`; DECLINED/MISSED không được có
+  `answered_at`…). Tách từng luật để vi phạm nào thì báo đúng tên luật đó. Lý do ràng
+  buộc ở tầng database: thời lượng tính từ một giá trị null ra **con số sai** chứ không
+  phải lỗi, nên sẽ bị phát hiện rất muộn.
+- Index: `(conversation_id, started_at DESC)` cho lịch sử; hai partial index theo
+  `caller_id`/`callee_id` WHERE status live cho câu hỏi "đang bận không" hỏi trước mỗi
+  cuộc gọi; partial index cho huy hiệu cuộc gọi nhỡ.
+- `RingingCallSweeper` chuyển RINGING quá 45 giây thành MISSED. Chạy theo timer chứ không
+  phải timeout trong bộ nhớ, vì timeout trong bộ nhớ sẽ quên sạch khi process dừng —
+  đúng lúc sinh ra các dòng kẹt.
+
 ## 8. Retention
 
 - refresh_tokens: xóa sau expiresAt/revokedAt theo policy 7 ngày.

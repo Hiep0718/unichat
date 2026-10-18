@@ -198,6 +198,21 @@ Mã chuẩn: VALIDATION_ERROR, UNAUTHENTICATED, FORBIDDEN, NOT_FOUND, CONFLICT, 
 |---|---|---|---|
 | GET | /work-chat/contacts | Đăng nhập | Người cùng nhóm với caller |
 | GET | /work-chat/presence | Đăng nhập | Chỉ contact đang online |
+| POST | /conversations/{id}/calls | Thành viên hội thoại 1:1 | Bắt đầu gọi. **201 kể cả khi máy bận hoặc offline** — khi đó `status` là `MISSED`, vì "không ai nghe" là kết quả của việc gọi chứ không phải lỗi khi gọi |
+| POST | /calls/{id}/accept | Chỉ người được gọi | 409 nếu không còn đổ chuông |
+| POST | /calls/{id}/decline | Chỉ người được gọi | 409 nếu không còn đổ chuông |
+| POST | /calls/{id}/end | Hai bên | Cúp được cả lúc đang đổ chuông lẫn đang nói |
+| POST | /calls/{id}/failed | Hai bên | Client báo peer connection không lên được; server không biết vì media không đi qua nó |
+| GET | /calls/ice-servers | Đăng nhập | STUN công cộng + credential TURN ngắn hạn (TTL 10 phút). **Không cache** vì credential hết hạn |
+| GET | /conversations/{id}/calls | Thành viên hội thoại | Lịch sử, mặc định 20 tối đa 100 |
+
+**STOMP cho gọi 1:1** (cùng endpoint `/ws/work-chat`):
+
+| Hướng | Destination | Nội dung |
+|---|---|---|
+| Client gửi | `/app/calls/{callId}/signal` | `{kind: OFFER\|ANSWER\|ICE, payload}` — server **không đọc** payload, chỉ chuyển tiếp. Kiểm tra quyền **mỗi frame** vì callId do client ghi vào destination |
+| Server đẩy | `/user/queue/calls` | Thay đổi vòng đời: `{callId, conversationId, peerId, incoming, media, status, endReason}` |
+| Server đẩy | `/user/queue/calls/signal` | Frame được chuyển tiếp: `{callId, kind, payload}` |
 | GET | /work-chat/conversations | Participant | page/size, mặc định 20, tối đa 100 |
 | POST | /work-chat/conversations/with/{userId} | Cùng nhóm | Tạo ở lần liên hệ đầu |
 | GET | /work-chat/conversations/{id}/messages | Participant | Mới nhất trước |

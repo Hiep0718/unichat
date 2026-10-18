@@ -2015,3 +2015,85 @@
   thirty-sixth test file would have exposed it; the assertion is unchanged.
 - Verification: `vitest` 252/252 (7 new) run twice for stability, `tsc --noEmit` clean,
   `eslint --max-warnings 0` clean, `mvnw test` 393/393 untouched and still green.
+
+## 2026-10-18 — Phase 1: the call lifecycle on the server
+
+- Built `workchat/call/` — V44, entity, state machine, service, REST controller, STOMP
+  signalling relay, broadcaster, ICE provider, ringing sweeper. 26 new unit tests.
+- Split the surface as planned: lifecycle over REST (sparse, each has a failure a person
+  must read — already on a call, no longer ringing, not yours to answer — and a STOMP
+  SEND has no reply to carry that); SDP and ICE over STOMP, never stored.
+- A call that cannot connect is **recorded, not refused**. Offline or busy returns 201
+  with status MISSED rather than an error: refusing would leave the caller with nothing
+  and the callee with no sign anyone tried, which is not how a phone behaves. The
+  caller's own "you are already on a call" stays an error, because that one they can act
+  on.
+- Status is derived from the end reason inside the entity rather than passed alongside
+  it, so a row cannot end up DECLINED with a reason of HUNG_UP. Hanging up before pickup
+  becomes MISSED, since from the callee's side nothing distinguishes it.
+- Signalling authorisation is re-checked **per frame**, not once per call: the call id
+  travels in a STOMP destination the client writes, and the socket carries no other
+  evidence, so trusting it would let anyone signed in push an offer into someone else's
+  call. A rejected frame is dropped silently — STOMP cannot reply to a SEND, and probing
+  ids should not reveal which exist.
+- CHECK constraints on `calls`, the opposite of ADR-027's choice for topics and for a
+  different reason: a closed state machine makes the migration cheap and the guarantee
+  valuable. Five separate constraints rather than one, so a violation names the rule it
+  broke. They matter because a duration computed from a null timestamp is a plausible
+  wrong number in someone's history, not a crash.
+- Ring timeout runs as a scheduled sweep rather than an in-memory timer, because an
+  in-memory timer forgets every ringing call when the process stops — exactly when stuck
+  rows appear. A stuck RINGING row blocks both people from calling anyone again.
+- TURN credentials are minted per request with an HMAC expiry (RFC 5389 long-term
+  scheme) and the secret stays server-side. A static credential in the frontend bundle
+  would be a stranger's relay bandwidth on this project's bill.
+- **Verification is incomplete and this is the honest state.** `mvnw test` is 419/419
+  and compiles clean, but those are unit tests: Surefire's default includes match
+  `*Test`, not `*IT`, so `AuthPostgresIT` and `ChatPostgresIT` never ran either — there
+  are zero surefire reports for them. V44's SQL, its CHECK constraints, the JPA column
+  mapping and the JPQL in `CallRepository` have therefore **never touched a database**.
+  Docker Desktop is not running, there is no local PostgreSQL on 5432, and H2 is not a
+  dependency, so I could not close this myself. Wrote `CallPostgresIT` against the
+  constraints so it runs the moment Docker is up; it test-compiles.
+- Worth naming separately: AGENTS.md requires an integration test for every endpoint and
+  database interaction, and the ones that exist are excluded from the default build. That
+  predates this work.
+
+## 2026-10-18 — Phase 2: audio calling in the browser
+
+- Built `frontend/src/features/calls/`: REST client, pure reducer, peer-connection
+  wrapper, signalling helpers, an app-wide provider, the call panel and the button in a
+  one-to-one conversation header. Audio only, as planned. 28 new tests; 280/280 overall.
+- The rules live in `call-machine.ts` as a pure reducer with no DOM and no WebRTC, so
+  they are tested by calling a function rather than by mocking a browser. Both its test
+  file and the peer-connection one run under `@vitest-environment node`, which also
+  keeps them off the jsdom budget that `App.test.tsx` is sensitive to.
+- Three orderings the wrapper exists to handle, each a real failure if ignored:
+  ICE candidates arrive before the description they belong to, so early ones are held
+  and replayed rather than thrown away — a discarded candidate is a network path the two
+  sides never try. The callee gets no peer connection until it answers, so the
+  microphone permission prompt does not appear while the phone is still ringing. Muting
+  disables the track instead of removing it, because removing one renegotiates the
+  connection and the other side hears the call glitch.
+- The caller sends its offer while the callee's phone is still ringing rather than after
+  they answer, so answering connects instead of starting a negotiation the person waits
+  through. The backend already allows signalling in RINGING, and there is a test
+  pinning that.
+- Frames about a call this browser is not on are ignored rather than applied: a late
+  frame from a call that already ended must not tear down the one that started after it.
+  A second INCOMING while busy is likewise ignored — the server answers the second
+  caller with BUSY, but a frame that slipped through must not drop a call in progress.
+- `close()` stops the microphone tracks. Without it the browser's recording indicator
+  stays on after a call, which looks exactly like being listened to; it is tested, and
+  closing twice is tested too because teardown runs from both hang-up and unmount.
+- ESLint caught a real bug rather than a style point: the "no microphone" message was
+  held in a ref and read during render, so it would never have reached the screen.
+  Moved to state. The message itself matters because `getUserMedia` is absent on plain
+  HTTP except localhost — which is exactly the LAN-testing setup discussed earlier, and
+  without the message the call button simply appears to do nothing.
+- Call button is shown only on one-to-one threads. A group call needs an SFU and is out
+  of scope, so offering the button there would promise something that fails.
+- Verification: `vitest` 280/280, `tsc --noEmit` clean, `eslint --max-warnings 0` clean.
+  Unchanged from Phase 1: nothing here has run against a real browser or a real
+  database. No WebRTC code has executed — jsdom has no RTCPeerConnection, so the stubs
+  prove the ordering logic, not that a call connects.

@@ -75,6 +75,8 @@ Mỗi feature có index.ts public barrel, schema.ts, api.ts/hooks.ts khi cần, 
 | frontend/src/features/documents/ | document-api.ts, upload-schema.ts, document-page.tsx, upload-panel.tsx, document-table.tsx |
 | frontend/src/features/chat/ | chat-api.ts, question-schema.ts, chat-page.tsx, message-list.tsx, question-form.tsx, citation-panel.tsx, refusal-card.tsx |
 | frontend/src/features/history/ | conversation-api.ts, conversation-page.tsx, conversation-list.tsx |
+| frontend/src/features/realtime/ | realtime-provider.tsx (một kết nối STOMP dùng chung toàn app) |
+| frontend/src/features/calls/ | call-api.ts, call-machine.ts (reducer thuần), peer-connection.ts, call-signalling.ts, call-provider.tsx, components/call-overlay.tsx, components/call-button.tsx |
 | frontend/src/features/settings/ | settings-page.tsx, general-form.tsx, access-form.tsx, privacy-form.tsx, danger-zone.tsx |
 | frontend/src/features/evaluation/ | evaluation-api.ts, evaluation-page.tsx, run-form.tsx, metric-summary.tsx |
 | frontend/src/features/admin/ | admin-api.ts, user-page.tsx, metric-page.tsx, user-table.tsx |
