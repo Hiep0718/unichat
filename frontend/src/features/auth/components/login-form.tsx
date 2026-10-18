@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 
 import { Icon } from '../../../components/icon';
 import { authApi } from '../api/auth-api';
+import { RETURN_PARAM, safeReturnTo, withReturnTo } from '../return-to';
 import type { ApiError } from '../../../lib/api-client';
 import './login-form.css';
 
@@ -14,11 +15,13 @@ export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const returnTo = searchParams.get(RETURN_PARAM);
 
   const loginMutation = useMutation({
     mutationFn: authApi.login,
     onSuccess: () => {
-      navigate('/workspaces');
+      navigate(safeReturnTo(returnTo));
     },
     onError: (error: ApiError) => {
       setErrorMsg(error.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
@@ -117,7 +120,7 @@ export function LoginForm() {
       <div className="login-card__footer">
         <p>
           Chưa có tài khoản?{' '}
-          <Link to="/register" className="login-card__link">Đăng ký</Link>
+          <Link to={withReturnTo('/register', returnTo)} className="login-card__link">Đăng ký</Link>
         </p>
       </div>
     </div>

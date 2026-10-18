@@ -7,7 +7,7 @@
  */
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { NavLink, Outlet, useNavigate, useParams } from 'react-router-dom';
+import { Link, NavLink, Outlet, useNavigate, useParams } from 'react-router-dom';
 
 import { Icon } from '../../components/icon';
 import { GroupMark } from './components/group-mark';
@@ -28,7 +28,7 @@ const TABS: readonly { path: string; label: string; icon: string }[] = [
 
 export function GroupPage() {
   const { workspaceId = '' } = useParams<{ workspaceId: string }>();
-  const { workspace, canEdit } = useWorkspace();
+  const { workspace, canEdit, isOwner } = useWorkspace();
   const { data: details } = useWorkspaceQuery(workspaceId);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -54,8 +54,21 @@ export function GroupPage() {
           <div className="group-page__titles">
             <h1 className="group-page__name">{workspace.name}</h1>
             <p className="group-page__sub">
-              <Icon name={visibilityOption(workspace.visibility).icon} size={15} />
-              {visibilityOption(workspace.visibility).groupLabel}
+              {isOwner ? (
+                <Link
+                  to={`/workspaces/${workspaceId}/settings?tab=access`}
+                  className="group-page__visibility-link"
+                  title="Đổi chế độ hiển thị của nhóm"
+                >
+                  <Icon name={visibilityOption(workspace.visibility).icon} size={15} />
+                  {visibilityOption(workspace.visibility).groupLabel}
+                </Link>
+              ) : (
+                <>
+                  <Icon name={visibilityOption(workspace.visibility).icon} size={15} />
+                  {visibilityOption(workspace.visibility).groupLabel}
+                </>
+              )}
               {details && (
                 <>
                   <span className="group-page__dot">·</span>

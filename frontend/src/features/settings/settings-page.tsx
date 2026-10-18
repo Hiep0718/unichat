@@ -1,23 +1,38 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { useWorkspace } from '../workspaces/workspace-context';
 import { updateWorkspace, deleteWorkspace } from '../workspaces/workspace-api';
 import { MemberTable } from '../members/components/member-table';
 import { Icon } from '../../components/icon';
 import { VISIBILITY_OPTIONS } from '../workspaces/workspace-visibility';
+import { TopicPicker } from '../workspaces/components/topic-picker';
+import { InvitePanel } from '../workspaces/components/invite-panel';
 
 type SettingsTab = 'general' | 'access' | 'privacy' | 'danger';
+
+const TABS: readonly SettingsTab[] = ['general', 'access', 'privacy', 'danger'];
+
+/** Reads the tab named in the URL, so a link can open the one it means. */
+function tabFromQuery(raw: string | null): SettingsTab {
+  return TABS.find((tab) => tab === raw) ?? 'general';
+}
 
 export function WorkspaceSettingsPage() {
   const { workspace, isOwner, canEdit } = useWorkspace();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const [activeTab, setActiveTab] = useState<SettingsTab>('general');
+  // Held in the URL rather than in state alone: a screen that tells an owner
+  // to change a setting has to be able to land them on it, and sending them
+  // to the first tab to hunt for it is barely better than saying nothing.
+  const activeTab = tabFromQuery(searchParams.get('tab'));
+  const setActiveTab = (tab: SettingsTab) => setSearchParams({ tab }, { replace: true });
 
   // General tab state
   const [name, setName] = useState(workspace?.name || '');
   const [description, setDescription] = useState(workspace?.description || '');
+  const [topics, setTopics] = useState<readonly string[]>(workspace?.topics ?? []);
   const [savingGeneral, setSavingGeneral] = useState(false);
   const [generalMessage, setGeneralMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -38,7 +53,7 @@ export function WorkspaceSettingsPage() {
     setGeneralMessage(null);
 
     try {
-      await updateWorkspace(workspace.id, { name, description });
+      await updateWorkspace(workspace.id, { name, description, topics: [...topics] });
       setGeneralMessage({ type: 'success', text: 'Cập nhật thông tin Workspace thành công' });
     } catch (err: unknown) {
       setGeneralMessage({ type: 'error', text: err instanceof Error ? err.message : 'Không thể lưu thay đổi' });
@@ -198,6 +213,13 @@ export function WorkspaceSettingsPage() {
             />
           </div>
 
+          <div style={{ marginBottom: '1.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#334155', marginBottom: '0.375rem' }}>
+              Chủ đề
+            </label>
+            <TopicPicker value={topics} onChange={setTopics} disabled={!canEdit || savingGeneral} />
+          </div>
+
           {canEdit && (
             <button
               type="submit"
@@ -243,6 +265,11 @@ export function WorkspaceSettingsPage() {
               {savingVisibility ? 'Đang lưu...' : 'Cập nhật chế độ hiển thị'}
             </button>
           </form>
+
+          <div style={{ background: '#ffffff', padding: '1.5rem', borderRadius: '0.5rem', border: '1px solid #e2e8f0' }}>
+            <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: '#0f172a', marginBottom: '1rem' }}>Link mời</h3>
+            <InvitePanel workspaceId={workspace.id} visibility={workspace.visibility} />
+          </div>
 
           <div style={{ background: '#ffffff', padding: '1.5rem', borderRadius: '0.5rem', border: '1px solid #e2e8f0' }}>
             <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: '#0f172a', marginBottom: '1rem' }}>Danh sách Thành viên</h3>

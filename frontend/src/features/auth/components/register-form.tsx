@@ -3,11 +3,12 @@
  */
 
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 
 import { Icon } from '../../../components/icon';
 import { authApi } from '../api/auth-api';
+import { RETURN_PARAM, withReturnTo } from '../return-to';
 import type { ApiError } from '../../../lib/api-client';
 import './register-form.css';
 
@@ -17,12 +18,15 @@ import './register-form.css';
 export function RegisterForm() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const returnTo = searchParams.get(RETURN_PARAM);
 
   const registerMutation = useMutation({
     mutationFn: authApi.register,
     onSuccess: () => {
-      // Navigate to login page on successful registration
-      navigate('/login');
+      // Carries the destination on, so someone who registered in order to
+      // accept an invitation returns to it instead of losing it at sign-in.
+      navigate(withReturnTo('/login', returnTo));
     },
     onError: (error: ApiError) => {
       setErrorMsg(error.message || 'Đăng ký thất bại. Vui lòng kiểm tra lại thông tin.');

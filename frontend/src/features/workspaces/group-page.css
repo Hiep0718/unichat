@@ -225,3 +225,25 @@
     display: none;
   }
 }
+
+/* The level is already stated here, so for the owner — the only person who can
+   change it — the statement is also the way in. Underlined on hover only: a
+   permanently decorated line would read as a warning rather than a fact. */
+.group-page__visibility-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: inherit;
+  text-decoration: none;
+  border-radius: var(--radius-sm, 4px);
+}
+
+.group-page__visibility-link:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.group-page__visibility-link:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}

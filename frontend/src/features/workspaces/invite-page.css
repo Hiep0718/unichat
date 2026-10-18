@@ -1,0 +1,105 @@
+/* The invitation stands alone: it is reached from outside the product, often
+   by someone who has never seen it, so the page carries no app chrome. */
+.invite-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px 16px;
+  background: var(--color-surface-variant, #f1f5f9);
+}
+
+.invite-page__card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 420px;
+  padding: 36px 28px;
+  border: 1px solid var(--color-outline-variant, #e2e8f0);
+  border-radius: var(--radius-lg, 12px);
+  background: var(--color-surface, #ffffff);
+  text-align: center;
+}
+
+.invite-page__eyebrow {
+  margin: 0;
+  color: var(--color-on-surface-variant, #64748b);
+  font-size: 0.9375rem;
+}
+
+.invite-page__title {
+  margin: 0;
+  font-size: 1.5rem;
+  line-height: 1.3;
+  color: var(--color-on-surface, #0f172a);
+  /* A group name is user-supplied and can be one long unbroken string. */
+  overflow-wrap: anywhere;
+}
+
+.invite-page__role {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: var(--color-on-surface-variant, #64748b);
+  font-size: 0.875rem;
+}
+
+.invite-page__primary {
+  width: 100%;
+  margin-top: 8px;
+  padding: 11px 20px;
+  border: none;
+  border-radius: var(--radius-md, 8px);
+  background: var(--color-primary, #00236f);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.invite-page__primary:disabled {
+  opacity: 0.65;
+  cursor: progress;
+}
+
+.invite-page__secondary {
+  color: var(--color-primary, #00236f);
+  font-size: 0.875rem;
+  text-decoration: none;
+}
+
+.invite-page__secondary:hover {
+  text-decoration: underline;
+}
+
+.invite-page__error {
+  margin: 0;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--radius-md, 8px);
+  background: #fff1f2;
+  color: #9f1239;
+  font-size: 0.875rem;
+}
+
+.invite-page__reason {
+  margin: 0;
+  color: var(--color-on-surface, #0f172a);
+  font-weight: 500;
+}
+
+.invite-page__hint {
+  margin: 0;
+  color: var(--color-on-surface-variant, #64748b);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.invite-page__card--dead {
+  color: var(--color-on-surface-variant, #64748b);
+}

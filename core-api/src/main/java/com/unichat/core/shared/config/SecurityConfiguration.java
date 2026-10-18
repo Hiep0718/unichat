@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpMethod;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -107,6 +108,12 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/v1/health", "/actuator/health", "/api/v1/auth/**").permitAll()
                         .requestMatchers("/ws/work-chat/**").permitAll()
+                        // Preview of an invite link only. Someone who has been
+                        // sent one may not have an account yet, and a login
+                        // screen tells them neither what they were invited to
+                        // nor by whom. Redeeming it still requires a session:
+                        // the matcher is GET-only and does not cover /accept.
+                        .requestMatchers(HttpMethod.GET, "/api/v1/invites/*").permitAll()
                         .requestMatchers("/internal/v1/**").denyAll()
                         .requestMatchers("/api/v1/admin/**").hasAuthority("SCOPE_ADMIN")
                         .anyRequest().authenticated())
