@@ -9,10 +9,10 @@
 -- and renaming two tables on a shared development database buys a better name at
 -- the cost of every checked-out branch. See ADR-023.
 --
--- Numbered 31 and idempotent for the same reason as V30: version 29 is taken on
--- the shared development database by a migration that was never committed, so
--- numbers here are chosen above everything applied and every statement is a
--- no-op on a database that already holds part of this.
+-- Renumbered 31 -> 37 for the same reason as V36, which carries the full note:
+-- main's Plan V2 work claimed 30 through 35, and this script had already run on
+-- the shared development database as version 31. Every statement is idempotent,
+-- so re-applying it there under a new number is a no-op.
 
 ALTER TABLE direct_conversations
     ADD COLUMN IF NOT EXISTS kind VARCHAR(16) NOT NULL DEFAULT 'DIRECT',

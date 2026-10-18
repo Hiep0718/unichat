@@ -6,16 +6,23 @@
 -- column here, and the kinds are IMAGE/FILE rather than IMAGE/DOCUMENT, so that
 -- nobody reading this table later assumes the assistant can cite it.
 --
--- Numbered 30, not 29, and idempotent, for the reason V26 already records once:
--- version 29 was taken on the shared development database on 2026-10-04 by an
--- "admin user seed" migration from a working copy that was never committed. It
--- went unnoticed because no file here claimed 29, so Flyway treated the row as
--- missing and the ignore patterns passed over it; adding a file with that number
--- turned it into a checksum mismatch that stopped the application from starting.
+-- Renumbered 30 -> 36 when main merged in. This script ran on the shared
+-- development database as version 30 on 2026-10-09; main's Plan V2 work then
+-- claimed 30 through 35 for its own files, and two files cannot hold one
+-- version. Main's V30 and V31 could not move instead: they create tables
+-- outright, so a fresh number would re-run them against objects that already
+-- exist. This one was written to survive exactly that, as the note below says.
 --
--- A fresh number is what makes that safe, and IF NOT EXISTS is what makes a
--- fresh number safe: on a database that already holds part of this, every
--- statement below is a no-op.
+-- The consequence on the shared database is that version 36 now re-applies what
+-- version 30 already did. IF NOT EXISTS is what makes that harmless: on a
+-- database that already holds part of this, every statement below is a no-op.
+-- Version 30 there still records this script under main's V30 filename, which
+-- is a checksum mismatch that *:future does not cover and validate-on-migrate
+-- currently does not enforce.
+--
+-- The original reason for a fresh number, kept because it recurs: version 29
+-- was taken on the shared development database on 2026-10-04 by an "admin user
+-- seed" migration from a working copy that was never committed.
 
 -- A message may now carry only files, with no text. Blank text must be NULL
 -- rather than an empty string, so a bug cannot produce an empty bubble.
