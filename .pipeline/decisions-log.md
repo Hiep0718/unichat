@@ -2129,3 +2129,40 @@
 - Verification: `mvnw test` 430/430, `vitest` 280/280, `tsc --noEmit` clean,
   `eslint --max-warnings 0` clean. Still nothing run against a browser or a database —
   that is what the runbook is for, and it needs Docker and a second machine.
+
+## 2026-10-18 — Expo Go: a PowerShell interpolation bug that had broken the mobile API URL
+
+- Reported as an Expo error while scanning the QR: ENOENT renaming
+  `development-code-signing-settings-2.json.<random>`. Checked before answering: the
+  settings file now exists and is valid, and Expo is serving on 8081 (HTTP 200), so
+  that error did not stop the server and the condition had passed. Could not reproduce
+  it; the machine was at 1.3 GB free with commit charge at 33.1 of 33.7 GB, which is
+  exactly when a write-then-rename fails, but I cannot prove that was the cause and
+  said so rather than presenting a guess as a diagnosis.
+- Looking at what they would hit next found a real bug. `mobile/.env` held
+  `EXPO_PUBLIC_API_URL=http://` — no host, no port. `dev.ps1` writes it with
+  `"http://$lanIp:8082"`, and PowerShell reads `$lanIp:8082` as the variable `8082` in
+  the scope `lanIp`, the same syntax as `$env:PATH`. It resolves to nothing, so the
+  string collapses to `http://`. Confirmed by running both forms side by side.
+- Three layers fixed rather than one, because each failed independently:
+  1. `dev.ps1` now uses `${lanIp}`.
+  2. `dev.ps1` wrote the file with `Out-File -Encoding utf8`, which on Windows
+     PowerShell 5.1 means UTF-8 **with** a BOM — the file had one. Harmless here only
+     because the first line was a comment; a BOM before a key corrupts its name. Now
+     `[System.IO.File]::WriteAllText`, which is BOM-free, and AGENTS.md requires that.
+  3. `api-origin.ts` validated the value with a scheme-only regex, so `http://` was
+     accepted as configured and the Expo Go fallback — which derives the right address
+     from `hostUri` and would have worked — was never reached. It now requires a host.
+     Used a regex rather than `new URL()`: React Native's URL is a polyfill whose
+     hostname parsing has not always been reliable.
+- A second bug in the same block: `Get-NetIPAddress ... | Select-Object -First 1`
+  filtered interfaces by name and took whichever came first. On this machine that is
+  "Ethernet 3" at 10.10.10.1, a virtual adapter whose name contains none of the excluded
+  words, while the phone can only reach Wi-Fi at 192.168.109.146. Now selects the
+  adapter carrying the default route, lowest metric first — an adapter with no default
+  gateway is not on the network the phone is on.
+- 7 new tests, including one pinning the exact broken value the script used to write.
+  Mobile suite 80/80, `tsc --noEmit` clean.
+- Disk is a recurring problem and part of it is mine: Temp went from empty after this
+  morning's cleanup back to 4.16 GB, largely from repeated Maven and Vite runs today.
+  Left it alone rather than clearing again without asking.
