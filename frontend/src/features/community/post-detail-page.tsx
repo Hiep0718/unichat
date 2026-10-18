@@ -271,6 +271,7 @@ export function PostDetailPage() {
                 {formatRelativeTime(discussion.createdAt)}
               </time>
               <AnswerStatusBadge
+                label={discussion.label}
                 replyCount={discussion.replyCount}
                 hasAcceptedAnswer={Boolean(discussion.acceptedReplyId)}
               />
@@ -464,11 +465,11 @@ export function PostDetailPage() {
               trong Knowledge Space này.
             </p>
             <div className="post-detail__sidebar-stats">
-              <div className="post-detail__stat">
+              <div className="post-detail__sidebar-stat">
                 <strong>{discussion.viewCount}</strong>
                 <span>Lượt xem</span>
               </div>
-              <div className="post-detail__stat">
+              <div className="post-detail__sidebar-stat">
                 <strong>{replies.length}</strong>
                 <span>Bình luận</span>
               </div>

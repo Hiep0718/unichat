@@ -165,7 +165,7 @@ export function FeedPage() {
               onClick={() => setShowCreate(true)}
             >
               <Icon name="edit_square" size={18} />
-              Đặt câu hỏi
+              Tạo bài viết
             </button>
           </header>
 
@@ -235,7 +235,6 @@ export function FeedPage() {
 
       {showCreate && (
         <CreatePostModal
-          heading="Đặt câu hỏi"
           initialLabel="QUESTION"
           onClose={() => setShowCreate(false)}
           onCreated={(wsId, postId) => {
@@ -317,7 +316,7 @@ function FeedList({
         <p>{text.hint}</p>
         <button type="button" className="feed-page__ask" onClick={onAsk}>
           <Icon name="edit_square" size={18} />
-          Đặt câu hỏi
+          Tạo bài viết
         </button>
       </div>
     );

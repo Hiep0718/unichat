@@ -6,7 +6,14 @@ import { fetchJson, getAccessToken } from '../../lib/api-client';
 /* ---------- Types ---------- */
 
 /** The reactions a member can leave. All of them are positive. */
-export type ReactionType = 'LIKE' | 'LOVE' | 'INSIGHTFUL' | 'CELEBRATE';
+export type ReactionType =
+  | 'LIKE'
+  | 'LOVE'
+  | 'CARE'
+  | 'HAHA'
+  | 'WOW'
+  | 'SAD'
+  | 'ANGRY';
 
 export interface ReactionSummary {
   /** Counts keyed by type, omitting types nobody used. */

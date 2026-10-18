@@ -11,6 +11,8 @@ import './answer-status.css';
 export type AnswerStatus = 'UNANSWERED' | 'DISCUSSING' | 'RESOLVED';
 
 interface AnswerStatusProps {
+  /** The post's kind. Anything but a question has no resolution to report. */
+  readonly label: string | null;
   readonly replyCount: number;
   readonly hasAcceptedAnswer: boolean;
   /** Compact rail form used on feed cards; omit for the labelled pill. */
@@ -27,6 +29,18 @@ const STATUS_META: Record<
 };
 
 /**
+ * Whether a post has a resolution state at all.
+ *
+ * Only a question does. A discussion is never "chưa có lời giải" — nobody
+ * asked for one — and an announcement is not waiting on anybody either. The
+ * rule lives here because it was previously written into the feed card's
+ * markup alone, so the post page showed the badge on every kind of post.
+ */
+export function hasResolutionState(label: string | null): boolean {
+  return label === 'QUESTION';
+}
+
+/**
  * Derives the state from the counters the feed already returns.
  */
 export function resolveAnswerStatus(
@@ -38,10 +52,15 @@ export function resolveAnswerStatus(
 }
 
 export function AnswerStatusBadge({
+  label,
   replyCount,
   hasAcceptedAnswer,
   compact = false,
 }: AnswerStatusProps) {
+  if (!hasResolutionState(label)) {
+    return null;
+  }
+
   const status = resolveAnswerStatus(replyCount, hasAcceptedAnswer);
   const meta = STATUS_META[status];
 

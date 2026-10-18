@@ -11,7 +11,7 @@ import { useState } from 'react';
 import { Icon } from '../../../components/icon';
 import { formatRelativeTime } from '../../../lib/format-time';
 import type { FeedPostResponse } from '../feed-api';
-import { resolveAnswerStatus } from './answer-status';
+import { hasResolutionState, resolveAnswerStatus } from './answer-status';
 import { ReactionBar } from './reaction-bar';
 import { PostAttachments } from './post-attachments';
 import { PostBackgroundPanel } from './post-background-panel';
@@ -74,9 +74,7 @@ export function FeedCard({
   // whole feed, which would also lose the reader's scroll position.
   const [replyCount, setReplyCount] = useState(post.replyCount);
   const preview = toPlainPreview(post.body);
-  // Resolution state only means something for questions; an announcement is
-  // never "unanswered".
-  const isQuestion = post.label === 'QUESTION';
+  const isQuestion = hasResolutionState(post.label);
   const status = resolveAnswerStatus(post.replyCount, acceptedReplyId !== null);
 
   return (

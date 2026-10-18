@@ -357,17 +357,22 @@
   margin-bottom: 16px;
 }
 
-.post-detail__stat {
+/* The sidebar's figure-over-caption pair. Named apart from the action bar's
+   .post-detail__stat, which is an icon beside a number: one class for both
+   stacked the action bar into a column, and its `span` rule outranked
+   .material-symbols-outlined and replaced the icon font, so the icons showed
+   up as the words "chat_bubble" and "visibility". */
+.post-detail__sidebar-stat {
   display: flex;
   flex-direction: column;
 }
 
-.post-detail__stat strong {
+.post-detail__sidebar-stat strong {
   font: var(--font-headline-md);
   color: var(--color-on-surface);
 }
 
-.post-detail__stat span {
+.post-detail__sidebar-stat span {
   font: var(--font-label-sm);
   color: var(--color-on-surface-variant);
 }
