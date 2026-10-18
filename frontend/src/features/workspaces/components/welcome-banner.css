@@ -5,10 +5,21 @@
   align-items: center;
   justify-content: space-between;
   padding: 34px 36px;
-  /* Travels navy → indigo → violet rather than shading one navy, so the hero
-     speaks the same language as the cards below it while staying the brand's
-     blue at the point the eye lands first. */
-  background: linear-gradient(120deg, #1e3a8a 0%, #4f46e5 46%, #7c3aed 100%);
+  /* The picture, over the gradient that used to be the whole banner. Listed
+     first because the first layer is the topmost: the gradient is no longer
+     what is seen, it is what paints instantly while the picture decodes and
+     what remains if the file cannot be fetched at all. It travels navy →
+     indigo → violet, the same journey the picture makes, so the swap between
+     them is not a change of subject.
+
+     Chosen to the rule the workspace covers follow — dark, close to abstract,
+     calm on the left where the greeting is written. See
+     public/covers/README.md. */
+  background-image: url('/covers/banner-dashboard.jpg'),
+    linear-gradient(120deg, #1e3a8a 0%, #4f46e5 46%, #7c3aed 100%);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   border-radius: var(--radius-xl);
   color: #fff;
   position: relative;
@@ -16,15 +27,21 @@
   isolation: isolate;
 }
 
-/* Two blobs of a further hue: the same mesh idea the cards use, at a lower
-   strength because this sits behind text across its whole width. */
+/* Darkens the left, where the greeting and its subtitle are written, and lets
+   the picture through on the right. The cards carry the same guarantee with a
+   scrim weighted to their lower edge; this one is weighted sideways because
+   that is where this text sits. */
 .welcome-banner::before {
   content: '';
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(46% 120% at 88% 8%, rgb(232 121 249 / 42%), transparent 68%),
-    radial-gradient(38% 100% at 4% 92%, rgb(34 211 238 / 30%), transparent 70%);
+  background: linear-gradient(
+    100deg,
+    rgb(8 11 36 / 72%) 0%,
+    rgb(8 11 36 / 46%) 38%,
+    rgb(8 11 36 / 6%) 72%,
+    transparent 100%
+  );
   pointer-events: none;
 }
 

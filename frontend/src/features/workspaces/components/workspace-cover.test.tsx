@@ -1,4 +1,4 @@
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { WorkspaceCover } from './workspace-cover';
@@ -19,7 +19,7 @@ const ID_FETCHED = '33333333-3333-4333-8333-333333333333';
 const ID_FAILED = '44444444-4444-4444-8444-444444444444';
 
 describe('WorkspaceCover', () => {
-  it('should draw a gradient for a group that uploaded nothing', () => {
+  it('should show a bundled picture for a group that uploaded nothing', () => {
     // Arrange
     const fetchBlob = vi.spyOn(apiClient, 'fetchBlob');
 
@@ -28,11 +28,33 @@ describe('WorkspaceCover', () => {
       <WorkspaceCover workspaceId={ID_A} name="Mongodb" hasCover={false} />,
     );
 
-    // Assert: no request at all, and a visible mark rather than a grey box.
+    // Assert: a static file, so nothing is asked of the API.
     expect(fetchBlob).not.toHaveBeenCalled();
+    const image = container.querySelector('.workspace-cover__image');
+    expect(image).toHaveAttribute('src', expect.stringContaining('/covers/'));
+  });
+
+  it('should paint the gradient underneath so a card is never a grey box', () => {
+    // Arrange and Act: the picture is a request; the gradient is not, and it
+    // is what shows for the frame before the picture decodes.
+    const { container } = render(
+      <WorkspaceCover workspaceId={ID_A} name="Mongodb" hasCover={false} />,
+    );
+
+    // Assert
     const cover = container.querySelector('.workspace-cover') as HTMLElement;
     expect(cover.style.background).toContain('linear-gradient');
-    expect(screen.getByText('M')).toBeInTheDocument();
+  });
+
+  it('should darken the picture where the card writes its name', () => {
+    // Arrange and Act: white text over an arbitrary photograph is only
+    // legible because of this layer.
+    const { container } = render(
+      <WorkspaceCover workspaceId={ID_A} name="Mongodb" hasCover={false} />,
+    );
+
+    // Assert
+    expect(container.querySelector('.workspace-cover__scrim')).toBeInTheDocument();
   });
 
   it('should give two different groups two different gradients', () => {
@@ -83,8 +105,8 @@ describe('WorkspaceCover', () => {
     );
   });
 
-  it('should fall back to the gradient when the picture cannot be read', async () => {
-    // Arrange: a failed fetch must not leave an empty grey band.
+  it('should fall back to a bundled picture when the upload cannot be read', async () => {
+    // Arrange: a failed fetch must not leave an empty band.
     const fetchBlob = vi
       .spyOn(apiClient, 'fetchBlob')
       .mockRejectedValue(new Error('404'));
@@ -95,11 +117,25 @@ describe('WorkspaceCover', () => {
     );
 
     // Assert: wait for the request to have settled before judging what is on
-    // screen, otherwise this only observes the gradient shown while loading.
+    // screen, otherwise this only observes what was shown while loading.
     await waitFor(() => expect(fetchBlob).toHaveBeenCalled());
-    await waitFor(() => {
-      expect(container.querySelector('.workspace-cover__image')).not.toBeInTheDocument();
-      expect(screen.getByText('M')).toBeInTheDocument();
-    });
+    await waitFor(() =>
+      expect(container.querySelector('.workspace-cover__image'))
+        .toHaveAttribute('src', expect.stringContaining('/covers/')));
+  });
+
+  it('should fall back to the initial when no picture can be fetched at all', () => {
+    // Arrange: an offline tab, or a deployment serving the app without its
+    // static files. The gradient and the mark need no network.
+    const { container } = render(
+      <WorkspaceCover workspaceId={ID_A} name="Mongodb" hasCover={false} />,
+    );
+
+    // Act
+    fireEvent.error(container.querySelector('.workspace-cover__image')!);
+
+    // Assert
+    expect(container.querySelector('.workspace-cover__image')).not.toBeInTheDocument();
+    expect(screen.getByText('M')).toBeInTheDocument();
   });
 });

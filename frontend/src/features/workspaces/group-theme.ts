@@ -118,14 +118,3 @@ export function coverMesh(theme: GroupTheme): string {
     + `radial-gradient(52% 52% at 8% 42%, ${theme.blobB}, transparent 72%)`
   );
 }
-
-/**
- * Background for a small mark, such as the rail's group tiles.
- *
- * Two stops rather than three plus a mesh: at 24px the deep anchor and the
- * blobs only muddy it, and the point of the mark is that the hue is
- * recognisable at a glance.
- */
-export function markBackground(theme: GroupTheme): string {
-  return `linear-gradient(145deg, ${theme.from} 0%, ${theme.via} 100%)`;
-}
