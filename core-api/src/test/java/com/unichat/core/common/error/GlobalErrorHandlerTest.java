@@ -50,6 +50,13 @@ class GlobalErrorHandlerTest {
     }
 
     @Test
+    void shouldReturnMaintenanceWithBoundedRetryHeader() throws Exception {
+        mockMvc.perform(get("/test/maintenance"))
+                .andExpect(status().isServiceUnavailable()).andExpect(header().string("Retry-After", "30"))
+                .andExpect(jsonPath("$.code").value("AI_MAINTENANCE"));
+    }
+
+    @Test
     void shouldReturnProblemDetailWhenResourceIsMissing() throws Exception {
         // Arrange and Act
         var result = mockMvc.perform(get("/test/missing")
@@ -157,6 +164,8 @@ class GlobalErrorHandlerTest {
     @RestController
     @RequestMapping("/test")
     private static final class FailureController {
+        @GetMapping("/maintenance")
+        String maintenance() { throw new com.unichat.core.admin.service.AiMaintenanceError(); }
 
         @GetMapping("/type-mismatch/{id}")
         String typeMismatch(@org.springframework.web.bind.annotation.PathVariable("id") java.util.UUID id) {

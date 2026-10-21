@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import aiAvatar from '../../../assets/ai-avatar.png';
 
@@ -14,19 +13,12 @@ interface ChatHeaderProps {
   isStudioOpen?: boolean | undefined;
 }
 
-export const ChatHeader: React.FC<ChatHeaderProps> = ({
+function ChatIdentity({
   workspaceId,
   workspaceName,
   conversationTitle,
-  messageCount,
-  onNewChat,
-  onToggleDrawer,
-  hasDrawerOpen,
-  onToggleStudio,
-  isStudioOpen,
-}) => {
+}: ChatHeaderProps) {
   return (
-    <header className="chat-header">
       <div className="chat-header__main">
         {workspaceId && (
           <Link
@@ -60,11 +52,15 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
           </h3>
         </div>
       </div>
+  );
+}
 
+function ChatActions({ messageCount, onNewChat, onToggleDrawer, hasDrawerOpen, onToggleStudio, isStudioOpen }: ChatHeaderProps) {
+  return (
       <div className="chat-header__actions">
-        <div className="chat-header__info-pill" title="Mô hình AI & Phiên làm việc">
+        <div className="chat-header__info-pill" title="Mô hình thực được ghi trên từng câu trả lời đã lưu">
           <span className="material-symbols-outlined">psychology</span>
-          <span>Gemini 3.5 Flash</span>
+          <span>Trợ lý AI</span>
         </div>
 
         <div className="chat-header__info-pill" title="Tổng số tin nhắn trong phiên">
@@ -72,25 +68,13 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
           <span>{messageCount} tin nhắn</span>
         </div>
 
-        {onToggleStudio && (
-          <button
-            type="button"
-            className={`chat-header__btn ${isStudioOpen ? 'chat-header__btn--active' : ''}`}
-            onClick={onToggleStudio}
-            title="Đóng/Mở NotebookLM Knowledge Studio"
-            style={{
-              background: isStudioOpen ? '#0284c7' : 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
-              color: '#ffffff',
-              fontWeight: 600,
-              gap: '6px',
-            }}
-          >
-            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
-              auto_awesome
-            </span>
-            <span>Studio</span>
-          </button>
-        )}
+        {onToggleStudio && <button type="button"
+          className={`chat-header__btn ${isStudioOpen ? 'chat-header__btn--active' : ''}`}
+          onClick={onToggleStudio} title="Đóng/Mở NotebookLM Knowledge Studio"
+          style={{ background: isStudioOpen ? '#0284c7' : 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
+            color: '#ffffff', fontWeight: 600, gap: '6px' }}>
+          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>auto_awesome</span><span>Studio</span>
+        </button>}
 
         <button
           type="button"
@@ -113,6 +97,10 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
           </button>
         )}
       </div>
-    </header>
   );
-};
+}
+
+/** Keeps the header neutral; persisted replies carry their actual model attribution. */
+export function ChatHeader(properties: ChatHeaderProps) {
+  return <header className="chat-header"><ChatIdentity {...properties} /><ChatActions {...properties} /></header>;
+}

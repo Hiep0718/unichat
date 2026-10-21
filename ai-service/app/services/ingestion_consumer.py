@@ -68,8 +68,14 @@ def process_ingestion_message(payload: dict[str, Any]) -> bool:
     workspace_id = str(payload.get("workspaceId") or "")
     storage_key = str(payload.get("storageKey") or "")
     media_type = str(payload.get("mediaType") or "")
+    ingestion_version = int(payload.get("ingestionVersion") or 1)
+    content_hash = str(payload.get("contentHash") or "")
 
-    logger.info("Received ingestion task for document: %s, workspace: %s", document_id, workspace_id)
+    logger.info(
+        "Received ingestion task for document: %s, workspace: %s",
+        document_id,
+        workspace_id,
+    )
 
     try:
         file_bytes = _read_file(storage_key)
@@ -85,9 +91,15 @@ def process_ingestion_message(payload: dict[str, Any]) -> bool:
             workspace_id=workspace_id,
             document_id=document_id,
             chunks=chunks,
+            ingestion_version=ingestion_version,
+            document_content_hash=content_hash,
         )
 
-        logger.info("Successfully indexed %d vector chunks for document %s", stored_count, document_id)
+        logger.info(
+            "Successfully indexed %d vector chunks for document %s",
+            stored_count,
+            document_id,
+        )
         publish_ingestion_result(document_id, success=True, chunk_count=stored_count)
         return True
 

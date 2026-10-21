@@ -79,3 +79,6 @@ unichat:
       url: ${SUPABASE_STORAGE_URL:}
       key: ${SUPABASE_SERVICE_KEY:}
       bucket: ${SUPABASE_STORAGE_BUCKET:documents}
+
+CORE_SERVICE_PRIVATE_KEY_PATH: ${CORE_SERVICE_PRIVATE_KEY_PATH:.service-keys/core-service-private.pem}
+AI_SERVICE_PUBLIC_KEY_PATH: ${AI_SERVICE_PUBLIC_KEY_PATH:.service-keys/ai-service-public.pem}

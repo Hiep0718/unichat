@@ -12,6 +12,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 import tools.jackson.databind.ObjectMapper;
 import com.unichat.core.admin.service.AuditService;
+import com.unichat.core.admin.service.AiAdmissionService;
 import com.unichat.core.chat.api.AskQuestionRequest;
 import com.unichat.core.chat.domain.ChatOperation;
 import com.unichat.core.chat.domain.ChatOperationRepository;
@@ -27,13 +28,14 @@ class ChatOperationServiceTest {
     private final RateLimitService limits=mock(RateLimitService.class);
     private final PlatformTransactionManager transactions=mock(PlatformTransactionManager.class);
     private final ChatJson json=new ChatJson(new ObjectMapper());
+    private final AiAdmissionService admission=mock(AiAdmissionService.class);
     private final AskQuestionRequest request=new AskQuestionRequest("Câu hỏi tiếng Việt",null,false);
     private ChatOperationService service;
     @BeforeEach void setUp() {
         when(transactions.getTransaction(any())).thenAnswer(invocation -> new SimpleTransactionStatus());
         when(repository.expire(any(),any())).thenReturn(List.of());
         when(access.read(ChatFixture.ACTOR,ChatFixture.WORKSPACE)).thenReturn(ChatFixture.sources(true));
-        service=new ChatOperationService(repository,conversations,messages,access,json,limits,audit,ChatFixture.CLOCK,transactions);
+        service=new ChatOperationService(repository,conversations,messages,access,json,limits,audit,ChatFixture.CLOCK,transactions,admission);
     }
     private ChatOperation operation(String state) {
         var base=ChatFixture.operation(true);
@@ -47,6 +49,15 @@ class ChatOperationServiceTest {
         var retry=service.reserve(ChatFixture.ACTOR,ChatFixture.WORKSPACE,request,operation.key(),"request-new");
         assertFalse(retry.created());assertEquals(operation.conversationId(),retry.operation().conversationId());
         verifyNoInteractions(limits,messages);verify(repository,never()).insert(any(),any());
+        verify(admission,never()).requireChat(any());
+    }
+    @Test void shouldRejectMaintenanceBeforeConversationMessageOrQuotaWrites() {
+        doThrow(new com.unichat.core.admin.service.AiMaintenanceError()).when(admission).requireChat(any());
+        assertThrows(com.unichat.core.admin.service.AiMaintenanceError.class,
+                () -> service.reserve(ChatFixture.ACTOR,ChatFixture.WORKSPACE,request,UUID.randomUUID(),"request"));
+        verifyNoInteractions(limits,messages,conversations);
+        var ordering=inOrder(admission,repository);
+        ordering.verify(admission).lockShared(); ordering.verify(repository).lockActor(ChatFixture.ACTOR.userId());
     }
     @Test void shouldRejectRetryThatSubstitutesGeneratedConversationIntoBinding() {
         var operation=operation("RUNNING");

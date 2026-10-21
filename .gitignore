@@ -6,6 +6,7 @@
 .pipeline/
 .repository-reorganization/
 .audit/
+.service-keys/
 dev.ps1
 dev-service.ps1
 
@@ -48,6 +49,7 @@ core-api/start-core-api.ps1
 # Logs
 logs/
 *.log
+.pytest-tmp-*/
 
 # IDE and OS
 .vscode/

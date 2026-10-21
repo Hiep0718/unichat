@@ -10,7 +10,12 @@ from pathlib import Path
 from typing import Any
 
 from app.core.rag.generation_policy import GenerationPolicy
-from app.core.rag.key_registry import configured_keys, configured_model, resolve_key
+from app.core.rag.key_registry import (
+    active_provider,
+    configured_keys,
+    configured_model,
+    resolve_key,
+)
 from app.core.rag.provider_gateway import ProviderFailure, generate
 from app.services.diagnostic_events import diagnostic_event, unique_events
 from app.services.provider_probes import probe_key
@@ -109,6 +114,9 @@ class AiTelemetryTracker:
                 "name": key.name,
                 "maskedKey": mask_key(key.secret),
                 "isConfigured": True,
+                "provider": key.provider,
+                "isActive": key.provider == active_provider(),
+                "supportedModels": [configured_model(key.provider)],
             }
             for key in configured_keys()
         ]
@@ -134,6 +142,11 @@ class AiTelemetryTracker:
             "authoritative": False,
             "timeRangeDays": days,
             "keys": self.get_configured_keys(),
+            "activeProvider": active_provider(),
+            "activeModel": configured_model(),
+            "configuredModels": sorted({
+                configured_model(key.provider) for key in configured_keys()
+            }),
             "models": models,
             "window": {"from": start.isoformat(), "to": now.isoformat()},
             "retainedFrom": min(
@@ -165,6 +178,15 @@ class AiTelemetryTracker:
             }
         if policy is None:
             raise ValueError("ADMIN_POLICY_REQUIRED")
+        if selected.provider != active_provider():
+            return {
+                "status": "ERROR",
+                "message": "Khóa không thuộc nhà cung cấp đang hoạt động.",
+                "keyId": key_id,
+                "probeType": "METADATA",
+                "errorCode": "PROVIDER_SELECTION_INVALID",
+                "latencyMs": None,
+            }
         return probe_key(selected.secret, key_id, policy)
 
     def quick_prompt(
@@ -188,6 +210,8 @@ class AiTelemetryTracker:
             }
         if policy is None:
             raise ValueError("ADMIN_POLICY_REQUIRED")
+        if not prompt.strip() or len(prompt) > 2000:
+            raise ValueError("ADMIN_PROMPT_INVALID")
         started = time.perf_counter()
         try:
             result = generate(

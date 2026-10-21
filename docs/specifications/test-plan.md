@@ -134,3 +134,12 @@ MSW mock toàn bộ Core API trong unit/component test. Playwright chạy với 
 ## 10. Exit criteria trước code complete
 
 Compile, typecheck, lint, unit, integration và E2E đều pass; core logic coverage đạt gate; không Critical/High security finding; dependency audit không có unresolved critical; tài liệu hành vi và CHANGELOG cập nhật.
+
+## 11. Hive migration acceptance — ADR-022
+
+- Offline provider/config/parser tests: Hive IDs/model slash, missing credentials, ownership, URL validation, JSON-object/plain modes, UTF-8/SSE fragmentation, reasoning ignored, measured/null usage, caps, EOF/tools/refusal/HTTP failures và no automatic Hive fallback.
+- Cancellation/lifecycle: slow-drip dưới chunk target, stalled read, deadline với byte liên tục; private disconnect/cancel xuyên compaction không CHAT/retry/summary sau đó; public detach tiếp tục operation và replay không provider call mới.
+- RAG/API: citation retry một lần, domain refusal khác operational FAILED, model attribution tồn tại đến history reload; private signed JWT, API prompt limits và request/error schema.
+- PostgreSQL gate races: shared reservation/START đối đầu exclusive state update, replay trước block, stale version409, same-state no-op, DRAINING counts RUNNING/pending, unknown pending giữ nguyên. Database tests dùng disposable instance, không shared Supabase.
+- ADMIN/web/mobile: gate RBAC, status/transition/audit/maintenance header, model/key selection tách history filter, GENERATION notice, missing usage không hiển thị0, friendly provider failures không evidence escalation.
+- CI chưa có Playwright job; lưu riêng evidence E2E local với mocked network. Real Hive smoke cần approval/credit và fixture được phép, không dùng legacy synthetic research evaluation để kết luận chất lượng.

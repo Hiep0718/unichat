@@ -34,7 +34,9 @@ public class ProviderMetricsService {
         Map<String, Object> result = coverage(start, end, samples, pending);
         result.put("timeRangeDays", days); result.put("source", "CORE_POSTGRESQL");
         result.put("keys", registry.getOrDefault("keys", List.of())); result.put("models", models);
-        result.put("configuredModels", registry.getOrDefault("models", List.of()));
+        result.put("configuredModels", registry.getOrDefault("configuredModels", registry.getOrDefault("models", List.of())));
+        result.put("activeProvider", registry.get("activeProvider")); result.put("activeModel", registry.get("activeModel"));
+        result.put("historicalKeys", repository.historicalKeys());
         result.put("registryStatus", registry.getOrDefault("status", "AVAILABLE"));
         result.put("tier", registry.getOrDefault("tier", "UNKNOWN"));
         result.put("summary", summary(rows, samples));

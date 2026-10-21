@@ -99,3 +99,13 @@ Embedding model: intfloat/multilingual-e5-base revision d128750597153bb5987e10b1
 - audit_events: giữ tối thiểu suốt thời gian khóa luận, không chứa nội dung nguồn.
 - password_reset_otps: xóa ngay sau khi xác minh thành công; record hết hạn bị dọn theo policy 24 giờ.
 - evaluation data: version hóa, chỉ giữ dữ liệu được phép dùng cho nghiên cứu.
+
+## 9. Hive admission singleton — ADR-022
+
+`ai_generation_control` có duy nhất id=1, state `OPEN|DRAINING|VERIFYING`, version BIGINT không âm, updated_at TIMESTAMPTZ và updated_by tham chiếu user quản trị. Migration V40 tạo singleton OPEN; không sửa message, vector hoặc lịch sử provider cũ. Bảng bật RLS, không có policy truy cập cho client Supabase; chỉ database role của Core có quyền phù hợp mới dùng gate.
+
+Reservation mới và diagnostic START giữ shared lock trên singleton trong transaction ngắn; gate update giữ exclusive lock và kiểm version. Kiểm replay trước khi từ chối admission mới; chặn trước user-message/quota. Existing operations/control/END không bị gate từ chối. Lock order gate → actor → conversation; không gọi provider trong transaction.
+
+Drain kiểm cả chat_operations RUNNING và provider_attempts thiếu ended_at, không tự loại pending theo tuổi. DRAINING→VERIFYING yêu cầu cả hai count0. Thiếu bảng/row hoặc lỗi đọc gate phải fail closed. Apply migration và cập nhật trạng thái live chỉ được thực hiện trong phạm vi vận hành đã được duyệt.
+
+Retention provider_attempts chỉ xóa bản ghi đã có ended_at và nằm ngoài cửa sổ giữ dữ liệu. Pending chưa kết thúc vẫn giữ kể cả quá retention; việc xóa theo tuổi không được làm gate báo nhầm đã drain. Reconciliation pending cần bằng chứng và quy trình riêng, không tự sinh END hoặc sửa outcome.

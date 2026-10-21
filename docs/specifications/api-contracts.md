@@ -155,3 +155,18 @@ Mã chuẩn: VALIDATION_ERROR, UNAUTHENTICATED, FORBIDDEN, NOT_FOUND, CONFLICT, 
 - Mỗi public/internal endpoint có integration test success, validation, authentication, authorization và error contract.
 - Frontend dùng type sinh từ OpenAPI; không duy trì DTO trùng lặp bằng tay.
 - Provider/network ngoài hệ thống luôn mock trong test.
+
+## 12. Hive generation và admission — ADR-022
+
+Giữ `/admin/ai-studio/metrics`, `/test-key`, `/quick-prompt`; tất cả yêu cầu ADMIN. Probe body vẫn chỉ có keyId; provider quyết định probeType METADATA hoặc GENERATION. Hive probe dùng synthetic prompt tối đa128 token, không tự chạy khi tải trang. Quick prompt 1–2.000 ký tự không blank, model tối đa100 ký tự có thể chứa `/`; generation phải dùng đúng key/provider/model active, còn metrics filter vẫn nhận model lịch sử hợp lệ.
+
+Registry thêm activeProvider/activeModel/configuredModels và metadata provider/isActive/supportedModels cho mỗi key; historicalKeys chứa keyId/provider, tối đa100, chỉ dùng filter. Tokens không được báo giữ null. Không có quota/số dư/chi phí giả lập từ usage.
+
+| Method | Route | Request / response |
+|---|---|---|
+| GET | /admin/ai-studio/admission | state, version, runningOperationCount, pendingAttemptCount |
+| PUT | /admin/ai-studio/admission | body state/expectedVersion; ADMIN; stale version409; cùng state/version là no-op |
+
+Ví dụ body cập nhật gate: `{"state":"DRAINING","expectedVersion":0}`. State nhận OPEN/DRAINING/VERIFYING. OPEN→VERIFYING không hợp lệ; DRAINING→VERIFYING chỉ khi cả hai count0. VERIFYING→OPEN là thao tác vận hành có chủ đích sau kiểm chứng. New chat bị chặn ở DRAINING/VERIFYING; ADMIN diagnostics bị chặn ở DRAINING. Response maintenance: HTTP503/RFC7807 code AI_MAINTENANCE, Retry-After30, không tạo message/quota mới. Replay idempotency, polling, cancel và xử lý operation cũ giữ hợp đồng hiện tại.
+
+Private RAG response thêm nullable provider chứa model thực để tương thích Core reader và lưu provider_model. Lỗi vận hành private blocking trả HTTP503 với errorCode/requestId; streaming reset rồi error với code/requestId, không result. Core chỉ nhận mã an toàn, đánh dấu FAILED và không assistant/summary/final/done. Domain refusals không nội dung vẫn được persist như kết quả hợp lệ; không forward error body provider tới client.

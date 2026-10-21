@@ -4,7 +4,7 @@ import hashlib
 import os
 import time
 import uuid
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from pathlib import Path
 from typing import Any, cast
 
@@ -15,6 +15,47 @@ class ServiceSecurityError(RuntimeError):
     """Expose only a safe machine-readable service security failure code."""
 
 
+def _read_key_file(path: Path) -> str:
+    try:
+        return path.read_text(encoding="utf-8")
+    except Exception:
+        raise ServiceSecurityError("SERVICE_KEY_READ_FAILED") from None
+
+
+def _dotenv_key(
+    env_path: Path, values: Mapping[str, str | None], name: str
+) -> str:
+    configured_value = values.get(name)
+    if configured_value:
+        return configured_value.replace("\\n", "\n")
+    configured_path = values.get(f"{name}_PATH")
+    if not configured_path:
+        return ""
+    key_path = Path(configured_path)
+    if not key_path.is_absolute():
+        key_path = env_path.parent / key_path
+    return _read_key_file(key_path)
+
+
+def _read_from_dotenv(name: str) -> str:
+    try:
+        from dotenv import dotenv_values
+
+        from app.core.provider_settings import ENV_FILES
+
+        for env_path in ENV_FILES:
+            if not env_path.exists():
+                continue
+            value = _dotenv_key(env_path, dotenv_values(env_path), name)
+            if value:
+                return value
+    except ServiceSecurityError:
+        raise
+    except Exception:
+        raise ServiceSecurityError("SERVICE_KEY_DOTENV_FAILED") from None
+    return ""
+
+
 def configured_key(name: str) -> str:
     """Read a PEM key from environment or an explicitly configured file."""
     value = os.getenv(name, "").replace("\\n", "\n")
@@ -22,7 +63,10 @@ def configured_key(name: str) -> str:
         return value
     path = os.getenv(f"{name}_PATH", "")
     if path:
-        return Path(path).read_text(encoding="utf-8")
+        return _read_key_file(Path(path))
+    fallback = _read_from_dotenv(name)
+    if fallback:
+        return fallback
     raise ServiceSecurityError("SERVICE_KEY_UNCONFIGURED")
 
 

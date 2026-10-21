@@ -10,12 +10,17 @@ from typing import Any
 
 from app.core.rag.answer_pipeline import complete_answer, prepare_answer
 from app.core.rag.contracts import RetrievalAnswerRequest
+from app.core.rag.provider_contracts import (
+    GenerationCancelled,
+    check_cancelled,
+    operational_failure_code,
+)
 
 logger = logging.getLogger(__name__)
 _TEXT_VALUE = re.compile(r'"text"\s*:\s*("(?:[^"\\]|\\.)*")')
 
 
-class StreamDeliveryClosed(RuntimeError):
+class StreamDeliveryClosed(GenerationCancelled):
     """Stop an upstream attempt when its private Core subscription has closed."""
 
 
@@ -128,17 +133,20 @@ def _execute_stream(
             },
         )
         emit("pipeline-step", {"stepKey": "RETRIEVAL"})
-        prepared = prepare_answer(request)
+        check_cancelled(closed.is_set)
+        prepared = prepare_answer(request, cancelled=closed.is_set)
+        check_cancelled(closed.is_set)
         emit("pipeline-step", {"stepKey": "EVIDENCE", "decision": prepared.response.decision})
-        result = complete_answer(prepared, observer=observe)
+        result = complete_answer(prepared, observer=observe, cancelled=closed.is_set)
         if result.decision == "REFUSE":
             emit("reset", {"reason": result.refusalCode})
         emit("pipeline-step", {"stepKey": "VALIDATION"})
         emit("result", result.model_dump(mode="json"))
-    except StreamDeliveryClosed:
+    except GenerationCancelled:
         logger.info("stream_closed request_id=%s", request.requestId)
     except Exception as error:
         logger.error("stream_failed request_id=%s code=%s", request.requestId, type(error).__name__)
         if not closed.is_set():
-            emit("reset", {"reason": "RETRIEVAL_UNAVAILABLE"})
-            emit("error", {"code": "RETRIEVAL_UNAVAILABLE", "requestId": request.requestId})
+            code = operational_failure_code(error)
+            emit("reset", {"reason": code})
+            emit("error", {"code": code, "requestId": request.requestId})

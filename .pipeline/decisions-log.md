@@ -1,5 +1,22 @@
 # Decisions Log
 
+## 2026-10-21 - Hotfix: SOURCE_VERSION_INVALID — Ingestion Metadata Mismatch
+
+- Decision: Fix the `SOURCE_VERSION_INVALID` refusal in RAG chat by propagating the document's integer `ingestionVersion` and `sha256` content hash from Core API through RabbitMQ to AI Service's ChromaDB metadata storage.
+- Root cause: `vector_store.py` hardcoded `"ingestion_version": "v2.0"` (string label) and omitted `document_content_hash`. When `_source_version("v2.0")` ran through the strict `type(value) is int` guard, it returned `None`, and `None != 1` triggered `SOURCE_VERSION_INVALID`.
+- Changes:
+  1. **Core API**: Added `ingestionVersion` (int) and `contentHash` (String) to `DocumentIngestionMessage` record; updated both `uploadDocument` and `approveContributedDocument` call sites.
+  2. **AI Service**: `store_document_chunks` now accepts `ingestion_version: int` and `document_content_hash: str` parameters (default `1` and `""` for backward compatibility). `ingestion_consumer.py` extracts both fields from RabbitMQ payload.
+  3. Removed temporary debug file-write logging from `source_validation.py`.
+- Alternatives considered: Downgrade `_source_version` to accept strings — rejected because it would mask version mismatches and violate the data-model spec requiring integer `ingestionVersion`.
+- Test: `DocumentServiceTest` (15/15 passed).
+
+## 2026-10-19 - Web Chat UI Thinking Phase & Input Label Layout Polish
+
+- Decision: Fix two CSS layout defects in Web AI Chat (`ChatInputForm`, `ChatMessageItem`, `chat-page.css`, `index.css`):
+  1. Accessibility Label Leak in Input Composer: Added `.sr-only` utility mapping to `.visually-hidden` in `styles/index.css` and `chat-page.css`. Previously, `<label className="sr-only">Câu hỏi tri thức</label>` lacked CSS rules, rendering visibly as a raw inline element between the document indicator button and the text input.
+  2. Thinking Phase Alignment & Placeholder: Replaced the unstyled `<p role="status">` and empty square bubble during AI reasoning with `.chat-msg__bubble--thinking` (featuring 3 pulsing blue dots and "UniChat AI đang suy nghĩ…"). Enforced `width: 100%` on `.chat-thoughts` within `.chat-msg__content-zone` to prevent the accordion from collapsing into a squished narrow pill on the left, and styled `.chat-msg__streaming-status` cleanly for provisional token streaming.
+
 ## 2026-10-04 - Mobile Conversation History Screen & 3 Core Features Unification
 
 - Decision: Implement dedicated Mobile Conversation History Screen (`app/workspace/[id]/conversations.tsx`), wire up `onOpenHistory` across chat screens, and unify the 3 core features in the mobile workspace hub (`app/workspace/[id]/index.tsx`) and Chat tab (`app/(tabs)/chat.tsx`).
@@ -1125,3 +1142,134 @@
   Rationale: `dev.ps1` opens the Vite page at that address, while Core previously accepted only `localhost:5173`. The browser sent the correct Origin, so a pending logout was rejected with 403 before login. A real security-chain test covers local logout and login plus the existing hostile-origin denial.
 - Decision: Keep pending offline logout as a pre-login cookie cleanup, but clear its marker immediately after successful cleanup; do not create a pending logout marker for definitive 400/401 refresh or rejected login credentials.
   Rationale: The old client marked even a clean expired refresh or wrong password as an uncertain cookie state, causing unnecessary logout calls on later login attempts. Network-uncertain login and post-login identity failures still retain the marker for safe cleanup.
+
+## 2026-10-11 — Direct message schema recovery hotfix
+
+- Decision: Use the orchestrator hotfix fast-path for the confirmed Core startup schema regression, with real Planner/Architect, Implementer, Reviewer and Tester delegation. Preserve existing Plan V2 checkpoints and record this incident separately. No close-agent API is exposed; completed agents remain idle.
+- Decision: Create sequential V38 after read-only confirmation that the shared DB ends at V37; avoid a timestamp version that would force future sequential migrations into out-of-order execution. Re-check V38 immediately before approved application.
+- Decision: Add only a nullable TIMESTAMPTZ read_at column, with no default or backfill. Preserve rows/read receipts and retain the additive column during rollback; do not rewrite old migrations/history or weaken Hibernate validation.
+- Decision: Treat the disappearance of read_at as confirmed schema drift with an unproven cause. V32 is recorded successful under its expected script name; unavailable V36/V37 source does not prove table recreation.
+- Decision: Use the existing Docker/PostgreSQL image and pinned test dependencies for isolated regression tests; shared database inspection is read-only and any mutation remains a separate approval gate.
+- Decision: Use UTC only for the integration-test JVM because the existing PostgreSQL image rejects the host's Asia/Saigon alias. Disable Ryuk to avoid a new image download and clean the interrupted run's identified Testcontainers-owned container explicitly.
+- Decision: Baseline the fresh test fixture at version0 and pre-enable RLS only on its Flyway history table, avoiding V23's observed history-table lock while executing every application migration. Production migration behavior and the existing shared fixture are unchanged; document this prerequisite instead of claiming unmodified fresh startup succeeds.
+- Decision: Run scoped whitespace/UTF-8/method-size checks and existing architecture tests because Core has no configured Java/SQL lint task; report this limitation explicitly rather than claim a nonexistent lint command passed.
+- Decision: After explicit apply/restart approval, scan only an isolated directory containing V38; require current37 and one pending38, compare the approved SHA256, retain validation and use 10s lock/30s statement timeouts. This bounds the shared mutation to the reviewed additive change.
+- Decision: Start a hidden Core dev runner because the previous runner no longer exists. After observed JDK Unix-domain socket failure, use a workspace socket temp directory only in the new runner's inherited JAVA_TOOL_OPTIONS; standalone selector probe succeeded and Core then fully started. No application or system-wide config change; the failed owned runner exited via its existing quit command.
+- Decision: Verify public health200, actuatorUP and unauthenticated profile401, and mark dashboard ready. Do not claim authenticated login without supplied test credentials; retain the live process for continued development.
+# 2026-10-11 — Mobile API hostname and web auth loading UX
+
+- Decision: In mobile development, leave `apiBaseUrl` unset by default so the Expo host fallback can resolve the machine running Core; retain explicit `EXPO_PUBLIC_API_URL` and staging/production defaults.
+  Rationale: the mobile screenshot shows a hostname lookup failure before any HTTP response, while the supplied Core log confirms startup but contains no auth request. The old `localhost:8082` default points to the phone on physical devices and masks Expo's LAN host. The log's unresolved CloudAMQP hostname is a separate dependency warning, not evidence of a rejected login.
+- Decision: Render the shared web auth-guard waiting state as a branded, accessible full-viewport screen and redesign the login page with a responsive academic product panel.
+  Rationale: the blank web screenshot maps to the guard's unstyled session-restoration placeholder, not the login form or lazy-load screen. Respect reduced-motion preferences and keep the change within existing dependencies/tokens.
+- Rollback: restore the mobile development API default to `http://localhost:8082` and revert the web auth route-guard/login presentation changes; no schema or external service state is affected.
+# 2026-10-11 — Reconnect AI chat and admin presentation styles
+
+- Decision: Keep the existing stylesheet design system and reconnect current chat/admin JSX to its established component selectors; add only scoped shared admin data-page styles where those views had no matching page structure.
+  Rationale: screenshots show stylesheets are loaded (chat shell and admin navigation are styled), while the current composer DOM no longer matches its wrapper/control selectors and admin form elements render without the classes expected by the bundled page CSS. No package or theme replacement is needed.
+- Rollback: revert the chat composer structure, admin-page class wiring and the new scoped admin page stylesheet; API behavior and persisted data are unaffected.
+# 2026-10-11 — Reject incomplete mobile API origins
+
+- Decision: Treat API origin configuration as valid only when it parses as an HTTP(S) URL with a hostname; blank the malformed local mobile override so Expo Go can use its current development host.
+  Rationale: The new screenshot persisted after restart because `mobile/.env` still supplied a scheme-only URL, overriding host discovery. The source accepted that prefix without validating the hostname. Keep explicit valid URLs supported and avoid hardcoding a device-specific LAN address.
+- Rollback: restore the previous local `.env` setting only if it is a complete, reachable API URL; revert the URL validation/test changes to restore previous fallback behavior.
+
+## 2026-10-12 — Synchronize full-screen web loading
+
+- Decision: Use the orchestrator hotfix fast-path for the narrow user-reported loading regression introduced by the separate auth presentation. Existing product checkpoint approvals are not repurposed for delivery. Execute compact reporting with real Planner/Architect and Implementer delegation through exposed collaboration tools; no close-agent API exists.
+- Decision: Keep the established AI-avatar LoadingScreen as the canonical visual and place one loading host inside the existing ErrorBoundary, above AuthProvider and route Suspense. Register each full-screen wait with a unique token and use layout-effect handoffs so the visible DOM and animation persist while messages change. Do not add artificial delays, simulated percentages or start protected data requests before authentication.
+- Decision: Preserve standalone/container loaders and all authorization/redirect/failure behavior. Track overlapping requests separately and respect reduced motion; disable interaction with obscured content while loading.
+- Decision: Preserve unrelated dirty work and leave the old untracked auth stylesheet on disk unused. The pre-existing WorkspaceShell workspace-ID state-reset issue is outside this fix and is deferred; no backend, dependency, schema, commit, push or deploy is required.
+- Rollback plan: Remove LoadingProvider from AppProviders, restore the prior standalone LoadingScreen visual and SessionLoading guard markup/import, and remove only the newly introduced loading coordinator/view/test files after human authorization if deletion is requested. Preserve all pre-existing changes; no external state needs rollback.
+- Decision: Keep the visual host mounted while idle using visibility:hidden and aria-hidden; guard redirects register ownership while Navigate waits for its effect. This avoids remounting at the brief intermediate redirect commit. Newest active request supplies the message; no percentage or completion state is fabricated.
+- Decision: Use pre-installed Chrome only via optional PLAYWRIGHT_CHANNEL for local E2E, retaining configured Chromium as default. Run local browser/Vite outside sandbox after its socket restriction was confirmed; mock API and abort remote requests.
+- Decision: Redirect TEMP/TMP to a task-owned workspace directory after an EPERM cache rename, and limit full-suite coverage workers to two after the existing asynchronous App.test timed out under parallel load. Complete suite passes with no application change or test skip.
+
+## 2026-10-12 — Restore AI chat message styles
+
+- Decision: Treat the screenshot as a narrow web presentation regression and use the orchestrator hotfix fast-path. The chat page already imports its feature stylesheet; its message component omitted selectors required by that stylesheet. Preserve the existing theme and unrelated dirty work.
+- Decision: Reconnect the message markup to the existing avatar, author, thought-step, Markdown and action-button selectors. Add one small co-located stylesheet only for native details behavior, alignment and narrow screens instead of expanding the existing long chat-page stylesheet.
+- Decision: Render a static chat-message fixture in Playwright and assert actual computed CSS in Chrome. Flex children compute to `display:flex` even when their rule says `inline-flex`; test the computed result and border radius. The preview makes no API calls and changes no persisted data.
+- Decision: Display the Core API's one-based public `stepIndex` without offset. Review found that adding one would have shown stages 2–6; test data now follows the real 1–5 contract.
+- Rollback plan: Restore only this task's changes to chat-message-item.tsx, remove the new co-located stylesheet and associated tests/fixture, and remove this task's documentation entries. Preserve all pre-existing changes and data.
+
+## 2026-10-12 — Hive provider feasibility check
+
+- Decision: Interpret the user's request as a provider feasibility check; defer application migration and environment changes until requested. Preserve unrelated dirty work and do not persist the supplied secret.
+- Decision: Send two bounded manual smoke requests to the user-specified HTTPS Hive chat endpoint using synthetic prompts only. These are explicitly authorized external checks, separate from automated tests, which must remain offline.
+- Evidence: DeepSeek V4.1 Flash streaming returned HTTP 200, HIVE_OK and [DONE] in 2.29 seconds, with 76 measured total tokens. A JSON-object request returned HTTP 200, valid JSON, a DOCUMENT section, citation ID 1 and Vietnamese diacritics in 1.91 seconds, with 219 measured total tokens. JSON Schema enforcement, real-document citation validation, application integration and sustained reliability remain unverified.
+- Decision: Recommend a dedicated Hive/OpenAI-compatible adapter before switching UniChat. The current generation gateway, key registry and metadata probe use Gemini directly; embeddings use local multilingual-e5-base. Preserve Core authorization checkpoints and output/citation validation during any future migration.
+- Decision: The sandbox could not resolve the provider hostname; retry the authorized smoke checks with reviewed network access rather than interpreting a local DNS restriction as a Hive service failure. No dependency, database, commit, push or deployment change is required.
+
+## 2026-10-12 — Hive migration planning
+
+- Decision: Produce a standalone detailed migration plan and compiled HTML preview, not application implementation. Do not modify existing pipeline approvals/checkpoints or treat unrelated product approvals as Hive cutover approval. Real read-only Planner/Reviewer delegation follows the orchestrator skill and enabled local agent configuration; no close-agent API is exposed, so completed explorers remain idle.
+- User decisions: Hive primary with Gemini retained for explicit configuration rollback; report failures without automatic Gemini/Ollama failover.
+- Assumptions: The optional question returned no answers after interruption; use reasoning effort low and an on-demand generation key probe capped at128 tokens as proposed defaults, explicitly subject to plan review. Do not perform new paid requests during planning.
+- Decision: Reuse pinned httpx instead of adding an SDK, keep existing embedding/data/history, use the proven Hive endpoint/JSON-object mode and local citation enforcement, and require active-provider key/model ownership. Default rollout output cap4096 and idle read timeout5s; keep operation deadlines unchanged and distinguish config readiness from a verified remote credential.
+- Decision: Include the discovered private slash/prompt-limit mismatch, dropped model attribution, misleading provider refusal presentation, and operational-failure-to-COMPLETED path in migration integration scope. Specify typed operational FAILED handling separately from content-free domain refusals; document a bounded cancellation guarantee rather than claiming asyncio worker cancellation immediately closes upstream.
+- Decision: Preserve existing dirty work, Gemini history, nullable usage and offline test isolation. Keep legacy synthetic evaluation repair and billing/quota automation out of scope; use staged compatibility rollout and separately authorized manual smoke. The detailed plan records interfaces, exact defaults, ownership, acceptance tests and rollback limitations, including the unavailable Google free account.
+
+## 2026-10-12 — Standalone Hive plan review
+
+- Decision: Review the explicitly selected Hive migration plan in-process with the Reviewer persona; do not execute implementation or alter the plan/approvals. Store a task-specific report rather than overwrite the canonical implementation review belonging to existing pipeline work.
+- Evidence: Offline HTTPX custom byte-stream probe confirms fixed chunk_size buffers multiple transport reads before yielding; no real network or provider credit is used. Distinguish public subscriber detach from private AI cancellation, and review the compaction branch and in-flight cutover lifecycle as separate contracts.
+- Verdict: CHANGES_REQUIRED for two P1 cancellation/lifecycle ambiguities and two P2 compaction/cutover omissions. Report exact plan locations, grounded source evidence, concrete corrections and acceptance tests without treating the review as delivery approval.
+
+## 2026-10-12 — Implement approved Hive migration
+
+- Authorization: The user explicitly requested implementation of the revised Hive plan, including the persistent Core admission gate. Treat this as requirements/design implementation approval rather than repeating the planning gate; record a separate task approval and preserve existing product/pipeline approvals. Database apply, paid provider smoke, live cutover, installation and Git delivery remain unapproved.
+- Decision: Execute real AI Service, Core and UI Implementer delegation with disjoint write ownership, then independent review/test. No close-agent API is exposed; completed workers remain idle. Capture571 existing tracked target files plus the dirty/untracked inventory before edits for precise rollback; never reset unrelated work.
+- Decision: Retain legacy Gemini default when LLM_PROVIDER is absent while the sample config demonstrates Hive. Do not write the exposed key to any file or change live .env/processes. Reuse pinned libraries, no installation.
+- Evidence: Shared Flyway inspected with SELECT in READ ONLY and verified TLS/hostname using the public Supabase Root2021 CA, fingerprint807025AD50D4ED219D2C9C7D299C004F824EB00CF7F65AFEF607D07B72E6CAFA. Local max38 but shared current39, so prepareV40__ai_generation_admission.sql. Recheck collision immediately before separately approved application; do not assume snapshot remains current.
+- Decision: Use additive task metadata under the canonical checkpoint rather than overwrite unrelated requirements/review artifacts. Store the user-approved updated implementation requirements/file ownership in hive-implementation-plan.md and keep prior plan review as evidence. Stale admission version returns409 before same-state no-op, following the explicit approved contract.
+
+## 2026-10-16 — Resume Hive implementation
+
+- Decision: Resume the already approved implementation after user continuation, preserve all partial code and baseline. Previous agents were not live; assign new AI/Core/UI workers with the same ownership to finish production code and offline tests. Do not repeat the requirements approval gate or treat earlier compile evidence as final verification.
+- Decision: Apply Supabase Postgres Best Practices for short transactions, consistent gate/actor lock order and private RLS gate access; do not hold DB locks across inference. Existing Docker Desktop may be started hidden for disposable test infrastructure, without installs, downloads, live app restarts or unrelated-container cleanup.
+- Evidence: Shared Flyway refresh on2026-10-16 failed to connect; retain preparedV40 based on verified shared39 snapshot from2026-10-12 and require a fresh collision/version check before any separately approved application.
+- Decision: Align provider configuration with approved Hive reasoning enum none/low/high/max and canonical HIVE_READ_IDLE_TIMEOUT_SECONDS, root then service .env and process override. Update only safe .env.example; never write exposed keys or activate live settings.
+- Decision: Add narrow private_core ownership to the AI worker so authoritative safe control codes survive START/checkpoint failures; never forward unvalidated error bodies. Preserve nullable usage and no-fallback semantics; legacy synthetic evaluation remains excluded.
+- Review-driven scope: The new gate depends on unfinished attempts, so adjust existing provider-attempt retention to delete only terminal rows and add regression tests; this is necessary to avoid false drained state, not an unrelated retention redesign. Bound private non-2xx HTTP body reads by the same operation reader deadline and cover stalled error bodies.
+- Environment: Explicit PostgreSQL Testcontainers gate on2026-10-16 failed because the local Docker backend cannot start (inference Unix socket path outside workspace is inaccessible). Do not reset Docker, delete external socket files or silently skip the required gate. Finish unaffected code/unit checks and report PostgreSQL runtime evidence as unavailable.
+
+## 2026-10-19 — Finish Hive verification
+
+- Resume: Read persisted evidence after interrupted agents; reassign narrow AI/Core verification and independent UI review. Preserve the implementation approval and all unrelated dirty work; no live activation or delivery authorization inferred.
+- Review repairs: Pass cancellation through local preparation/retrieval boundaries and preserve the original cancellation/policy exception when END acknowledgement also fails. Keep unresolved attempts pending and log only safe metadata. Map explicit provider safety refusal to a content-free RAG domain result without retry; operational failures remain typed failures.
+- UI verification: Extract pure helpers into dedicated TypeScript modules to satisfy Fast Refresh lint without changing behavior; select history filters by accessible combobox names in Playwright. All six offline Chrome flows passed; do not claim a CI Playwright job exists.
+- Coverage: Report whole-application frontend threshold failure separately from passing changed business-logic coverage; do not lower thresholds or alter unrelated modules to conceal existing coverage debt. AI full Ruff retains exactly 82 baseline diagnostics; task-owned lint passes.
+- Environment: Use reviewed escalation only for offline Windows test runtime restrictions (Mockito attach, temporary-path access and loopback socketpair); retain external-provider network guards and existing dependencies.
+
+## 2026-10-19 — Core startup incident
+
+- Scope: User reports Core cannot run. Prioritize startup diagnosis over the ongoing Hive acceptance checks; do not present mocked tests as live readiness.
+- Evidence: Supplied log completed compilation then failed during PostgreSQL authentication with08001/EOF. Read-only JDBC reproduced an initial failure on transaction6543 with timezone options; both removal/session5432 connected. Original also connected on retry, so the exact provider-side intermittent failure is not conclusively isolated to one option.
+- Repair: Change only ignored local POSTGRES_URL plus safe sample to official Spring/Hibernate session5432 route, preserving hostname/database/credentials/SSL and prepareThreshold0; omit unnecessary timezone startup options. Do not alter JVM timezone or claim server session timezone changed. This reversible local configuration fix follows the user's incident request; no DB mutation authorization inferred.
+- External state: Read-only metadata now shows shared44 with40admission already present. These migrations were applied outside this task; do not change historical approvals or claim this agent applied them. Version-based inventory found no pending local migration, with existing30/31checksum differences. No history repair or validation-policy change.
+- Boundary: Automatic approval rejected actual Core startup because shared DB/scheduled behavior may write and prior scope excluded shared changes/restarts. Do not retry indirectly or bypass it; request explicit authorization after presenting the concrete verified configuration repair. Core startup/health remains unverified.
+
+## 2026-10-20 — Hive endpoint/model hotfix
+
+- Authorization: The user explicitly requested the fix after the application failed with a generic provider error. Use the orchestrator hotfix fast-path because the cause is a narrow, documented configuration mismatch; preserve the existing Hive implementation pipeline and unrelated dirty work.
+- Decision: Align the default with Hive's current chat-completions contract: `https://api-cdn.thehive.ai/api/v3` and `deepseek-ai/deepseek-v4.1-flash-1017`. Keep the VA1 endpoint and the legacy hostname in the strict compatibility allowlist, but do not use the legacy hostname as the default.
+- Security: Continue sending only the Secret Key as the Bearer token, never concatenate or persist the Access Key ID, and add an offline header assertion. Do not expose the configured secret in tests, reports, or logs.
+- Boundary: Do not make a real Hive call, consume credit, restart services, install packages, mutate the database, or perform Git delivery. The user must separately authorize any paid smoke or operational restart.
+- Verification: Independent review approved with zero remaining findings. Focused provider/config tests passed 47/47 and the Bearer regression passed 3/3. The isolated attribution lifecycle test is blocked before assertions by the Python 3.13/Starlette TestClient socketpair environment and is reported without claiming success.
+
+## 2026-10-20 — Hive request compatibility follow-up
+
+- Evidence: The restarted application still returned a sanitized provider failure. Hive's current DeepSeek V4.1 Flash-1017 contract documents `max_completion_tokens`, while the adapter emitted the legacy `max_tokens` field.
+- Decision: Replace only the incompatible token-limit field, retain the verified endpoint/model/Bearer authentication, and map safe HTTP 400/405 codes to actionable Vietnamese messages without rendering upstream response bodies.
+- Boundary: Keep the verification offline. Do not make a paid Hive request, restart user processes, install packages, mutate the database, or perform Git delivery without separate authorization.
+- Verification: Provider/config tests passed 47/47; frontend failure tests passed 13/13; scoped Ruff, ESLint, and mypy passed. Full frontend build remains blocked by pre-existing WorkspaceDto fixture typing errors outside this hotfix.
+
+## 2026-10-21 — PR delivery hardening
+
+- Authorization: The user requested creation of a pull request and explicitly required that environment data not be exposed. Commit and push remain gated by the repository rule requiring a separate explicit approval immediately before each operation.
+- Decision: Exclude generated `.pytest-tmp-*` directories because they contain ephemeral test-created `*.env` fixtures and must never enter the PR. Preserve local ignored root, AI Service and mobile `.env` files without reading, staging or printing their values.
+- Security repair: Remove temporary absolute-path debug writes that serialized request headers/body, authentication details, generated answer text and exception traces. Retain only safe error codes and structured metadata already supported by the application.
+- Verification repair: Add strict test-fixture typing for partial workspace updates and annotate the offline socket guard without weakening TypeScript or mypy strictness.
+- Verification: Frontend lint/typecheck/build passed, Vitest passed 215/215 and Playwright Chromium passed 13/13; Mobile lint/typecheck passed and Jest passed 94/94; AI scoped Ruff and full strict mypy passed with pytest 322/322; Core Maven tests passed 331/331. Final diff and secret-pattern checks passed with no live environment file staged.
+- Boundary: Validate only the tracked and intended untracked source set, stage explicit paths after approval, and run a secret-pattern scan before any push. Do not include generated test artifacts or live environment files.
