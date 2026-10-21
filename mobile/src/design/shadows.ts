@@ -60,6 +60,19 @@ export const shadows = {
     elevation: 6,
   } as ViewStyle,
 
+  /**
+   * The workplace card lift: --ws-card-shadow, 0 1px 3px rgb(15 23 42 / 8%).
+   * A card carrying this takes no border — the two together read as a
+   * wireframe, which is the look the web design notes set out to leave behind.
+   */
+  card: {
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+    elevation: 2,
+  } as ViewStyle,
+
   /** Colored ambient glow shadows for liquid glass depth */
   ambientNavy: {
     shadowColor: '#00236F',

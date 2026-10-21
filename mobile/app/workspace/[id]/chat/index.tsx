@@ -63,7 +63,7 @@ export default function NewWorkspaceChatScreen() {
   }, [messages, streamingAnswer, thoughtSteps]);
 
   return (
-    <UCScreenContainer gradient={false}>
+    <UCScreenContainer surface="canvas">
       <ChatHeader
         workspaceName={workspace?.name || 'Hỏi đáp Tri thức AI'}
         documentCount={workspace?.documentCount || documents.length}

@@ -91,7 +91,7 @@ export default function WorkspaceChatRoomScreen() {
   }, [messages, streamingAnswer, thoughtSteps]);
 
   return (
-    <UCScreenContainer gradient={false}>
+    <UCScreenContainer surface="canvas">
       <ChatHeader
         workspaceName={workspace?.name || 'Hội thoại AI'}
         documentCount={workspace?.documentCount || 0}

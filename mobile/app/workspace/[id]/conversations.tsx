@@ -34,7 +34,7 @@ function ConversationListScreen({ workspaceId }: { workspaceId: string }) {
   const confirmDelete = (item: ConversationItem) => Alert.alert('Xóa cuộc hội thoại', `Bạn có chắc chắn muốn xóa "${item.title}"?`, [
     { text: 'Hủy', style: 'cancel' }, { text: 'Xóa', style: 'destructive', onPress: () => void remove(item) },
   ]);
-  return <UCScreenContainer gradient={false}>
+  return <UCScreenContainer surface="canvas">
     <ConversationListHeader top={insets.top} name={list.workspace?.name} query={query} onQuery={setQuery} onBack={() => router.back()} onNew={newChat} />
     <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}
       refreshControl={<RefreshControl refreshing={list.loading && list.page >= 0} onRefresh={() => void list.refresh()} />}>

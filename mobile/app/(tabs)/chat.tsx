@@ -147,7 +147,7 @@ export default function ChatTabScreen() {
   }, [activeWorkspaces, conversationsByWs, searchQuery]);
 
   return (
-    <UCScreenContainer gradient={false}>
+    <UCScreenContainer surface="canvas">
       {/* Top Workspace Filter Capsules */}
       <View style={styles.topFilterBar}>
         <ScrollView

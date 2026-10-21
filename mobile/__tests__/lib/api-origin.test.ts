@@ -5,7 +5,6 @@ jest.mock('expo-constants', () => ({
   default: { expoConfig: {} as Record<string, unknown> },
 }));
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const Constants = require('expo-constants').default as {
   expoConfig: { hostUri?: string; extra?: { apiBaseUrl?: string } } | null;
 };

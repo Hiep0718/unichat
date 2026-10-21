@@ -115,8 +115,39 @@ export const animation = {
   staggerDelay: 60,
 } as const;
 
+/**
+ * Workplace surfaces — mirrored from the --ws-* block in
+ * frontend/src/styles/index.css.
+ *
+ * Cards separate by elevation, not by a 1px outline: an interface whose every
+ * box is drawn round reads as a wireframe. `accent` is the single saturated
+ * colour and is spent on what the reader should act on, which is why a card
+ * title stays `ink` here instead of taking the navy it used to have.
+ */
+export const workplace = {
+  canvas: '#F3F5F9',
+  card: '#FFFFFF',
+  line: '#EEF2F7',
+  chip: '#F1F5F9',
+
+  ink: '#0F172A',
+  inkSoft: '#475569',
+  inkMuted: '#64748B',
+
+  accent: '#1E3A8A',
+  accentInk: '#FFFFFF',
+  accentSoft: '#E6EBF7',
+
+  okBg: '#DCFCE7',
+  okInk: '#166534',
+  warnBg: '#FEF3C7',
+  warnInk: '#854D0E',
+  alert: '#B91C1C',
+} as const;
+
 export type ColorToken = keyof typeof colors;
 export type SpacingToken = keyof typeof spacing;
 export type RadiiToken = keyof typeof radii;
 export type GlassToken = keyof typeof glass;
 export type AnimationToken = keyof typeof animation;
+export type WorkplaceToken = keyof typeof workplace;
