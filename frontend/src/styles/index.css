@@ -135,9 +135,18 @@
   --ws-ink-muted: #64748b;
 
   /* The one saturated colour, used for what the reader should act on. */
-  --ws-accent: #1e3a8a;
+  /* Indigo, from the group-page mockups, where it is the colour of both the
+     primary button and the assistant pill. Changed on the token rather than
+     per screen: the one thing a design system cannot survive is a second
+     accent introduced by whichever page was redrawn last. */
+  --ws-accent: #4f46e5;
+  /* The filled buttons carry this rather than the flat accent. One token, so
+     the sidebar's upload button and the header's assistant button cannot
+     drift apart the way they had — each was reaching for --color-primary,
+     the old navy, from its own stylesheet. */
+  --ws-accent-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
   --ws-accent-ink: #ffffff;
-  --ws-accent-soft: #e6ebf7;
+  --ws-accent-soft: #eef2ff;
 
   --ws-ok-bg: #dcfce7;
   --ws-ok-ink: #166534;
@@ -212,6 +221,13 @@ ul, ol {
 
 .material-symbols-outlined {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Same glyph names as Outlined, drawn with soft terminals and a touch more
+   weight — opted into per screen by <Icon rounded>, not swapped in globally. */
+.material-symbols-rounded {
+  font-family: 'Material Symbols Rounded';
+  font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24;
 }
 
 /* ==========================================================================

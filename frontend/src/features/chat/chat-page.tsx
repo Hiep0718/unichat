@@ -5,6 +5,7 @@ import { ChatWelcome } from './components/chat-welcome';
 import { ChatMessageItem } from './components/chat-message-item';
 import { ChatInputForm } from './components/chat-input-form';
 import { ChatStudioPanels } from './components/chat-studio-panels';
+import { ChatHistoryPanel } from './components/chat-history-panel';
 import { useChatSession } from './use-chat-session';
 import { useChatNotes } from './use-chat-notes';
 import { readCurrentCitation } from './read-citation';
@@ -29,6 +30,34 @@ function communityDraft(message: MessageItem, messages: MessageItem[]): { title:
   return { title: question.slice(0, 200), body };
 }
 
+/**
+ * Whether the history column starts open.
+ *
+ * Open by default: it is the list of everything this assistant has been
+ * asked, and hiding it behind a button made each visit start by looking for
+ * the thread you were already in. Closing it is remembered, because the page
+ * remounts on every conversation change and would otherwise reopen it each
+ * time the reader picked one.
+ */
+const HISTORY_OPEN_KEY = 'unichat.chat.historyOpen';
+
+function readHistoryOpen(): boolean {
+  try {
+    return window.localStorage.getItem(HISTORY_OPEN_KEY) !== 'false';
+  } catch {
+    // Private windows and blocked site data throw rather than return null.
+    return true;
+  }
+}
+
+function rememberHistoryOpen(open: boolean): void {
+  try {
+    window.localStorage.setItem(HISTORY_OPEN_KEY, String(open));
+  } catch {
+    // A forgotten preference is not worth failing a render over.
+  }
+}
+
 /** Uses one operation coordinator for new questions, history, retries and cancellation. */
 export function ChatPage({ workspaceId: suppliedWorkspace, conversationId: suppliedConversation }: ChatPageProps) {
   const params = useParams<{ workspaceId?: string; conversationId?: string }>();
@@ -47,6 +76,7 @@ function ChatSessionPage({ workspaceId = '', conversationId: initialId }: ChatPa
   const [documents, setDocuments] = useState<DocumentResponse[]>([]);
   const [selected, setSelected] = useState<CitationItem | null>(null);
   const [studio, setStudio] = useState(false);
+  const [history, setHistory] = useState(readHistoryOpen);
   const [citationError, setCitationError] = useState<string | null>(null);
   const [draft, setDraft] = useState<{ title: string; body: string } | null>(null);
   const end = useRef<HTMLDivElement>(null);
@@ -68,12 +98,23 @@ function ChatSessionPage({ workspaceId = '', conversationId: initialId }: ChatPa
       if (generation === getSessionSnapshot().generation) { setSelected(verified); setStudio(true); } }
     catch (failure: unknown) { if (generation === getSessionSnapshot().generation) setCitationError(failure instanceof Error ? failure.message : 'Không mở được nguồn'); }
   };
+  const toggleHistory = (open: boolean) => { setHistory(open); rememberHistoryOpen(open); };
   const send = (question: string, expanded = false) => { if (workspaceId) void chat.send(question, expanded); };
   return <div className={`chat-layout ${studio ? 'chat-layout--studio-open' : ''}`}>
+    {/* A column of its own beside the conversation rather than inside it, so
+        it starts at the top of the window like the rail does. Nested under
+        the header it began 68px lower, leaving three different top edges
+        down the left of the screen. */}
+    {history && <ChatHistoryPanel workspaceId={workspaceId} currentId={chat.conversationId ?? null}
+      onOpen={(id) => navigate(`/workspaces/${workspaceId}/chat?conversationId=${id}`)}
+      onNew={() => { chat.reset(); setSelected(null); }}
+      onClose={() => toggleHistory(false)} />}
     <div className="chat-page"><ChatHeader workspaceId={workspaceId} workspaceName={workspace?.workspace?.name}
       conversationTitle={chat.title} messageCount={chat.messages.length} onNewChat={() => { chat.reset(); setSelected(null); }}
-      onToggleStudio={() => setStudio((value) => !value)} isStudioOpen={studio} hasDrawerOpen={Boolean(selected)} />
-      <div className="chat-page__main-content"><div className="chat-page__chat-area">
+      onToggleStudio={() => setStudio((value) => !value)} isStudioOpen={studio} hasDrawerOpen={Boolean(selected)}
+      onToggleHistory={() => toggleHistory(!history)} isHistoryOpen={history} />
+      <div className="chat-page__main-content">
+        <div className="chat-page__chat-area">
         <div className="chat-page__messages-body">
           {chat.initialLoading && <p role="status">Đang tải lịch sử hội thoại…</p>}
           {chat.older && <button type="button" onClick={() => void chat.loadOlder()}>Tải tin nhắn cũ hơn</button>}

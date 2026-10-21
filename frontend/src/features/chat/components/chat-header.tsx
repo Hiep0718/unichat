@@ -12,6 +12,8 @@ interface ChatHeaderProps {
   hasDrawerOpen?: boolean | undefined;
   onToggleStudio?: (() => void) | undefined;
   isStudioOpen?: boolean | undefined;
+  onToggleHistory?: (() => void) | undefined;
+  isHistoryOpen?: boolean | undefined;
 }
 
 export const ChatHeader: React.FC<ChatHeaderProps> = ({
@@ -24,6 +26,8 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
   hasDrawerOpen,
   onToggleStudio,
   isStudioOpen,
+  onToggleHistory,
+  isHistoryOpen,
 }) => {
   return (
     <header className="chat-header">
@@ -72,22 +76,32 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
           <span>{messageCount} tin nhắn</span>
         </div>
 
+        {onToggleHistory && (
+          <button
+            type="button"
+            className={`chat-header__btn chat-header__btn--toggle ${
+              isHistoryOpen ? 'chat-header__btn--active' : ''
+            }`}
+            onClick={onToggleHistory}
+            title="Các cuộc trò chuyện trước"
+            aria-pressed={isHistoryOpen}
+          >
+            <span className="material-symbols-outlined">history</span>
+            <span>Lịch sử</span>
+          </button>
+        )}
+
         {onToggleStudio && (
           <button
             type="button"
-            className={`chat-header__btn ${isStudioOpen ? 'chat-header__btn--active' : ''}`}
+            className={`chat-header__btn chat-header__btn--toggle ${
+              isStudioOpen ? 'chat-header__btn--active' : ''
+            }`}
             onClick={onToggleStudio}
             title="Đóng/Mở NotebookLM Knowledge Studio"
-            style={{
-              background: isStudioOpen ? '#0284c7' : 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
-              color: '#ffffff',
-              fontWeight: 600,
-              gap: '6px',
-            }}
+            aria-pressed={isStudioOpen}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
-              auto_awesome
-            </span>
+            <span className="material-symbols-outlined">auto_awesome</span>
             <span>Studio</span>
           </button>
         )}

@@ -13,16 +13,29 @@ export function ChatInputForm({ onSend, loading, onCancel }: InputProps) {
     if (input.trim().length < 3 || loading) return;
     onSend(input.trim(), expanded); setInput('');
   };
+  const ready = input.trim().length >= 3;
+  // The classes the stylesheet has always described. Without them the field,
+  // the counter and the send button fell back to browser defaults — a grey
+  // full-width bar under a visible "Câu hỏi tri thức", which is the label
+  // meant for screen readers alone.
   return <div className="chat-input-container"><form onSubmit={submit} className="chat-input-form">
-    <button type="button" className="chat-input-form__context-indicator" aria-pressed={expanded}
-      disabled={loading} onClick={() => setExpanded((value) => !value)}>
-      {expanded ? 'RAG + AI Mở rộng' : 'Chỉ theo Tài liệu'}
-    </button>
-    <label htmlFor="chat-question" className="sr-only">Câu hỏi tri thức</label>
-    <input id="chat-question" className="chat-input-form__field" value={input} onChange={(event) => setInput(event.target.value)}
-      minLength={3} maxLength={2000} disabled={loading} placeholder="Nhập câu hỏi tri thức…" />
-    <span>{input.length}/2000</span>
-    {loading ? <button type="button" onClick={onCancel} disabled={!onCancel}>Dừng</button>
-      : <button type="submit" disabled={input.trim().length < 3}>Gửi</button>}
-  </form><p>{expanded ? 'Phần kiến thức mở rộng được ghi nhãn riêng; vẫn cần bằng chứng nền từ tài liệu.' : 'Câu trả lời chỉ dùng tài liệu được cấp quyền.'}</p></div>;
+    <div className="chat-input-form__wrapper">
+      <button type="button" className="chat-input-form__context-indicator" aria-pressed={expanded}
+        disabled={loading} onClick={() => setExpanded((value) => !value)}>
+        {expanded ? 'RAG + AI Mở rộng' : 'Chỉ theo Tài liệu'}
+      </button>
+      <label htmlFor="chat-question" className="sr-only">Câu hỏi tri thức</label>
+      <input id="chat-question" className="chat-input-form__field" value={input} onChange={(event) => setInput(event.target.value)}
+        minLength={3} maxLength={2000} disabled={loading} placeholder="Nhập câu hỏi tri thức…" />
+      <div className="chat-input-form__controls">
+        <span className="chat-input-form__counter">{input.length}/2000</span>
+        {loading
+          ? <button type="button" className="chat-input-form__submit-btn chat-input-form__submit-btn--active"
+              onClick={onCancel} disabled={!onCancel}>Dừng</button>
+          : <button type="submit" className={`chat-input-form__submit-btn ${ready ? 'chat-input-form__submit-btn--active' : ''}`}
+              disabled={!ready}>Gửi</button>}
+      </div>
+    </div>
+    <p className="chat-input-form__note">{expanded ? 'Phần kiến thức mở rộng được ghi nhãn riêng; vẫn cần bằng chứng nền từ tài liệu.' : 'Câu trả lời chỉ dùng tài liệu được cấp quyền.'}</p>
+  </form></div>;
 }

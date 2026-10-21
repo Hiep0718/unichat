@@ -4,7 +4,7 @@
   display: flex;
   width: 100%;
   height: 100vh;
-  background: var(--color-surface-container-lowest, #f8fafc);
+  background: var(--ws-canvas, #f3f5f9);
   overflow: hidden;
   position: relative;
 }
@@ -14,13 +14,17 @@
   min-width: 0;
 }
 
+/* White, against the history column's grey. The two were the same canvas
+   colour and the only thing dividing them was a hairline, so the eye read
+   one wide field with a list floating in it. The conversation is the page;
+   the column beside it is furniture, and furniture sits back. */
 .chat-page {
   flex: 1;
   display: flex;
   flex-direction: column;
   height: 100%;
   position: relative;
-  background: var(--color-surface-container-lowest, #f8fafc);
+  background: var(--ws-card, #fff);
   overflow: hidden;
 }
 
@@ -43,18 +47,20 @@
 }
 
 /* ── Top Header Navigation Bar ── */
+/* Matched to the group page this sits one click from: a flat white bar on
+   the workplace canvas, divided by a line rather than lifted by a shadow, and
+   with no translucency. The frosted panel and its shadow read as a different
+   product beside the group's header. */
 .chat-header {
   height: 68px;
-  padding: 0 28px;
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--color-outline-variant, #e2e8f0);
+  padding: 0 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 16px;
+  background: var(--ws-card, #fff);
+  border-bottom: 1px solid var(--ws-line, #eef2f7);
   z-index: 20;
-  box-shadow: 0 2px 10px -2px rgba(15, 23, 42, 0.04);
 }
 
 .chat-header__main {
@@ -99,13 +105,13 @@
   width: 40px;
   height: 40px;
   border-radius: var(--radius-lg, 12px);
-  background: linear-gradient(135deg, #00687a 0%, #0284c7 100%);
-  color: #ffffff;
+  background: var(--ws-accent-soft, #e6ebf7);
+  color: var(--ws-accent, #1e3a8a);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(0, 104, 122, 0.25);
   flex-shrink: 0;
+  overflow: hidden;
 }
 
 .chat-header__titles {
@@ -158,69 +164,87 @@
   flex-shrink: 0;
 }
 
+/* A chip carries a fill or an outline, not both: the group page settled on
+   the fill, and two boxes drawn round one label is the wireframe look the
+   workplace surfaces were introduced to leave behind. */
 .chat-header__info-pill {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  background: var(--color-surface-container-low, #f1f5f9);
-  border: 1px solid var(--color-outline-variant, #e2e8f0);
-  border-radius: var(--radius-full, 9999px);
-  font: var(--font-label-sm);
+  border-radius: 999px;
+  background: var(--ws-chip, #f1f5f9);
+  color: var(--ws-ink-muted, #64748b);
   font-size: 12px;
   font-weight: 600;
-  color: var(--color-on-surface-variant, #475569);
 }
 
 .chat-header__info-pill .material-symbols-outlined {
   font-size: 16px;
-  color: var(--color-secondary, #0284c7);
+  color: var(--ws-ink-muted, #64748b);
 }
 
 .chat-header__btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 16px;
-  border-radius: var(--radius-md, 8px);
-  font: var(--font-label-md);
+  padding: 8px 14px;
+  border: none;
+  border-radius: 10px;
+  background: none;
+  font: inherit;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: all var(--transition-fast, 0.15s ease);
+  transition: background var(--transition-fast, 0.15s ease),
+    color var(--transition-fast, 0.15s ease);
 }
 
+.chat-header__btn .material-symbols-outlined {
+  font-size: 18px;
+}
+
+/* Studio and Lịch sử switch a panel on and off. They are not the thing this
+   screen is for, so they rest as quiet chips and take the accent only while
+   their panel is open — which is also the only honest way to show state. */
+.chat-header__btn--toggle {
+  background: var(--ws-chip, #f1f5f9);
+  color: var(--ws-ink-soft, #475569);
+}
+
+.chat-header__btn--toggle:hover {
+  background: #e7ecf3;
+  color: var(--ws-ink, #0f172a);
+}
+
+.chat-header__btn--active {
+  background: var(--ws-accent-soft, #e6ebf7);
+  color: var(--ws-accent, #1e3a8a);
+}
+
+/* One saturated button on the bar, for the one action that creates something.
+   Flat: the gradient and the lift on hover belonged to a style the group page
+   no longer uses. */
 .chat-header__btn--primary {
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  color: #ffffff;
-  border: none;
-  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.2);
+  background: var(--ws-accent-gradient);
+  color: var(--ws-accent-ink, #fff);
 }
 
 .chat-header__btn--primary:hover {
-  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.28);
+  filter: brightness(1.12);
 }
 
 .chat-header__btn--icon {
   padding: 8px;
-  background: var(--color-surface-container-low, #f1f5f9);
-  color: var(--color-on-surface-variant, #475569);
-  border: 1px solid var(--color-outline-variant, #e2e8f0);
+  background: var(--ws-chip, #f1f5f9);
+  color: var(--ws-ink-muted, #64748b);
 }
 
 .chat-header__btn--icon:hover {
-  background: var(--color-surface-container, #e2e8f0);
-  color: var(--color-on-surface, #0f172a);
+  background: #e7ecf3;
+  color: var(--ws-ink, #0f172a);
 }
 
-.chat-header__btn--active {
-  padding: 8px;
-  background: var(--color-secondary-container, #e0f2fe);
-  color: var(--color-secondary, #0284c7);
-  border: 1px solid var(--color-secondary, #0284c7);
-}
 
 /* ── Chat Messages Body Container ── */
 .chat-page__messages-body {
@@ -628,6 +652,20 @@
 }
 
 /* ── Bottom Floating Input Command Center ── */
+/* The stylesheet referenced this class without ever defining it, so the
+   label meant for screen readers was printed above the field. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .chat-input-container {
   position: absolute;
   bottom: 0;
@@ -639,7 +677,7 @@
   align-items: center;
   gap: 10px;
   z-index: 30;
-  background: linear-gradient(to top, rgba(248, 250, 252, 1) 70%, rgba(248, 250, 252, 0) 100%);
+  background: linear-gradient(to top, #fff 70%, rgb(255 255 255 / 0%) 100%);
   pointer-events: none;
 }
 
@@ -730,17 +768,21 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  background: #ffffff;
-  border: 1.5px solid var(--color-outline-variant, #cbd5e1);
-  border-radius: 20px;
-  padding: 6px 8px 6px 18px;
-  box-shadow: 0 12px 32px -4px rgba(15, 23, 42, 0.12);
-  transition: all var(--transition-fast, 0.15s ease);
+  background: var(--ws-card, #fff);
+  border: 1px solid var(--ws-line, #eef2f7);
+  border-radius: 18px;
+  padding: 6px 8px 6px 14px;
+  box-shadow: 0 4px 16px rgb(15 23 42 / 8%);
+  transition: border-color var(--transition-fast, 0.15s ease),
+    box-shadow var(--transition-fast, 0.15s ease);
 }
 
+/* The composer is the one box on this screen that both outlines and lifts.
+   It earns it: it is where the reader types, and it floats over the messages
+   scrolling beneath rather than sitting among them. */
 .chat-input-form__wrapper:focus-within {
-  border-color: var(--color-secondary, #0284c7);
-  box-shadow: 0 12px 36px -4px rgba(2, 132, 199, 0.22);
+  border-color: var(--ws-accent, #1e3a8a);
+  box-shadow: 0 6px 22px rgb(30 58 138 / 14%);
 }
 
 .chat-input-form__context-indicator {
@@ -760,30 +802,26 @@
   overflow: hidden;
 }
 
+/* Widening the sources is the departure from the rule this product states,
+   so it takes the saturated colour; staying on the documents is the norm and
+   stays quiet. Neither needs a gradient to say which is which. */
 .chat-input-form__context-indicator--hybrid {
-  background: linear-gradient(135deg, #00687a 0%, #0284c7 100%);
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.28);
+  background: var(--ws-accent, #1e3a8a);
+  color: var(--ws-accent-ink, #fff);
 }
 
 .chat-input-form__context-indicator--hybrid:hover {
-  background: linear-gradient(135deg, #007c91 0%, #0369a1 100%);
-  box-shadow: 0 6px 18px rgba(2, 132, 199, 0.4);
-  transform: translateY(-1px) scale(1.02);
+  filter: brightness(1.12);
 }
 
 .chat-input-form__context-indicator--strict {
-  background: linear-gradient(135deg, #15803d 0%, #16a34a 100%);
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  box-shadow: 0 4px 14px rgba(22, 163, 74, 0.28);
+  background: var(--ws-chip, #f1f5f9);
+  color: var(--ws-ink-soft, #475569);
 }
 
 .chat-input-form__context-indicator--strict:hover {
-  background: linear-gradient(135deg, #166534 0%, #15803d 100%);
-  box-shadow: 0 6px 18px rgba(22, 163, 74, 0.4);
-  transform: translateY(-1px) scale(1.02);
+  background: #e7ecf3;
+  color: var(--ws-ink, #0f172a);
 }
 
 .chat-input-form__swap-icon {
@@ -821,30 +859,38 @@
 }
 
 .chat-input-form__submit-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 10px 18px;
   background: #cbd5e1;
   color: #64748b;
   border: none;
-  border-radius: 14px;
-  font: var(--font-label-md);
+  border-radius: 12px;
+  font: inherit;
+  font-size: 13px;
   font-weight: 700;
   cursor: not-allowed;
   transition: all var(--transition-fast, 0.15s ease);
 }
 
 .chat-input-form__submit-btn--active {
-  background: linear-gradient(135deg, #00687a 0%, #0284c7 100%);
-  color: #ffffff;
+  background: var(--ws-accent-gradient);
+  color: var(--ws-accent-ink, #fff);
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(0, 104, 122, 0.3);
 }
 
 .chat-input-form__submit-btn--active:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(0, 104, 122, 0.4);
+  filter: brightness(1.12);
+}
+
+/* The line under the composer states what the answer may draw on. It is a
+   standing condition, not a warning, so it stays quiet. */
+.chat-input-form__note {
+  margin: 0;
+  text-align: center;
+  color: var(--ws-ink-muted, #64748b);
+  font-size: 12px;
 }
 
 /* ── NotebookLM Smart Citation Chip & Underlined Text ── */

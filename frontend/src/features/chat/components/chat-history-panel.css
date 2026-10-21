@@ -1,0 +1,135 @@
+/* A column beside the conversation, not over it: the thread stays readable
+   while you pick another one, which is the whole reason this stopped being a
+   page of its own. It runs the full height of the window, level with the
+   rail, and its grey is what divides it from the white page — the border is
+   only the seam. */
+.chat-history {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 268px;
+  height: 100%;
+  flex: none;
+  padding: 14px 12px;
+  overflow-y: auto;
+  border-right: 1px solid #e3e8ef;
+  background: var(--ws-canvas, #f3f5f9);
+}
+
+.chat-history__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.chat-history__title {
+  margin: 0;
+  color: var(--ws-ink, #0f172a);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.chat-history__icon-btn {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  color: var(--ws-ink-muted, #64748b);
+  cursor: pointer;
+}
+
+.chat-history__icon-btn:hover {
+  background: var(--ws-chip, #f1f5f9);
+  color: var(--ws-ink, #0f172a);
+}
+
+.chat-history__new {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 10px;
+  background: var(--ws-accent-gradient);
+  color: #fff;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chat-history__new:hover {
+  filter: brightness(1.08);
+}
+
+.chat-history__note {
+  margin: 4px 2px;
+  color: var(--ws-ink-muted, #64748b);
+  font-size: 0.8125rem;
+}
+
+.chat-history__list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chat-history__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 10px;
+  border: none;
+  border-radius: 9px;
+  background: none;
+  color: var(--ws-ink-soft, #475569);
+  font: inherit;
+  font-size: 0.8125rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.chat-history__item:hover {
+  background: #fff;
+  color: var(--ws-ink, #0f172a);
+}
+
+/* The open conversation is marked by weight and a surface, not by the accent:
+   accent here would compete with the New button, which is the one thing in
+   this column that performs an action rather than naming where you are. */
+.chat-history__item--current {
+  background: #fff;
+  color: var(--ws-ink, #0f172a);
+  font-weight: 700;
+  box-shadow: 0 1px 3px rgb(15 23 42 / 8%);
+}
+
+.chat-history__item-title {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.chat-history__item-when {
+  flex: none;
+  color: var(--ws-ink-muted, #64748b);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 900px) {
+  .chat-history {
+    width: 220px;
+  }
+}
