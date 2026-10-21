@@ -181,6 +181,9 @@ public final class GlobalErrorHandler {
             HttpServletRequest request,
             Map<String, List<String>> fieldErrors) {
         var problem = problemDetailFactory.create(error, request, fieldErrors);
+        if (error instanceof com.unichat.core.admin.service.AiMaintenanceError) {
+            return ResponseEntity.status(error.getStatus()).header("Retry-After", "30").body(problem);
+        }
         if (error instanceof com.unichat.core.shared.ratelimit.RateLimitError limited) {
             return ResponseEntity.status(error.getStatus())
                     .header("Retry-After", Long.toString(limited.getRetryAfter())).body(problem);

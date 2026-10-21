@@ -93,7 +93,11 @@ Refusal phải nói rõ tài liệu hiện có chưa đủ bằng chứng và g�
 
 ## 8. Provider và fallback
 
-Gemini stable là provider chính. Ollama là fallback cục bộ duy nhất cho timeout, HTTP 429 hoặc HTTP 5xx; thử tối đa một lần. Không fallback khi lỗi xác thực, lỗi schema đầu vào, safety refusal hoặc Evidence Gate từ chối.
+Theo ADR-022, cấu hình chuyển đổi chọn Hive/DeepSeek V4.1 Flash làm provider chính; Gemini chỉ dùng khi rollback cấu hình rõ ràng. Chế độ Hive không fallback sang Gemini/Ollama và không retry transport ngầm. Môi trường chưa đặt LLM_PROVIDER giữ Gemini; fallback Ollama cũ chỉ tồn tại khi bật rõ cho chế độ Gemini.
+
+Generation JSON/citation sai được retry đúng một lần với cùng evidence/provider/key/model. HTTP/auth/network/protocol failures kết thúc operation FAILED, không lưu assistant answer hoặc phát completion giả. Evidence/citation/safety refusal là domain result riêng, không đổi thành lỗi mạng. Model thực đi qua private response vào lịch sử.
+
+Cancellation tới cả compaction và CHAT; chỉ invalid compaction output được tiếp tục bằng context bounded. Public disconnect chỉ detach subscriber; private disconnect/cancel/Core denial/deadline ngăn xử lý tiếp. Hive parser đọc transport chunks không tích lũy fixed-size trước kiểm cancellation và không đưa reasoning_content lên UI.
 
 Mỗi run khóa providerModel, promptVersion, embeddingRevision, strategyVersion, temperature và configHash. Không ghi API key, raw token hoặc nội dung riêng tư vào log.
 

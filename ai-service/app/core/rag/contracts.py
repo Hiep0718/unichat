@@ -104,6 +104,7 @@ class RetrievalAnswerResponse(BaseModel):
     knowledgeMode: Literal["STRICT", "EXPANDED"] = "STRICT"
     sections: list[AnswerSection] = Field(default_factory=list)
     answer: str | None = None
+    provider: str | None = None
     citations: list[CitationItem] = Field(default_factory=list)
     refusalCode: str | None = None
     refusalReason: str | None = None

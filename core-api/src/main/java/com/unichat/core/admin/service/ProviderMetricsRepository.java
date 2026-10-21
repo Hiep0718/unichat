@@ -42,4 +42,9 @@ public class ProviderMetricsRepository {
         return database.queryForObject("SELECT collected_from FROM security_telemetry_coverage WHERE stream=?",
                 (row, index) -> row.getTimestamp(1).toInstant(), stream);
     }
+    /** Retains at most 100 observed key/provider identifiers in stable lexical order. */
+    public List<Map<String, Object>> historicalKeys() {
+        return database.queryForList("SELECT DISTINCT key_id AS \"keyId\",provider FROM provider_attempts "
+                + "ORDER BY \"keyId\",provider LIMIT 100");
+    }
 }

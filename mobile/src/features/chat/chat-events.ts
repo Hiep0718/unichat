@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { friendlyChatError } from './chat-failures';
 import type { QuestionResponse, StreamQuestionCallbacks } from './chat-types';
 import type { SseFrame } from '../../lib/sse-protocol';
 
@@ -36,8 +37,8 @@ export class ChatEventReceiver {
       this.callbacks.onThought?.(z.object({ stepIndex: z.number(), stepKey: z.string(), title: z.string(), detail: z.string() }).parse(data)); return;
     }
     if (event === 'error') {
-      const failure = z.object({ message: z.string().optional(), detail: z.string().optional(), code: z.string().optional() }).parse(data);
-      throw new Error(failure.message ?? failure.detail ?? failure.code ?? 'Không thể hoàn tất câu trả lời');
+      const failure = z.object({ code: z.string().optional(), requestId: z.string().optional() }).parse(data);
+      throw friendlyChatError(failure);
     }
     throw new Error('Sự kiện stream không được hỗ trợ');
   };

@@ -2,16 +2,21 @@
 import { createContext, useContext, useMemo } from 'react';
 import type { ReactNode } from 'react';
 
+/** Effective workspace membership role. */
 export type WorkspaceRole = 'OWNER' | 'EDITOR' | 'VIEWER';
+/** Workspace visibility returned by Core API. */
 export type WorkspaceVisibility = 'PRIVATE' | 'SHARED' | 'PUBLIC';
 
+/** Authoritative workspace metadata shared by workspace routes. */
 export interface WorkspaceDetails {
   readonly id: string;
   readonly name: string;
-  readonly description?: string;
+  readonly description: string;
   readonly visibility: WorkspaceVisibility;
   readonly role: WorkspaceRole;
   readonly ownerId?: string;
+  readonly cloudAllowed: boolean;
+  readonly version: number;
 }
 
 interface WorkspaceContextState {
@@ -34,6 +39,7 @@ interface WorkspaceProviderProps {
   readonly children: ReactNode;
 }
 
+/** Provides the current workspace query snapshot and derived UI permissions. */
 export function WorkspaceProvider({ workspace, children }: WorkspaceProviderProps) {
   const value = useMemo<WorkspaceContextState>(() => {
     const role = workspace.role || 'VIEWER';
@@ -59,6 +65,7 @@ export function WorkspaceProvider({ workspace, children }: WorkspaceProviderProp
   );
 }
 
+/** Reads workspace metadata inside a workspace route. */
 export function useWorkspace(): WorkspaceContextState {
   const context = useContext(WorkspaceContext);
   if (!context) {
@@ -67,6 +74,7 @@ export function useWorkspace(): WorkspaceContextState {
   return context;
 }
 
+/** Reads workspace metadata when the current route may be outside a workspace. */
 export function useOptionalWorkspace(): WorkspaceContextState | null {
   return useContext(WorkspaceContext);
 }

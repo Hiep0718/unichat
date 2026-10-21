@@ -11,5 +11,7 @@ public record DocumentIngestionMessage(
         String storageKey,
         String mediaType,
         String originalName,
-        String requestId
+        String requestId,
+        int ingestionVersion,
+        String contentHash
 ) {}

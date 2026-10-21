@@ -137,6 +137,16 @@ Decision: Truyền conversation history (tối đa 10 lượt trao đổi gần 
 
 Reason: Tính năng cốt lõi P0 cần sự mạch lạc và hiểu ngữ cảnh liên tục giữa các lượt hỏi đáp trong cùng một phiên hội thoại (multi-turn coherence). Đây là short-term session memory (trong phạm vi một phiên hội thoại), không phải long-term persistent memory xuyên các phiên hay user profiling (vẫn tuân thủ ranh giới của ADR-001).
 
+## ADR-022 — Hive generation và admission gate
+
+Decision: scope chuyển đổi được phê duyệt chọn Hive/DeepSeek V4.1 Flash làm primary khi `LLM_PROVIDER=hive`, giữ Gemini cho rollback thủ công. Phần primary/fallback của ADR-011 được supersede cho chế độ Hive: không fallback sang Gemini/Ollama và không transport retry ngầm. Môi trường chưa đặt provider vẫn dùng Gemini để tương thích.
+
+Reason: tránh phụ thuộc Google AI Studio free, giữ hành vi nguồn/quyền/citation và attribution minh bạch. Dùng HTTPX đang pin thay vì thêm SDK; RAG JSON-object vẫn bắt buộc qua validator local, không dựa vào strict JSON Schema chưa kiểm chứng.
+
+Decision: gate singleton `ai_generation_control` trong PostgreSQL là nguồn admission chung: OPEN nhận mới, DRAINING chỉ cho operation cũ/replay/control tiếp tục, VERIFYING chỉ nhận thêm ADMIN diagnostics. Shared row lock bảo vệ reservation/diagnostic START; exclusive lock bảo vệ đổi trạng thái/version. Không giữ transaction khi gọi AI, không cache gate, không bỏ pending không xác định để vượt drain.
+
+Reason: restart hoặc rollback không được cắt operation đang chạy. Public subscriber detach độc lập với operation; private disconnect/cancel/policy denial dừng generation. Idle read timeout5s không phải SLA hủy toàn worker. Migration gate, live cutover và provider smoke là delivery actions riêng.
+
 ## Consequences
 
 - Runtime đã được cung cấp theo version đã khóa; mỗi máy vẫn phải cung cấp evidence độc lập trước `READY — CORE-001`.

@@ -217,3 +217,11 @@ hiện hành.
 - Không file >300 dòng; pure function ≤30 dòng; React render ≤60 JSX lines mục tiêu.
 - Không thêm dependency ngoài stack-and-dependencies.md nếu chưa cập nhật decision log và được duyệt.
 - Không tạo source code trước design approval.
+
+## 14. Hive migration — approved extension
+
+- AI Service: provider settings/key registry và adapter protocol; Hive SSE/parser + Gemini adapter; gateway, RAG/compaction/cancellation, private errors, attribution, probe/registry/readiness; offline Python tests.
+- Core admin/chat: admission controller/service/repository, V40 singleton migration, shared/exclusive lock integration, safe private provider error mapping, registry/history metadata; controller/unit/PostgreSQL concurrency tests.
+- Web/mobile: provider-neutral admin diagnostics, independent history filters, admission controls, nullable usage and friendly error/refusal presentation; offline component/transport/Playwright tests.
+- Documentation: ADR-022, provider configuration sample, API/data/retrieval/test specs và Hive runbook. Giữ baseline/decisions/evidence trong .pipeline; không ghi đè dirty work của task khác.
+- Delivery excludes shared migration apply, live env/restart, real provider smoke, package installation và Git operations until separately approved.

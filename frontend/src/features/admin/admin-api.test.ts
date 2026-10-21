@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fetchJson } from '../../lib/api-client';
-import { fetchAdminAuditEvents, fetchAdminUsers, fetchAiStudioMetrics, sendQuickPrompt, testGeminiKey,
+import { fetchAdminAuditEvents, fetchAdminUsers, fetchAiAdmission, fetchAiStudioMetrics, sendQuickPrompt, testGeminiKey, testProviderKey, updateAiAdmission,
   updateAdminUserRole, updateAdminUserStatus } from './admin-api';
 vi.mock('../../lib/api-client', () => ({ fetchJson: vi.fn() }));
 const userId = '11111111-1111-4111-8111-111111111111';
@@ -30,5 +30,34 @@ describe('AdminApi', () => {
   it('should request audit pagination and encoded metadata filters', async () => {
     await fetchAdminAuditEvents(2, 'LOGIN_FAILURE', 'FAILURE');
     expect(fetchJson).toHaveBeenCalledWith('/admin/audit-events?page=2&size=20&action=LOGIN_FAILURE&outcome=FAILURE');
+  });
+  it('should send only the Hive key identity in probes and retain the compatibility alias', async () => {
+    await testProviderKey('hive-list-123456abcdef');
+    expect(testGeminiKey).toBe(testProviderKey);
+    expect(fetchJson).toHaveBeenCalledExactlyOnceWith('/admin/ai-studio/test-key', {
+      method: 'POST', body: JSON.stringify({ keyId: 'hive-list-123456abcdef' }),
+    });
+  });
+  it('should encode slash models in historical filters and allow nonblank prompts through 2000 characters', async () => {
+    const model = 'deepseek-ai/deepseek-v4.1-flash';
+    await fetchAiStudioMetrics(7, 'hive-primary', model);
+    await sendQuickPrompt('a'.repeat(2000), 'hive-primary', model);
+    expect(fetchJson).toHaveBeenNthCalledWith(1, `/admin/ai-studio/metrics?days=7&keyId=hive-primary&model=${encodeURIComponent(model)}`);
+    expect(fetchJson).toHaveBeenNthCalledWith(2, '/admin/ai-studio/quick-prompt', {
+      method: 'POST', body: JSON.stringify({ prompt: 'a'.repeat(2000), keyId: 'hive-primary', model }),
+    });
+  });
+  it.each(['', '   ', 'a'.repeat(2001)])('should reject invalid prompt before HTTP', async (prompt) => {
+    await expect(sendQuickPrompt(prompt, 'hive-primary', 'deepseek-ai/deepseek-v4.1-flash')).rejects.toThrow();
+    expect(fetchJson).not.toHaveBeenCalled();
+  });
+  it('should read admission and mutate only the reviewed state and version', async () => {
+    await fetchAiAdmission();
+    await updateAiAdmission('VERIFYING', 9);
+    expect(fetchJson).toHaveBeenNthCalledWith(1, '/admin/ai-studio/admission');
+    expect(fetchJson).toHaveBeenNthCalledWith(2, '/admin/ai-studio/admission', {
+      method: 'PUT', body: JSON.stringify({ state: 'VERIFYING', expectedVersion: 9 }),
+    });
+    expect(() => updateAiAdmission('OPEN', -1)).toThrow();
   });
 });

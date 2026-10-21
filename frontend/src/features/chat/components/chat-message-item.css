@@ -1,0 +1,49 @@
+.chat-msg__content-zone {
+  align-items: flex-start;
+}
+
+.chat-msg--user .chat-msg__content-zone {
+  align-items: flex-end;
+}
+
+.chat-msg__content-zone .chat-msg__bubble,
+.chat-msg__content-zone .chat-thoughts,
+.chat-msg__content-zone .citation-panel {
+  max-width: 100%;
+}
+
+.chat-msg__content-zone .chat-thoughts {
+  width: 100%;
+}
+
+.chat-thoughts > summary.chat-thoughts__header {
+  list-style: none;
+}
+
+.chat-thoughts > summary.chat-thoughts__header::-webkit-details-marker {
+  display: none;
+}
+
+.chat-thoughts[open] > .chat-thoughts__header {
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.chat-thoughts[open] .chat-thoughts__toggle-icon {
+  transform: rotate(180deg);
+}
+
+.chat-thoughts > ol.chat-thoughts__body {
+  margin: 0;
+  padding: 14px 16px;
+  list-style: none;
+}
+
+.chat-msg__content-zone > .chat-msg__actions {
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .chat-msg__content-zone {
+    max-width: calc(100% - 48px);
+  }
+}

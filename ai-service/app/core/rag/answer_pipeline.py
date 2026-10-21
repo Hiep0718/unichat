@@ -15,6 +15,7 @@ from app.core.rag.evidence_gate import DecisionEnum, evaluate_evidence
 from app.core.rag.generation_policy import GenerationPolicy
 from app.core.rag.intent_detector import IntentEnum, detect_intent
 from app.core.rag.llm_provider import generate_rag_answer
+from app.core.rag.provider_contracts import Cancellation, check_cancelled
 from app.core.rag.provider_gateway import Observer
 from app.core.rag.retrieval_engine import RetrievedChunkCandidate, retrieve_chunks
 from app.core.rag.strategy_selector import get_strategy
@@ -31,8 +32,11 @@ class PreparedAnswer:
     candidates: list[RetrievedChunkCandidate]
 
 
-def prepare_answer(request: RetrievalAnswerRequest) -> PreparedAnswer:
+def prepare_answer(
+    request: RetrievalAnswerRequest, cancelled: Cancellation | None = None
+) -> PreparedAnswer:
     """Enforce explicit cloud policy before local retrieval or generator invocation."""
+    check_cancelled(cancelled)
     response = RetrievalAnswerResponse(
         decision="REFUSE",
         intent="OUT_OF_SCOPE",
@@ -55,10 +59,13 @@ def prepare_answer(request: RetrievalAnswerRequest) -> PreparedAnswer:
     allowed = set(request.allowedDocumentIds)
     if {source.documentId for source in request.sources} != allowed:
         return refuse(prepared, "SOURCE_METADATA_INVALID", "Metadata nguồn hiện hành chưa đầy đủ.")
-    return _retrieve(prepared)
+    check_cancelled(cancelled)
+    prepared = _retrieve(prepared, cancelled)
+    check_cancelled(cancelled)
+    return prepared
 
 
-def _retrieve(prepared: PreparedAnswer) -> PreparedAnswer:
+def _retrieve(prepared: PreparedAnswer, cancelled: Cancellation | None) -> PreparedAnswer:
     request, response = prepared.request, prepared.response
     history, summary, _ = safe_context(
         request.conversationHistory,
@@ -75,12 +82,14 @@ def _retrieve(prepared: PreparedAnswer) -> PreparedAnswer:
             prepared, "CLARIFY_REQUIRED", "Vui lòng bổ sung rõ đối tượng cần hỏi.", "CLARIFY"
         )
     strategy = get_strategy(detected.intent)
+    check_cancelled(cancelled)
     prepared.candidates = retrieve_chunks(
         str(request.workspaceId),
         [str(value) for value in request.allowedDocumentIds],
         request.question,
         strategy,
     )
+    check_cancelled(cancelled)
     gate = evaluate_evidence(
         detected.intent,
         strategy,
@@ -113,9 +122,12 @@ def refuse(
 
 
 def complete_answer(
-    prepared: PreparedAnswer, observer: Observer | None = None
+    prepared: PreparedAnswer,
+    observer: Observer | None = None,
+    cancelled: Cancellation | None = None,
 ) -> RetrievalAnswerResponse:
     """Validate full generator output; this private result never implies a public DB commit."""
+    check_cancelled(cancelled)
     if prepared.response.decision != "ANSWER":
         return prepared.response
     request = prepared.request
@@ -137,11 +149,13 @@ def complete_answer(
         policy=policy,
         sources=request.sources,
         observer=observer,
+        cancelled=cancelled,
     )
     if result.get("validationFailed"):
         code = str(result.get("refusalCode", "CITATION_VALIDATION_FAILED"))
         return refuse(prepared, code, "Không thể tạo câu trả lời đã kiểm tra an toàn.").response
     prepared.response.answer = result["answer"]
+    prepared.response.provider = result.get("provider")
     prepared.response.sections = [
         AnswerSection.model_validate(value) for value in result["sections"]
     ]

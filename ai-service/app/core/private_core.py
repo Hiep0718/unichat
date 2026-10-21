@@ -26,6 +26,8 @@ def call_core(path: str, payload: dict[str, Any], request_id: str, key: str = ""
     try:
         with httpx.Client(timeout=5.0, follow_redirects=False) as client:
             response = client.post(base_url + path, content=body, headers=headers)
+            if response.status_code == 503 and _maintenance_rejection(response):
+                raise ServiceSecurityError("AI_MAINTENANCE")
             response.raise_for_status()
             if response.status_code == 204 or not response.content:
                 return {}
@@ -35,3 +37,11 @@ def call_core(path: str, payload: dict[str, Any], request_id: str, key: str = ""
             return result
     except (httpx.HTTPError, ValueError) as error:
         raise ServiceSecurityError("CORE_POLICY_UNAVAILABLE") from error
+
+
+def _maintenance_rejection(response: httpx.Response) -> bool:
+    try:
+        payload = response.json()
+    except ValueError:
+        return False
+    return isinstance(payload, dict) and payload.get("code") == "AI_MAINTENANCE"

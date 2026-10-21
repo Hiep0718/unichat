@@ -44,8 +44,19 @@ public class ServiceKeys {
         if (!pem.isBlank()) return pem.replace("\\n", "\n");
         if (path.isBlank()) throw new IllegalStateException("Service key not configured");
         String location = path.contains(":") && !path.matches("^[A-Za-z]:.*") ? path : "file:" + path;
-        try (var stream = resources.getResource(location).getInputStream()) {
-            return new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+        try {
+            try (var stream = resources.getResource(location).getInputStream()) {
+                return new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+            }
+        } catch (IOException error) {
+            if (!path.startsWith("/") && !path.matches("^[A-Za-z]:.*")) {
+                try (var fallback = resources.getResource("file:../" + path).getInputStream()) {
+                    return new String(fallback.readAllBytes(), StandardCharsets.UTF_8);
+                } catch (IOException fallbackError) {
+                    error.addSuppressed(fallbackError);
+                }
+            }
+            throw error;
         }
     }
     private byte[] decode(String pem, String kind) {

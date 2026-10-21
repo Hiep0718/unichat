@@ -5,7 +5,7 @@ const APP_ENV = process.env.APP_ENV || 'development';
 const envMap = {
   development: {
     name: 'UniChat (Dev)',
-    apiBaseUrl: process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8082',
+    apiBaseUrl: process.env.EXPO_PUBLIC_API_URL,
   },
   staging: {
     name: 'UniChat (Staging)',

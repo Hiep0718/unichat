@@ -76,7 +76,8 @@ export const updateWorkspaceSchema = z.object({
     .max(1000, 'Mô tả tối đa 1000 ký tự')
     .optional(),
   visibility: z.enum(['PRIVATE', 'SHARED', 'PUBLIC']).optional(),
-  expectedVersion: z.number().optional(),
+  cloudAllowed: z.boolean().optional(),
+  expectedVersion: z.number().int().nonnegative(),
 });
 
 /** TypeScript type inferred from the Zod update schema. */

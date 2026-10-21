@@ -218,6 +218,7 @@ ul, ol {
    Utility Classes
    ========================================================================== */
 
+.sr-only,
 .visually-hidden {
   position: absolute;
   width: 1px;

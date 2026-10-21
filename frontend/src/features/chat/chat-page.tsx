@@ -5,6 +5,7 @@ import { ChatWelcome } from './components/chat-welcome';
 import { ChatMessageItem } from './components/chat-message-item';
 import { ChatInputForm } from './components/chat-input-form';
 import { ChatStudioPanels } from './components/chat-studio-panels';
+import { ChatPolicyNotice } from './components/chat-policy-notice';
 import { useChatSession } from './use-chat-session';
 import { useChatNotes } from './use-chat-notes';
 import { readCurrentCitation } from './read-citation';
@@ -68,13 +69,15 @@ function ChatSessionPage({ workspaceId = '', conversationId: initialId }: ChatPa
       if (generation === getSessionSnapshot().generation) { setSelected(verified); setStudio(true); } }
     catch (failure: unknown) { if (generation === getSessionSnapshot().generation) setCitationError(failure instanceof Error ? failure.message : 'Không mở được nguồn'); }
   };
-  const send = (question: string, expanded = false) => { if (workspaceId) void chat.send(question, expanded); };
+  const policyBlocked = workspace.workspace?.cloudAllowed === false;
+  const send = (question: string, expanded = false) => { if (workspaceId && !policyBlocked) void chat.send(question, expanded); };
   return <div className={`chat-layout ${studio ? 'chat-layout--studio-open' : ''}`}>
     <div className="chat-page"><ChatHeader workspaceId={workspaceId} workspaceName={workspace?.workspace?.name}
       conversationTitle={chat.title} messageCount={chat.messages.length} onNewChat={() => { chat.reset(); setSelected(null); }}
       onToggleStudio={() => setStudio((value) => !value)} isStudioOpen={studio} hasDrawerOpen={Boolean(selected)} />
       <div className="chat-page__main-content"><div className="chat-page__chat-area">
         <div className="chat-page__messages-body">
+          {policyBlocked && <ChatPolicyNotice workspaceId={workspaceId} isOwner={workspace.isOwner} />}
           {chat.initialLoading && <p role="status">Đang tải lịch sử hội thoại…</p>}
           {chat.older && <button type="button" onClick={() => void chat.loadOlder()}>Tải tin nhắn cũ hơn</button>}
           {!chat.initialLoading && !chat.messages.length && <ChatWelcome workspaceName={workspace?.workspace?.name} documents={documents} onSelectPrompt={send} />}
@@ -84,7 +87,7 @@ function ChatSessionPage({ workspaceId = '', conversationId: initialId }: ChatPa
           {(chat.error || notes.error || citationError) && <p role="alert">{chat.error ?? notes.error ?? citationError}</p>}
           {chat.canRetry && <button type="button" onClick={() => void chat.retry()}>Kiểm tra lại yêu cầu này</button>}
           <div ref={end} />
-        </div><ChatInputForm onSend={send} loading={chat.loading} onCancel={() => void chat.cancel()} />
+        </div><ChatInputForm onSend={send} loading={chat.loading} disabled={policyBlocked} onCancel={() => void chat.cancel()} />
       </div>{studio && <ChatStudioPanels workspaceId={workspaceId} workspaceName={workspace?.workspace?.name}
         messages={chat.messages} selectedCitation={selected} onSelectCitation={selectCitation} onClearCitation={() => setSelected(null)}
         notes={notes} onClose={() => setStudio(false)} onSend={send} />}</div>

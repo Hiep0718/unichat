@@ -100,7 +100,7 @@ export default function AccountTabScreen() {
         <Animated.View entering={FadeInUp.delay(80).duration(280)} style={styles.metricsGrid}>
           <UCGlassCard variant="light" style={styles.metricGlassCard} entering="slide" enteringIndex={0}>
             <UCIcon name="memory" size={20} color={colors.primary} />
-            <Text style={styles.metricValue}>Gemini 3.5</Text>
+            <Text style={styles.metricValue}>Trợ lý AI</Text>
             <Text style={styles.metricLabel}>Mô hình AI RAG</Text>
           </UCGlassCard>
           <UCGlassCard variant="light" style={styles.metricGlassCard} entering="slide" enteringIndex={1}>

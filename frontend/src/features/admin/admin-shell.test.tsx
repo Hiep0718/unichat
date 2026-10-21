@@ -19,7 +19,7 @@ describe('AdminShell', () => {
     );
 
     expect(screen.getByText('UniChat Admin Portal')).toBeInTheDocument();
-    expect(screen.getByText('Giám sát Gemini API')).toBeInTheDocument();
+    expect(screen.getByText('Giám sát nhà cung cấp AI')).toBeInTheDocument();
     expect(screen.getByText('Người dùng & Phân quyền')).toBeInTheDocument();
     expect(screen.getByText('Số liệu đăng nhập & Chat AI')).toBeInTheDocument();
     expect(screen.queryByText('Không gian làm việc')).not.toBeInTheDocument();
