@@ -2,8 +2,12 @@ import Constants from 'expo-constants';
 
 /** Resolves an explicit API URL, then the reachable Expo host during development. */
 export function getApiBaseUrl(): string {
-  const configured = process.env.EXPO_PUBLIC_API_URL?.trim()
-    || Constants.expoConfig?.extra?.apiBaseUrl as string | undefined;
+  const fromEnvironment = process.env.EXPO_PUBLIC_API_URL;
+  const fromConfig = Constants.expoConfig?.extra?.apiBaseUrl as string | undefined;
+  // An unusable environment value (e.g. the empty-host bug below) must not
+  // shadow a usable app config value, so each candidate is tried in turn
+  // rather than picked by simple presence.
+  const configured = normalizeApiBaseUrl(fromEnvironment) ? fromEnvironment : fromConfig;
   return resolveApiBaseUrl(configured, Constants.expoConfig?.hostUri, __DEV__);
 }
 

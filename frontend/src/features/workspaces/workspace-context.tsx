@@ -15,7 +15,7 @@ export interface WorkspaceDetails {
   readonly description: string;
   readonly visibility: WorkspaceVisibility;
   /** What the group is about; empty for groups that predate topics. */
-  readonly topics?: readonly string[];
+  readonly topics: readonly string[];
   readonly role: WorkspaceRole;
   readonly ownerId?: string;
   readonly cloudAllowed: boolean;
