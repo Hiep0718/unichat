@@ -14,6 +14,8 @@ import com.unichat.core.workchat.call.domain.Call;
  * @param callId         the call this concerns
  * @param conversationId where it belongs, so the client can open the right thread
  * @param peerId         the other person, seen from the recipient's side
+ * @param peerName       that person's display name, so a ringing panel can
+ *                       say who is calling rather than only that someone is
  * @param incoming       whether the recipient is being rung rather than ringing
  * @param media          what was offered
  * @param status         where the call has got to
@@ -23,17 +25,24 @@ public record CallEventMessage(
         UUID callId,
         UUID conversationId,
         UUID peerId,
+        String peerName,
         boolean incoming,
         String media,
         String status,
         String endReason) {
 
-    /** Describes a call from one recipient's point of view. */
-    public static CallEventMessage forRecipient(Call call, UUID recipientId) {
+    /**
+     * Describes a call from one recipient's point of view.
+     *
+     * @param peerName the other party's display name, resolved by the caller
+     *                 of this method because the entity holds ids alone
+     */
+    public static CallEventMessage forRecipient(Call call, UUID recipientId, String peerName) {
         return new CallEventMessage(
                 call.getId(),
                 call.getConversationId(),
                 call.otherParty(recipientId),
+                peerName,
                 call.getCalleeId().equals(recipientId),
                 call.getMedia().name(),
                 call.getStatus().name(),

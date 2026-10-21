@@ -3,6 +3,7 @@ package com.unichat.core.workchat.call.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -59,6 +61,21 @@ class CallServiceTest {
         when(callRepository.save(any(Call.class))).thenAnswer(call -> call.getArgument(0));
         when(presenceTracker.isOnline(any())).thenReturn(true);
         when(callRepository.hasLiveCall(any())).thenReturn(false);
+    }
+
+    @Test
+    void shouldAskWhetherTheCalleeIsBusyBeforeWritingItsOwnRow() {
+        // hasLiveCall matches any RINGING row naming that person, and the row
+        // this call is about to write names the callee. Asked after the save,
+        // every call finds itself and reports the callee as busy — which is
+        // exactly what a real database did while this suite stayed green,
+        // because a mocked repository never returns the row it was handed.
+        InOrder order = inOrder(callRepository);
+
+        service.start(LOW, CONVERSATION, CallMedia.AUDIO);
+
+        order.verify(callRepository).hasLiveCall(HIGH);
+        order.verify(callRepository).save(any(Call.class));
     }
 
     @Test

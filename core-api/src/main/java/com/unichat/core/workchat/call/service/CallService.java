@@ -78,9 +78,16 @@ public class CallService {
 
         UUID calleeId = otherParty(conversation, callerId);
         Instant now = Instant.now();
+
+        // Asked before this call's own row exists. hasLiveCall matches any
+        // RINGING row naming that person, and the row about to be written
+        // names the callee — so asking after the save made every call find
+        // itself and report the callee as busy. The mocked repository in the
+        // unit tests cannot reproduce that, which is how it reached a browser.
+        CallEndReason refusal = whyCannotRing(calleeId);
+
         Call call = callRepository.save(Call.ring(conversationId, callerId, calleeId, media, now));
 
-        CallEndReason refusal = whyCannotRing(calleeId);
         if (refusal != null) {
             call.finish(refusal, now);
             publishTo(callerId, call);

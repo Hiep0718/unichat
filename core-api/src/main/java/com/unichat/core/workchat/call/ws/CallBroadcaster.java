@@ -1,5 +1,7 @@
 package com.unichat.core.workchat.call.ws;
 
+import java.util.UUID;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -7,6 +9,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
+import com.unichat.core.user.domain.User;
+import com.unichat.core.user.domain.UserRepository;
 import com.unichat.core.workchat.call.api.CallEventMessage;
 import com.unichat.core.workchat.call.service.CallChangedEvent;
 
@@ -32,9 +36,11 @@ public class CallBroadcaster {
     private static final Logger log = LoggerFactory.getLogger(CallBroadcaster.class);
 
     private final SimpMessagingTemplate messagingTemplate;
+    private final UserRepository userRepository;
 
-    public CallBroadcaster(SimpMessagingTemplate messagingTemplate) {
+    public CallBroadcaster(SimpMessagingTemplate messagingTemplate, UserRepository userRepository) {
         this.messagingTemplate = messagingTemplate;
+        this.userRepository = userRepository;
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -42,10 +48,22 @@ public class CallBroadcaster {
         messagingTemplate.convertAndSendToUser(
                 event.recipientId().toString(),
                 CALLS,
-                CallEventMessage.forRecipient(event.call(), event.recipientId()));
+                CallEventMessage.forRecipient(event.call(), event.recipientId(),
+                        nameOf(event.call().otherParty(event.recipientId()))));
 
         // The id and the state, never the signalling: an offer carries the
         // other party's addresses and has no business in a log.
         log.debug("Call {} is now {}", event.call().getId(), event.call().getStatus());
+    }
+
+    /**
+     * The other party's name for the ringing panel.
+     *
+     * <p>Falls back rather than failing: a missing name costs a nicer
+     * label, and throwing here would abandon a call that is otherwise fine
+     * — this runs after the commit, so the row already says it is ringing.
+     */
+    private String nameOf(UUID userId) {
+        return userRepository.findById(userId).map(User::getDisplayName).orElse("Người dùng");
     }
 }
