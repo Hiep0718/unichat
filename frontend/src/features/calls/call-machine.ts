@@ -28,6 +28,10 @@ export interface CallState {
   readonly conversationId: string | null;
   /** The other person. Null only while idle. */
   readonly peerId: string | null;
+  /** Their display name, so a ringing panel can say who rather than that someone. */
+  readonly peerName: string | null;
+  /** When media started flowing, for the timer. Null until then. */
+  readonly connectedAt: number | null;
   readonly media: CallMedia;
   /** Set once the call is over, for the line the user reads. */
   readonly endReason: CallEndReason | null;
@@ -40,6 +44,8 @@ export const IDLE: CallState = {
   callId: null,
   conversationId: null,
   peerId: null,
+  peerName: null,
+  connectedAt: null,
   media: 'AUDIO',
   endReason: null,
   muted: false,
@@ -50,6 +56,7 @@ export interface CallEvent {
   readonly callId: string;
   readonly conversationId: string;
   readonly peerId: string;
+  readonly peerName: string | null;
   readonly incoming: boolean;
   readonly media: CallMedia;
   readonly status: CallStatus;
@@ -84,6 +91,8 @@ function fromEvent(event: CallEvent, phase: CallPhase): CallState {
     callId: event.callId,
     conversationId: event.conversationId,
     peerId: event.peerId,
+    peerName: event.peerName,
+    connectedAt: null,
     media: event.media,
     endReason: event.endReason,
     muted: false,
@@ -112,7 +121,9 @@ export function callReducer(state: CallState, action: CallAction): CallState {
     case 'connected':
       // Only from connecting: a late "connected" from a torn-down peer
       // connection must not revive a call that has ended.
-      return state.phase === 'connecting' ? { ...state, phase: 'active' } : state;
+      return state.phase === 'connecting'
+        ? { ...state, phase: 'active', connectedAt: Date.now() }
+        : state;
 
     case 'muted':
       return { ...state, muted: action.muted };
@@ -136,7 +147,8 @@ function applyServerEvent(state: CallState, event: CallEvent): CallState {
   if (state.callId !== event.callId) return state;
 
   if (TERMINAL.has(event.status)) {
-    return { ...fromEvent(event, 'ended'), muted: state.muted };
+    // Keeps connectedAt so the closing line can say how long it lasted.
+    return { ...fromEvent(event, 'ended'), muted: state.muted, connectedAt: state.connectedAt };
   }
 
   if (event.status === 'ACTIVE' && state.phase === 'outgoing') {

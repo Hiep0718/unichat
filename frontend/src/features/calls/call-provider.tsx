@@ -23,7 +23,8 @@ interface CallContextValue {
   readonly state: CallState;
   /** Why the last attempt could not start, for a message the user reads. */
   readonly error: string | null;
-  readonly placeCall: (conversationId: string) => Promise<void>;
+  /** `peerName` labels the panel; incoming calls get it from the server. */
+  readonly placeCall: (conversationId: string, peerName: string) => Promise<void>;
   readonly answer: () => Promise<void>;
   readonly decline: () => Promise<void>;
   readonly hangUp: () => Promise<void>;
@@ -136,7 +137,7 @@ export function CallProvider({ children }: { readonly children: ReactNode }) {
     return () => window.clearTimeout(timer);
   }, [state.phase, state.callId]);
 
-  const placeCall = useCallback(async (conversationId: string) => {
+  const placeCall = useCallback(async (conversationId: string, peerName: string) => {
     if (isBusy(current.current)) return;
     if (!microphoneAvailable()) {
       setError(NO_MICROPHONE);
@@ -151,6 +152,7 @@ export function CallProvider({ children }: { readonly children: ReactNode }) {
         callId: call.id,
         conversationId: call.conversationId,
         peerId: call.calleeId,
+        peerName,
         incoming: false,
         media: call.media,
         status: call.status,

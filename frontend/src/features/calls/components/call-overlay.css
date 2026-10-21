@@ -8,19 +8,30 @@
   display: flex;
   align-items: center;
   gap: 20px;
-  min-width: 300px;
+  min-width: 320px;
   padding: 14px 18px;
-  border-radius: var(--radius-xl, 18px);
-  background: var(--color-surface-container-highest, #1e293b);
+  border-radius: 20px;
+  background: #101828;
   color: #fff;
-  box-shadow: var(--shadow-xl, 0 18px 40px rgb(15 23 42 / 35%));
-  animation: call-overlay-in 180ms ease-out;
+  box-shadow: 0 24px 48px rgb(15 23 42 / 38%), 0 2px 8px rgb(15 23 42 / 24%);
+  animation: call-overlay-in 200ms cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+
+/* While it is ringing the panel is a card, not a strip: deciding whether to
+   answer is the one moment the call deserves more of the screen than the
+   work behind it. Once talking, it shrinks back out of the way. */
+.call-overlay--card {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 18px;
+  width: 300px;
+  padding: 22px 20px 18px;
 }
 
 @keyframes call-overlay-in {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(16px) scale(0.96);
   }
 }
 
@@ -30,62 +41,127 @@
     left: 16px;
     min-width: 0;
   }
+
+  .call-overlay--card {
+    width: auto;
+  }
 }
+
+/* ── Who ─────────────────────────────────────────────────── */
 
 .call-overlay__identity {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   min-width: 0;
+}
+
+.call-overlay--card .call-overlay__identity {
+  flex-direction: column;
+  gap: 12px;
+  text-align: center;
 }
 
 .call-overlay__avatar {
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   flex: none;
-  border-radius: var(--radius-full, 999px);
-  background: rgb(255 255 255 / 14%);
+  border-radius: 999px;
+  background: linear-gradient(140deg, #3b82f6, #1e3a8a);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
-/* Only while it is ringing: a steady icon during a call would read as a
-   problem rather than as the call simply being in progress. */
+.call-overlay--card .call-overlay__avatar {
+  width: 76px;
+  height: 76px;
+  font-size: 1.75rem;
+}
+
+.call-overlay--ended .call-overlay__avatar {
+  background: rgb(255 255 255 / 12%);
+}
+
+/* Only while it is ringing: a steady pulse during a call would read as a
+   problem rather than as the call simply being in progress. The ring is a
+   shadow so it costs no layout and cannot nudge the name beside it. */
 .call-overlay--incoming .call-overlay__avatar,
 .call-overlay--outgoing .call-overlay__avatar {
-  animation: call-overlay-pulse 1.4s ease-in-out infinite;
+  animation: call-overlay-pulse 1.6s ease-out infinite;
 }
 
 @keyframes call-overlay-pulse {
-  50% {
-    background: rgb(255 255 255 / 30%);
+  0% {
+    box-shadow: 0 0 0 0 rgb(59 130 246 / 55%);
+  }
+
+  70% {
+    box-shadow: 0 0 0 16px rgb(59 130 246 / 0%);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgb(59 130 246 / 0%);
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .call-overlay,
-  .call-overlay--incoming .call-overlay__avatar,
-  .call-overlay--outgoing .call-overlay__avatar {
-    animation: none;
-  }
+.call-overlay__text {
+  min-width: 0;
+}
+
+.call-overlay__name {
+  margin: 0;
+  overflow: hidden;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.call-overlay--card .call-overlay__name {
+  font-size: 1.125rem;
 }
 
 .call-overlay__status {
-  margin: 0;
-  font-size: 0.9375rem;
-  font-weight: 600;
+  margin: 2px 0 0;
+  color: rgb(255 255 255 / 68%);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+/* Tabular figures so the seconds do not shift the layout as they tick. */
+.call-overlay__status--timer {
+  color: rgb(255 255 255 / 86%);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
 }
 
 .call-overlay__error {
-  margin: 2px 0 0;
-  font-size: 0.75rem;
+  margin: 4px 0 0;
   color: #fca5a5;
+  font-size: 0.75rem;
 }
+
+/* ── Actions ─────────────────────────────────────────────── */
 
 .call-overlay__actions {
   display: flex;
   gap: 8px;
   margin-left: auto;
+}
+
+.call-overlay--card .call-overlay__actions {
+  margin-left: 0;
+}
+
+/* Answering and refusing share the row evenly: at the moment of deciding,
+   neither choice should be the easier target. */
+.call-overlay--card .call-overlay__button {
+  flex: 1;
+  justify-content: center;
+  padding: 11px 14px;
 }
 
 .call-overlay__button {
@@ -94,23 +170,36 @@
   gap: 6px;
   padding: 9px 14px;
   border: none;
-  border-radius: var(--radius-full, 999px);
+  border-radius: 999px;
   background: rgb(255 255 255 / 14%);
   color: #fff;
   font: inherit;
   font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background var(--transition-fast, 120ms);
+  transition: background 120ms ease, transform 120ms ease;
 }
 
 .call-overlay__button:hover {
   background: rgb(255 255 255 / 26%);
 }
 
+.call-overlay__button:active {
+  transform: scale(0.97);
+}
+
 .call-overlay__button:focus-visible {
   outline: 2px solid #fff;
   outline-offset: 2px;
+}
+
+/* A round button for a toggle, a pill for a decision: shape says which of
+   these changes a setting and which ends the call. */
+.call-overlay__button--icon {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  justify-content: center;
 }
 
 /* Green to accept and red to end: the one pair of colours people already read
@@ -135,4 +224,20 @@
 .call-overlay__button--on {
   background: #fff;
   color: #0f172a;
+}
+
+.call-overlay__button--on:hover {
+  background: rgb(255 255 255 / 88%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .call-overlay,
+  .call-overlay--incoming .call-overlay__avatar,
+  .call-overlay--outgoing .call-overlay__avatar {
+    animation: none;
+  }
+
+  .call-overlay__button:active {
+    transform: none;
+  }
 }

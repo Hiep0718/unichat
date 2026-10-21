@@ -28,7 +28,7 @@ export function CallButton({ conversationId, peerName }: CallButtonProps) {
     <button
       type="button"
       className="call-button"
-      onClick={() => void call.placeCall(conversationId)}
+      onClick={() => void call.placeCall(conversationId, peerName)}
       disabled={busy}
       title={busy ? 'Bạn đang trong một cuộc gọi' : `Gọi thoại cho ${peerName}`}
       aria-label={`Gọi thoại cho ${peerName}`}

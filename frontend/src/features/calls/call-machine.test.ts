@@ -12,6 +12,7 @@ const RINGING_IN: CallEvent = {
   callId: 'call-1',
   conversationId: 'conv-1',
   peerId: 'peer-1',
+  peerName: 'Trần Bình',
   incoming: true,
   media: 'AUDIO',
   status: 'RINGING',

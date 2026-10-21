@@ -1,0 +1,69 @@
+/* A call sits between the bubbles rather than beside them: it is an event in
+   the conversation, not a thing either person said. */
+.call-log {
+  display: inline-flex;
+  align-self: center;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  margin: 2px 0;
+  padding: 7px 14px 7px 9px;
+  border-radius: 999px;
+  background: var(--ws-chip, #f1f5f9);
+  color: var(--ws-ink-soft, #475569);
+  font-size: 0.8125rem;
+}
+
+.call-log__icon {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  flex: none;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ws-ink-muted, #64748b);
+}
+
+.call-log__text {
+  overflow: hidden;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Tabular figures so a list of calls lines up down the column. */
+.call-log__duration {
+  flex: none;
+  color: var(--ws-ink-muted, #64748b);
+  font-variant-numeric: tabular-nums;
+}
+
+.call-log__duration::before {
+  content: '·';
+  margin-right: 8px;
+}
+
+.call-log__time {
+  flex: none;
+  color: var(--ws-ink-muted, #64748b);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Only a missed incoming call is coloured. Everything else already happened
+   and needs nothing from the reader, so colouring it would spend attention
+   on a line that is pure history. */
+.call-log--missed {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.call-log--missed .call-log__icon {
+  color: #dc2626;
+}
+
+.call-log--missed .call-log__duration,
+.call-log--missed .call-log__time {
+  color: #ef4444;
+}

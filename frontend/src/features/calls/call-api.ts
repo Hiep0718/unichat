@@ -39,6 +39,26 @@ export interface CallDto {
   readonly endReason: CallEndReason | null;
 }
 
+/**
+ * One line of a conversation's call history.
+ *
+ * `outgoing` and `talkSeconds` arrive ready-made from the server rather than
+ * being derived here from the timestamps, so two clients cannot disagree
+ * about how long a call lasted.
+ */
+export interface CallHistoryEntryDto {
+  readonly id: string;
+  readonly outgoing: boolean;
+  readonly media: CallMedia;
+  readonly status: CallStatus;
+  readonly startedAt: string;
+  readonly talkSeconds: number;
+}
+
+interface CallHistoryPage {
+  readonly content: readonly CallHistoryEntryDto[];
+}
+
 /** One entry of `RTCConfiguration.iceServers`, ready to pass through. */
 export interface IceServerDto {
   readonly urls: readonly string[];
@@ -106,4 +126,16 @@ export function toRtcIceServers(dto: IceServersDto): RTCIceServer[] {
     if (!server.username || !server.credential) return { urls };
     return { urls, username: server.username, credential: server.credential };
   });
+}
+
+/**
+ * One conversation's calls, newest first.
+ *
+ * Read alongside the messages so a thread can show that a call happened at
+ * all. Without it a call leaves no trace in the conversation it belonged to,
+ * which is how it looked until now: the endpoint existed and nothing asked.
+ */
+export function fetchCallHistory(conversationId: string): Promise<readonly CallHistoryEntryDto[]> {
+  return fetchJson<CallHistoryPage>(`/conversations/${conversationId}/calls`)
+    .then((page) => page.content ?? []);
 }
