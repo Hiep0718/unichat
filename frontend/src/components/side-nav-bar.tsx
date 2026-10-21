@@ -4,11 +4,11 @@
  * When outside a workspace (global context): displays global destinations (Feed, Groups, Messages, Account)
  * and the list of groups you belong to.
  *
- * When inside a workspace: focuses strictly on the 3 core workspace features:
- * 1. Trò chuyện (AI Chat)
- * 2. Lịch sử hội thoại (Conversation History)
- * 3. Quản lý tài liệu (Document Management)
- * Along with group discussions and a quick switch button to return or change workspace.
+ * When inside a workspace it carries one destination and the way out. The
+ * group's own content — posts, files, members, about — belongs to the tab bar
+ * on the group page, and listing it here as well gave three of those places
+ * two names each: "Quản lý tài liệu" beside a tab called "Tệp", "Thảo luận"
+ * beside "Bài viết". Two names for one place is two places to a reader.
  */
 
 import { useState } from 'react';
@@ -66,36 +66,21 @@ export function SideNavBar() {
   const workspaceDisplayName =
     workspaceCtx?.workspace?.name || currentWorkspace?.name || 'Workspace';
 
-  // Workspace-specific navigation: 3 core features (Chat, History, Documents) + Discussions
+  // The assistant alone. It is the one workspace destination that is a tool
+  // rather than a part of the group's content, so it is the one that does not
+  // belong in the group's tab bar — and it keeps the name the group page uses
+  // for it rather than the "Trò chuyện" it used to carry here, which read as
+  // a third messaging feature beside Tin nhắn.
   const workspaceNavItems: readonly NavItem[] = workspaceId
     ? [
         {
-          icon: 'chat',
-          label: 'Trò chuyện',
+          icon: 'auto_awesome',
+          label: 'Trợ lý AI',
           href: `/workspaces/${workspaceId}/chat`,
           isActive:
             location.pathname === `/workspaces/${workspaceId}/chat` ||
             location.pathname.endsWith('/chat'),
           isAi: true,
-        },
-        {
-          icon: 'history',
-          label: 'Lịch sử hội thoại',
-          href: `/workspaces/${workspaceId}/conversations`,
-          isActive: location.pathname.startsWith(`/workspaces/${workspaceId}/conversations`),
-        },
-        {
-          icon: 'description',
-          label: 'Quản lý tài liệu',
-          href: `/workspaces/${workspaceId}/documents`,
-          isActive: location.pathname.startsWith(`/workspaces/${workspaceId}/documents`),
-          showPendingApprovals: true,
-        },
-        {
-          icon: 'forum',
-          label: 'Thảo luận',
-          href: `/workspaces/${workspaceId}/discussions`,
-          isActive: location.pathname.startsWith(`/workspaces/${workspaceId}/discussions`),
         },
       ]
     : [];
@@ -161,7 +146,7 @@ export function SideNavBar() {
           className="side-nav__upload-btn"
           title="Tải tài liệu mới"
         >
-          <Icon name="add" size={20} />
+          <Icon name="add" size={20} rounded />
           <span className="side-nav__upload-text">Tải tài liệu mới</span>
         </Link>
       )}
@@ -178,7 +163,7 @@ export function SideNavBar() {
                 className={`side-nav__item ${item.isAi ? 'side-nav__item--ai' : ''} ${item.isActive ? 'side-nav__item--active' : ''}`}
                 title={item.label}
               >
-                <Icon name={item.icon} size={20} />
+                <Icon name={item.icon} size={20} rounded />
                 <span className="side-nav__label">{item.label}</span>
                 {item.showPendingApprovals && <PendingApprovalBadge />}
               </Link>
@@ -193,7 +178,7 @@ export function SideNavBar() {
                 className={`side-nav__item ${item.isActive ? 'side-nav__item--active' : ''}`}
                 title={item.label}
               >
-                <Icon name={item.icon} size={20} />
+                <Icon name={item.icon} size={20} rounded />
                 <span className="side-nav__label">{item.label}</span>
               </Link>
             ))}
@@ -205,7 +190,7 @@ export function SideNavBar() {
                 title="Quản trị viên"
                 data-testid="admin-nav-item"
               >
-                <Icon name="admin_panel_settings" size={20} />
+                <Icon name="admin_panel_settings" size={20} rounded />
                 <span className="side-nav__label">Quản trị viên</span>
               </Link>
             )}
@@ -243,7 +228,7 @@ export function SideNavBar() {
             aria-label="Đổi Workspace"
           >
             <span className="side-nav__icon-wrap">
-              <Icon name="arrow_back" size={20} />
+              <Icon name="arrow_back" size={20} rounded />
             </span>
             <span className="side-nav__label">Đổi Workspace</span>
           </Link>
@@ -258,7 +243,7 @@ export function SideNavBar() {
           aria-label="Đăng xuất"
         >
           <span className="side-nav__icon-wrap">
-            <Icon name="logout" size={20} />
+            <Icon name="logout" size={20} rounded />
           </span>
           <span className="side-nav__label">Đăng xuất</span>
         </button>
