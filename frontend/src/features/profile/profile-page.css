@@ -81,7 +81,7 @@
 }
 
 .profile-page__message {
-  background: var(--ws-accent);
+  background: var(--ws-accent-gradient);
   color: var(--ws-accent-ink);
 }
 

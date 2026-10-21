@@ -1,43 +1,62 @@
-/* Member Table Component Styling */
+/* Member tab, drawn to the group-page mockups.
+ *
+ * No borders anywhere: the panel is a white card lifted off the canvas, the
+ * controls inside it are soft fills, and the only lines are the hairlines
+ * between table rows. An outline plus a shadow on the same box is the
+ * wireframe look those mockups drop throughout.
+ */
 
 .member-management {
   display: flex;
   flex-direction: column;
-  gap: var(--stack-md);
-  background: var(--color-surface);
-  border: 1px solid var(--color-outline-variant);
-  border-radius: var(--radius-lg);
+  gap: 18px;
   padding: 24px;
+  border-radius: var(--radius-2xl, 16px);
+  background: var(--ws-card, #fff);
+  box-shadow: var(--ws-card-shadow, 0 1px 3px rgb(15 23 42 / 8%));
 }
 
 .member-management__header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
 .member-management__title {
-  font: var(--font-title-lg);
+  margin: 0;
+  color: var(--ws-ink, #0f172a);
+  font-size: 1.0625rem;
   font-weight: 700;
-  color: var(--color-on-surface);
+  letter-spacing: -0.01em;
 }
 
+/* The one filled button on the panel. */
 .member-management__add-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 16px;
-  background: var(--color-primary);
-  color: var(--color-on-primary);
+  padding: 10px 16px;
   border: none;
-  border-radius: var(--radius-md);
-  font: var(--font-label-md);
+  border-radius: 10px;
+  background: var(--ws-accent-gradient);
+  color: var(--ws-accent-ink, #fff);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: opacity var(--transition-fast);
+  transition: filter var(--transition-fast, 0.15s ease);
 }
 
 .member-management__add-btn:hover {
-  opacity: 0.9;
+  filter: brightness(1.1);
+}
+
+.member-management__private-notice {
+  margin: 0;
+  color: var(--ws-ink-muted, #64748b);
+  font-size: 0.8125rem;
 }
 
 .member-table-container {
@@ -48,46 +67,110 @@
   width: 100%;
   border-collapse: collapse;
   text-align: left;
-  font: var(--font-body-md);
 }
 
+/* Column names as quiet uppercase labels, with no fill behind them: the
+   mockup's header row is lighter than its content, not heavier. */
 .member-table th {
-  padding: 12px 16px;
-  background: var(--color-surface-container-low);
-  color: var(--color-on-surface-variant);
-  font: var(--font-label-md);
-  border-bottom: 1px solid var(--color-outline-variant);
+  padding: 10px 16px;
+  background: none;
+  color: var(--ws-ink-muted, #64748b);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--ws-line, #eef2f7);
 }
 
 .member-table td {
   padding: 14px 16px;
-  border-bottom: 1px solid var(--color-outline-variant);
-  color: var(--color-on-surface);
+  color: var(--ws-ink, #0f172a);
+  font-size: 0.8125rem;
+  border-bottom: 1px solid var(--ws-line, #eef2f7);
+}
+
+.member-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.member-table tbody tr:hover td {
+  background: #fafbfd;
+}
+
+/* Email column carries the identity, so it is the one in full ink. */
+.member-table tbody td:first-child {
+  font-weight: 600;
+}
+
+/* Role reads as a chip whether it is a menu or a fixed label. */
+.member-table__role-select,
+.member-table td:nth-child(2) > span {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 11px;
+  border: none;
+  border-radius: 999px;
+  background: var(--ws-accent-soft, #eef2ff);
+  color: var(--ws-accent, #4f46e5);
+  font: inherit;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  cursor: pointer;
 }
 
 .member-table__role-select {
-  padding: 6px 12px;
-  background: var(--color-surface-container-lowest);
-  border: 1px solid var(--color-outline-variant);
-  border-radius: var(--radius-sm);
-  font: var(--font-body-sm);
-  color: var(--color-on-surface);
-  cursor: pointer;
+  padding-right: 8px;
 }
 
+.member-table__role-select:focus-visible {
+  outline: 2px solid var(--ws-accent, #4f46e5);
+  outline-offset: 2px;
+}
+
+/* Status as a dot and a word, the way the mockup shows it. The dot is drawn
+   rather than written, so the cell keeps whatever the server called it. */
+.member-table tbody td:nth-child(3) {
+  color: #15803d;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.member-table tbody td:nth-child(3)::before {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 7px;
+  border-radius: 999px;
+  background: #22c55e;
+  vertical-align: middle;
+}
+
+/* Destructive and rare, so it carries its own soft fill rather than sitting
+   as plain text — plain red words next to a filled role chip and a drawn
+   status dot read as a label, not as something to press. Same treatment as
+   the chips beside it, in red instead of the accent. */
 .member-table__remove-btn {
   padding: 6px 12px;
-  background: transparent;
-  color: #ef4444;
-  border: 1px solid #fca5a5;
-  border-radius: var(--radius-sm);
-  font: var(--font-label-sm);
+  border: none;
+  border-radius: 999px;
+  background: #fef2f2;
+  color: #dc2626;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: background var(--transition-fast);
+  transition: background var(--transition-fast, 0.15s ease);
 }
 
 .member-table__remove-btn:hover {
-  background: #fef2f2;
+  background: #fee2e2;
+  color: #b91c1c;
 }
 
 .member-modal-overlay {
@@ -140,7 +223,8 @@
 .member-modal__input, .member-modal__select {
   padding: 10px 14px;
   background: var(--color-surface-container-lowest);
-  border: 1px solid var(--color-outline-variant);
+  border: none;
+  background: var(--ws-chip, #f1f5f9);
   border-radius: var(--radius-md);
   font: var(--font-body-md);
   color: var(--color-on-surface);
@@ -156,7 +240,8 @@
 .member-modal__cancel-btn {
   padding: 8px 16px;
   background: transparent;
-  border: 1px solid var(--color-outline-variant);
+  border: none;
+  background: var(--ws-chip, #f1f5f9);
   border-radius: var(--radius-md);
   font: var(--font-label-md);
   color: var(--color-on-surface-variant);
@@ -177,15 +262,13 @@
    has to change before anyone can be added, so the notice carries that route
    rather than letting the owner discover it from a rejected form. */
 .member-management__private-notice {
-  margin: 0 0 1rem;
-  padding: 0.75rem 1rem;
-  border: 1px solid var(--color-outline-variant, #cbd5e1);
-  border-left: 3px solid var(--color-primary, #00236f);
-  border-radius: var(--radius-md, 0.5rem);
-  background: var(--color-surface-variant, #f1f5f9);
-  color: var(--color-on-surface, #0f172a);
-  font-size: 0.875rem;
-  line-height: 1.5;
+  margin: 0;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: var(--ws-accent-soft, #eef2ff);
+  color: var(--ws-ink-soft, #475569);
+  font-size: 0.8125rem;
+  line-height: 1.55;
 }
 
 .member-management__private-notice a {

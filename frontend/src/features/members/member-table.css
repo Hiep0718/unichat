@@ -52,11 +52,13 @@
 
 /* ─── Table ──────────────────────────────────────────────── */
 
+/* Lifted off the page instead of outlined. A card that both outlines and
+   lifts is the wireframe look the mockups drop throughout. */
 .member-table__wrapper {
   overflow-x: auto;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--color-outline-variant);
-  background: var(--color-surface-container-lowest);
+  border-radius: var(--radius-2xl, 16px);
+  background: var(--ws-card, #fff);
+  box-shadow: var(--ws-card-shadow, 0 1px 3px rgb(15 23 42 / 8%));
 }
 
 .member-table {
@@ -73,7 +75,7 @@
   letter-spacing: 0.05em;
   color: var(--color-on-surface-variant);
   background: var(--color-surface-container-high);
-  border-bottom: 1px solid var(--color-outline-variant);
+  border-bottom: 1px solid var(--ws-line, #eef2f7);
 }
 
 .member-table__th--actions {
@@ -92,7 +94,7 @@
 .member-table__td {
   padding: 12px 16px;
   color: var(--color-on-surface);
-  border-bottom: 1px solid var(--color-outline-variant);
+  border-bottom: 1px solid var(--ws-line, #eef2f7);
   vertical-align: middle;
 }
 
@@ -161,9 +163,9 @@
   padding: 4px 8px;
   font: var(--font-label-sm);
   color: var(--color-on-surface);
-  background: var(--color-surface-container-lowest);
-  border: 1px solid var(--color-outline-variant);
-  border-radius: var(--radius-default);
+  background: var(--ws-chip, #f1f5f9);
+  border: none;
+  border-radius: 10px;
   cursor: pointer;
   outline: none;
   transition: border-color var(--transition-fast);
@@ -286,10 +288,9 @@
   width: 100%;
   max-width: 28rem;
   padding: var(--gutter);
-  background: var(--color-surface-container-lowest);
-  border: 1px solid var(--color-outline-variant);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
+  background: var(--ws-card, #fff);
+  border-radius: var(--radius-2xl, 16px);
+  box-shadow: 0 8px 28px rgb(15 23 42 / 12%);
   animation: invite-slide-up var(--transition-normal) ease;
 }
 
@@ -352,9 +353,9 @@
   padding: 10px 12px;
   font: var(--font-body-md);
   color: var(--color-on-surface);
-  background: var(--color-surface-container-lowest);
-  border: 1px solid var(--color-outline-variant);
-  border-radius: var(--radius-default);
+  background: var(--ws-chip, #f1f5f9);
+  border: none;
+  border-radius: 10px;
   outline: none;
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
@@ -372,9 +373,9 @@
   padding: 10px 12px;
   font: var(--font-body-md);
   color: var(--color-on-surface);
-  background: var(--color-surface-container-lowest);
-  border: 1px solid var(--color-outline-variant);
-  border-radius: var(--radius-default);
+  background: var(--ws-chip, #f1f5f9);
+  border: none;
+  border-radius: 10px;
   outline: none;
   cursor: pointer;
   transition: border-color var(--transition-fast);
@@ -402,9 +403,9 @@
   padding: 8px 16px;
   font: var(--font-label-md);
   color: var(--color-on-surface);
-  background: var(--color-surface-container-lowest);
-  border: 1px solid var(--color-outline-variant);
-  border-radius: var(--radius-default);
+  background: var(--ws-chip, #f1f5f9);
+  border: none;
+  border-radius: 10px;
   cursor: pointer;
   transition: background var(--transition-fast);
 }

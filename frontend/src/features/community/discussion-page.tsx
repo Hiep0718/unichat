@@ -3,6 +3,7 @@
  * Route: /workspaces/:workspaceId/discussions
  */
 import { useState, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useParams, useNavigate } from 'react-router-dom';
 
 import { Icon } from '../../components/icon';
@@ -48,12 +49,14 @@ function toFeedPost(d: DiscussionResponse): FeedPostResponse {
   };
 }
 
+/** Stable empty list, so an unloaded page does not get a new array each render. */
+const EMPTY_DISCUSSIONS: DiscussionResponse[] = [];
+
 const DiscussionPage: React.FC = () => {
-  const { workspaceId } = useParams<{ workspaceId: string }>();
+  const { workspaceId = '' } = useParams<{ workspaceId: string }>();
   useWorkspace();
   const navigate = useNavigate();
 
-  const [discussions, setDiscussions] = useState<DiscussionResponse[]>([]);
   const [activeLabel, setActiveLabel] = useState<string>('ALL');
   const [activeSort, setActiveSort] = useState<'HOT' | 'NEW'>('NEW');
   const [showModal, setShowModal] = useState(false);
@@ -66,15 +69,26 @@ const DiscussionPage: React.FC = () => {
     return () => clearTimeout(timer);
   }, [searchInput]);
 
-  useEffect(() => {
-    if (!workspaceId) return;
-    const label = activeLabel === 'ALL' ? undefined : activeLabel;
+  // Cached per filter combination, so returning to this tab — or stepping
+  // back to a filter already seen — paints immediately instead of refetching
+  // and flashing an empty list, which is what made tab switching stutter.
+  const queryClient = useQueryClient();
+  const label = activeLabel === 'ALL' ? undefined : activeLabel;
+  const listKey = [
+    'workspaces', workspaceId, 'discussions',
+    { label: label ?? null, sort: activeSort, query: query || null },
+  ] as const;
+
+  const { data: discussions = EMPTY_DISCUSSIONS } = useQuery({
+    queryKey: listKey,
     // Keeps this branch's in-group search argument, and main's guard against
     // a response without a content array.
-    fetchDiscussions(workspaceId, 0, 20, label, activeSort, query || undefined)
-      .then((page) => setDiscussions(page?.content ?? []))
-      .catch(() => setDiscussions([]));
-  }, [workspaceId, activeLabel, activeSort, query]);
+    queryFn: () =>
+      fetchDiscussions(workspaceId, 0, 20, label, activeSort, query || undefined)
+        .then((page) => page?.content ?? []),
+    enabled: Boolean(workspaceId),
+  });
+
 
   const navigateToPost = (discussionId: string) => {
     navigate(`/feed/posts/${discussionId}?workspaceId=${workspaceId}`);
@@ -157,7 +171,7 @@ const DiscussionPage: React.FC = () => {
           workspaceId={workspaceId}
           onClose={() => setShowModal(false)}
           onCreate={(d) => {
-            setDiscussions((prev) => [d, ...prev]);
+            queryClient.setQueryData<DiscussionResponse[]>(listKey, (prev) => [d, ...(prev ?? [])]);
             setShowModal(false);
           }}
         />

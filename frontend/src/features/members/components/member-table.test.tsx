@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { cleanup, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -19,10 +20,19 @@ const { fetchWorkspaceMembers } = await import('../member-api');
 const WORKSPACE_ID = '11111111-1111-1111-1111-111111111111';
 
 function renderTable(props: Partial<Parameters<typeof MemberTable>[0]> = {}) {
+  // The table reads its list through the query cache now, so it needs a
+  // client. Retries off and a fresh client per render, so one test's cache
+  // cannot answer the next one's question.
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false, gcTime: 0 } },
+  });
+
   return render(
-    <MemoryRouter>
-      <MemberTable workspaceId={WORKSPACE_ID} isOwner {...props} />
-    </MemoryRouter>,
+    <QueryClientProvider client={client}>
+      <MemoryRouter>
+        <MemberTable workspaceId={WORKSPACE_ID} isOwner {...props} />
+      </MemoryRouter>
+    </QueryClientProvider>,
   );
 }
 

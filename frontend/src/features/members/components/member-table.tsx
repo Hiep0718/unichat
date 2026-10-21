@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import {
   WorkspaceMemberResponse,
@@ -25,9 +26,24 @@ interface MemberTableProps {
 }
 
 export const MemberTable: React.FC<MemberTableProps> = ({ workspaceId, isOwner, visibility }) => {
-  const [members, setMembers] = useState<WorkspaceMemberResponse[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Through the query cache rather than a fetch on mount. This table is a
+  // tab, and a tab that refetches every time it is opened shows a loading
+  // line on every visit — which is what made switching tabs feel like the
+  // page reloading. The cache serves the list at once and revalidates behind
+  // it.
+  const {
+    data,
+    isPending,
+    error: loadError,
+    refetch,
+  } = useQuery({
+    queryKey: ['workspaces', workspaceId, 'members'],
+    queryFn: () => fetchWorkspaceMembers(workspaceId),
+    enabled: Boolean(workspaceId),
+  });
+
+  const members: readonly WorkspaceMemberResponse[] = data ?? [];
+  const loading = isPending;
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [emailInput, setEmailInput] = useState('');
@@ -35,37 +51,8 @@ export const MemberTable: React.FC<MemberTableProps> = ({ workspaceId, isOwner, 
   const [formError, setFormError] = useState<string | null>(null);
 
   const reloadMembers = useCallback(async () => {
-    try {
-      const data = await fetchWorkspaceMembers(workspaceId);
-      setMembers(data);
-      setError(null);
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Lỗi tải danh sách thành viên');
-    }
-  }, [workspaceId]);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    fetchWorkspaceMembers(workspaceId)
-      .then((data) => {
-        if (isMounted) {
-          setMembers(data);
-          setError(null);
-          setLoading(false);
-        }
-      })
-      .catch((err: unknown) => {
-        if (isMounted) {
-          setError(err instanceof Error ? err.message : 'Lỗi tải danh sách thành viên');
-          setLoading(false);
-        }
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, [workspaceId]);
+    await refetch();
+  }, [refetch]);
 
   // A PRIVATE workspace holds nobody but its owner, so the invite button is
   // replaced with the way out rather than left to fail on submit.
@@ -111,7 +98,13 @@ export const MemberTable: React.FC<MemberTableProps> = ({ workspaceId, isOwner, 
   };
 
   if (loading) return <div className="member-management">Đang tải danh sách thành viên...</div>;
-  if (error) return <div className="member-management">{error}</div>;
+  if (loadError) {
+    return (
+      <div className="member-management">
+        {loadError instanceof Error ? loadError.message : 'Lỗi tải danh sách thành viên'}
+      </div>
+    );
+  }
 
   return (
     <div className="member-management">

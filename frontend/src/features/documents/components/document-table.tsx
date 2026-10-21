@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { createPortal } from 'react-dom';
 import {
   ContributionContext,
@@ -46,15 +47,44 @@ interface NotificationToast {
   message: string;
 }
 
+/** Stable empty list, so an unloaded table does not get a new array each render. */
+const EMPTY_DOCUMENTS: DocumentResponse[] = [];
+
 export const DocumentTable: React.FC<DocumentTableProps> = ({
   workspaceId,
   canEdit,
   canContribute = canEdit,
   reloadToken = 0,
 }) => {
-  const [documents, setDocuments] = useState<DocumentResponse[]>([]);
-  const [loading, setLoading] = useState(true);
+  // The list lives in the query cache, so reopening this tab paints from it
+  // instead of showing "Đang tải" and refetching — the reason switching tabs
+  // stuttered. Everything else here keeps its own state; only the list moved.
+  const queryClient = useQueryClient();
+  const documentsKey = useMemo(
+    () => ['workspaces', workspaceId, 'documents', 'table'] as const,
+    [workspaceId],
+  );
+
+  const {
+    data: documents = EMPTY_DOCUMENTS,
+    isPending: loading,
+    error: loadError,
+    refetch,
+  } = useQuery({
+    queryKey: documentsKey,
+    queryFn: () => fetchWorkspaceDocuments(workspaceId).then((res) => res.content ?? []),
+    enabled: Boolean(workspaceId),
+  });
+
+  /** Replaces the cached list, for the places that already had the new rows. */
+  const setDocuments = useCallback(
+    (next: DocumentResponse[]) => queryClient.setQueryData(documentsKey, next),
+    [queryClient, documentsKey],
+  );
+
   const [error, setError] = useState<string | null>(null);
+  const listError =
+    error ?? (loadError instanceof Error ? loadError.message : null);
   const [uploadingDocs, setUploadingDocs] = useState<UploadingDocument[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [notificationToast, setNotificationToast] = useState<NotificationToast | null>(null);
@@ -87,38 +117,13 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const loadDocuments = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await fetchWorkspaceDocuments(workspaceId);
-      setDocuments(res.content || []);
-      setError(null);
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Lỗi tải danh sách tài liệu');
-    } finally {
-      setLoading(false);
-    }
-  }, [workspaceId]);
+    await refetch();
+  }, [refetch]);
 
+  // An approval decision upstream means the list is out of date.
   useEffect(() => {
-    let isMounted = true;
-    fetchWorkspaceDocuments(workspaceId)
-      .then((res) => {
-        if (isMounted) {
-          setDocuments(res.content || []);
-          setError(null);
-          setLoading(false);
-        }
-      })
-      .catch((err: unknown) => {
-        if (isMounted) {
-          setError(err instanceof Error ? err.message : 'Lỗi tải danh sách tài liệu');
-          setLoading(false);
-        }
-      });
-    return () => {
-      isMounted = false;
-    };
-  }, [workspaceId, reloadToken]);
+    if (reloadToken > 0) void refetch();
+  }, [reloadToken, refetch]);
 
   useEffect(() => {
     const isProcessing = documents.some(
@@ -417,7 +422,7 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({
         </button>
       </div>
 
-      {error && <div style={{ color: '#ef4444', fontSize: '14px', marginBottom: '1rem' }}>{error}</div>}
+      {listError && <div style={{ color: '#ef4444', fontSize: '14px', marginBottom: '1rem' }}>{listError}</div>}
 
       {canContribute && (
         <div

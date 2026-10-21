@@ -54,7 +54,7 @@
 }
 
 .feed-scope--active {
-  background: var(--ws-accent);
+  background: var(--ws-accent-gradient);
   color: var(--ws-accent-ink);
   font-weight: 700;
 }
@@ -111,7 +111,7 @@
   padding: 12px 20px;
   border: none;
   border-radius: var(--radius-xl);
-  background: var(--ws-accent);
+  background: var(--ws-accent-gradient);
   color: var(--ws-accent-ink);
   font: var(--font-label-md);
   font-weight: 700;
@@ -155,7 +155,7 @@
 }
 
 .feed-view--active {
-  background: var(--ws-accent);
+  background: var(--ws-accent-gradient);
   color: var(--ws-accent-ink);
   font-weight: 700;
   box-shadow: none;

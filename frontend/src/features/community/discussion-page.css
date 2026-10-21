@@ -5,8 +5,10 @@
 
 /* ---------- Discussion List ----------
    Rendered inside the group page, which owns the page padding and width. */
+/* No width of its own: the group page frame sets it, so this tab lines up
+   with Tệp and Thành viên instead of jumping narrower when it opens. */
 .disc-list {
-  max-width: 900px;
+  width: 100%;
 }
 
 .disc-list__header {
@@ -45,23 +47,26 @@
   margin: 0 4px;
 }
 
+/* No `border` was ever set here, so the browser's own button border showed
+   through as a grey box around every chip — the boxed look that did not
+   match the mockup's borderless pills. */
 .disc-list__filter-btn {
   padding: 6px 14px;
+  border: none;
   border-radius: var(--radius-full);
-  border: 1px solid var(--color-outline-variant);
-  background: var(--color-surface);
-  color: var(--color-on-surface-variant);
+  background: var(--ws-chip, #f1f5f9);
+  color: var(--ws-ink-soft, #475569);
   font: var(--font-label-md);
   cursor: pointer;
   transition: all var(--transition-fast);
 }
 
 .disc-list__filter-btn:hover {
-  background: var(--color-surface-container-high);
+  background: #e7ecf3;
 }
 
 .disc-list__filter-btn--active {
-  background: var(--color-primary);
+  background: var(--ws-accent-gradient);
   color: var(--color-on-primary);
   border-color: var(--color-primary);
 }
@@ -73,7 +78,7 @@
   padding: 8px 18px;
   border-radius: var(--radius-full);
   border: none;
-  background: var(--color-primary);
+  background: var(--ws-accent-gradient);
   color: var(--color-on-primary);
   font: var(--font-label-md);
   cursor: pointer;
@@ -103,7 +108,6 @@
   color: var(--color-on-surface-variant);
   text-align: center;
   background: var(--color-surface-container-lowest);
-  border: 1px solid var(--color-outline-variant);
   border-radius: var(--radius-xl);
 }
 
@@ -134,7 +138,6 @@
   background: var(--color-surface-container-lowest);
   border-radius: var(--radius-lg);
   padding: 12px;
-  border: 1px solid var(--color-outline-variant);
   transition: border-color var(--transition-fast);
 }
 
@@ -219,7 +222,7 @@
   bottom: 0;
   left: 15px;
   width: 2px;
-  background-color: var(--color-outline-variant);
+  background-color: var(--ws-line, #eef2f7);
   border-radius: 2px;
   transition: background-color var(--transition-fast);
 }
@@ -239,7 +242,6 @@
   padding: 12px;
   border-radius: var(--radius-lg);
   margin: 8px 0;
-  border: 1px solid var(--color-ai-bubble-border, #cffafe);
 }
 
 .reply-node__avatar {
@@ -382,7 +384,6 @@
 
 .reply-node--accepted {
   background: #f0fdf4;
-  border: 1px solid #bbf7d0;
   padding: 12px;
   border-radius: var(--radius-lg);
   margin: 8px 0;
@@ -414,7 +415,6 @@
   gap: 10px;
   margin-bottom: 16px;
   padding: 9px 16px;
-  border: 1px solid var(--color-outline-variant);
   border-radius: var(--radius-full);
   background: var(--color-surface-container-lowest);
   color: var(--color-on-surface-variant);
