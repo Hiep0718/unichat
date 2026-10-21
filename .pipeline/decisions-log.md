@@ -2166,3 +2166,398 @@
 - Disk is a recurring problem and part of it is mine: Temp went from empty after this
   morning's cleanup back to 4.16 GB, largely from repeated Maven and Vite runs today.
   Left it alone rather than clearing again without asking.
+
+## 2026-10-18 — Mobile UI: adopting the web's workplace surfaces, feed first
+
+- The mobile UI was asked to match the web. Reading both sides showed why they
+  diverged: `mobile/src/design/tokens.ts` claims to mirror the web "1:1", and it does
+  mirror the Material `--color-*` scale — but the web has since moved its real screens
+  onto a second, newer set, the `--ws-*` workplace surfaces, and mobile never followed.
+  Mobile then added a "liquid glass" layer (17 files, `expo-blur`) that the web has no
+  equivalent of at all. Confirmed with the user before touching anything: drop glass and
+  follow the web, feed first as a sample to approve before the rest.
+- `workplace` added to the mobile tokens and `shadows.card` to the shadow scale, both
+  taken from the `--ws-*` block rather than eyeballed. The web states the rule in a
+  comment there: cards separate by elevation, not by a 1px outline, "an interface whose
+  every box is drawn round reads as a wireframe". The mobile feed card drew a 1px
+  #E2E8F0 border **and** a shadow, which is exactly that look.
+- The card also painted its title navy. On the web, accent is "the one saturated colour,
+  used for what the reader should act on", so the title is ink and the saturation is
+  spent on the vote pill. Every other colour in the card was a hardcoded hex
+  approximating a `--ws-*` value; those are now tokens.
+- `UCScreenContainer` gained a `surface` prop ('glass' | 'canvas'). It replaces
+  `gradient`, which four screens passed as `false` to get a flat background; they now ask
+  for `canvas` and so shift from #F4F6FC to the web's #F3F5F9 — a change too small to
+  see, and in the direction the rest is heading. The glass gradient stays the default so
+  the screens not yet converted look no different.
+- The feed's filter row was three floating pills with borders and an ambient navy glow.
+  It is now the web's scope rail: one white tray, transparent scopes, accent on the
+  active one.
+- 4 new tests pin the decisions that would otherwise quietly regress — no border on the
+  card, title in ink, accent on the vote control, body in the softer ink. Mobile suite
+  84/84, `tsc --noEmit` clean, eslint clean.
+- Not committed: the user is reviewing the feed before the remaining screens are done.
+
+## 2026-10-18 — Mobile feed and group cards rebuilt against the web, not merely recoloured
+
+- The first pass only restyled the card chrome and was rightly rejected as still wrong.
+  Reading the web components rather than its CSS showed why: the gap was never colour.
+  `FeedCard` leads with the group's mark and name, carries the resolution state, strips
+  Markdown from its preview and shows reactions, attachments and a bookmark. Mobile's
+  card led with the author's initial and had none of the rest.
+- The cause was in the types. `DiscussionItem` on mobile declared eleven fields where
+  core-api's `FeedPostResponse` returns eighteen, and invented two it never sends
+  (`hasAiAnswer`, a `NOTE` label). The data for every missing piece was already arriving
+  on the same endpoint and being discarded. `FeedPost` now mirrors the record.
+- The group pictures were ported, not approximated: `default-covers.ts` came across with
+  its list, order, accents and hash byte for byte, and the 20 files were copied into
+  `mobile/assets/covers/`. Bundled rather than fetched from /covers, which a phone on
+  another network cannot reach. Three anchor ids were run through the web's own `slotFor`
+  and asserted in the mobile test, so a drift in either copy fails a test instead of
+  showing a member a different colour for the same group on their phone.
+- `WorkspaceCover` replaces the flat gradient on the group card: picture, gradient
+  underneath for the frame before it decodes, scrim over the lower half where the name is
+  written in white. The oversized initial survives as the fallback when nothing decodes.
+- `voteScore` is no longer drawn. The web card does not show it — reactions replaced it
+  there — and showing both would have been mobile inventing a second scoring system.
+- Still outstanding, and not claimed as done: the reaction picker is a summary rather
+  than interactive, inline comments, coloured post backgrounds and image attachment
+  previews are not ported, and the home, chat, account and auth screens plus the
+  remaining 15 glass files are untouched.
+- 20 new tests. Mobile suite 98/98, `tsc --noEmit` clean, eslint clean. Not committed.
+
+## 2026-10-21 — Calls: two bugs that stopped them working, then the panel and the history
+
+- Every call endpoint returned 500. `CallController` was the only controller in the
+  codebase with no class-level `@RequestMapping`, so it registered
+  `/conversations/{id}/calls` while `api-contracts.md` declares the public prefix as
+  `/api/v1` and the frontend's `fetchJson` prepends it. Spring matched no handler, fell
+  through to the static resource handler and threw `NoResourceFoundException`, which the
+  catch-all turned into INTERNAL_ERROR — a 404 reported as a server fault.
+- Then every call reported the callee busy. `start()` saved its own RINGING row and
+  *then* asked `hasLiveCall(calleeId)`, a query that matches any RINGING row naming that
+  person — so each call found itself. The check now runs before the row is written. The
+  database held four calls, all MISSED/BUSY, none live: the signature of a self-match.
+- Both survived a green suite for the same reason. The call feature had 31 tests and
+  none of them crossed a layer: no test issued an HTTP request, so no test ever saw the
+  URL; and `CallServiceTest` mocks the repository, so a saved row is invisible to the
+  query that would have found it. A mapping nobody requests and a query nobody runs are
+  not covered by tests of the code around them.
+- Added `CallControllerTest` pinning all seven routes under the prefix, and an `InOrder`
+  test pinning that the busy check precedes the save. The second was verified by putting
+  the bug back: it failed, and passed again once restored.
+- `peerName` added to `CallEventMessage`, resolved in `CallBroadcaster`. The panel could
+  not say who was calling because the event carried only ids, and the server is the one
+  place that knows both parties — the client would otherwise have to look a name up by
+  conversation while the phone rings.
+- The panel is now a card while ringing and a strip once talking, leads with the name
+  rather than a generic phone icon, and counts from the moment media started flowing
+  rather than from when the call was placed.
+- Call history was never built on the client: the endpoint and `CallHistoryEntry` have
+  existed since the feature landed and nothing called them. `fetchCallHistory` and
+  `CallLogEntry` now put calls in the thread, interleaved with messages by time, and the
+  list is re-read when a call ends rather than on the next visit.
+- Enabled Testing Library's `cleanup` in `test-setup.ts`. Without `globals: true` it
+  never ran, so rendered trees accumulated across a file; the existing tests only passed
+  because each asserted on text no sibling used. Full frontend suite stayed green.
+- Frontend 287/287, backend call package 36/36, `tsc` and eslint clean. Not committed.
+
+## 2026-10-21 — Group page: one destination, one name, one place
+
+- Reported as a cluttered screen. Reading the routes showed it was not clutter but
+  duplication: `/chat` was reachable from three places under two names (sidebar "Trò
+  chuyện", a tab "Trợ lý AI", and a header button "Trợ lý AI"), `/documents` from two
+  under two names ("Quản lý tài liệu" and "Tệp"), `/discussions` likewise ("Thảo luận"
+  and "Bài viết"), and `/conversations` from two. Two names for one place is two places
+  to the person reading them.
+- The tab bar also lied. Four of its five items stayed inside the page; "Trợ lý AI" sat
+  among them looking identical and navigated to a full-screen page, dropping the very
+  tab bar it appeared to belong to.
+- Division of labour now: the tab bar owns the group's content, the sidebar owns leaving
+  the group and the one destination that is a tool rather than content, and the header
+  owns the primary action plus admin overflow. The sidebar keeps only "Trợ lý AI",
+  renamed from "Trò chuyện" which read as a third messaging feature beside Tin nhắn.
+- `PendingApprovalBadge` hung off the sidebar's documents item and would have been
+  silently lost with it; it moved to the Tệp tab, which is where documents now live.
+- Conversation history became a drawer inside the assistant rather than a page of its
+  own. It is the assistant's history, so reaching it used to mean leaving the assistant.
+  `/workspaces/:id/conversations` still resolves for anyone holding the URL, but nothing
+  links to it any more — worth deleting once that is confirmed unused.
+- Retracted two claims made from the screenshot before checking: the "..." menu
+  overlapping the Vector DB button is what a dropdown does, and the clipped metadata
+  line appears to be the annotation box drawn over the screenshot, not a layout fault.
+  Nothing in the CSS accounts for it. Said so rather than shipping a fix for a bug that
+  may not exist.
+- Frontend 288/288 (sidebar test rewritten to pin the absence of the duplicates rather
+  than their presence), `tsc` and eslint clean. Not committed.
+
+## 2026-10-21 — The history column, and the rail that covered it
+
+- History now opens with the assistant rather than behind a button. It is the list of
+  everything this assistant has been asked, so hiding it made each visit start by
+  hunting for the thread you were already in.
+- Closing it is remembered in localStorage. `ChatSessionPage` is keyed on the
+  conversation id and remounts whenever the reader picks a different one, so without
+  that the panel reopened on every pick — the toggle would have been meaningless. Reads
+  and writes are wrapped: a private window throws rather than returning null, and a
+  forgotten preference is not worth failing a render over.
+- Picking a conversation no longer closes the panel. A column you choose from is not a
+  modal, and closing it after every choice undid the point of keeping it on screen.
+- The rail covered it. `.side-nav` is fixed and widens from 68px to 260px on hover, so
+  it paints over what sits against it instead of pushing it aside — harmless over a
+  page margin, hostile over a 268px column at that exact edge, because the hover on the
+  way to the list covered the list. While the column is open the rail now keeps its
+  resting width, via `.app-shell:has(.chat-history)`. Its labels stay one hover away on
+  every other page, and closing the column gives them back here too.
+- `.side-nav--expanded` exists in the CSS and is set by nothing, so only `:hover` needed
+  handling.
+- 6 tests for the panel, which had none: the list, picking one, marking the current one,
+  and telling an empty history apart from a failed read. Frontend 294/294, `tsc` and
+  eslint clean. Not committed.
+
+## 2026-10-21 — The assistant screen, restyled to the group page beside it
+
+- The chat screen was built in the style the group page has since left: frosted
+  translucency on the header, 135° gradients on every button, a lift on hover, and
+  chips carrying a border and a fill at once — the wireframe look the workplace
+  surfaces were introduced to replace. It now uses the same tokens: flat white bar on
+  the canvas, divided by a line, one saturated colour spent on the one action that
+  creates something.
+- Two real faults surfaced while restyling, neither of them cosmetic:
+  - `.sr-only` was referenced by the composer and defined nowhere, so the label meant
+    for screen readers was printed above the field as body text.
+  - The composer's markup carried none of the classes its stylesheet describes —
+    `__wrapper`, `__controls`, `__counter`, `__submit-btn` were all written and none
+    were used. The field, counter and send button therefore rendered as browser
+    defaults, which is why Gửi was a full-width grey bar.
+- Toggles and actions now read differently by shape and weight rather than by hue:
+  Studio and Lịch sử rest as quiet chips and take the accent only while their panel is
+  open, Hội thoại mới is the single filled button. The mode chip follows the same rule —
+  widening the sources is the departure from the product's stated rule, so it is the
+  state that takes colour, and staying on the documents stays quiet.
+- A duplicate `.chat-header__btn--active` further down the file was overriding the new
+  one with the old cyan-and-border treatment; removed.
+- Message bubbles were left alone. They are the conversation's content rather than the
+  chrome under discussion, and restyling them was not asked for.
+- 12 tests added across the composer and the history panel, both of which had none.
+  Frontend 300/300, `tsc` and eslint clean. Not committed.
+
+## 2026-10-21 — Three regions that looked like one
+
+- The assistant screen had three vertical regions and no way to tell them apart. The
+  rail painted #f9f9ff with a transparent right border, the history column #f3f5f9, and
+  the conversation #f3f5f9 — two of them identical and the third a difference of
+  nothing, separated by a hairline. The eye read one wide grey field with a list
+  floating in it.
+- Colour now does the dividing: the conversation is white, the history column keeps the
+  canvas grey, and the rail's border is no longer transparent. Its seam had been
+  invisible on every page, not just this one.
+- The history column also started 68px below the rail, because it was nested under the
+  chat header inside `.chat-page`. Three different top edges down the left of the
+  screen. It is now a direct child of `.chat-layout`, so it runs the full height and
+  starts level with the rail, and the header spans only the conversation it belongs to.
+- The composer's fade follows the surface it sits on, so it was moved from the canvas
+  grey to white along with the page.
+- Frontend 300/300, `tsc` and eslint clean. Not committed.
+
+## 2026-10-21 — Tab switching stutter, and the first tab against the new mockups
+
+- The stutter had one cause and it was structural. Every tab is a `lazy()` chunk and
+  the only Suspense boundary was the one wrapping the whole router, so each tab click
+  replaced the entire tree — cover banner, header and tab bar included — with a
+  full-screen "Đang kết nối giao diện…" and then rebuilt it, re-decoding the cover
+  image on the way back. A boundary now sits inside `GroupPage` around the `Outlet`,
+  so only the panel swaps; a skeleton shaped like the arriving cards stands in, because
+  a centred spinner in that slot reads as the page reloading, which is what it did.
+- Data was not a factor: the query client already holds a five-minute `staleTime`, so
+  revisiting a tab does not refetch.
+- About tab rebuilt to the mockup using only data that exists: description, topics
+  (`TopicChips`, already written and unused here), the assistant card, privacy wording
+  from `visibilityOption`, and the counts from the workspace response. Facts moved into
+  a right-hand column — stacked under the prose they gave "Ngày tạo" the same weight as
+  what the group is for.
+- Conflicts found in the mockups, none of them styling. Reported rather than faked:
+  vector size in MB, the embedding model name and "Độ phủ RAG 98.2%" have no source in
+  any API; per-topic post counts do not exist though topics do; "Cụm dữ liệu Atlas
+  MongoDB · Trực tuyến" would assert infrastructure health nothing checks. Total
+  embeddings is half-available — `pageOrBlockCount` carries a document's chunk count,
+  so it sums over a loaded page but there is no total endpoint.
+- The mockups also use an indigo accent beside the navy the workspace tokens define.
+  Kept the navy: a second accent introduced by one screen is how a design system stops
+  being one.
+- Frontend 300/300, `tsc` and eslint clean. Not committed.
+
+## 2026-10-21 — The other half of the tab stutter: three tabs that refetched on sight
+
+- The Suspense boundary fixed the page blanking, but switching still stuttered, and the
+  reason was that none of the three heavy tabs used the query cache at all. The member
+  table, the document table and the discussion list each held the list in `useState`
+  and fetched it in a `useEffect` on mount. The client's five-minute `staleTime` had
+  nothing to act on, so every visit was a fresh request behind a loading line.
+- `member-hooks.ts` already exported a React Query hook for exactly this list and the
+  component had never used it — it fetched the same endpoint by hand beside it.
+- All three now read through `useQuery`. Only the list moved; the rest of each
+  component's state is untouched. Where code wrote the list directly after a mutation —
+  an approval, a delete, a newly created post — it writes to the cache through
+  `setQueryData`, so the optimistic update survives rather than being thrown away by a
+  refetch.
+- The discussion list is keyed by its filters, so stepping back to a filter already
+  seen is instant too, not just returning to the tab.
+- `member-table.test.tsx` needed a `QueryClientProvider`: a fresh client per render
+  with retries off, so one test's cache cannot answer the next one's question.
+- Frontend 300/300, `tsc` and eslint clean. Not committed.
+
+## 2026-10-21 — The stutter was geometry, and the borders are gone
+
+- Corrected diagnosis. The caching work was real and stays, but the jump the user was
+  describing came from the tabs not agreeing on where things sit: `.disc-list` capped
+  itself at `max-width: 900px` while the files and members tabs ran the full width, so
+  moving between them shifted every element sideways. Width is the frame's business,
+  not each tab's; the cap is gone and the frame sets it for all four.
+- Borders removed across the three tabs, as the mockups show: 42 `border:` declarations
+  down to one — the upload dropzone, which the mockup keeps dashed. Containers that
+  were outlined are now white cards lifted by the workplace shadow; controls that were
+  outlined take a soft `--ws-chip` fill; status pills that carried a coloured border
+  keep the soft fill and drop the line.
+- Row dividers stay, because the mockups keep them, but moved from
+  `--color-outline-variant` (#c5c5d3, dark enough to read as a grid) to `--ws-line`
+  (#eef2f7), which is what the rest of the workspace uses. The blockquote's left bar is
+  left alone: it marks quoted content rather than dividing a layout.
+- Frontend 300/300, `tsc` and eslint clean. Not committed.
+
+## 2026-10-21 — Members and Files tabs drawn to the mockups
+
+- Accent moved from navy to the mockups' indigo (#4f46e5, soft #eef2ff) on the token
+  rather than per screen. The mockups use it for both the primary button and the
+  assistant pill, so it is the product's accent and not one tab's. Changing it in one
+  place is what keeps the system single-accented; the alternative was a second accent
+  introduced by whichever page was redrawn last.
+- Found two member tables while working: `members/member-table.tsx` with a 10KB
+  stylesheet styling `.member-section*`, and `members/components/member-table.tsx` with
+  a 4KB one styling `.member-management*`. Only the second is reachable — the feature's
+  index exports it and the tab renders it. Nothing imports the first. An earlier pass in
+  this session edited the dead one, which is worth noting as a trap: the two files share
+  a name and differ only by directory.
+- The live tabs now follow the mockups: white card lifted off the canvas with no
+  outline, table headers as quiet uppercase labels with no fill behind them, hairline
+  row dividers, role as a soft chip, status as a drawn dot beside the word, and
+  destructive actions as red words rather than boxed buttons. Borders in both tabs are
+  at zero apart from the upload dropzone, which the mockup keeps dashed.
+- Status dots are drawn with `::before` rather than written into the markup, so the
+  cell still prints whatever the server called the status.
+- Frontend 300/300, `tsc` and eslint clean. Not committed.
+
+## 2026-10-21 — One gap under the tabs, for all four of them
+
+- Measured rather than guessed: the first row sat 20px below the tab bar on Bài viết,
+  20px on Tệp and Thành viên, and 38px on Giới thiệu, which added `padding: 18px 0` of
+  its own on top of the frame's 20px. Switching into or out of that tab moved
+  everything down and back up.
+- The frame keeps the gap and the tabs are now stopped from adding to it —
+  `.group-page__body > *` zeroes any top margin or padding a tab sets. A rule the next
+  tab cannot drift past, rather than four values that happen to agree today.
+- Noted but not changed: text inside Tệp and Thành viên is indented by those tabs' card
+  padding while Bài viết and Giới thiệu sit directly on the canvas, so the text edge
+  still differs by ~24px between them. That difference is in the mockups too — one tab
+  is a single card, the others are cards on a canvas — so it was left alone rather than
+  flattened on a guess.
+- Frontend 300/300, `tsc` and eslint clean. Not committed.
+
+## 2026-10-21 — The sideways twitch was the scrollbar
+
+- The user's arrow was pointing at the empty gutter left of the content, not at the gap
+  under the tabs: that gutter changed width between tabs, so the whole page slid
+  sideways on every switch.
+- Cause: `.group-page` is `max-width: 1100px; margin: 0 auto`, centred inside
+  `.app-shell__main`, which scrolls. A tab tall enough to need a scrollbar narrowed
+  that box by the scrollbar's width, and a centred block absorbs half of that on each
+  side — so content moved about 7px left, then back again on a tab that fits. Nothing
+  about the tabs themselves was inconsistent by then; the container was.
+- `scrollbar-gutter: stable` on the scroll container holds the space whether a bar is
+  there or not. One line, and it fixes every centred page in the app rather than this
+  one screen.
+- Worth recording as the shape of this whole thread: three different causes were
+  reported as the same symptom — a Suspense boundary blanking the page, three tabs
+  refetching on mount, a tab adding its own top padding — and none of them was the one
+  the user could see. Measuring the gutter rather than re-reading the tab stylesheets
+  is what found it.
+- Frontend 300/300, `tsc` and eslint clean. Not committed.
+
+## 2026-10-21 — Filled buttons take the gradient
+
+- The reference button is indigo-to-violet, so `--ws-accent-gradient` joins the tokens
+  and the filled buttons use it. One definition: the sidebar's upload button and the
+  header's assistant button had each been reaching for `--color-primary` from its own
+  stylesheet, which is how they could drift apart in the first place.
+- Seventeen filled buttons converted across the sidebar, group header, post filters and
+  create button, members, feed, profile, work chat, the about CTA, the chat header and
+  composer, and the create-post modal — the modal because it opens from one of the
+  buttons that was marked.
+- Four things that use the accent were deliberately left flat, because they are not
+  buttons: the message bubble, the "RAG" badge, the camera overlay on a group avatar,
+  and the retrieval-mode chip. A gradient reads as "press me", and none of them can be
+  pressed for that reason.
+- Auth, loading and top-nav buttons still carry the old navy `--color-primary`. They
+  sit outside the workspace surfaces and were not part of what was shown; converting
+  them is a separate sweep, not an accident waiting in this one.
+- Frontend 300/300, `tsc` and eslint clean. Not committed.
+
+## 2026-10-21 — Delete button, tab underline, and dead CSS from the removed pseudo-tab
+
+- Xóa in the member table was plain red text with no fill, sitting beside a filled role
+  chip and a drawn status dot — the one destructive action on the row looked the least
+  like a button. Gave it the same soft-fill chip treatment as its neighbours, in red.
+- Dropped the hairline under the tab row. The active tab's own underline already marks
+  the boundary; a full-width line under the whole row as well drew the same edge twice.
+- Active tab underline moved from `--color-primary` (navy) to `--ws-accent` (indigo),
+  matching the filled buttons converted earlier.
+- Deleted `.group-tab--ai` and its hover rule. Dead since the assistant stopped being a
+  tab in the tab bar — grep confirms no markup references it — and it still carried the
+  old cyan `#0284c7` rather than any current token, so it would have looked wrong the
+  moment anything revived it by accident.
+- Frontend 300/300, `tsc` and eslint clean. Not committed.
+
+## 2026-10-21 — The boxed buttons were a missing `border: none`, twice more
+
+- Both screenshots showed the same root cause the member table's Xóa had: a selector
+  that never set `border` at all, so the browser's own default button border painted
+  through as a grey box. Neither bug was a colour choice — CSS was simply never written
+  to override the default.
+- `.disc-list__filter-btn` (Tất cả / Câu hỏi / Thảo luận / Thông báo / Hot / Mới — one
+  class covers all of them) now sets `border: none` and a soft `--ws-chip` fill in
+  place of the bare `var(--color-surface)`, matching the pill treatment used elsewhere.
+- `.document-delete-btn` on the Tệp tab had the identical gap and got the identical fix
+  the member table's Xóa did: soft red fill, no border, bold red text, same hover.
+  Two buttons with the same name and the same job, styled by two different rules until
+  now — worth remembering if a third Xóa turns up somewhere else.
+- Swept the other three mockup-matched stylesheets (members, group-page, group-about)
+  for the same gap before stopping; found none — the `:hover`/`:disabled` hits the scan
+  turned up all inherit `border: none` from a base rule that already has it.
+- Frontend 300/300, `tsc` and eslint clean. Not committed.
+
+## 2026-10-21 — Rounded icons in the four areas the user pointed at
+
+- Every icon in the app goes through one `<Icon>` component rendering Material Symbols
+  Outlined — a single shared font, used at hundreds of call sites. Swapping the family
+  everywhere was not what was asked and was not attempted; the four screenshots mark
+  exactly the sidebar rail (top nav items and the footer: Đổi Workspace, notification
+  bell, Đăng xuất), the "Không gian của tôi / Khám phá" segmented toggle, and the group
+  page's tab bar.
+- `<Icon>` gained a `rounded` boolean, default false. Material Symbols Rounded shares
+  the exact same ligature names as Outlined — same `name="folder"`, different font
+  file — so no icon needed remapping, only the call sites in those four areas got the
+  prop. Everywhere else in the app is untouched, still Outlined.
+- Rounded is drawn at weight 500 against Outlined's 400, which is where the
+  "trẻ trung, hiện đại" read comes from along with the soft terminals: a touch more
+  presence than the thin default line.
+- The Google Fonts link gained a second family in the same request
+  (`family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400..500,0..1,0`), ranging
+  `wght` 400..500 rather than pinning it the way the Outlined link pins weight — the
+  Icon component's 500 and the CSS class's 500 default both need to fall inside the
+  axis range or the browser clamps to the nearest value actually downloaded.
+- `fontVariationSettings` is now always set inline rather than left `undefined` for the
+  unfilled case, which used to fall through to the CSS class. No visual change for
+  existing Outlined icons — same values, just explicit instead of inherited — but
+  worth noting for whoever next reads the diff and wonders why every icon's inline
+  style grew a property.
+- Frontend 300/300, `tsc` and eslint clean. Not committed.
