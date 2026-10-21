@@ -87,7 +87,7 @@
   padding: 10px 18px;
   border: none;
   border-radius: var(--radius-full);
-  background: var(--color-primary);
+  background: var(--ws-accent-gradient);
   color: var(--color-on-primary);
   font: var(--font-label-md);
   font-weight: 650;
@@ -163,11 +163,13 @@
 
 /* ── Tabs ───────────────────────────────────────────────── */
 
+/* No line under the row any more: the active tab's own underline already
+   marks the boundary, and a full-width hairline under it as well drew two
+   divisions for one edge. */
 .group-page__tabs {
   display: flex;
   gap: 4px;
   overflow-x: auto;
-  border-bottom: 1px solid var(--color-outline-variant);
 }
 
 .group-tab {
@@ -188,28 +190,28 @@
   color: var(--color-on-surface);
 }
 
-.group-tab--ai {
-  color: #0284c7;
-  font-weight: 700;
-}
-
-.group-tab--ai .material-symbols-outlined {
-  color: #0284c7;
-}
-
-.group-tab--ai:hover {
-  color: #0369a1;
-  background: #f0f9ff;
-  border-radius: var(--radius-sm, 6px);
-}
-
+/* Matches the filled buttons' accent rather than the old navy primary. */
 .group-tab--active {
-  color: var(--color-primary);
-  border-bottom-color: var(--color-primary);
+  color: var(--ws-accent, #4f46e5);
+  border-bottom-color: var(--ws-accent, #4f46e5);
 }
 
+/* One geometry for every tab. The posts tab capped itself at 900px while
+   the files and members tabs ran the full width, so switching between them
+   shifted every element sideways — the jump that read as the page stuttering.
+   The width belongs to the frame holding the tabs, not to each tab. */
 .group-page__body {
   padding-top: 20px;
+}
+
+/* The frame owns the gap under the tabs, and no tab adds its own. Four tabs
+   each setting their own top padding is how the first row ended up at a
+   different height in each one — 20px here, 38px there — which is the shift
+   a reader sees as the page jumping when they switch. */
+.group-page__body > * {
+  max-width: 100%;
+  margin-top: 0;
+  padding-top: 0;
 }
 
 @media (max-width: 640px) {

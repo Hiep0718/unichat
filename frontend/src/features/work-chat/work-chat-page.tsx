@@ -6,6 +6,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import { Icon } from '../../components/icon';
+import { fetchCallHistory } from '../calls/call-api';
+import type { CallHistoryEntryDto } from '../calls/call-api';
+import { useCall } from '../calls/call-provider';
 import { forgetGroupAvatar } from '../../components/avatar-image-cache';
 import { ContactPicker } from './components/contact-picker';
 import { ConversationList } from './components/conversation-list';
@@ -40,6 +43,7 @@ export function WorkChatPage() {
   const [activeId, setActiveId] = useState<string | null>(
     searchParams.get('conversation'));
   const [messages, setMessages] = useState<DirectMessage[]>([]);
+  const [calls, setCalls] = useState<readonly CallHistoryEntryDto[]>([]);
   const [showPicker, setShowPicker] = useState(false);
   const [showGroupForm, setShowGroupForm] = useState(false);
   // Open by default: in a group, who is in it and what it is called are part
@@ -116,12 +120,29 @@ export function WorkChatPage() {
       .then(setMessages)
       .catch(() => setError('Không tải được tin nhắn.'));
 
+    // Failures are swallowed: a thread without its call history is still a
+    // usable thread, and an error banner over the messages would overstate
+    // what was lost.
+    fetchCallHistory(activeId).then(setCalls).catch(() => setCalls([]));
+
     markConversationRead(activeId)
       .then(loadConversations)
       .catch(() => {
         // Read receipts are supplementary; the thread still works without them.
       });
   }, [activeId, loadConversations]);
+
+  // A call that just ended is history the thread should already be showing,
+  // so the list is re-read the moment the panel says it is over rather than
+  // on the next time the conversation is opened.
+  const callPhase = useCall()?.state.phase ?? 'idle';
+
+  useEffect(() => {
+    if (callPhase !== 'ended' || !activeId) {
+      return;
+    }
+    fetchCallHistory(activeId).then(setCalls).catch(() => undefined);
+  }, [callPhase, activeId]);
 
   const handleSend = async (
     body: string,
@@ -241,6 +262,7 @@ export function WorkChatPage() {
           <MessageThread
             conversation={active}
             messages={messages}
+            calls={calls}
             onSend={handleSend}
             onToggleSettings={() => setShowSettings((open) => !open)}
             settingsOpen={showSettings}

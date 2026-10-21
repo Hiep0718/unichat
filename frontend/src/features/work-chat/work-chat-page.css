@@ -61,7 +61,7 @@
   padding: 9px 13px;
   border: none;
   border-radius: var(--radius-lg);
-  background: var(--ws-accent);
+  background: var(--ws-accent-gradient);
   color: var(--ws-accent-ink);
   font: var(--font-label-sm);
   font-weight: 700;

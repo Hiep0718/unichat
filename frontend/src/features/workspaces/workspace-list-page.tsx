@@ -91,7 +91,7 @@ function WorkspaceListPage() {
             type="button"
             onClick={() => setActiveTab('MY_WORKSPACES')}
           >
-            <Icon name="folder" size={18} />
+            <Icon name="folder" size={18} rounded />
             Không gian của tôi
           </button>
           <button
@@ -99,7 +99,7 @@ function WorkspaceListPage() {
             type="button"
             onClick={() => setActiveTab('EXPLORE')}
           >
-            <Icon name="travel_explore" size={18} />
+            <Icon name="travel_explore" size={18} rounded />
             Khám phá
           </button>
         </div>
