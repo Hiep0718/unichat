@@ -16,19 +16,33 @@ public class ProviderAttemptService {
     private final EntityManager entityManager;
     private final ProviderAttemptRepository repository;
     private final Clock clock;
+    private final AiAdmissionService admission;
     /** Uses PostgreSQL uniqueness for replay protection across workers. */
-    public ProviderAttemptService(EntityManager entityManager, ProviderAttemptRepository repository, Clock clock) {
+    public ProviderAttemptService(EntityManager entityManager, ProviderAttemptRepository repository, Clock clock,
+            AiAdmissionService admission) {
         this.entityManager = entityManager; this.repository = repository; this.clock = clock;
+        this.admission = admission;
     }
     /** Accepts validated metadata with immutable attribution and terminal results. */
     @Transactional
     public void record(ProviderAttemptRequest request) {
         validate(request);
-        if ("START".equals(request.phase())) insertStart(request);
+        if ("START".equals(request.phase())) admittedStart(request);
         var attempt = repository.lockById(request.attemptId())
                 .orElseThrow(() -> new ConflictError("Provider attempt has no committed START."));
         attempt.verifyIdentity(request);
         if ("END".equals(request.phase())) attempt.finish(request);
+    }
+    private void admittedStart(ProviderAttemptRequest request) {
+        boolean diagnostic = "ADMIN_PROMPT".equals(request.purpose()) || "KEY_PROBE".equals(request.purpose());
+        var control = diagnostic ? admission.lockShared() : null;
+        var existing = repository.lockById(request.attemptId());
+        if (existing.isPresent()) {
+            existing.get().verifyIdentity(request);
+            return;
+        }
+        if (diagnostic) admission.requireDiagnostic(control);
+        insertStart(request);
     }
     private void validate(ProviderAttemptRequest request) {
         if (request.occurredAt().isAfter(Instant.now(clock).plusSeconds(60)))

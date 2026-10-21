@@ -2,6 +2,8 @@
 
 UniChat là nền tảng tri thức AI cho giáo dục đại học. Phạm vi P0 triển khai Adaptive Knowledge Retrieval & Reasoning cho tài liệu PDF, DOCX và TXT trong Workspace có phân quyền.
 
+**Cách chạy chuẩn của project trên Windows: mở PowerShell, vào `D:\codex-workspace\unichat` và chạy `.\dev.ps1`.** Xem [Phát triển local](#phát-triển-local) để biết dashboard và các service.
+
 ## Trạng thái
 
 **Canonical status: `READY`.** Dự án đang trong giai đoạn phát triển tích cực (Active Development). Core API, Frontend và Database đã hoạt động cơ bản.
@@ -43,13 +45,28 @@ Runtime portable nằm trong `.tools` và không được commit.
 
 Test không được gọi network ngoài hệ thống.
 
+## Generation qua Hive
+
+Cấu hình mẫu chọn Hive qua `https://api-cdn.thehive.ai/api/v3` với model `deepseek-ai/deepseek-v4.1-flash-1017`; Secret Key chỉ đặt ở môi trường AI Service. Giữ SDK Gemini cho rollback cấu hình, không tự chuyển provider khi Hive lỗi. Khi chưa đặt `LLM_PROVIDER`, mã vẫn dùng mặc định Gemini để tương thích môi trường cũ. Không dùng lại khóa đã chia sẻ trong chat hoặc ảnh.
+
+Hive phục vụ generation, compaction và kiểm tra quản trị; embedding E5 và dữ liệu vector không đổi. Usage không được provider báo vẫn là chưa biết, không phải 0 token hoặc số dư tài khoản. Nút kiểm tra khóa chạy một yêu cầu generation ngắn khi admin bấm và có thể dùng credit.
+
+Gate PostgreSQL quản lý `OPEN` / `DRAINING` / `VERIFYING`, cho phép ngừng nhận câu hỏi mới nhưng giữ polling, cancel và operation đang chạy. Migration V40 được chuẩn bị cho gate; **không khởi động lại Core hoặc áp dụng migration vào DB dùng chung trước phê duyệt**, vì Flyway chạy khi startup. Tài liệu cutover/rollback tại [Hive generation runbook](docs/runbooks/hive-generation.md); việc có mã hỗ trợ không xác nhận môi trường live đã chuyển provider.
+
+Loading toàn màn hình dùng chung một giao diện xuyên suốt xác minh phiên, tải trang và tải thông tin Workspace. Thông báo cập nhật theo bước đang xử lý; màn hình chỉ đóng khi các bước chờ đã hoàn tất.
+
+Trang chat AI hiển thị tin nhắn người dùng và trợ lý, các bước xử lý, trích dẫn và hành động với cùng hệ thống giao diện. Kiểm thử thành phần và trình duyệt xác nhận style được áp dụng cho câu trả lời từ chối và các nút hành động.
+
 ## Phát triển local
 
-Chạy toàn bộ stack dev bằng một lệnh duy nhất (yêu cầu Windows Terminal):
+**Entry point chuẩn để chạy project là tool PowerShell `dev.ps1` tại thư mục gốc** (yêu cầu Windows Terminal). Thực hiện lần lượt trong PowerShell:
 
 ```powershell
+cd D:\codex-workspace\unichat
 .\dev.ps1
 ```
+
+Sau khi chạy, dùng dashboard của tool để theo dõi, dừng hoặc khởi động lại từng service. Các lệnh Maven/npm ở mục **Kiểm tra** phục vụ kiểm tra riêng từng thành phần; khi chạy toàn bộ project, dùng quy trình PowerShell trên.
 
 Script tự kiểm tra prerequisites và port, mở từng service trong tab Windows Terminal riêng có màu phân biệt, và hiển thị dashboard giám sát real-time.
 
@@ -61,7 +78,11 @@ Script tự kiểm tra prerequisites và port, mở từng service trong tab Win
 | Frontend | 5173 | 🟡 Vàng |
 | Mobile (Expo) | 8081 / 8085 | 🟠 Cam |
 
+Trong development, mobile dùng host mà Expo cung cấp để gọi Core API trên cổng 8082. Điện thoại thật và máy chạy Core cần cùng mạng LAN; nếu không, đặt `EXPO_PUBLIC_API_URL` thành địa chỉ Core có thể truy cập từ điện thoại rồi khởi động lại Expo. Android Emulator và iOS Simulator có địa chỉ host riêng; không dùng `localhost` cho điện thoại thật.
+
 PostgreSQL, Document Storage và RabbitMQ sử dụng cloud (Supabase / CloudAMQP), không cần chạy local.
+
+Nếu Core API dừng vì thiếu `direct_messages.read_at`, kiểm tra schema và lịch sử Flyway trước khi khởi động lại. Migration V38 bổ sung cột nullable này và giữ nguyên dữ liệu đã có. Với DB dùng chung, cần phê duyệt migration trước khi chạy Core vì Flyway tự áp dụng migration khi khởi động; không sửa lịch sử cũ hoặc tắt Hibernate schema validation để bỏ qua lỗi.
 
 ## Kiểm tra
 

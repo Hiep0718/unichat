@@ -7,6 +7,8 @@ test('should display an accessible scaffold when a visitor opens the app', async
   const accessibilityScan = await new AxeBuilder({ page }).analyze();
 
   // Assert
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('UniChat');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'Trợ lý hỏi đáp tài liệu học tập bằng RAG',
+  );
   expect(accessibilityScan.violations).toEqual([]);
 });

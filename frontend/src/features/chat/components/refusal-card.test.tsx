@@ -82,6 +82,8 @@ describe('RefusalCard — knowledge gap escalation', () => {
   it.each([
     'NO_ALLOWED_DOCUMENTS',
     'PROVIDER_UNAVAILABLE',
+    'AI_MAINTENANCE',
+    'PROVIDER_HTTP_401',
     'CITATION_VALIDATION_FAILED',
     'REJECTED_CITATIONS',
   ])('should not offer the community for the system-side refusal %s', (refusalCode) => {
@@ -100,5 +102,13 @@ describe('RefusalCard — knowledge gap escalation', () => {
 
     // Assert
     expect(screen.queryByRole('button', { name: /Hỏi cộng đồng/i })).not.toBeInTheDocument();
+  });
+  it('should present maintenance as a system problem without exposing raw provider details', () => {
+    render(<RefusalCard decision="REFUSE" refusalCode="AI_MAINTENANCE" refusalReason="raw provider body" onAskCommunity={vi.fn()} />);
+    expect(screen.getByText('Chưa thể trả lời')).toBeInTheDocument();
+    expect(screen.getByText(/Dịch vụ AI đang bảo trì/)).toBeInTheDocument();
+    expect(screen.queryByText('raw provider body')).not.toBeInTheDocument();
+    expect(screen.queryByText(/Thiếu bằng chứng/)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
 });

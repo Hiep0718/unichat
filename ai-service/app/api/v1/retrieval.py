@@ -3,8 +3,8 @@
 import logging
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, HTTPException
-from fastapi.responses import StreamingResponse
+from fastapi import APIRouter, Depends
+from fastapi.responses import JSONResponse, StreamingResponse
 
 from app.core.rag.answer_pipeline import complete_answer, prepare_answer
 from app.core.rag.contracts import (
@@ -12,6 +12,7 @@ from app.core.rag.contracts import (
     RetrievalAnswerRequest,
     RetrievalAnswerResponse,
 )
+from app.core.rag.provider_contracts import operational_failure_code
 from app.core.rag.stream_provider import generate_rag_answer_stream
 from app.core.security import verify_service_jwt
 
@@ -24,7 +25,7 @@ __all__ = ["CitationItem", "RetrievalAnswerRequest", "RetrievalAnswerResponse", 
 @router.post("/retrieval/answers", response_model=RetrievalAnswerResponse)
 def get_retrieval_answer(
     request: RetrievalAnswerRequest, _auth: ServiceAuth
-) -> RetrievalAnswerResponse:
+) -> RetrievalAnswerResponse | JSONResponse:
     """Return ANSWER/CLARIFY/REFUSE only after evidence and complete claim validation."""
     try:
         return complete_answer(prepare_answer(request))
@@ -35,7 +36,10 @@ def get_retrieval_answer(
             request.operationId,
             type(error).__name__,
         )
-        raise HTTPException(status_code=503, detail="RETRIEVAL_UNAVAILABLE") from error
+        code = operational_failure_code(error)
+        return JSONResponse(
+            status_code=503, content={"errorCode": code, "requestId": request.requestId}
+        )
 
 
 @router.post("/retrieval/answers/stream")

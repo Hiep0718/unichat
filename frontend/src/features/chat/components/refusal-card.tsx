@@ -1,4 +1,6 @@
 import React from 'react';
+import { friendlyChatError } from '../chat-failures';
+import { isKnowledgeGap } from '../chat-refusal-policy';
 import './citation-panel.css';
 
 export interface RefusalCardProps {
@@ -10,27 +12,6 @@ export interface RefusalCardProps {
   onAskCommunity?: (() => void) | undefined;
 }
 
-/**
- * Refusal codes that represent a genuine knowledge gap — the workspace has
- * documents, but none of them contain the answer. Only these can be escalated
- * to the community; the other codes are system issues (provider down, citation
- * validation failed) or user-side issues (no documents uploaded yet) that
- * posting a question would not solve.
- *
- * The evidence gate reports two different codes for the same decision:
- * `EVIDENCE_INSUFFICIENT` on the blocking endpoint and `EVIDENCE_GATE_REFUSAL`
- * on the SSE streaming endpoint. Both are accepted here.
- */
-const KNOWLEDGE_GAP_CODES = ['EVIDENCE_INSUFFICIENT', 'EVIDENCE_GATE_REFUSAL'];
-
-/**
- * The evidence gate collapses two very different situations into one refusal
- * code: a question that is off-topic or abusive (intent OUT_OF_SCOPE), and a
- * genuine on-topic question the documents cannot support. Only the latter is
- * worth another member's time, so off-topic questions are filtered out here.
- */
-const OUT_OF_SCOPE_INTENT = 'OUT_OF_SCOPE';
-
 export const RefusalCard: React.FC<RefusalCardProps> = ({
   decision,
   refusalReason,
@@ -39,9 +20,8 @@ export const RefusalCard: React.FC<RefusalCardProps> = ({
   onAskCommunity,
 }) => {
   const isClarify = decision === 'CLARIFY';
-  const isEvidenceGap =
-    Boolean(refusalCode) && KNOWLEDGE_GAP_CODES.includes(refusalCode as string);
-  const isKnowledgeGap = !isClarify && isEvidenceGap && intent !== OUT_OF_SCOPE_INTENT;
+  const knowledgeGap = isKnowledgeGap({ decision, refusalCode, intent });
+  const isSystemFailure = Boolean(refusalCode?.startsWith('PROVIDER_') || refusalCode === 'AI_MAINTENANCE');
 
   return (
     <div className={`refusal-card refusal-card--${isClarify ? 'clarify' : 'refuse'}`}>
@@ -50,17 +30,18 @@ export const RefusalCard: React.FC<RefusalCardProps> = ({
           {isClarify ? 'help' : 'block'}
         </span>
         <div className="refusal-card__title">
-          {isClarify ? 'Cần bổ sung phạm vi câu hỏi' : 'Từ chối trả lời (Thiếu bằng chứng)'}
+          {isClarify ? 'Cần bổ sung phạm vi câu hỏi' : knowledgeGap ? 'Từ chối trả lời (Thiếu bằng chứng)' : 'Chưa thể trả lời'}
         </div>
       </div>
       <div className="refusal-card__reason">
-        {refusalReason ||
+        {isSystemFailure ? friendlyChatError({ code: refusalCode }).message : refusalReason ||
           (isClarify
             ? 'Câu hỏi chưa rõ ràng hoặc thiếu đối tượng so sánh. Vui lòng cung cấp thêm ngữ cảnh cụ thể.'
-            : 'Tài liệu hiện có trong Workspace không chứa đủ thông tin để đưa ra câu trả lời có bằng chứng xác thực.')}
+            : knowledgeGap ? 'Tài liệu hiện có trong Workspace không chứa đủ thông tin để đưa ra câu trả lời có bằng chứng xác thực.'
+              : 'Chưa thể tạo câu trả lời đáng tin cậy. Vui lòng kiểm tra phạm vi câu hỏi hoặc thử lại.')}
       </div>
 
-      {isKnowledgeGap && onAskCommunity && (
+      {knowledgeGap && onAskCommunity && (
         <div className="refusal-card__escalation">
           <div className="refusal-card__escalation-text">
             <span className="material-symbols-outlined refusal-card__escalation-icon">lightbulb</span>

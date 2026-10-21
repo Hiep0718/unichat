@@ -1,54 +1,57 @@
-"""One primary attempt and transient-only fallback with Core policy checkpoints."""
+"""Provider selection, durable attempt accounting and Core-owned policy checkpoints."""
 
+import logging
 import os
 import time
 import uuid
-from collections.abc import Callable
 from dataclasses import dataclass
-from datetime import UTC
+from datetime import UTC, datetime
 from typing import Any
 
 import httpx
-from google import genai
-from google.genai import errors, types
+from google.genai import errors
+from pydantic import ValidationError
 
+from app.core.rag.gemini_provider import _gemini, _ollama
 from app.core.rag.generation_policy import GenerationPolicy, Purpose, attempt_event
-from app.core.rag.key_registry import ProviderKey, configured_keys, configured_model
+from app.core.rag.hive_provider import generate_hive
+from app.core.rag.key_registry import (
+    ProviderKey,
+    active_provider,
+    configured_keys,
+    configured_model,
+)
+from app.core.rag.provider_contracts import (
+    Cancellation,
+    GenerationCancelled,
+    Observer,
+    ProviderFailure,
+    ProviderResult,
+    check_cancelled,
+)
+from app.core.service_security import ServiceSecurityError
 
-Observer = Callable[[str, dict[str, Any]], None]
-MAX_OUTPUT_CHARACTERS = 80000
+logger = logging.getLogger(__name__)
 
-
-class ProviderFailure(RuntimeError):
-    """Safe provider failure classification without exposing SDK request contents."""
-
-    def __init__(self, code: str, transient: bool = False) -> None:
-        super().__init__(code)
-        self.code = code
-        self.transient = transient
-
-
-@dataclass(frozen=True)
-class ProviderResult:
-    """Actual provider result; absent token measurements stay unknown."""
-
-    text: str
-    provider: str
-    model: str
-    key_id: str
-    input_tokens: int | None = None
-    output_tokens: int | None = None
+__all__ = [
+    "AttemptBudget",
+    "Observer",
+    "ProviderFailure",
+    "ProviderResult",
+    "classify_failure",
+    "generate",
+]
 
 
 @dataclass
 class AttemptBudget:
-    """Request-local budget shared across validation retries, never authorization state."""
+    """Request-local fallback budget shared across validation retries."""
 
     fallback_used: bool = False
 
 
 def classify_failure(error: Exception) -> ProviderFailure:
-    """Only timeouts, HTTP 429 and HTTP 5xx qualify for fallback."""
+    """Classify without exposing upstream body, request credentials or SDK error text."""
     if isinstance(error, ProviderFailure):
         return error
     if isinstance(error, (TimeoutError, httpx.TimeoutException)):
@@ -62,6 +65,23 @@ def classify_failure(error: Exception) -> ProviderFailure:
     return ProviderFailure("PROVIDER_UNAVAILABLE")
 
 
+def _selection(selected_key: ProviderKey | None, model: str | None) -> tuple[ProviderKey, str]:
+    try:
+        provider = active_provider()
+        keys = [key for key in configured_keys() if key.provider == provider]
+        key = selected_key or (keys[0] if keys else None)
+        target_model = model or configured_model()
+    except ValidationError as error:
+        raise ProviderFailure("PROVIDER_UNCONFIGURED") from error
+    if key is None:
+        raise ProviderFailure("PROVIDER_UNCONFIGURED")
+    if key.provider != provider or target_model != configured_model(provider):
+        raise ProviderFailure("PROVIDER_SELECTION_INVALID")
+    if selected_key is not None and selected_key not in keys:
+        raise ProviderFailure("PROVIDER_KEY_UNKNOWN")
+    return key, target_model
+
+
 def generate(
     prompt: str,
     policy: GenerationPolicy,
@@ -71,28 +91,47 @@ def generate(
     selected_key: ProviderKey | None = None,
     model: str | None = None,
     budget: AttemptBudget | None = None,
+    cancelled: Cancellation | None = None,
 ) -> ProviderResult:
-    """Run one configured primary and at most one explicitly enabled fallback."""
+    """Run one selected provider; Hive never falls back to another key/model/provider."""
+    check_cancelled(cancelled)
     policy.checkpoint(purpose)
-    keys = configured_keys()
-    key = selected_key or (keys[0] if keys else None)
-    if key is None:
-        raise ProviderFailure("PROVIDER_UNCONFIGURED")
-    target_model = model or configured_model()
+    key, target_model = _selection(selected_key, model)
     attempt_budget = budget or AttemptBudget()
     try:
-        return _run_attempt(prompt, policy, purpose, key, target_model, observer, schema)
+        return _run_attempt(prompt, policy, purpose, key, target_model, observer, schema, cancelled)
     except ProviderFailure as error:
-        if not error.transient or os.getenv("ENABLE_OLLAMA_FALLBACK", "false").lower() != "true":
-            raise
-        if purpose != "CHAT" or attempt_budget.fallback_used:
+        if not _fallback_allowed(key, purpose, error, attempt_budget):
             raise
         attempt_budget.fallback_used = True
+        check_cancelled(cancelled)
         if observer:
             observer("reset", {"reason": "PROVIDER_FALLBACK"})
         return _run_attempt(
-            prompt, policy, purpose, None, os.getenv("OLLAMA_MODEL", "llama3"), observer, schema
+            prompt,
+            policy,
+            purpose,
+            None,
+            os.getenv("OLLAMA_MODEL", "llama3"),
+            observer,
+            schema,
+            cancelled,
         )
+
+
+def _fallback_allowed(
+    key: ProviderKey,
+    purpose: Purpose,
+    error: ProviderFailure,
+    budget: AttemptBudget,
+) -> bool:
+    return (
+        key.provider == "gemini"
+        and error.transient
+        and purpose == "CHAT"
+        and not budget.fallback_used
+        and os.getenv("ENABLE_OLLAMA_FALLBACK", "false").lower() == "true"
+    )
 
 
 def _run_attempt(
@@ -103,42 +142,36 @@ def _run_attempt(
     model: str,
     observer: Observer | None,
     schema: dict[str, Any] | None,
+    cancelled: Cancellation | None,
 ) -> ProviderResult:
+    check_cancelled(cancelled)
     attempt_id = str(uuid.uuid4())
     timeout = policy.checkpoint(purpose, attempt_id)
-    provider, key_id = ("gemini", key.key_id) if key else ("ollama", "ollama-local")
+    provider, key_id = (key.provider, key.key_id) if key else ("ollama", "ollama-local")
     event = attempt_event(policy, attempt_id, purpose, provider, key_id, model, "START")
     policy.record(event)
     started = time.perf_counter()
-    if observer:
-        observer("attempt", {"attemptId": attempt_id, "provider": provider})
     try:
-        result = (
-            _gemini(prompt, key, model, timeout, observer, schema, policy, purpose)
-            if key
-            else _ollama(prompt, model, timeout)
-        )
+        check_cancelled(cancelled)
+        timeout = min(timeout, policy.checkpoint(purpose, attempt_id))
+        if observer:
+            observer("attempt", {"attemptId": attempt_id, "provider": provider})
+        result = _invoke(prompt, policy, purpose, key, model, timeout, observer, schema, cancelled)
+        check_cancelled(cancelled)
         if time.perf_counter() - started >= timeout:
             raise ProviderFailure("PROVIDER_TIMEOUT", True)
+        policy.checkpoint(purpose, attempt_id)
     except Exception as error:
-        failure = classify_failure(error)
-        policy.record(
-            {
-                **event,
-                "phase": "END",
-                "occurredAt": _timestamp(),
-                "outcome": "ERROR",
-                "errorCode": failure.code,
-                "latencyMs": int((time.perf_counter() - started) * 1000),
-            }
-        )
-        if isinstance(error, ProviderFailure):
-            raise
-        from app.core.service_security import ServiceSecurityError
-
-        if isinstance(error, ServiceSecurityError):
-            raise
-        raise failure from error
+        try:
+            _record_error(policy, event, started, error)
+        except Exception as recording_error:
+            if not isinstance(error, (GenerationCancelled, ServiceSecurityError)):
+                raise
+            logger.error(
+                "attempt_end_failed request_id=%s operation_id=%s attempt_id=%s code=%s",
+                policy.request_id, policy.operation_id, attempt_id, type(recording_error).__name__,
+            )
+        raise
     policy.record(
         {
             **event,
@@ -150,95 +183,54 @@ def _run_attempt(
             "outputTokens": result.output_tokens,
         }
     )
-    policy.checkpoint(purpose, attempt_id)
+    check_cancelled(cancelled)
     return result
 
 
-def _gemini(
+def _invoke(
     prompt: str,
-    key: ProviderKey,
+    policy: GenerationPolicy,
+    purpose: Purpose,
+    key: ProviderKey | None,
     model: str,
     timeout: float,
     observer: Observer | None,
     schema: dict[str, Any] | None,
-    policy: GenerationPolicy,
-    purpose: Purpose,
+    cancelled: Cancellation | None,
 ) -> ProviderResult:
-    configuration = types.GenerateContentConfig(temperature=0.2, max_output_tokens=8192)
-    attempt_deadline = time.monotonic() + timeout
-    if schema is not None:
-        configuration.response_mime_type = "application/json"
-        configuration.response_json_schema = schema
-    with genai.Client(
-        api_key=key.secret, http_options=types.HttpOptions(timeout=int(timeout * 1000))
-    ) as client:
-        if observer is None:
-            response = client.models.generate_content(
-                model=model, contents=prompt, config=configuration
-            )
-            return _response_result(response, model, key.key_id)
-        parts: list[str] = []
-        last_response: types.GenerateContentResponse | None = None
-        for streamed_response in client.models.generate_content_stream(
-            model=model, contents=prompt, config=configuration
-        ):
-            if time.monotonic() >= attempt_deadline:
-                raise ProviderFailure("PROVIDER_TIMEOUT", True)
-            policy.checkpoint(purpose)
-            last_response = streamed_response
-            delta = streamed_response.text or ""
-            parts.append(delta)
-            if sum(map(len, parts)) > MAX_OUTPUT_CHARACTERS:
-                raise ProviderFailure("OUTPUT_LIMIT_EXCEEDED")
-            observer("raw", {"delta": delta})
-        if last_response is None:
-            raise ProviderFailure("PROVIDER_EMPTY_RESPONSE")
-        result = _response_result(last_response, model, key.key_id)
-        return ProviderResult(
-            "".join(parts), "gemini", model, key.key_id, result.input_tokens, result.output_tokens
-        )
+    try:
+        if key is None:
+            return _ollama(prompt, model, timeout)
+        adapter = generate_hive if key.provider == "hive" else _gemini
+        return adapter(prompt, key, model, timeout, observer, schema, policy, purpose, cancelled)
+    except (GenerationCancelled, ServiceSecurityError, ProviderFailure):
+        raise
+    except Exception as error:
+        raise classify_failure(error) from error
 
 
-def _response_result(response: Any, model: str, key_id: str) -> ProviderResult:
-    text = response.text or ""
-    if not text.strip() and not getattr(response, "usage_metadata", None):
-        raise ProviderFailure("PROVIDER_EMPTY_OR_BLOCKED_RESPONSE")
-    if len(text) > MAX_OUTPUT_CHARACTERS:
-        raise ProviderFailure("OUTPUT_LIMIT_EXCEEDED")
-    usage = response.usage_metadata
-    return ProviderResult(
-        text,
-        "gemini",
-        model,
-        key_id,
-        usage.prompt_token_count if usage else None,
-        usage.candidates_token_count if usage else None,
+def _record_error(
+    policy: GenerationPolicy,
+    event: dict[str, Any],
+    started: float,
+    error: Exception,
+) -> None:
+    code = (
+        str(error)
+        if isinstance(error, (GenerationCancelled, ServiceSecurityError))
+        else (classify_failure(error).code)
     )
-
-
-def _ollama(prompt: str, model: str, timeout: float) -> ProviderResult:
-    host = os.getenv("OLLAMA_HOST", "http://localhost:11434").rstrip("/")
-    with httpx.Client(timeout=timeout, follow_redirects=False) as client:
-        response = client.post(
-            f"{host}/api/generate",
-            json={
-                "model": model,
-                "prompt": prompt,
-                "stream": False,
-                "format": "json",
-            },
-        )
-        response.raise_for_status()
-        data = response.json()
-    text = str(data.get("response", ""))
-    if len(text) > MAX_OUTPUT_CHARACTERS or not text.strip():
-        raise ProviderFailure("PROVIDER_EMPTY_OR_OVERSIZED_RESPONSE")
-    return ProviderResult(
-        text, "ollama", model, "ollama-local", data.get("prompt_eval_count"), data.get("eval_count")
+    policy.record(
+        {
+            **event,
+            "phase": "END",
+            "occurredAt": _timestamp(),
+            "outcome": "ERROR",
+            "errorCode": code,
+            "latencyMs": int((time.perf_counter() - started) * 1000),
+        }
     )
 
 
 def _timestamp() -> str:
-    from datetime import datetime
-
     return datetime.now(UTC).isoformat()

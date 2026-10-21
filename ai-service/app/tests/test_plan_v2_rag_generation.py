@@ -15,6 +15,7 @@ from app.core.rag.citation_validator import (
     validate_generated_answer,
 )
 from app.core.rag.contracts import RetrievalAnswerRequest
+from app.core.rag.conversation_memory import CompactionOutputInvalid
 from app.core.rag.llm_provider import generate_rag_answer
 from app.core.rag.provider_gateway import ProviderResult
 from app.core.rag.source_validation import SourceValidationError, build_citations
@@ -161,7 +162,7 @@ def test_should_refuse_after_second_invalid_output_without_third_attempt() -> No
 def test_should_preserve_answer_when_compaction_provider_fails() -> None:
     history = [{"role": "user", "content": "x" * 1000}] * 20
     response = ProviderResult(generated(), "gemini", "test", "primary")
-    with patch("app.core.rag.llm_provider.compact_conversation", side_effect=ValueError("bad")):
+    with patch("app.core.rag.llm_provider.compact_conversation", side_effect=CompactionOutputInvalid("bad")):
         with patch("app.core.rag.llm_provider.generate", return_value=response):
             result = generate_rag_answer("RAG là gì?", [candidate()], [DOCUMENT_ID],
                                          conversation_history=history, policy=policy(),

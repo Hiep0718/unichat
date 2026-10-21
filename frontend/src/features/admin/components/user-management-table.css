@@ -8,6 +8,18 @@
   gap: 20px;
 }
 
+.admin-management > h2 { margin: 0; color: #0f172a; font-size: 1.2rem; }
+.admin-management > p { color: #64748b; }
+.admin-management__header { align-items: end; }
+.admin-management__title { margin: 0; color: #0f172a; font-size: 1.35rem; }
+.admin-search-wrapper { display: flex; flex-direction: column; gap: 6px; color: #475569; font-size: .82rem; font-weight: 600; }
+.admin-refresh-btn { align-self: flex-start; padding: 8px 14px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; color: #1e3a8a; font-weight: 650; cursor: pointer; }
+.admin-refresh-btn:hover:not(:disabled) { background: #eff6ff; }
+.admin-refresh-btn:disabled { opacity: .6; cursor: not-allowed; }
+.admin-pagination { display: flex; align-items: center; justify-content: flex-end; gap: 12px; color: #64748b; font-size: .875rem; }
+.admin-pagination button { padding: 7px 12px; border: 1px solid #cbd5e1; border-radius: 7px; background: #fff; color: #334155; cursor: pointer; }
+.admin-pagination button:disabled { opacity: .5; cursor: not-allowed; }
+
 /* KPI Cards Grid */
 .admin-user-kpis {
   display: grid;

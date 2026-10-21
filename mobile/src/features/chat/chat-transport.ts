@@ -2,10 +2,11 @@ import { z } from 'zod';
 import { fetch as expoFetch } from 'expo/fetch';
 import { generateIdempotencyKey } from '../../lib/idempotency';
 import { fetchAuthorized, fetchJson } from '../../lib/api-client';
-import { ApiError, readApiResponse } from '../../lib/api-error';
+import { readApiResponse } from '../../lib/api-error';
 import { getSessionSnapshot, assertSessionGeneration } from '../../lib/session-store';
 import { SseFrameParser } from '../../lib/sse-protocol';
 import { ChatEventReceiver } from './chat-events';
+import { friendlyChatError, isTerminalChatFailure } from './chat-failures';
 import type { AskQuestionPayload, ChatOperation, ChatRequestOptions, QuestionResponse, StreamQuestionCallbacks } from './chat-types';
 export type * from './chat-types';
 
@@ -41,7 +42,7 @@ export async function waitForChatOperation(workspaceId: string, operationId: str
     const operation = await fetchChatOperation(workspaceId, operationId);
     assertSessionGeneration(generation);
     if (operation.state === 'COMPLETED' && operation.result) return operation.result;
-    if (operation.state !== 'RUNNING') throw new Error(operation.errorCode ?? 'Yêu cầu đã bị dừng hoặc thất bại');
+    if (operation.state !== 'RUNNING') throw friendlyChatError({ code: operation.errorCode });
     await wait(2_000, signal);
   }
   throw new Error('Chưa nhận được kết quả. Vui lòng kiểm tra lại lịch sử hội thoại.');
@@ -54,7 +55,7 @@ export async function askWorkspaceQuestion(workspaceId: string, payload: AskQues
   const response = await fetchAuthorized(`/workspaces/${workspaceId}/questions`, {
     method: 'POST', headers: { 'Idempotency-Key': key }, body: JSON.stringify(body), ...(options.signal ? { signal: options.signal } : {}),
   });
-  const result = await readApiResponse<QuestionResponse | ChatOperation>(response);
+  const result = await readApiResponse<QuestionResponse | ChatOperation>(response).catch((failure: unknown) => { throw friendlyChatError(failure); });
   if (response.status === 202) return waitForChatOperation(workspaceId, (result as ChatOperation).operationId, options.signal);
   return result as QuestionResponse;
 }
@@ -108,7 +109,7 @@ export async function streamChatResponse(workspaceId: string, payload: AskQuesti
   } catch (error: unknown) {
     assertSessionGeneration(generation);
     if (options.signal?.aborted) throw error;
-    if (error instanceof ApiError && error.status < 500) { callbacks.onError?.(error); throw error; }
+    if (isTerminalChatFailure(error)) { const failure = friendlyChatError(error); callbacks.onReset?.(); callbacks.onError?.(failure); throw failure; }
     callbacks.onReset?.();
     try {
       const result = operation.id ? await waitForChatOperation(workspaceId, operation.id, options.signal)
@@ -116,8 +117,9 @@ export async function streamChatResponse(workspaceId: string, payload: AskQuesti
       assertSessionGeneration(generation);
       deliverResult(result, guarded);
     } catch (recoveryError: unknown) {
-      callbacks.onError?.(recoveryError instanceof Error ? recoveryError : new Error('Không thể khôi phục kết quả'));
-      throw recoveryError;
+      const failure = friendlyChatError(recoveryError);
+      callbacks.onError?.(failure);
+      throw failure;
     }
   }
 }

@@ -6,6 +6,7 @@ from typing import Any
 from app.core.rag.citation_validator import render_answer, validate_generated_answer
 from app.core.rag.contracts import CitationItem, GeneratedAnswer, SourceVersion
 from app.core.rag.conversation_memory import (
+    CompactionOutputInvalid,
     ConversationContext,
     ConversationMessage,
     build_conversation_prompt,
@@ -15,10 +16,10 @@ from app.core.rag.conversation_memory import (
 from app.core.rag.generation_policy import GenerationPolicy, GenerationPolicyError
 from app.core.rag.key_registry import configured_keys, configured_model
 from app.core.rag.prompt_builder import build_rag_prompt, build_system_prompt
+from app.core.rag.provider_contracts import Cancellation, check_cancelled
 from app.core.rag.provider_gateway import AttemptBudget, Observer, ProviderFailure, generate
 from app.core.rag.retrieval_engine import RetrievedChunkCandidate
 from app.core.rag.source_validation import SourceValidationError, build_citations
-from app.core.service_security import ServiceSecurityError
 
 logger = logging.getLogger(__name__)
 MAX_SINGLE_CHUNK_CHARS = 3000
@@ -26,7 +27,7 @@ MAX_SINGLE_CHUNK_CHARS = 3000
 
 def get_gemini_api_keys() -> list[str]:
     """Compatibility facade backed by the unified deterministic key registry."""
-    return [key.secret for key in configured_keys()]
+    return [key.secret for key in configured_keys() if key.provider == "gemini"]
 
 
 def get_candidate_gemini_models() -> list[str]:
@@ -45,8 +46,10 @@ def generate_rag_answer(
     policy: GenerationPolicy | None = None,
     sources: list[SourceVersion] | None = None,
     observer: Observer | None = None,
+    cancelled: Cancellation | None = None,
 ) -> dict[str, Any]:
     """Generate only with explicit Core policy and authenticated source metadata."""
+    check_cancelled(cancelled)
     if policy is None or not policy.cloud_allowed:
         return _refusal("OPERATION_POLICY_REQUIRED" if policy is None else "CLOUD_POLICY_DENIED")
     try:
@@ -59,17 +62,22 @@ def generate_rag_answer(
             conversation_summary,
             single_source_warning,
             policy,
+            cancelled,
         )
+        check_cancelled(cancelled)
         result = _validated_generation(
-            prompt, citations, allow_external_knowledge, policy, observer
+            prompt, citations, allow_external_knowledge, policy, observer, cancelled
         )
         if summary:
             result["compactedSummary"] = summary
         return result
-    except (SourceValidationError, ServiceSecurityError) as error:
+    except SourceValidationError as error:
         return _refusal(str(error))
     except ProviderFailure as error:
-        return _refusal(error.code)
+        check_cancelled(cancelled)
+        if error.code != "PROVIDER_REFUSAL":
+            raise
+        return _refusal("SAFETY_REFUSAL")
 
 
 def _prepare_prompt(
@@ -80,15 +88,18 @@ def _prepare_prompt(
     summary: str | None,
     warning: bool,
     policy: GenerationPolicy,
+    cancelled: Cancellation | None,
 ) -> tuple[str, str | None]:
+    check_cancelled(cancelled)
     messages = [ConversationMessage(**message) for message in history or []][-20:]
     context = ConversationContext(summary=summary, recent_messages=messages)
     compacted = None
     if check_compaction_needed(context):
         try:
-            compacted = compact_conversation(messages[:-4], summary, policy)
+            compacted = compact_conversation(messages[:-4], summary, policy, cancelled)
+            check_cancelled(cancelled)
             context = ConversationContext(summary=compacted, recent_messages=messages[-4:])
-        except (ProviderFailure, ValueError) as error:
+        except CompactionOutputInvalid as error:
             logger.warning(
                 "compaction_failed code=%s request_id=%s", type(error).__name__, policy.request_id
             )
@@ -112,9 +123,11 @@ def _validated_generation(
     expanded: bool,
     policy: GenerationPolicy,
     observer: Observer | None,
+    cancelled: Cancellation | None,
 ) -> dict[str, Any]:
     budget = AttemptBudget()
     for retry in range(2):
+        check_cancelled(cancelled)
         if retry and observer:
             observer("reset", {"reason": "CITATION_VALIDATION_RETRY"})
         result = generate(
@@ -123,7 +136,9 @@ def _validated_generation(
             observer=observer,
             schema=GeneratedAnswer.model_json_schema(),
             budget=budget,
+            cancelled=cancelled,
         )
+        check_cancelled(cancelled)
         try:
             parsed = validate_generated_answer(result.text, citations, expanded)
         except ValueError:

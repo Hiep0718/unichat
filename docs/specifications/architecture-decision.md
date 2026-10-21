@@ -181,6 +181,16 @@ Kèm theo: 20 chip trên thanh lọc mà phần lớn không có workspace nào 
 
 Hai khiếm khuyết sửa kèm, vì chúng nằm đúng trên đường đi: truy vấn khám phá **không hề có `ORDER BY`**, nên Postgres trả về theo thứ tự tùy ý — danh sách đảo lộn giữa các lần tải và phân trang có thể lặp hoặc bỏ sót workspace; nay sắp theo hoạt động gần nhất, tie-break bằng `id` để thứ tự là toàn phần, điều kiện để phân trang ổn định. Và ô tìm kiếm ở Khám phá **không debounce**, bắn một request mỗi phím gõ, trong khi trang feed của chính dự án đã làm đúng với 300 ms. Còn một khiếm khuyết **chưa sửa**: tham số trang bị truyền hằng số 0 nên workspace thứ 21 trở đi không duyệt tới được; nó thuộc hạng mục phân trang, để riêng.
 
+## ADR-028 — Hive generation và admission gate
+
+Decision: scope chuyển đổi được phê duyệt chọn Hive/DeepSeek V4.1 Flash làm primary khi `LLM_PROVIDER=hive`, giữ Gemini cho rollback thủ công. Phần primary/fallback của ADR-011 được supersede cho chế độ Hive: không fallback sang Gemini/Ollama và không transport retry ngầm. Môi trường chưa đặt provider vẫn dùng Gemini để tương thích.
+
+Reason: tránh phụ thuộc Google AI Studio free, giữ hành vi nguồn/quyền/citation và attribution minh bạch. Dùng HTTPX đang pin thay vì thêm SDK; RAG JSON-object vẫn bắt buộc qua validator local, không dựa vào strict JSON Schema chưa kiểm chứng.
+
+Decision: gate singleton `ai_generation_control` trong PostgreSQL là nguồn admission chung: OPEN nhận mới, DRAINING chỉ cho operation cũ/replay/control tiếp tục, VERIFYING chỉ nhận thêm ADMIN diagnostics. Shared row lock bảo vệ reservation/diagnostic START; exclusive lock bảo vệ đổi trạng thái/version. Không giữ transaction khi gọi AI, không cache gate, không bỏ pending không xác định để vượt drain.
+
+Reason: restart hoặc rollback không được cắt operation đang chạy. Public subscriber detach độc lập với operation; private disconnect/cancel/policy denial dừng generation. Idle read timeout5s không phải SLA hủy toàn worker. Migration gate, live cutover và provider smoke là delivery actions riêng.
+
 ## Consequences
 
 - Runtime đã được cung cấp theo version đã khóa; mỗi máy vẫn phải cung cấp evidence độc lập trước `READY — CORE-001`.

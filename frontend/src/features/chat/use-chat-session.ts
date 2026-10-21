@@ -25,6 +25,7 @@ function historyMessage(message: HistoryMessage): MessageItem {
     response: { messageId: message.id, conversationId: message.conversationId, operationId: message.operationId ?? undefined, decision, answer: content,
       intent: message.intent ?? 'FACT', strategyVersion: 'v1.0', citations: message.redacted ? [] : message.citations ?? [],
       refusalCode: message.refusalCode ?? null, requestId: '', knowledgeMode: message.knowledgeMode,
+      providerModel: message.redacted ? null : message.providerModel,
       sections: message.redacted ? [] : message.sections, redacted: message.redacted } };
 }
 

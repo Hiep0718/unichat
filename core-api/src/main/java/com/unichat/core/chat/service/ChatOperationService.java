@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import com.unichat.core.admin.service.AuditService;
+import com.unichat.core.admin.service.AiAdmissionService;
 import com.unichat.core.chat.api.AskQuestionRequest;
 import com.unichat.core.chat.api.ChatOperationResponse;
 import com.unichat.core.chat.api.QuestionResponse;
@@ -30,12 +31,14 @@ public class ChatOperationService {
     private final AuditService audit;
     private final Clock clock;
     private final TransactionTemplate transaction;
+    private final AiAdmissionService admission;
     /** Coordinates durable operation state and current authorization. */
     public ChatOperationService(ChatOperationRepository operations, ChatConversationStore conversations,
             ChatMessageStore messages, ChatAccessService access, ChatJson json, RateLimitService rates,
-            AuditService audit, Clock clock, PlatformTransactionManager manager) {
+            AuditService audit, Clock clock, PlatformTransactionManager manager, AiAdmissionService admission) {
         this.operations=operations; this.conversations=conversations; this.messages=messages; this.access=access;
         this.json=json; this.rates=rates; this.audit=audit; this.clock=clock; this.transaction=new TransactionTemplate(manager);
+        this.admission=admission;
     }
     /** Indicates whether this caller reserved a new operation or found an existing binding. */
     public record Reservation(ChatOperation operation, boolean created) { }
@@ -46,11 +49,13 @@ public class ChatOperationService {
     }
     private Reservation reserveLocked(ChatActor actor, ChatBinding binding, UUID key, String requestId) {
         Instant now=Instant.now(clock);
+        var control=admission.lockShared();
         operations.lockActor(actor.userId());
         expire(actor.userId(),now);
         ChatSourceSnapshot snapshot=access.read(actor,binding.workspaceId());
         var existing=operations.findByKey(actor.userId(),key);
         if (existing.isPresent()) return replayBinding(existing.get(),binding,now);
+        admission.requireChat(control);
         if (operations.running(actor.userId()) >= 2) throw conflict("CHAT_BUSY","Bạn đang có hai yêu cầu đang xử lý.");
         UUID conversationId=conversations.reserve(actor,binding,now);
         if (operations.busy(conversationId)) throw conflict("CONVERSATION_BUSY","Hội thoại đang xử lý một câu hỏi khác.");

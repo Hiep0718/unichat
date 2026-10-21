@@ -40,9 +40,15 @@ def validate_generated_answer(
     """Parse complete sections and enforce references on every document claim."""
     answer = GeneratedAnswer.model_validate_json(raw)
     identifiers = {citation.citationId for citation in citations}
+    doc_to_citation = {citation.documentId: citation.citationId for citation in citations}
     if not identifiers or not any(section.type == "DOCUMENT" for section in answer.sections):
         raise ValueError("DOCUMENT_EVIDENCE_REQUIRED")
     for section in answer.sections:
+        if section.type == "DOCUMENT":
+            for claim in section.claims:
+                claim.citationIds = [
+                    doc_to_citation.get(cid, cid) for cid in claim.citationIds
+                ]
         _validate_section(section, identifiers, expanded)
     return answer
 

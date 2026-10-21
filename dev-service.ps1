@@ -19,6 +19,12 @@ $ErrorActionPreference = 'Continue'
 $rootDir = $PSScriptRoot
 $statusDir = Join-Path $rootDir '.tmp\dev-runner'
 $venvScripts = Join-Path $rootDir 'ai-service\.venv\Scripts'
+$serviceKeyPathNames = @(
+    'CORE_SERVICE_PRIVATE_KEY_PATH',
+    'CORE_SERVICE_PUBLIC_KEY_PATH',
+    'AI_SERVICE_PRIVATE_KEY_PATH',
+    'AI_SERVICE_PUBLIC_KEY_PATH'
+)
 
 if (-not (Test-Path $statusDir)) {
     New-Item -Path $statusDir -ItemType Directory -Force | Out-Null
@@ -38,16 +44,27 @@ if ($Port -gt 0) {
 
 $host.UI.RawUI.WindowTitle = "$($cfg.Title) - UniChat Dev"
 
+function Resolve-ServiceKeyPath([string]$Name, [string]$Value) {
+    if ($serviceKeyPathNames -notcontains $Name -or [string]::IsNullOrWhiteSpace($Value)) {
+        return $Value
+    }
+    if ([IO.Path]::IsPathRooted($Value)) {
+        return $Value
+    }
+    return [IO.Path]::GetFullPath((Join-Path $rootDir $Value))
+}
+
 function Import-DotEnv {
     $envFile = Join-Path $rootDir '.env'
     if (-not (Test-Path $envFile)) { return }
     foreach ($line in Get-Content $envFile) {
-        $tLine = $line.Trim()
-        if ($tLine -match '^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$') {
-            $key = $Matches[1].Trim()
-            $val = $Matches[2].Trim().Trim('"').Trim("'")
-            [Environment]::SetEnvironmentVariable($key, $val, 'Process')
-            Set-Item -Path "env:$key" -Value $val
+        $trimmedLine = $line.Trim()
+        if ($trimmedLine -match '^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$') {
+            $name = $Matches[1].Trim()
+            $value = $Matches[2].Trim().Trim('"').Trim("'")
+            $value = Resolve-ServiceKeyPath -Name $name -Value $value
+            [Environment]::SetEnvironmentVariable($name, $value, 'Process')
+            Set-Item -Path "env:$name" -Value $value
         }
     }
 }

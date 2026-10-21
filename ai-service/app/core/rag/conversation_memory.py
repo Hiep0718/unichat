@@ -5,11 +5,16 @@ import asyncio
 from pydantic import BaseModel, Field
 
 from app.core.rag.generation_policy import GenerationPolicy, GenerationPolicyError
+from app.core.rag.provider_contracts import Cancellation, check_cancelled
 from app.core.rag.provider_gateway import generate
 
 CONVERSATION_TOKEN_BUDGET = 8500
 COMPACTION_THRESHOLD = 0.8
 MAX_ASSISTANT_CONTENT_CHARS = 1200
+
+
+class CompactionOutputInvalid(ValueError):
+    """Only malformed summaries permit continuing with bounded previous context."""
 
 
 class ConversationMessage(BaseModel):
@@ -80,8 +85,10 @@ def compact_conversation(
     messages: list[ConversationMessage],
     existing_summary: str | None = None,
     policy: GenerationPolicy | None = None,
+    cancelled: Cancellation | None = None,
 ) -> str:
     """Summarize verified context with checkpoint and durable attempt acknowledgement."""
+    check_cancelled(cancelled)
     if not messages:
         return existing_summary or ""
     if policy is None:
@@ -92,10 +99,11 @@ def compact_conversation(
         f"Tóm tắt đã kiểm quyền: {existing_summary or ''}\n"
         + "\n".join(_message_text(message) for message in messages)
     )
-    result = generate(prompt, policy, purpose="COMPACTION")
+    result = generate(prompt, policy, purpose="COMPACTION", cancelled=cancelled)
+    check_cancelled(cancelled)
     summary = result.text.strip()
     if not summary or len(summary) > 5000:
-        raise ValueError("COMPACTION_OUTPUT_INVALID")
+        raise CompactionOutputInvalid("COMPACTION_OUTPUT_INVALID")
     return summary
 
 
@@ -103,6 +111,12 @@ async def acompact_conversation(
     messages: list[ConversationMessage],
     existing_summary: str | None = None,
     policy: GenerationPolicy | None = None,
+    cancelled: Cancellation | None = None,
 ) -> str:
     """Offload synchronous SDK compaction without blocking the event loop."""
-    return await asyncio.to_thread(compact_conversation, messages, existing_summary, policy)
+    check_cancelled(cancelled)
+    summary = await asyncio.to_thread(
+        compact_conversation, messages, existing_summary, policy, cancelled
+    )
+    check_cancelled(cancelled)
+    return summary

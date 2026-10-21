@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { fetchJson } from '../../lib/api-client';
-import { adminPageSchema, keyIdSchema, modelNameSchema, quickPromptSchema, userMutationSchema } from './admin-inputs';
+import { admissionMutationSchema, adminPageSchema, keyIdSchema, modelNameSchema, quickPromptSchema, userMutationSchema } from './admin-inputs';
 
 export type SystemRole = 'USER' | 'ADMIN';
 export type UserStatus = 'ACTIVE' | 'LOCKED' | 'PENDING_VERIFICATION';
@@ -28,6 +28,9 @@ export interface AiStudioKey {
   name: string;
   maskedKey: string;
   isConfigured: boolean;
+  provider?: string;
+  isActive?: boolean;
+  supportedModels?: string[];
 }
 
 export interface RequestsSuccessDataPoint {
@@ -61,6 +64,9 @@ export interface AiStudioMetricsResponse {
   keys: AiStudioKey[];
   models: string[];
   configuredModels: string[];
+  activeProvider?: string | null;
+  activeModel?: string | null;
+  historicalKeys?: { keyId: string; provider: string }[];
   chartRequestsSuccess: RequestsSuccessDataPoint[];
   chartErrors: ErrorsDataPoint[];
   chartInputTokens: ModelDataPoint[];
@@ -77,7 +83,7 @@ export interface KeyVerifyResponse {
   status: 'HEALTHY' | 'RATE_LIMITED' | 'ERROR' | 'UNAVAILABLE' | 'UNCONFIGURED';
   message: string;
   latencyMs: number | null;
-  probeType: 'METADATA';
+  probeType: 'METADATA' | 'GENERATION';
   maskedKey?: string;
 }
 
@@ -176,12 +182,34 @@ export async function fetchAiStudioMetrics(
   return fetchJson<AiStudioMetricsResponse>(url);
 }
 
-/** Probes metadata using the selected registry key, without claiming generation success. */
-export async function testGeminiKey(keyId: string): Promise<KeyVerifyResponse> {
+/** Explicitly probes the selected provider key; generation probes may consume credits. */
+export async function testProviderKey(keyId: string): Promise<KeyVerifyResponse> {
   return fetchJson<KeyVerifyResponse>('/admin/ai-studio/test-key', {
     method: 'POST',
     body: JSON.stringify({ keyId: keyIdSchema.parse(keyId) }),
   });
+}
+
+/** Legacy alias for callers migrating to provider-neutral diagnostics. */
+export const testGeminiKey = testProviderKey;
+
+/** Durable admission state and actual in-flight counts reported by Core. */
+export interface AiAdmission {
+  state: 'OPEN' | 'DRAINING' | 'VERIFYING';
+  version: number;
+  runningOperationCount: number;
+  pendingAttemptCount: number;
+}
+
+/** Reads admission state without starting a provider request. */
+export function fetchAiAdmission(): Promise<AiAdmission> {
+  return fetchJson('/admin/ai-studio/admission');
+}
+
+/** Changes admission only for the version the operator reviewed. */
+export function updateAiAdmission(state: AiAdmission['state'], expectedVersion: number): Promise<AiAdmission> {
+  return fetchJson('/admin/ai-studio/admission', { method: 'PUT',
+    body: JSON.stringify(admissionMutationSchema.parse({ state, expectedVersion })) });
 }
 
 /** Sends only the direct prompt entered by an admin using an explicitly selected key/model. */

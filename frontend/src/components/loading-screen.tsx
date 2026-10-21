@@ -1,56 +1,53 @@
-import React from 'react';
-import aiAvatar from '../assets/ai-avatar.png';
-import './loading-screen.css';
+import { useContext, useId, useLayoutEffect } from 'react';
+import { LoadingRequestContext } from './loading-screen-context';
+import { LoadingScreenView } from './loading-screen-view';
+import type { Dispatch } from 'react';
+import type { LoadingRequestAction, LoadingScreenDetails } from './loading-screen-context';
 
-interface LoadingScreenProps {
-  message?: string;
-  brandTitle?: string;
-  fullScreen?: boolean;
+/** Optional content and layout for a full-page or container loading screen. */
+export interface LoadingScreenProps {
+  readonly message?: string;
+  readonly brandTitle?: string;
+  readonly fullScreen?: boolean;
 }
 
-/**
- * Premium full-screen or container loading screen with 3D AI Emblem and smooth animations.
- */
-export const LoadingScreen: React.FC<LoadingScreenProps> = ({
+interface LoadingRequestProps extends LoadingScreenDetails {
+  readonly dispatch: Dispatch<LoadingRequestAction>;
+}
+
+function LoadingRequest({ dispatch, message, brandTitle }: LoadingRequestProps) {
+  const requestId = useId();
+  useLayoutEffect(() => {
+    dispatch({ type: 'register', requestId, details: { message, brandTitle } });
+    return () => dispatch({ type: 'unregister', requestId });
+  }, [dispatch, requestId, message, brandTitle]);
+  return null;
+}
+
+/** Shares full-page loading ownership, or renders directly outside a provider. */
+export function LoadingScreen({
   message = 'Đang tải thông tin Workspace...',
   brandTitle = 'UniChat AI Platform',
   fullScreen = true,
-}) => {
-  return (
-    <div className={`loading-screen ${fullScreen ? 'loading-screen--fullscreen' : ''}`}>
-      <div className="loading-screen__emblem-container">
-        <div className="loading-screen__ring--outer" />
-        <div className="loading-screen__ring" />
-        <img src={aiAvatar} alt="UniChat AI Logo" className="loading-screen__logo-img" />
-      </div>
+}: LoadingScreenProps) {
+  const dispatch = useContext(LoadingRequestContext);
+  if (fullScreen && dispatch) return <LoadingRequest dispatch={dispatch} message={message} brandTitle={brandTitle} />;
+  return <LoadingScreenView message={message} brandTitle={brandTitle} fullScreen={fullScreen} />;
+}
 
-      <div className="loading-screen__content">
-        <h2 className="loading-screen__brand">{brandTitle}</h2>
-        <p className="loading-screen__message">
-          <span>{message}</span>
-          <span className="loading-screen__dots">
-            <span className="loading-screen__dot" />
-            <span className="loading-screen__dot" />
-            <span className="loading-screen__dot" />
-          </span>
-        </p>
-      </div>
-    </div>
-  );
-};
-
-interface LoadingInlineProps {
-  label?: string;
+/** Accessible label for a lightweight section loader. */
+export interface LoadingInlineProps {
+  readonly label?: string;
 }
 
 /**
  * Lightweight inline section spinner for tabs and tables.
  */
-export const LoadingInline: React.FC<LoadingInlineProps> = ({ label = 'Đang tải dữ liệu...' }) => {
+export function LoadingInline({ label = 'Đang tải dữ liệu...' }: LoadingInlineProps) {
   return (
-    <div className="loading-inline">
-      <div className="loading-inline__spinner" />
+    <div className="loading-inline" role="status" aria-live="polite" aria-busy="true">
+      <div className="loading-inline__spinner" aria-hidden="true" />
       <span className="loading-inline__text">{label}</span>
     </div>
   );
-};
+}

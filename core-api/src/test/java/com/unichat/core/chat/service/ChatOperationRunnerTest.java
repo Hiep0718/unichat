@@ -54,4 +54,18 @@ class ChatOperationRunnerTest {
         runner.start(operation,true,(event,payload) -> { }).join();
         verifyNoInteractions(gateway);
     }
+    @Test void shouldFailOperationalProviderErrorWithoutAssistantSummaryFinalOrDone() {
+        var operation=ChatFixture.operation(true);
+        when(operations.checkpoint(operation.id())).thenReturn(operation);
+        when(gateway.answer(eq(operation),anyMap(),eq(true),any())).thenThrow(new ChatOperationError(
+                "PROVIDER_HTTP_429",org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE,"safe"));
+        when(operations.status(any(),any(),any())).thenReturn(new ChatOperationResponse(
+                operation.id(),"FAILED",operation.conversationId(),null,"PROVIDER_HTTP_429"));
+        var events=new ArrayList<String>();
+        var result=runner.start(operation,true,(event,payload) -> events.add(event)).join();
+        assertEquals("FAILED",result.state()); assertTrue(events.contains("error"));
+        assertFalse(events.contains("final")); assertFalse(events.contains("done"));
+        verify(operations).fail(operation,"PROVIDER_HTTP_429");
+        verify(operations,never()).complete(any(),any(),any(),any(),anyInt());
+    }
 }

@@ -38,7 +38,9 @@ def get_chroma_client() -> Any:
     # 2. Chroma Cloud mode
     cloud_api_key = os.getenv("CHROMA_CLOUD_API_KEY") or os.getenv("CHROMA_API_KEY", "")
     tenant = os.getenv("CHROMA_CLOUD_TENANT") or os.getenv("CHROMA_TENANT", "")
-    database = os.getenv("CHROMA_CLOUD_DATABASE") or os.getenv("CHROMA_DATABASE", "default_database")
+    database = os.getenv("CHROMA_CLOUD_DATABASE") or os.getenv(
+        "CHROMA_DATABASE", "default_database"
+    )
     host = os.getenv("CHROMA_HOST", "")
 
     if mode == "cloud" or cloud_api_key or "trychroma.com" in host:
@@ -49,8 +51,13 @@ def get_chroma_client() -> Any:
                     database=database,
                     api_key=cloud_api_key,
                 )
-            except Exception as e:
-                logger.error("Failed to connect to Chroma Cloud (tenant=%s, db=%s): %s", tenant, database, e)
+            except Exception as error:
+                logger.error(
+                    "Failed to connect to Chroma Cloud (tenant=%s, db=%s): %s",
+                    tenant,
+                    database,
+                    error,
+                )
 
     # 3. Local Self-hosted Server / Docker mode
     host = os.getenv("CHROMA_SERVER_HOST", "localhost")
@@ -59,12 +66,12 @@ def get_chroma_client() -> Any:
         client = chromadb.HttpClient(host=host, port=port)
         client.get_user_identity()
         return client
-    except Exception as e:
+    except Exception as error:
         logger.warning(
             "Could not connect to Chroma server at %s:%s (%s). Falling back to EphemeralClient.",
             host,
             port,
-            e,
+            error,
         )
         if _ephemeral_client is None:
             _ephemeral_client = chromadb.EphemeralClient()
@@ -89,8 +96,19 @@ def store_document_chunks(
     document_id: str,
     chunks: list[ChunkResult],
     target_collection: str | None = None,
+    ingestion_version: int = 1,
+    document_content_hash: str = "",
 ) -> int:
-    """Store document chunks into specified ChromaDB collection with enriched metadata (R-03, R-18, R-19)."""
+    """Store chunks in ChromaDB with enriched source metadata.
+
+    Args:
+        workspace_id: Owning workspace identifier.
+        document_id: Source document identifier.
+        chunks: Pre-chunked text segments with locator metadata.
+        target_collection: Override the default ChromaDB collection name.
+        ingestion_version: The document's current ingestion version integer from Core API.
+        document_content_hash: SHA-256 hex digest of the full document file.
+    """
     if not chunks:
         return 0
 
@@ -122,7 +140,8 @@ def store_document_chunks(
             "content_hash": chunk.content_hash,
             # R-03: Additional metadata fields for retrieval filter
             "document_status": "PROCESSED",
-            "ingestion_version": "v2.0",
+            "ingestion_version": ingestion_version,
+            "document_content_hash": document_content_hash,
             # R-19: source_group = document_id for P0
             "source_group": document_id,
         }

@@ -2,6 +2,7 @@ import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { Icon } from '../../components/icon';
 import { useAuth } from '../auth/auth-context';
 import './admin-shell.css';
+import './admin-page.css';
 
 interface AdminTab {
   readonly path: string;
@@ -11,7 +12,7 @@ interface AdminTab {
 }
 
 const ADMIN_TABS: readonly AdminTab[] = [
-  { path: '/admin/ai-studio', label: 'Giám sát Gemini API', icon: 'monitoring', isPulse: true },
+  { path: '/admin/ai-studio', label: 'Giám sát nhà cung cấp AI', icon: 'monitoring', isPulse: true },
   { path: '/admin/users', label: 'Người dùng & Phân quyền', icon: 'manage_accounts' },
   { path: '/admin/metrics', label: 'Số liệu đăng nhập & Chat AI', icon: 'analytics' },
   { path: '/admin/audit-logs', label: 'Nhật ký Kiểm toán', icon: 'security' },

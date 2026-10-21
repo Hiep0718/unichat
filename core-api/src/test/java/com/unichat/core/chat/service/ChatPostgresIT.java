@@ -17,6 +17,10 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import tools.jackson.databind.ObjectMapper;
 import com.unichat.core.admin.service.AuditService;
+import com.unichat.core.admin.service.AiAdmissionService;
+import com.unichat.core.admin.service.AiAdmissionRepository;
+import com.unichat.core.admin.service.AiMaintenanceError;
+import com.unichat.core.admin.api.AiAdmissionRequest;
 import com.unichat.core.chat.api.AskQuestionRequest;
 import com.unichat.core.chat.api.QuestionResponse;
 import com.unichat.core.chat.domain.ChatOperation;
@@ -40,10 +44,13 @@ class ChatPostgresIT {
     ChatOperationRepository operations;
     ChatAccessService access;
     AuditService audit;
+    AiAdmissionService admission;
+    RateLimitService limits;
     @BeforeAll static void initialize() {
         var source=PostgresFixture.migrate(POSTGRES); database=new JdbcTemplate(source); manager=new DataSourceTransactionManager(source);
     }
     @BeforeEach void arrange() {
+        database.update("UPDATE ai_generation_control SET state='OPEN',version=0,updated_by=NULL WHERE id=1");
         actor=new ChatActor(UUID.randomUUID(),UUID.randomUUID(),0); workspace=UUID.randomUUID();
         database.update("INSERT INTO users(id,email,password_hash,system_role,status,display_name) VALUES(?,?,'unused','USER','ACTIVE','Người dùng')",actor.userId(),actor.userId()+"@example.com");
         database.update("INSERT INTO workspaces(id,owner_id,name,visibility,cloud_allowed) VALUES(?,?,'Nguồn fixture','PRIVATE',true)",workspace,actor.userId());
@@ -52,8 +59,9 @@ class ChatPostgresIT {
         when(access.read(actor,workspace)).thenReturn(sources);
         var json=new ChatJson(new ObjectMapper()); var conversations=new ChatConversationStore(database);
         operations=new ChatOperationRepository(database,json);
+        admission=new AiAdmissionService(new AiAdmissionRepository(database),audit); limits=mock(RateLimitService.class);
         service=new ChatOperationService(operations,conversations,new ChatMessageStore(database,json,conversations),access,json,
-                mock(RateLimitService.class),audit,Clock.systemUTC(),manager);
+                limits,audit,Clock.systemUTC(),manager,admission);
     }
     @Test void shouldReserveOneConversationAndTurnAcrossConcurrentSameKeyRetries() throws Exception {
         UUID key=UUID.randomUUID(); CyclicBarrier barrier=new CyclicBarrier(2);
@@ -96,6 +104,49 @@ class ChatPostgresIT {
         database.update("UPDATE chat_operations SET lease_until=now()-interval '1 second' WHERE id=?",operation.id());
         service.cleanupLeases();
         assertEquals("FAILED",operations.findById(operation.id()).orElseThrow().state()); assertEquals(0,operations.running(actor.userId()));
+    }
+    @Test void shouldReplayAcceptedTurnDuringDrainWithoutMessagesOrQuotaAndPermitCancellation() {
+        UUID key=UUID.randomUUID(); var original=service.reserve(actor,workspace,question(null),key,"request");
+        database.update("UPDATE ai_generation_control SET state='DRAINING',version=1 WHERE id=1");
+        clearInvocations(limits);
+        var replay=service.reserve(actor,workspace,question(null),key,"retry");
+        assertFalse(replay.created()); assertEquals(original.operation().id(),replay.operation().id());
+        assertThrows(AiMaintenanceError.class,() -> service.reserve(actor,workspace,question(null),UUID.randomUUID(),"new"));
+        assertEquals(1,count("SELECT count(*) FROM conversations WHERE user_id=?",actor.userId()));
+        assertEquals(1,count("SELECT count(*) FROM messages WHERE conversation_id=?",original.operation().conversationId()));
+        verifyNoInteractions(limits);
+        assertEquals("CANCELLED",service.cancel(actor,workspace,original.operation().id()).state());
+    }
+    @Test void shouldBlockReservationBehindDrainCommitBeforeAnyUserWrites() throws Exception {
+        var locked=new java.util.concurrent.CountDownLatch(1); var release=new java.util.concurrent.CountDownLatch(1);
+        var executor=Executors.newFixedThreadPool(2);
+        try {
+            var drain=executor.submit(() -> new org.springframework.transaction.support.TransactionTemplate(manager)
+                    .executeWithoutResult(status -> {
+                        admission.update(actor.userId(),new AiAdmissionRequest("DRAINING",0L)); locked.countDown(); await(release);
+                    }));
+            assertTrue(locked.await(5,java.util.concurrent.TimeUnit.SECONDS));
+            var reservation=executor.submit(() -> assertThrows(AiMaintenanceError.class,
+                    () -> service.reserve(actor,workspace,question(null),UUID.randomUUID(),"new")));
+            awaitBlockedGate(); release.countDown(); drain.get(10,java.util.concurrent.TimeUnit.SECONDS);
+            reservation.get(10,java.util.concurrent.TimeUnit.SECONDS);
+            assertEquals(0,count("SELECT count(*) FROM conversations WHERE user_id=?",actor.userId()));
+            assertEquals(0,count("SELECT count(*) FROM chat_operations WHERE actor_id=?",actor.userId())); verifyNoInteractions(limits);
+        } finally { release.countDown(); executor.shutdownNow(); }
+    }
+    private void awaitBlockedGate() throws InterruptedException {
+        long deadline=System.nanoTime()+java.util.concurrent.TimeUnit.SECONDS.toNanos(5);
+        while (System.nanoTime()<deadline) {
+            long waiting=database.queryForObject("SELECT count(*) FROM pg_stat_activity WHERE wait_event_type='Lock' "
+                    + "AND query LIKE '%ai_generation_control%'",Long.class);
+            if (waiting>0) return;
+            Thread.sleep(20);
+        }
+        fail("Expected reservation to wait on the exclusive gate lock");
+    }
+    private static void await(java.util.concurrent.CountDownLatch latch) {
+        try { if (!latch.await(10,java.util.concurrent.TimeUnit.SECONDS)) throw new IllegalStateException("Test latch timeout"); }
+        catch (InterruptedException error) { Thread.currentThread().interrupt(); throw new IllegalStateException(error); }
     }
     private ChatOperation reserve() { return service.reserve(actor,workspace,question(null),UUID.randomUUID(),"request").operation(); }
     private AskQuestionRequest question(UUID conversation) { return new AskQuestionRequest("Câu hỏi fixture",conversation,false); }

@@ -3,6 +3,7 @@ package com.unichat.core.admin.service;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Map;
+import java.util.LinkedHashMap;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,10 +17,12 @@ import org.springframework.http.MediaType;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.unichat.core.shared.config.ServiceTokenIssuer;
+import com.unichat.core.chat.service.ChatProviderFailures;
 
 /** Signed private key/prompt calls; dependency failures never become synthetic success. */
 @Service
@@ -39,7 +42,7 @@ public class AdminAiStudioService {
     }
     /** Reads configured key/model metadata; file telemetry is not a dashboard source. */
     public Map<String, Object> getRegistry() { return call("/internal/v1/metrics/ai?days=1", HttpMethod.GET, null); }
-    /** Performs a selected-key metadata probe with truthful UNCONFIGURED/ERROR semantics. */
+    /** Performs the provider-selected probe with truthful UNCONFIGURED/ERROR semantics. */
     public Map<String, Object> verifyKey(String keyId) {
         return call("/internal/v1/metrics/ai/verify-key", HttpMethod.POST, Map.of("keyId", keyId));
     }
@@ -55,11 +58,40 @@ public class AdminAiStudioService {
         HttpHeaders headers = headers(method, uri, body, requestId);
         try {
             var response = client.exchange(uri, method, new HttpEntity<>(body, headers), MAP_TYPE);
-            return response.getBody() == null ? Map.of("status", "ERROR", "code", "EMPTY_PROVIDER_RESPONSE") : response.getBody();
+            return response.getBody() == null ? Map.of("status", "ERROR", "code", "PROVIDER_UNAVAILABLE") : safe(response.getBody());
+        } catch (RestClientResponseException error) {
+            String code = privateFailureCode(error);
+            if ("AI_MAINTENANCE".equals(code)) throw new AiMaintenanceError();
+            return unavailable(code, path, requestId, error);
         } catch (RestClientException error) {
-            LOGGER.warn("admin_ai_dependency_failed operation={} requestId={} errorType={}", path, requestId, error.getClass().getSimpleName());
-            return Map.of("status", "UNAVAILABLE", "code", "PROVIDER_UNAVAILABLE", "message", "Dịch vụ AI hiện không khả dụng.");
+            return unavailable("PROVIDER_UNAVAILABLE", path, requestId, error);
         }
+    }
+    private String privateFailureCode(RestClientResponseException error) {
+        if (error.getStatusCode().value() != 503 || error.getResponseBodyAsByteArray().length > 8192)
+            return "PROVIDER_UNAVAILABLE";
+        try {
+            Map<String, Object> payload = mapper.readValue(error.getResponseBodyAsByteArray(),
+                    new com.fasterxml.jackson.core.type.TypeReference<>() { });
+            return ChatProviderFailures.code(payload);
+        } catch (java.io.IOException failure) { return "PROVIDER_UNAVAILABLE"; }
+    }
+    private Map<String, Object> unavailable(String code, String path, String requestId, RestClientException error) {
+        LOGGER.warn("admin_ai_dependency_failed operation={} requestId={} errorType={}", path, requestId, error.getClass().getSimpleName());
+        return Map.of("status", "UNAVAILABLE", "code", code, "message", "Dịch vụ AI hiện không khả dụng.");
+    }
+    private Map<String, Object> safe(Map<String, Object> response) {
+        Object status = response.get("status");
+        if (!"ERROR".equals(status) && !"UNAVAILABLE".equals(status) && !"UNCONFIGURED".equals(status)) return response;
+        String code = ChatProviderFailures.code(response);
+        if ("AI_MAINTENANCE".equals(code)) throw new AiMaintenanceError();
+        Map<String, Object> safe = new LinkedHashMap<>();
+        safe.put("status", response.get("status")); safe.put("code", code);
+        safe.put("message", "Dịch vụ AI chưa thể hoàn tất kiểm tra. Vui lòng thử lại sau.");
+        for (String name : java.util.List.of("keyId", "model", "provider", "probeType")) {
+            if (response.get(name) instanceof String value && value.length() <= 100) safe.put(name, value);
+        }
+        return safe;
     }
     private byte[] serialize(Object payload) {
         if (payload == null) return new byte[0];

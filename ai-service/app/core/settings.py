@@ -4,10 +4,12 @@ from functools import lru_cache
 from typing import Literal
 
 from pydantic import AnyHttpUrl, Field
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import SettingsConfigDict
+
+from app.core.provider_settings import ENV_FILES, ProviderSettings
 
 
-class Settings(BaseSettings):
+class Settings(ProviderSettings):
     """Environment-only AI Service configuration."""
 
     project_name: str = "UniChat AI Service"
@@ -53,8 +55,8 @@ class Settings(BaseSettings):
     )
 
     model_config = SettingsConfigDict(
-        env_file=("../.env", ".env"),
-        env_ignore_empty=True,
+        env_file=ENV_FILES,
+        env_ignore_empty=False,
         extra="ignore",
     )
 

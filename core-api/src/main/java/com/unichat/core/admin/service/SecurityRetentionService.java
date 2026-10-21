@@ -33,7 +33,8 @@ public class SecurityRetentionService {
         Instant now = Instant.now(clock);
         database.queryForObject("SELECT set_config('unichat.audit_retention_seconds',?,true)",
                 String.class, Long.toString(auditDays * 86400L));
-        database.update("DELETE FROM provider_attempts WHERE started_at<?", Timestamp.from(now.minus(metricsDays, ChronoUnit.DAYS)));
+        database.update("DELETE FROM provider_attempts WHERE started_at<? AND ended_at IS NOT NULL",
+                Timestamp.from(now.minus(metricsDays, ChronoUnit.DAYS)));
         database.update("DELETE FROM audit_events WHERE occurred_at<?", Timestamp.from(now.minus(auditDays, ChronoUnit.DAYS)));
     }
 }

@@ -132,14 +132,14 @@ def test_should_reject_unauthenticated_metrics_request() -> None:
     assert TestClient(application).get("/internal/v1/metrics/ai").status_code == 401
 
 
-@pytest.mark.parametrize("query", ["days=0", "days=91", "keyId=invalid/key", "model=bad/model"])
+@pytest.mark.parametrize("query", ["days=0", "days=91", "keyId=invalid/key", "model=bad@model"])
 def test_should_validate_diagnostic_filters(query: str) -> None:
     response = api_client(router).get("/internal/v1/metrics/ai?" + query)
     assert response.status_code == 422
 
 
 @pytest.mark.parametrize("body", [{"keyIndex": 1}, {"keyId": "bad/id"},
-                                 {"prompt": ""}, {"prompt": "x" * 1001}])
+                                 {"prompt": ""}, {"prompt": "x" * 2001}])
 def test_should_validate_key_and_prompt_dtos(body: dict[str, Any]) -> None:
     route = "quick-prompt" if "prompt" in body else "verify-key"
     response = api_client(router).post("/internal/v1/metrics/ai/" + route, json=body)

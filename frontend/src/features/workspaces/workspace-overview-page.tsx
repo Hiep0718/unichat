@@ -65,7 +65,7 @@ export function WorkspaceOverviewPage() {
             <span className="material-symbols-outlined">auto_awesome</span>
           </div>
           <div className="ws-overview-stat-card__info">
-            <span className="ws-overview-stat-card__value">Gemini 3.5 Flash</span>
+            <span className="ws-overview-stat-card__value">Adaptive RAG</span>
             <span className="ws-overview-stat-card__label">Engine RAG AI</span>
           </div>
         </div>

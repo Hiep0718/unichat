@@ -52,4 +52,4 @@ def test_should_return_safe_dependency_failure() -> None:
         response = client.post("/internal/v1/retrieval/answers", json=payload())
     assert response.status_code == 503
     assert "secret" not in response.text
-    assert response.json()["detail"] == "RETRIEVAL_UNAVAILABLE"
+    assert response.json()["errorCode"] == "RETRIEVAL_UNAVAILABLE"

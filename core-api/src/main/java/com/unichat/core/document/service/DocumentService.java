@@ -228,7 +228,8 @@ public class DocumentService {
             }
 
             ingestionProducer.sendIngestionMessage(new DocumentIngestionMessage(
-                    documentId, workspaceId, storageKey, mediaType, originalName, requestId
+                    documentId, workspaceId, storageKey, mediaType, originalName, requestId,
+                    document.getIngestionVersion(), sha256
             ));
 
             responses.add(new IngestionJobResponse(documentId, jobId, DocumentStatus.PENDING, "Tải lên thành công. Đang bóc tách tri thức."));
@@ -310,7 +311,9 @@ public class DocumentService {
                 document.getStorageKey(),
                 document.getMediaType(),
                 document.getOriginalName(),
-                requestId
+                requestId,
+                document.getIngestionVersion(),
+                document.getSha256()
         ));
 
         log.info("Approved contributed document {} in workspace {}", documentId, workspaceId);
