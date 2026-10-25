@@ -135,7 +135,7 @@
           <mxGeometry x="1040" y="200" width="220" height="120" as="geometry" />
         </mxCell>
 
-        <mxCell id="ai7" value="LLM Generator&#xa;(Gemini 3.5 Flash primary)&#xa;&#xa;Input: câu hỏi chuẩn hóa&#xa;+ chunks có quyền&#xa;+ metadata locator" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="swim-ai">
+        <mxCell id="ai7" value="LLM Generator&#xa;(Hive DeepSeek V4.1 Flash)&#xa;&#xa;Input: câu hỏi chuẩn hóa&#xa;+ chunks có quyền&#xa;+ metadata locator" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="swim-ai">
           <mxGeometry x="1310" y="45" width="220" height="130" as="geometry" />
         </mxCell>
 
@@ -184,13 +184,8 @@
         <mxCell id="eai5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=blockThin;endFill=1;" edge="1" parent="swim-ai" source="ai5" target="ai6">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="eai6_answer" value="ANSWER&#xa;(score ≥ gate)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=blockThin;endFill=1;strokeColor=#82b366;" edge="1" parent="swim-ai" source="ai6" target="ai7">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="1290" y="260" />
-              <mxPoint x="1290" y="110" />
-            </Array>
-          </mxGeometry>
+        <mxCell id="eai6_answer" value="ANSWER&#xa;(score ≥ gate)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=blockThin;endFill=1;strokeColor=#82b366;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.75;entryDx=0;entryDy=0;" edge="1" parent="swim-ai" source="ai6" target="ai7">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="eai6_refuse" value="REFUSE&#xa;(score &lt; gate)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=blockThin;endFill=1;strokeColor=#b85450;dashed=1;" edge="1" parent="swim-ai" source="ai6" target="ai_refuse">
           <mxGeometry relative="1" as="geometry" />
@@ -219,11 +214,11 @@
           <mxGeometry x="950" y="50" width="200" height="80" as="geometry" />
         </mxCell>
 
-        <mxCell id="d4" value="Gemini 3.5 Flash&#xa;(Primary provider)" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="swim-data">
+        <mxCell id="d4" value="Hive DeepSeek V4.1 Flash&#xa;(Provider đang cấu hình)" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="swim-data">
           <mxGeometry x="1250" y="50" width="180" height="80" as="geometry" />
         </mxCell>
 
-        <mxCell id="d5" value="Ollama 0.31.2&#xa;(Fallback: timeout/429/5xx)" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="swim-data">
+        <mxCell id="d5" value="Gemini&#xa;(manual rollback; không automatic fallback)" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="swim-data">
           <mxGeometry x="1510" y="50" width="190" height="80" as="geometry" />
         </mxCell>
 
