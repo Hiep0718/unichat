@@ -11,6 +11,7 @@ import { splitPdfFile } from '../utils/pdf-splitter';
 import { ContributionModal } from './contribution-modal';
 import { PdfSplitModal } from './pdf-split-modal';
 import { SyncVectorModal } from './sync-vector-modal';
+import { DocumentDeleteModal } from './document-delete-modal';
 import { LoadingInline } from '../../../components/loading-screen';
 import './document-table.css';
 
@@ -60,6 +61,9 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({
   const [notificationToast, setNotificationToast] = useState<NotificationToast | null>(null);
   // Files waiting for the contributor to describe them before upload starts.
   const [pendingContribution, setPendingContribution] = useState<File[] | null>(null);
+  const [documentToDelete, setDocumentToDelete] = useState<DocumentResponse | null>(null);
+  const [deletingDocumentId, setDeletingDocumentId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -87,7 +91,6 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const loadDocuments = useCallback(async () => {
-    setLoading(true);
     try {
       const res = await fetchWorkspaceDocuments(workspaceId);
       setDocuments(res.content || []);
@@ -316,14 +319,35 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({
     setIsSyncModalOpen(true);
   };
 
-  const handleDelete = async (documentId: string) => {
-    if (!confirm('Bạn có chắc muốn xóa tài liệu này?')) return;
+  const handleDelete = (doc: DocumentResponse) => {
+    setDeleteError(null);
+    setDocumentToDelete(doc);
+  };
+
+  const confirmDelete = async () => {
+    if (!documentToDelete || deletingDocumentId) return;
+    const selectedDocument = documentToDelete;
+    setDeletingDocumentId(selectedDocument.id);
+    setDeleteError(null);
     try {
-      await deleteWorkspaceDocument(workspaceId, documentId);
+      await deleteWorkspaceDocument(workspaceId, selectedDocument.id);
+    } catch (err: unknown) {
+      setDeleteError(err instanceof Error ? err.message : 'Không thể xóa tài liệu');
+      setDeletingDocumentId(null);
+      return;
+    }
+    setDocuments((current) => current.filter((doc) => doc.id !== selectedDocument.id));
+    setDocumentToDelete(null);
+    setDeletingDocumentId(null);
+    try {
       const updated = await fetchWorkspaceDocuments(workspaceId);
       setDocuments(updated.content || []);
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Không thể xóa tài liệu');
+      setError(
+        err instanceof Error
+          ? `Đã gửi yêu cầu xóa nhưng không thể tải lại danh sách: ${err.message}`
+          : 'Đã gửi yêu cầu xóa nhưng không thể tải lại danh sách.'
+      );
     }
   };
 
@@ -366,6 +390,21 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({
             setSplitProgressText(null);
             if (fileInputRef.current) fileInputRef.current.value = '';
           }}
+        />
+      )}
+
+      {documentToDelete && (
+        <DocumentDeleteModal
+          key={documentToDelete.id}
+          documentName={documentToDelete.originalName}
+          isDeleting={deletingDocumentId === documentToDelete.id}
+          error={deleteError}
+          onCancel={() => {
+            if (deletingDocumentId) return;
+            setDocumentToDelete(null);
+            setDeleteError(null);
+          }}
+          onConfirm={() => void confirmDelete()}
         />
       )}
 
@@ -518,7 +557,12 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({
                 </td>
                 {canEdit && (
                   <td>
-                    <button className="document-delete-btn" onClick={() => handleDelete(doc.id)}>
+                    <button
+                      type="button"
+                      className="document-delete-btn"
+                      onClick={() => handleDelete(doc)}
+                      disabled={deletingDocumentId !== null}
+                    >
                       Xóa
                     </button>
                   </td>
