@@ -83,6 +83,8 @@ function MessageActions({ message, onSaveNote, onAskCommunity }: Pick<MessagePro
 /** Displays provisional labels, canonical sources and actions only for readable final answers. */
 export function ChatMessageItem({ message, onSelectCitation, onSaveNote, onAskCommunity }: MessageProps) {
   const isThinking = message.role === 'ASSISTANT' && message.isStreaming && !message.content && !message.response;
+  const isEmptyAssistantFailure = message.role === 'ASSISTANT' && !message.isStreaming && !message.content && !message.response;
+  if (isEmptyAssistantFailure) return null;
 
   return <article className={`chat-msg chat-msg--${message.role.toLowerCase()}`} data-msg-id={message.id}>
     <div className="chat-msg__avatar" aria-hidden="true">{message.role === 'USER'

@@ -87,4 +87,11 @@ describe('ChatMessageItem', () => {
     expect(container.querySelector('.chat-msg__thinking-dots')).toBeInTheDocument();
     expect(screen.getByText('UniChat AI đang suy nghĩ…')).toBeInTheDocument();
   });
+
+  it('should not render a ghost bubble after an assistant request fails', () => {
+    const message: MessageItem = { id: 'assistant-failed', role: 'ASSISTANT', content: '', isStreaming: false };
+    const { container } = render(<ChatMessageItem message={message} />);
+
+    expect(container).toBeEmptyDOMElement();
+  });
 });

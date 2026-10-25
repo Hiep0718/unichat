@@ -23,10 +23,22 @@ export function CitationDrawer({ workspaceId, citation, onClose }: CitationDrawe
       <span className="citation-drawer__badge">{citation.locator || 'Chưa có vị trí nguồn'}</span>
       <span className="citation-drawer__badge">Trích dẫn đã kiểm tra</span>
     </div><div className="citation-drawer__header-actions">
-      <button type="button" onClick={() => { setViewMode('READER'); excerptRef.current?.scrollIntoView({ block: 'center' }); }}>Trích đoạn</button>
-      {viewerUrl && <button type="button" onClick={() => setViewMode(viewMode === 'PDF' ? 'READER' : 'PDF')}>Xem PDF</button>}
-      {blobUrl && <a href={blobUrl} download={citation.fileName}>Tải tài liệu</a>}
-      <button type="button" onClick={onClose} aria-label="Đóng trích dẫn">Đóng</button>
+      <button className="citation-drawer__action-btn" type="button" onClick={() => { setViewMode('READER'); excerptRef.current?.scrollIntoView({ block: 'center' }); }}>
+        <span className="material-symbols-outlined" aria-hidden="true">format_quote</span>
+        <span>Trích đoạn</span>
+      </button>
+      {viewerUrl && <button className="citation-drawer__action-btn" type="button" onClick={() => setViewMode(viewMode === 'PDF' ? 'READER' : 'PDF')}>
+        <span className="material-symbols-outlined" aria-hidden="true">picture_as_pdf</span>
+        <span>Xem PDF</span>
+      </button>}
+      {blobUrl && <a className="citation-drawer__action-btn" href={blobUrl} download={citation.fileName}>
+        <span className="material-symbols-outlined" aria-hidden="true">download</span>
+        <span>Tải tài liệu</span>
+      </a>}
+      <button className="citation-drawer__close-btn" type="button" onClick={onClose} aria-label="Đóng trích dẫn">
+        <span className="material-symbols-outlined" aria-hidden="true">close</span>
+        <span>Đóng</span>
+      </button>
     </div></div>
     <div className="citation-drawer__body">
       {fileLoading && <p role="status">Đang kiểm tra quyền và tải tài liệu…</p>}

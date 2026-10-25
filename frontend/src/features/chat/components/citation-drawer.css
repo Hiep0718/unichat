@@ -93,7 +93,7 @@
 .citation-drawer__header-actions {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   flex-shrink: 0;
 }
 
@@ -102,26 +102,40 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
+  gap: 5px;
+  min-height: 30px;
+  padding: 4px 8px;
   border-radius: var(--radius-md, 6px);
-  border: 1px solid transparent;
-  background: transparent;
-  color: var(--color-on-surface-variant, #64748b);
+  border: 1px solid var(--color-outline-variant, #cbd5e1);
+  background: var(--color-surface-container-lowest, #ffffff);
+  color: var(--color-on-surface, #334155);
   cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  white-space: nowrap;
   transition: all var(--transition-fast, 0.15s ease);
 }
 
 .citation-drawer__action-btn:hover,
 .citation-drawer__close-btn:hover {
-  background: var(--color-surface-container, #e2e8f0);
-  color: var(--color-on-surface, #0f172a);
-  border-color: var(--color-outline-variant, #cbd5e1);
+  background: var(--color-secondary-fixed, #e0f2fe);
+  color: var(--color-on-secondary-fixed, #075985);
+  border-color: var(--color-secondary, #0284c7);
+}
+
+.citation-drawer__action-btn:focus-visible,
+.citation-drawer__close-btn:focus-visible {
+  outline: 2px solid var(--color-primary, #00687a);
+  outline-offset: 2px;
 }
 
 .citation-drawer__action-btn .material-symbols-outlined,
 .citation-drawer__close-btn .material-symbols-outlined {
-  font-size: 18px;
+  font-size: 15px;
+  line-height: 1;
 }
 
 /* ── Content Body — Takes all remaining space ── */
