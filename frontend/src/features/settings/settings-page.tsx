@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import { MemberTable } from '../members/components/member-table';
 import { useWorkspace } from '../workspaces/workspace-context';
@@ -8,6 +9,7 @@ import { GeneralForm } from './general-form';
 import { PrivacyForm } from './privacy-form';
 
 import './settings.css';
+import './settings-page.css';
 
 type SettingsTab = 'general' | 'access' | 'privacy' | 'danger';
 const TABS: readonly { value: SettingsTab; label: string; ownerOnly: boolean }[] = [
@@ -20,32 +22,40 @@ const TABS: readonly { value: SettingsTab; label: string; ownerOnly: boolean }[]
 /** Displays workspace settings with owner-controlled AI processing consent. */
 export function WorkspaceSettingsPage() {
   const { workspace, isOwner, canEdit } = useWorkspace();
-  const [activeTab, setActiveTab] = useState<SettingsTab>('general');
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState<SettingsTab>(
+    searchParams.get('tab') === 'privacy' ? 'privacy' : 'general'
+  );
   if (!workspace) return null;
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '1000px', margin: '0 auto' }}>
-      <header style={{ marginBottom: '1.5rem' }}>
-        <h1>Cài đặt Workspace — {workspace.name}</h1>
-        <p>Cấu hình thông tin, quyền truy cập thành viên và tùy chọn bảo mật.</p>
+    <main className="settings-page">
+      <header className="settings-page__header">
+        <p className="settings-page__eyebrow">Quản trị Workspace</p>
+        <h1 className="settings-page__title">Cài đặt Workspace — {workspace.name}</h1>
+        <p className="settings-page__subtitle">Cấu hình thông tin, quyền truy cập thành viên và tùy chọn bảo mật.</p>
       </header>
-      <div role="tablist" aria-label="Cài đặt Workspace" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '2rem' }}>
+      <div className="settings-page__tabs" role="tablist" aria-label="Cài đặt Workspace">
         {TABS.filter((tab) => !tab.ownerOnly || isOwner).map((tab) => (
-          <button key={tab.value} role="tab" type="button" aria-selected={activeTab === tab.value}
+          <button className="settings-page__tab" key={tab.value} role="tab" type="button"
+            id={`settings-tab-${tab.value}`} aria-controls="settings-panel" aria-selected={activeTab === tab.value}
             onClick={() => setActiveTab(tab.value)}>{tab.label}</button>
         ))}
       </div>
-      {activeTab === 'general' && <GeneralForm key={workspace.id} workspace={workspace} canEdit={canEdit} />}
-      {activeTab === 'access' && isOwner && <div className="settings-tab">
-        <AccessForm key={workspace.id} workspace={workspace} />
-        <section className="settings-section">
-          <h3>Danh sách Thành viên</h3>
-          <MemberTable workspaceId={workspace.id} isOwner={isOwner} />
-        </section>
-      </div>}
-      {activeTab === 'privacy' && <PrivacyForm key={workspace.id} workspace={workspace} isOwner={isOwner} />}
-      {activeTab === 'danger' && isOwner && <DangerZone key={workspace.id} workspace={workspace} />}
-    </div>
+      <div className="settings-page__panel" id="settings-panel" role="tabpanel"
+        aria-labelledby={`settings-tab-${activeTab}`}>
+        {activeTab === 'general' && <GeneralForm key={workspace.id} workspace={workspace} canEdit={canEdit} />}
+        {activeTab === 'access' && isOwner && <div className="settings-tab">
+          <AccessForm key={workspace.id} workspace={workspace} />
+          <section className="settings-section">
+            <h3 className="settings-section__title">Danh sách Thành viên</h3>
+            <MemberTable workspaceId={workspace.id} isOwner={isOwner} />
+          </section>
+        </div>}
+        {activeTab === 'privacy' && <PrivacyForm key={workspace.id} workspace={workspace} isOwner={isOwner} />}
+        {activeTab === 'danger' && isOwner && <DangerZone key={workspace.id} workspace={workspace} />}
+      </div>
+    </main>
   );
 }
 
