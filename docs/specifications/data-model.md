@@ -69,7 +69,7 @@
 
 Collection: unichat_chunks_v2 (v1 fallback), distance cosine, embedding dimension 768.
 
-Mỗi record có chunkId, workspaceId, documentId, ingestionVersion, chunkIndex, sourceGroup, locatorType, locatorValue, contentHash, extractorVersion và normalized text. Query luôn có allowedDocumentIds; không dùng Chroma làm nguồn quyền.
+Mỗi record có chunkId, workspaceId, documentId, ingestionVersion, chunkIndex, `chunking_version`, sourceGroup, locatorType, locatorValue, contentHash, extractorVersion và normalized text. Query luôn có allowedDocumentIds; không dùng Chroma làm nguồn quyền. Heading có thể được đưa vào embedding để tăng ngữ cảnh nhưng không được thêm vào nội dung chunk dùng làm citation.
 
 Embedding model: intfloat/multilingual-e5-base revision d128750597153bb5987e10b1c3493a34e5a4502a. Query thêm prefix query:, chunk thêm prefix passage:.
 

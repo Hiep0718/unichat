@@ -1,5 +1,25 @@
 # Decisions Log
 
+## 2026-10-25 - Increase Supabase upload timeout to 60 seconds
+
+- Decision: Set the per-request Supabase Storage upload timeout to 60 seconds, as explicitly requested. Keep the shared 30-second timeout for connection establishment, retrieval, and deletion unchanged.
+- Rationale: Repeated upload logs show request timeouts at 30 seconds; allowing up to 60 seconds may accommodate slow Storage responses, though it cannot fix a stalled or unreachable connection.
+- Verification: Added a focused test asserting the upload timeout value; successful live upload remains unverified until the user retries.
+
+## 2026-10-25 - Pin Supabase Storage transport to HTTP/1.1
+
+- Decision: Configure the Supabase Storage HTTP client to use HTTP/1.1 and only mark its worker thread interrupted when the call actually throws `InterruptedException`.
+- Evidence: Repeated document uploads timed out at 30 seconds; a prior upload reported `RST_STREAM received` from Java's HTTP/2 implementation. Successful Storage health/probe requests do not exercise upload POST behavior.
+- Scope: This is a targeted transport-compatibility mitigation, not proof that the Supabase service caused the failure. The failed batch log shows earlier files ingested successfully and a later file failed before RabbitMQ/Chroma ingestion.
+- Verification: Unit test asserts the Storage client is configured for HTTP/1.1; successful live upload still requires user retry.
+
+## 2026-10-25 - Keep document list visible during ingestion polling
+
+- Decision: Background document-status polling must update the document list without setting the page-level initial loading state.
+- Root cause: The five-second poll called `loadDocuments()`, which set `loading=true`; `DocumentTable` then returned only `LoadingInline`, temporarily unmounting the whole table and making polling look like a page refresh.
+- Change: Keep `loading` for the initial request only; background polling retains the current UI while it fetches status updates.
+- Verification: Added a component test that holds a poll request open and asserts the existing document row remains visible.
+
 ## 2026-10-21 - Hotfix: SOURCE_VERSION_INVALID — Ingestion Metadata Mismatch
 
 - Decision: Fix the `SOURCE_VERSION_INVALID` refusal in RAG chat by propagating the document's integer `ingestionVersion` and `sha256` content hash from Core API through RabbitMQ to AI Service's ChromaDB metadata storage.
@@ -1273,3 +1293,195 @@
 - Verification repair: Add strict test-fixture typing for partial workspace updates and annotate the offline socket guard without weakening TypeScript or mypy strictness.
 - Verification: Frontend lint/typecheck/build passed, Vitest passed 215/215 and Playwright Chromium passed 13/13; Mobile lint/typecheck passed and Jest passed 94/94; AI scoped Ruff and full strict mypy passed with pytest 322/322; Core Maven tests passed 331/331. Final diff and secret-pattern checks passed with no live environment file staged.
 - Boundary: Validate only the tracked and intended untracked source set, stage explicit paths after approval, and run a secret-pattern scan before any push. Do not include generated test artifacts or live environment files.
+
+## 2026-10-21 — Direct-message read receipt V46 repair
+
+- Evidence: Shared read-only inspection showed successful Flyway history through V45 and confirmed that `public.direct_messages` no longer contains `read_at`; V45 is recorded as the migration that removed the column.
+- Decision: Add V46 as a new forward-only migration containing only `ADD COLUMN IF NOT EXISTS read_at TIMESTAMPTZ`. Keep V38, V45, and Flyway history immutable; do not add a default or backfill.
+- Test decision: Retarget the isolated PostgreSQL suite from a V37/V38 boundary to a V45/V46 boundary while preserving its row, receipt, idempotency, Hibernate validation, fresh-chain, and incompatible-type checks.
+- Boundary: Prepare and verify source only. Do not apply V46 to any database, start services, install dependencies, or perform Git delivery.
+
+## 2026-10-21 — Citation drawer action styles
+
+- Evidence: The excerpt, PDF, download, and close controls in `citation-drawer.tsx` did not have the action classes styled by `citation-drawer.css`, so the browser rendered native button styles.
+- Decision: Attach the existing drawer action/close classes and style them as compact text controls with visible borders and keyboard focus indicators.
+- Verification: Run the frontend production build and ESLint on the changed component.
+- Boundary: Keep this visual hotfix limited to the citation drawer; do not alter adjacent user changes, environment files, or perform Git delivery.
+
+## 2026-10-21 — Compact citation drawer toolbar
+
+- Evidence: Screenshot shows the inline citation drawer's action row extending into the document preview because the base 480px drawer header is rendered inside the 360px Studio panel.
+- Decision: In the inline Studio view, stack citation metadata and a wrapping action toolbar in normal document flow. Add compact action icons while retaining text labels and accessible names.
+- Verification: Run the frontend production build and ESLint for the changed TSX component.
+- Boundary: Keep changes limited to citation drawer presentation and its inline Studio adaptation; do not touch unrelated work or perform Git delivery.
+
+## 2026-10-21 — Require distinct expanded-knowledge section
+
+- User decision: Expanded mode must always add a separate general-knowledge section from the model, clearly labeled and without web search.
+- Evidence: The UI boolean was passed through Core and AI Service, but the prompt only said the model could add an EXTERNAL section and validation allowed it to omit that section.
+- Decision: Require an EXTERNAL section alongside cited DOCUMENT evidence in expanded mode; retry once with a targeted instruction if omitted, then fail validation rather than silently return a strict-looking answer. Preserve the evidence gate and prohibit external knowledge from filling evidence gaps.
+- Documentation: Clarify strict/expanded behavior in the adaptive retrieval specification; no external network or database changes.
+- Verification: Run focused offline AI-service tests for prompt instructions, section validation, and retry behavior.
+- Boundary: Do not modify environment files, make provider calls, alter authorization policy, or perform Git delivery.
+
+## 2026-10-24 — Thesis dossier as-built synchronization
+
+- Authorization: The user approved implementation of the thesis-document update plan. The scope is limited to `docs/thesis` plus this audit record; no source, API, database, dependency, Git delivery or runtime-service change is authorized.
+- Baseline: Use committed snapshot `ff0cf3e` as the source of truth together with migrations, contracts, specifications and existing test evidence. Do not infer shipped behavior from unrelated uncommitted working-tree changes.
+- Content decision: Mark web, Expo mobile, community, direct work chat, Studio Notes, SSE streaming, RabbitMQ ingestion, citations/history and admin AI controls as implemented where source/evidence exists. Keep OCR, LMS, voice and mindmap/diagram generation as roadmap unless evidence exists. State that Hive/DeepSeek V4.1 Flash is configured and Gemini is manual rollback only.
+- Architecture decision: Preserve Core API as the sole authorization authority. Documentation states that the AI Service receives allowed document identifiers, and that storage is a Local/Supabase adapter rather than an asserted live provider.
+- Boundary: `bao-cao-do-an-tot-nghiep-unichat-chuong-1-3-hoan-thien.docx` was locked by Word (`~$` lock file) and therefore was not overwritten. `final_PROJECT_grading-factor.docx` remains unchanged because it is unrelated CAB-System reference material.
+- Verification: DOCX packages, XML and XLSX structure were checked; Workbook formula-error scan found zero matches; all Draw.io XML files passed structural validation, with pre-existing routing warnings retained in complex flow diagrams. Visual DOCX render QA is blocked because LibreOffice `soffice.exe` is not available in the execution environment.
+
+## 2026-10-24 — Draw.io review and product use case
+
+- User request: Re-audit the thesis diagrams and add a product-level use-case diagram.
+- Decision: Keep the existing P0 pipeline/workflow/ERD sources, correct the legacy Student/Teacher labels in the technical use-case page, and add `unichat-usecase-product.drawio` covering USER, workspace owner/moderator, ADMIN, Hive and the implemented product extensions.
+- Verification: All seven Draw.io sources pass structural validation with zero errors. The adaptive/chat/ingestion sources retain 13/2/3 visual routing warnings respectively; these do not indicate dangling IDs but should be waypoint-cleaned before print export.
+- Boundary: Draw.io CLI did not emit a verifiable PNG in this sandbox, so no stale PNG was overwritten. No code, API, database, dependency or Git delivery changes were made.
+
+## 2026-10-24 — Diagram routing cleanup
+
+- User request: Reduce overlapping arrows and crossings across the thesis diagrams.
+- Decision: Keep the existing content and identifiers, but replace problematic waypoints with orthogonal routes, explicit entry/exit ports and outer routing corridors for the adaptive retrieval, chat retrieval and document ingestion workflows.
+- Verification: All seven Draw.io sources now pass `validate.py --score` with zero errors, zero warnings, zero through-vertex routes, zero crossings and zero overlaps.
+- Boundary: Only Draw.io sources, the diagram review note and this decisions log were changed; no source code, API, database, dependency or Git delivery changes were made.
+
+## 2026-10-24 — Four remaining diagram presentation pass
+
+- User request: Apply the same presentation cleanup to the product use case, architecture/use-case, ERD and activity-flow files.
+- Decision: Preserve all domain content and identifiers; disable the editor grid for print readability, force white page backgrounds, and distribute connection ports on high-degree actor/hub nodes. The ERD remains a matrix layout so table relationships stay traceable without regenerating schema content.
+- Verification: The four files pass `validate.py --score` with zero errors, zero warnings, zero through-vertex routes, zero crossings and zero overlaps.
+- Boundary: No source code, API, database, dependency or Git delivery changes were made.
+
+## 2026-10-24 — Use case business-level simplification
+
+- User request: Use-case diagrams must show only relationships between users and the application plus business functions; remove technical flow detail.
+- Decision: Remove technical pipeline nodes, provider actors and `include/extend` flow relationships from the two use-case views. Retain technical detail in architecture, activity, workflow and retrieval-pipeline diagrams.
+- Verification: All seven Draw.io sources pass `validate.py --score` with zero errors, zero warnings, zero through-vertex routes, zero crossings and zero overlaps; no dangling edge endpoints remain in the architecture/use-case source.
+- Boundary: Only thesis Draw.io sources, the diagram review note and this decisions log were changed; no source code, API, database, dependency or Git delivery changes were made.
+
+## 2026-10-24 — Terminology and social-product alignment
+
+- User request: Synchronize user naming and make the social-network capabilities of UniChat visible in the thesis materials.
+- Decision: Use `Người dùng (USER)` as the authenticated end-user term; use `OWNER`, `EDITOR`, `VIEWER` for Workspace membership roles; use `Quản trị viên hệ thống (ADMIN)` for system administration. Keep Sinh viên/Giảng viên only as educational personas, not technical roles.
+- Product decision: Treat Bảng tin cộng đồng, đăng bài/đặt câu hỏi, bình luận/trả lời, reactions/bookmarks, notifications, unified search and 1-1 Work Chat as first-class business capabilities alongside AI knowledge retrieval.
+- Verification: Update both use-case diagrams, the thesis design notes and diagram review; re-run all Draw.io structural/readability checks. Seven selected DOCX packages pass OOXML/`python-docx` structural checks; bundled DOCX render QA is blocked because `soffice.exe` is unavailable in the workspace runtime.
+- Boundary: Documentation and diagram sources only; no source code, API, database, dependency or Git delivery changes were made.
+
+## 2026-10-24 — Retrieval and multimodal ingestion optimization plan
+
+- User request: Create a detailed plan to improve document chunking and retrieval for text PDFs, slide PDFs, diagrams/images, follow-up questions, and Vietnamese-English cross-language queries. User selected OCR plus diagram understanding.
+- Decision: Create a scoped standalone Phase 1 package under `.pipeline/retrieval-optimization/` rather than overwrite the existing project-wide requirements, task breakdown, questions, or active pipeline checkpoint.
+- Plan: Measure current ingestion/retrieval first; then specify provenance-aware PDF layout/OCR/diagram extraction, versioned chunking/indexing, contextual follow-up retrieval, cross-language evaluation, typed failure outcomes, evidence-gate calibration, and paired holdout validation.
+- Privacy decision: User selected local/private processing only; generated diagram descriptions are query hints, not answer evidence, and citations point to the original authorized page/figure.
+- User approval: Approved the exact requirements/task breakdown and selected a specialized added evaluation set while retaining the existing 120 cases, and freezing numeric thresholds after baseline but before tuning. Exact latency/storage budgets and numeric target values remain open.
+- Boundary: Planning artifacts only. No code, dependency, provider, database/vector, production document, re-ingestion, deployment, commit, or push action was performed or authorized. The existing canonical pipeline checkpoint remains unchanged because it is already tracking a different active phase.
+
+## 2026-10-24 — Scoped retrieval architecture and implementation boundary
+
+- User direction: Continue implementation after the scoped design; preserve the unrelated canonical pipeline checkpoint.
+- Evidence: The project virtualenv has `pypdf`, `transformers`, `torch`, `onnxruntime`, E5, and Chroma 1.5.9, but no local PDF renderer, OCR engine, image library, or vision-model weights. Chroma exposes `chromadb.errors.NotFoundError`; the current retrieval code catches every collection lookup error and returns no candidates.
+- Decision: Keep Core authorization, API contracts, E5 model, thresholds, and generation question unchanged. Add bounded contextual retrieval only from `safe_context`, keep every vector query under the existing workspace/document/status filters, preserve the original user question for generation, split chunks without mixing locators or dropping source text, and treat only a missing collection as empty evidence.
+- Dependency gate: Do not add/install OCR or rendering packages or download model weights until a specific private/local stack and resource budget are approved. OCR/diagram execution is explicitly deferred rather than represented by a no-op fallback.
+- Verification baseline: Focused chunker/adaptive-retrieval/private-API suites passed 19 tests before source changes. One existing Starlette/httpx deprecation warning was reported.
+- Boundary: Scoped design artifacts and source/test changes only; no production vector/database, document, external provider, deployment, commit, or push action.
+
+## 2026-10-24 — Offline text retrieval slice completed
+
+- Implementation: Chunking now preserves long source text, respects one locator per chunk, avoids merging across locators, keeps table rows without overlap, embeds section headings as retrieval context without changing cited text, and stores additive `chunking_version=2.0` metadata.
+- Follow-up retrieval: Add a bounded deterministic second query only for explicit follow-up cues with validated `safe_context`; batch E5 query embeddings; deduplicate by chunk ID using best similarity; preserve the original user question for generation and the same workspace/document/status filters for every query. Log only request ID and whether contextual retrieval was used, never raw query/history.
+- Failure behavior: Only `NotFoundError` is an empty collection result; configured Chroma failures no longer switch to EphemeralClient. Evaluation corpus loading now raises an explicit error rather than manufacturing a draft benchmark from an empty corpus.
+- Verification: Full AI Service pytest PASS 351/351 (one pre-existing Starlette/httpx deprecation warning); Ruff PASS; strict mypy PASS across 102 source files; focused chunk/query/vector/evaluation coverage PASS 94.54%; Pylance diagnostics clean; `git diff --check` PASS.
+- Evaluation boundary: Workspace search found no frozen 120-case gold dataset or manifest. The code’s 120-case default dynamically creates draft questions from Chroma, so no retrieval or cross-language quality baseline is claimed.
+- Remaining gate: OCR/diagram processing needs an approved exact local renderer/OCR/model stack and resource budget. No dependency was added or installed, model was not downloaded, and no production corpus/vector data was read or changed.
+
+## 2026-10-24 — OCR/diagram scope deferred
+
+- User selected to defer both local OCR and diagram processing; resource budget is unknown and no corpus or evaluation dataset path was provided.
+- User gave general permission for package/model installation and local corpus processing, but no concrete stack or data source was identified. Because both workstreams are deferred, no package/model installation, download, or document access was performed.
+- Resume gate: user must select a local OCR/rendering and diagram approach, specify CPU/GPU, memory, storage and latency budgets, and identify an authorized corpus plus a fixed evaluation dataset or approve creating labeled fixtures.
+
+## 2026-10-24 — Retrieval/chunking code review
+
+- Reviewed the retrieval/chunking implementation diff and the user-provided read-only `file_questions.md` snapshot in-process; unrelated dirty worktree files were excluded.
+- Verdict: APPROVED with two warnings, no blockers. Focused AI Service regressions PASS 53/53; reviewed patch `git diff --check` PASS.
+- Warning: the attached questions snapshot predates subsequent approvals and implementation decisions; it should be treated as historical, not authoritative.
+- Warning: contextual retrieval currently uses a bounded lexical cue list and lacks a labeled follow-up/cross-language benchmark; no quality claim is made.
+- Report: `.pipeline/retrieval-optimization/review-report.md`. Canonical `pipeline-state.json` was intentionally left unchanged because it belongs to another active work item.
+
+## 2026-10-24 — Improvement plan draft
+
+- User asked for a plan to improve the observed limitations in follow-up reference handling, cross-language retrieval, unsupported/overly cautious refusals, and absent OCR/diagram ingestion.
+- Created a new scoped draft under `.pipeline/retrieval-optimization/improvement-plan/` rather than overwriting the earlier requirements or canonical pipeline state.
+- Plan prioritizes authorized data and reproducible baseline, then follow-up and cross-language diagnosis, stage-level refusal attribution, separate generation evaluation, and paired holdout review. OCR/diagram remains deferred per the user's prior choice.
+- No source code, dataset, production corpus/vector store, dependency, model, or threshold was changed. Await exact scope approval and authorized evaluation-data direction before detailed design.
+
+## 2026-10-24 — Improvement scope approved; detailed design drafted
+
+- User explicitly approved the exact improvement requirements and task breakdown for detailed design/evaluation preparation, reported no corpus/dataset available, and selected text/follow-up/cross-language/gate work while keeping OCR/diagram deferred.
+- Drafted scoped architecture decision and proposed file plan under `.pipeline/retrieval-optimization/improvement-plan/`.
+- Design sequencing: fixed authorized dataset and baseline first; stage attribution; then evidence-backed follow-up/cross-language candidates; gate and generation evaluation separately; freeze targets before tuning and preserve untouched holdout.
+- Approval boundary: no implementation or data processing authorized; no source code, provider call, package/model install/download, production data/vector access, threshold change, or delivery action performed.
+- Canonical `.pipeline/pipeline-state.json` remains unchanged because it belongs to another active pipeline item. The detailed design itself remains a draft pending review; no approval fields were changed.
+
+## 2026-10-24 — Improvement plan review
+
+- Reviewed the improvement plan artifacts and AI Service pytest configuration in-process; did not change plan or source files.
+- Verdict: CHANGES_REQUIRED. Blocker: proposed `app/evaluation/tests/` is outside configured pytest `testpaths` (`app/tests`, `app/core/rag/tests`), so planned tests would not be collected by normal test runs.
+- Warnings: requirements/task breakdown approval status contradicts architecture/questions; paired confidence-interval and human-rubric methodology is underspecified.
+- Report: `.pipeline/retrieval-optimization/improvement-plan/review-report.md`. No code tests run; canonical pipeline state unchanged.
+
+## 2026-10-24 — Improvement plan corrections and operational feasibility
+
+- Decision: Treat the earlier user approval as design/evaluation preparation only. Keep implementation, corpus access, provider calls, dependency/model installation, environment mutation, and delivery behind separate approvals.
+- Updated the retrieval improvement plan to place evaluator tests under the configured pytest discovery roots and documented an explicit collection command.
+- Defined the paired cluster-bootstrap protocol, confidence level/resampling count, underpowered-sample caveat, blinded human rubric, inter-rater agreement, and adjudication.
+- Added operational-readiness requirements and a read-only feasibility assessment covering Core/AI, Chroma/embedding, generation provider, RabbitMQ/storage ingestion, durable chat persistence/replay, and frontend completion.
+- Decision: Synthetic tests certify harness behavior only; quality conclusions require authorized gold data, and live readiness requires approved isolated integration/provider smoke checks.
+- Recorded that AI readiness does not prove embedding/model/provider/RabbitMQ readiness; RabbitMQ consumer startup is fire-and-log, and failed ingestion message recovery/DLQ routing must be verified before declaring ingestion reliable. OCR/diagram remains deferred.
+- No source code, `.env`, corpus, live service, database/vector state, provider, dependency, deployment, or canonical `.pipeline/pipeline-state.json` was changed or accessed.
+- 2026-10-24 16:52 +07 — Focused in-process re-review of `improvement-plan/file-plan.md` found a scope-gate blocker: implementation step 1 conflicts with the design/evaluation-preparation-only approval. Verdict `CHANGES_REQUIRED`; finding recorded in the scoped review report. The reviewed plan was not edited.
+- 2026-10-24 17:27 +07 — Created `docs/reviews/retrieval-improvement-session-handoff-2026-10-24.md` to consolidate this workstream's goals, changed artifacts, approval limits, feasibility evidence, current review blocker, and independent-review checklist. No source or runtime behavior changed.
+
+## 2026-10-24 — Improvement plan review corrections
+
+- User authorized correction of the session-review findings; authorization covers documentation and plan repair only, not evaluator/runtime implementation, corpus processing, live checks, or delivery.
+- Decision: extend the existing `app/evaluation` dataset/metrics/runner/report/storage/benchmark path instead of creating parallel `retrieval_*` evaluator modules. Require a benchmark-entrypoint integration test so simulated/draft behavior cannot produce a product-quality report.
+- Decision: split evaluator implementation approval from production-behavior implementation approval. Design contracts precede the first gate; evidence/holdout precede the second gate.
+- Decision: add ADR-023 and synchronize the authoritative test plan to a paired cluster-bootstrap protocol with 10,000 resamples, fixed seed, underpowered-cluster disclosure, anchored ordinal ratings, Krippendorff's alpha, and adjudication. The legacy dynamic 120-case path is not gold evidence.
+- Decision: separate current-stack readiness from post-implementation ingestion-to-answer E2E acceptance; the former cannot certify an unimplemented candidate.
+- Decision: retain scoped artifacts under Git-ignored `.pipeline` but add a SHA-256 manifest and explicit portability limitation to the tracked handoff instead of changing repository-wide ignore policy.
+- Canonical `.pipeline/pipeline-state.json` remains unchanged because it belongs to another work item. Correction status is `PENDING_RE_REVIEW`, not approved.
+- 2026-10-25 — User requested an in-app document-delete modal and verification that duplicate-named documents do not cause cross-document deletion. Decision: add a separately named Phase 1 work item and supplemental artifacts; do not overwrite previously approved requirements or the active Hive/Plan V2 checkpoint. Preserve all pre-existing dirty source/spec files and re-read diffs before any implementation. Tool discovery did not expose `multi_agent_v1`; the user authorized direct in-session fallback. Exact technical requirements still require approval before Phase 2.
+- 2026-10-25 — User explicitly approved the document-delete Phase 1 scope and emphasized verifying the exact Supabase Storage object and ChromaDB vectors, not only the UI. Updated the accepted scope and approval record to cover both stores by document ID/storage key. Proceed to design only; implementation remains gated on design approval.
+- 2026-10-25 — Blocked the Chroma-backed document-delete work before design completion or source edits because accepted SEC-DEBT-001 explicitly prohibits the first Chroma-backed feature until the critical Chroma client advisory and client/server compatibility are remediated. Do not modify/install dependencies, invoke Chroma, or implement a partial delete flow without separate user approval. The Supabase adapter also currently logs and swallows delete failures; it must be covered by the later approved design/tests.
+- 2026-10-25 — In response to the user's correction, verified the current runtime rather than treating the old local-server note as fact: the active AI Service interpreter has `chromadb==1.5.9`; root/service `.env` configure `api.trychroma.com` with credentials present and mode unset (code default `auto`). Docker daemon is unavailable, so no local server version is running/observable. Do not send credentials to Chroma Cloud for a probe; the remote version and the AI process's effective `os.getenv` values remain unverified. Keep the feature blocked and do not assume the local Compose image is the current endpoint.
+- 2026-10-25 — User authorized public, read-only remediation research. OSV confirms the critical advisory covers `chromadb` 1.0.0–1.5.9 and describes a vulnerable server API; official docs confirm the configured host is Chroma Cloud. PyPI reports both full and HTTP-client-only packages currently at 1.5.9, but the thin client description does not establish `CloudClient` support. Do not switch to the stale 0.6.3 recommendation or claim the Cloud endpoint is fixed. Keep implementation blocked until the user approves a bounded compatibility/remediation spike or provides another safe resolution.
+- 2026-10-25 — Continued only the user's explicitly narrowed request for an in-app document-delete confirmation modal. Kept the selected document object/ID as the modal target so duplicate filenames do not alter which API ID is sent; added confirmation, pending/error states, and an app-styled standalone modal. Corrected malformed test nesting and restricted the failure assertion to table rows. Focused tests, lint, typecheck, and build pass. The backend/storage/vector deletion semantics were not changed or verified; the original cross-store work item remains blocked by SEC-DEBT-001.
+- 2026-10-25 — For the Workspace AI-disabled notice request, the user selected retaining explicit AI opt-in for private workspaces. Rationale: private visibility limits workspace membership, but enabled cloud AI may still receive questions and authorized document excerpts. Recorded a separate frontend-only Phase 1 scope; user also authorized direct in-session fallback because `multi_agent_v1` was unavailable. No source or backend policy has been changed; awaiting approval of the scoped requirements and task breakdown.
+- 2026-10-25 — After reviewing the first visual result, the user clarified that the notice must be immediately visible without scrolling and visually distinct from chat content. Moved it below the chat header and outside the message scroller, made it a high-contrast horizontal banner, and added a structural placement test. Explicit AI opt-in and the direct privacy-settings link remain unchanged.
+- 2026-10-25 — For the supplied loading-screen screenshot, removed the rotating rounded-square frames and logo bobbing rather than replacing them with another spinning frame. Kept the logo static, retained the three animated status dots and the existing inline circular loader, and added a regression assertion that the full-screen view has no square rings. The user explicitly selected direct in-session fallback because the delegated multi-agent tool was unavailable.
+
+## 2026-10-25 — RAG definition-evidence hotfix
+
+- Used the orchestrator hotfix path after a read-only reproduction showed that a title-only chunk with similarity 0.95 passed the DEFINITION Evidence Gate with score 0.96. This was a narrow live-quality regression; no threshold, top-k, allowlist, provider, database, vector data, package or environment setting was changed.
+- Preserved the existing dirty retrieval-optimization work. Added only intent-specific direct-evidence selection: short title-only chunks cannot pass DEFINITION gating or reach generation, while substantive chunks keep their authenticated document/version/hash/locator provenance.
+- Carried existing `section_heading` metadata from Chroma into retrieved candidates and strengthened the strict prompt so a heading or concept name alone cannot support a definition claim.
+- Runtime exposes spawn/wait collaboration primitives but not the skill-required close-agent lifecycle. Personas therefore ran in-process; no claim of a spawned sub-agent was made.
+- Verification uses fake Chroma embeddings/results and a fake provider only. Existing indexed documents were not re-ingested; they need normal authorized re-ingestion to benefit from the already-present v2 heading-aware embeddings, but the title-only Evidence Gate protection also handles current records.
+
+## 2026-10-25 — Strict RAG answer completeness hotfix
+
+- Decision: strengthen the shared generation prompt so both STRICT and EXPANDED answers respond directly, cover the question, and synthesize source-supported detail; explicitly state when retrieved evidence is too thin rather than padding with unsupported knowledge.
+- Rationale: the strict prompt previously limited knowledge sources and citations but did not require comprehensive answers, allowing output that only listed chapter/slide titles. This changes generation guidance only; authorization, retrieval thresholds, evidence decisions, citations, provider settings and stored vectors remain unchanged.
+- User direction: continue on top of the existing uncommitted RAG work and preserve all unrelated dirty changes.
+
+## 2026-10-25 — RAG evidence-retrieval improvement plan
+
+- Decision: draft a separately scoped Phase 1 plan that retains the existing STRICT/EXPANDED toggle, improves multi-query/hybrid retrieval and evidence coverage, and uses separately cited web results only for uncovered aspects in EXPANDED.
+- Rationale: inspection found the current EXPANDED implementation uses uncited model knowledge and explicitly disallows web search; dense retrieval and fixed top-k also lack an explicit facet-coverage check. The plan documents this gap rather than claiming web retrieval already exists.
+- Guardrails: no source implementation, provider selection, package installation, production Chroma access, re-ingestion, paid request, database mutation or delivery action is authorized. Preserve the active root pipeline phase and create a pending work item for approval only.
+- User clarification: all previously discussed retrieval improvements are in scope in addition to the two existing modes: preserve small locator-specific chunks and parent context; hybrid semantic/lexical retrieval; same-document expansion; per-facet evidence coverage before generation; compact ranked source-labeled context; mode-specific grounding; and frozen-benchmark evaluation.
+- User approval: the user explicitly approved the exact Phase 1 requirements and task-breakdown scope in chat. Phase 2 architecture and file plan are drafts for separate review; no implementation, provider, database, Chroma or delivery action is approved.
+- User approval: the user approved the Phase 2 architecture draft in chat. This records the design decision only; it does not select a web provider or approve Chroma access, database/data operations, paid calls or delivery actions.

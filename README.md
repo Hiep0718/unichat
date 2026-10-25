@@ -26,6 +26,8 @@ Không commit, push, thay đổi GitHub, merge hoặc deploy nếu chưa có ph�
 
 Chỉ frontend và Core API được expose. AI Service, PostgreSQL, ChromaDB, RabbitMQ và Ollama nằm trên private network.
 
+Retrieval giữ nguyên câu hỏi gốc để sinh câu trả lời; câu hỏi nối tiếp có tham chiếu rõ có thể dùng thêm một truy vấn ngữ cảnh giới hạn từ lịch sử đã xác thực nguồn. Mọi truy vấn tiếp tục bị giới hạn bởi danh sách tài liệu Core API cấp quyền. Chunk văn bản giữ provenance theo locator và phiên bản thuật toán; OCR/hiểu sơ đồ local chưa được bật cho đến khi lựa chọn engine và ngân sách được phê duyệt.
+
 ## Runtime mục tiêu
 
 - Node.js 24.18.0 LTS và npm đi kèm.
@@ -82,7 +84,7 @@ Trong development, mobile dùng host mà Expo cung cấp để gọi Core API tr
 
 PostgreSQL, Document Storage và RabbitMQ sử dụng cloud (Supabase / CloudAMQP), không cần chạy local.
 
-Nếu Core API dừng vì thiếu `direct_messages.read_at`, kiểm tra schema và lịch sử Flyway trước khi khởi động lại. Migration V38 bổ sung cột nullable này và giữ nguyên dữ liệu đã có. Với DB dùng chung, cần phê duyệt migration trước khi chạy Core vì Flyway tự áp dụng migration khi khởi động; không sửa lịch sử cũ hoặc tắt Hibernate schema validation để bỏ qua lỗi.
+Nếu Core API dừng vì thiếu `direct_messages.read_at`, kiểm tra schema và lịch sử Flyway trước khi khởi động lại. Migration V46 khôi phục cột nullable sau V45 mà không đặt mặc định, backfill hoặc thay đổi dữ liệu đã có; V38 và các migration cũ vẫn giữ nguyên. Với DB dùng chung, cần phê duyệt migration trước khi chạy Core vì Flyway tự áp dụng migration khi khởi động; không sửa lịch sử cũ hoặc tắt Hibernate schema validation để bỏ qua lỗi.
 
 ## Kiểm tra
 
