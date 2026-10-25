@@ -80,6 +80,10 @@ describe('LoadingProvider', () => {
     expect(screen.getByRole('status')).toHaveClass('loading-screen--fullscreen');
     expect(screen.getByRole('status')).toHaveAttribute('aria-live', 'polite');
     expect(screen.getByRole('status')).toHaveAttribute('aria-busy', 'true');
+    expect(document.querySelector('.loading-screen__ring')).not.toBeInTheDocument();
+    expect(document.querySelector('.loading-screen__ring--outer')).not.toBeInTheDocument();
+    expect(document.querySelector('.loading-screen__logo-img')).toBeInTheDocument();
+    expect(document.querySelectorAll('.loading-screen__dot')).toHaveLength(3);
   });
 
   it('should prevent interaction with obscured content until loading completes', () => {
