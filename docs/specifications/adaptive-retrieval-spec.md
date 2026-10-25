@@ -24,6 +24,9 @@ Adaptive Retrieval v1 chọn chiến lược truy hồi bằng luật xác đị
 3. Tạo bản chữ thường giữ nguyên dấu để lưu trace.
 4. Tạo shadow text bỏ dấu chỉ để so luật; không dùng shadow text để sinh câu trả lời.
 5. Không ghi nguyên câu hỏi vào log vận hành; chỉ lưu hash, độ dài và trace được phép.
+6. Giữ nguyên câu hỏi gốc cho generation. Chỉ khi câu hỏi có dấu hiệu follow-up và `safe_context` cung cấp history/summary hợp lệ mới thêm một contextual query có giới hạn.
+7. Câu hỏi gốc và contextual query dùng cùng embedding model/prefix, allowlist tài liệu và filter workspace/status; contextual query không mở rộng quyền hoặc trở thành bằng chứng.
+8. Không tự dịch câu hỏi hoặc gọi model rewrite trong P0; quyết định về query variants khác phải dựa trên evaluation cross-language.
 
 ## 3. Taxonomy và thứ tự ưu tiên
 
@@ -79,13 +82,20 @@ Quyết định:
 - REFUSE: OUT_OF_SCOPE; không có chunk hợp lệ; thiếu source group bắt buộc; hoặc evidenceScore thấp hơn gate.
 - ANSWER: đủ source group, evidenceScore đạt gate và citation validator đạt yêu cầu.
 
-Refusal phải nói rõ tài liệu hiện có chưa đủ bằng chứng và gợi ý cách thu hẹp câu hỏi. Không được dùng kiến thức nền để lấp khoảng trống.
+Với intent DEFINITION, chunk chỉ chứa heading/tên khái niệm không phải bằng chứng định nghĩa trực tiếp và bị loại trước khi tính Evidence Gate. Nếu sau bước này không còn chunk hỗ trợ, hệ thống phải REFUSE rõ ràng và không gọi generator.
+
+Refusal phải nói rõ tài liệu hiện có chưa đủ bằng chứng và gợi ý cách thu hẹp câu hỏi. Chế độ STRICT không được dùng kiến thức nền để lấp khoảng trống. Chế độ EXPANDED vẫn phải vượt Evidence Gate bằng tài liệu được cấp quyền trước khi gọi generator; kiến thức nền không được tính là bằng chứng hoặc thay đổi quyết định gate.
 
 ## 7. Sinh câu trả lời và citation
 
 - Generator nhận duy nhất câu hỏi đã chuẩn hóa, chunks được cấp quyền và metadata locator.
 - Output phải là JSON có schema: answer, claims, citationIds, refusal, refusalReason.
+- Câu trả lời trả lời trực tiếp trọng tâm, bao quát các phần câu hỏi và tổng hợp các chi tiết liên quan mà bằng chứng được cấp quyền hỗ trợ; không chỉ liệt kê tên chương/slide hoặc nhắc lại citation.
+- Độ dài tương xứng với câu hỏi và lượng bằng chứng. Nếu tài liệu chỉ có tiêu đề hoặc thiếu chi tiết, phải nêu rõ giới hạn thay vì suy đoán hay trình bày như thể đã tóm tắt đầy đủ.
+- Generation dùng ngôn ngữ câu hỏi trừ khi người dùng yêu cầu ngôn ngữ khác.
 - Mỗi claim thực tế phải tham chiếu ít nhất một citationId.
+- Nguồn được tham chiếu phải trực tiếp hỗ trợ claim; heading/tên khái niệm đơn độc không được dùng như citation chứng minh định nghĩa.
+- Chế độ STRICT chỉ sinh section DOCUMENT. Chế độ EXPANDED bắt buộc có section DOCUMENT và ít nhất một section EXTERNAL riêng; EXTERNAL dùng kiến thức nền của model, không tra cứu web/công cụ, không citation và luôn được gắn nhãn chưa được tài liệu kiểm chứng.
 - Citation validator kiểm tra documentId thuộc allowedDocumentIds, chunk tồn tại, excerpt khớp content hash và locator hợp lệ.
 - Nếu output sai schema hoặc citation không hợp lệ, thử lại đúng một lần với cùng evidence.
 - Lần hai vẫn sai thì REFUSE; không mở rộng corpus hoặc đổi model ngầm.
@@ -114,9 +124,9 @@ Calibration chỉ dùng 60 case development, 10 case mỗi intent và tách theo
 
 ## 10. Retrieval trace bắt buộc
 
-Trace lưu requestId, userId đã pseudonymize, workspaceId, intent, ruleId, confidence, strategyVersion, allowedDocumentCount, retrieved chunk IDs, scores, coverage, evidenceScore, decision, refusalCode, provider, latency, token usage và timestamp UTC.
+Trace lưu requestId, userId đã pseudonymize, workspaceId, intent, ruleId, confidence, strategyVersion, allowedDocumentCount, số query variants và cờ `contextualQueryUsed`, retrieved chunk IDs, scores, coverage, evidenceScore, decision, refusalCode, provider, latency, token usage và timestamp UTC.
 
-Trace không lưu toàn văn chunk hoặc câu hỏi trong log sự kiện. Dữ liệu nghiên cứu có quyền riêng được lưu trong bảng chuyên biệt và áp dụng retention.
+Trace không lưu query/context nguyên văn, toàn văn chunk hoặc câu hỏi trong log sự kiện. Dữ liệu nghiên cứu có quyền riêng được lưu trong bảng chuyên biệt và áp dụng retention.
 
 ## 11. Tiêu chí chấp nhận
 
@@ -128,3 +138,5 @@ Trace không lưu toàn văn chunk hoặc câu hỏi trong log sự kiện. Dữ
 - AC-AR-06: Cùng input và config tạo cùng intent, strategy và evidence decision.
 - AC-AR-07: Mọi run có configHash và trace đầy đủ.
 - AC-AR-08: Holdout không xuất hiện trong calibration hoặc prompt.
+- AC-AR-09: Follow-up query chỉ dùng context đã qua `safe_context`, giữ nguyên câu hỏi gốc cho generation và áp dụng cùng allowlist cho mọi query variant.
+- AC-AR-10: Chỉ collection không tồn tại mới trả tập candidate rỗng; lỗi kết nối, embedding hoặc query phải đi qua nhánh lỗi vận hành.

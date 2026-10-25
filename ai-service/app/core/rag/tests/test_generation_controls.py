@@ -38,7 +38,8 @@ def test_should_skip_retrieval_when_preparation_is_already_cancelled() -> None:
 def test_should_stop_preparation_after_retrieval_cancels() -> None:
     closed = threading.Event()
 
-    def retrieve(*arguments: object) -> list[RetrievedChunkCandidate]:
+    def retrieve(*arguments: object, **keywords: object) -> list[RetrievedChunkCandidate]:
+        assert "contextual_query" in keywords
         closed.set()
         return [candidate()]
 

@@ -1,5 +1,6 @@
 """Private RAG HTTP boundary using genuine policy and source fixtures."""
 
+import logging
 from typing import Any
 from unittest.mock import patch
 
@@ -7,7 +8,14 @@ import pytest
 
 from app.api.v1.retrieval import router
 from app.core.rag.provider_gateway import ProviderResult
-from app.tests.plan_v2_fixtures import api_client, candidate, generated, payload
+from app.tests.plan_v2_fixtures import (
+    DOCUMENT_HASH,
+    DOCUMENT_ID,
+    api_client,
+    candidate,
+    generated,
+    payload,
+)
 
 client = api_client(router)
 
@@ -53,3 +61,49 @@ def test_should_return_safe_dependency_failure() -> None:
     assert response.status_code == 503
     assert "secret" not in response.text
     assert response.json()["errorCode"] == "RETRIEVAL_UNAVAILABLE"
+
+
+def test_should_retrieve_with_validated_context_but_generate_from_original_question(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    caplog.set_level(logging.INFO, logger="app.core.rag.answer_pipeline")
+    question = "Why does it work?"
+    history = [
+        {"role": "user", "content": "Explain vector embeddings"},
+        {
+            "role": "assistant",
+            "content": "Embeddings map text into numeric vectors.",
+            "sources": [{
+                "documentId": DOCUMENT_ID,
+                "ingestionVersion": 2,
+                "contentHash": DOCUMENT_HASH,
+            }],
+        },
+    ]
+    generated_result = {
+        "answer": "A validated answer.",
+        "sections": [],
+        "citations": [],
+        "provider": "test",
+    }
+
+    with (
+        patch("app.core.rag.answer_pipeline.retrieve_chunks", return_value=[candidate()]) as retrieval,
+        patch(
+            "app.core.rag.answer_pipeline.generate_rag_answer",
+            return_value=generated_result,
+        ) as generator,
+    ):
+        response = client.post(
+            "/internal/v1/retrieval/answers",
+            json=payload(question=question, conversationHistory=history),
+        )
+
+    assert response.status_code == 200
+    retrieval.assert_called_once()
+    assert retrieval.call_args.args[2] == question
+    assert "vector embeddings" in retrieval.call_args.kwargs["contextual_query"]
+    assert generator.call_args.args[0] == question
+    query_event = next(record for record in caplog.records if record.msg == "retrieval_query_variants")
+    assert getattr(query_event, "contextual_query_used", False) is True
+    assert not hasattr(query_event, "question")

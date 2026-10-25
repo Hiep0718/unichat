@@ -2,9 +2,15 @@
 
 from unittest.mock import MagicMock, patch
 
-from app.services.preflight_check import precache_embedding_model, run_preflight, verify_chromadb_compat
+import pytest
+
+from app.services.preflight_check import precache_embedding_model, verify_chromadb_compat
 from app.services.reingest import reingest_document
-from app.services.vector_store import get_active_collection_name, get_chroma_client, store_document_chunks
+from app.services.vector_store import (
+    VectorStoreUnavailableError,
+    get_active_collection_name,
+    get_chroma_client,
+)
 
 
 def test_get_active_collection_name() -> None:
@@ -48,3 +54,12 @@ def test_reingest_document_mock() -> None:
             media_type="text/plain",
         )
         assert count == 0
+
+
+def test_local_chroma_connection_failure_does_not_fall_back_to_ephemeral() -> None:
+    with patch.dict("os.environ", {"CHROMA_MODE": "local"}):
+        with patch("app.services.vector_store.chromadb.HttpClient", side_effect=RuntimeError):
+            with patch("app.services.vector_store.chromadb.EphemeralClient") as ephemeral:
+                with pytest.raises(VectorStoreUnavailableError):
+                    get_chroma_client()
+    ephemeral.assert_not_called()

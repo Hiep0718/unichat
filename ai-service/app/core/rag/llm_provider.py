@@ -148,6 +148,11 @@ def _validated_generation(
                 "\nOUTPUT trước không đúng schema/citation. "
                 "Sinh lại với cùng nguồn, không thêm nguồn."
             )
+            if expanded:
+                prompt += (
+                    "\nBẮT BUỘC bổ sung ít nhất một section EXTERNAL riêng, "
+                    "không citation, bên cạnh section DOCUMENT."
+                )
             continue
         referenced = {
             reference

@@ -36,6 +36,28 @@ def test_evidence_gate_answer_on_high_similarity() -> None:
     assert gate_res.evidence_score >= strategy.evidence_gate_threshold
 
 
+def test_evidence_gate_refuses_title_only_definition_despite_high_similarity() -> None:
+    strategy = get_strategy(IntentEnum.DEFINITION)
+    candidates = [
+        RetrievedChunkCandidate(
+            "title-chunk",
+            "doc1",
+            "Architecture Characteristics Defined",
+            0.95,
+            "SLIDE_NUMBER",
+            "slide:4",
+            "hash1",
+            section_heading="Architecture Characteristics Defined",
+        )
+    ]
+
+    gate_res = evaluate_evidence(IntentEnum.DEFINITION, strategy, candidates)
+
+    assert gate_res.decision == DecisionEnum.REFUSE
+    assert gate_res.evidence_score == 0.0
+    assert "chưa tìm thấy đoạn định nghĩa trực tiếp" in (gate_res.refusal_reason or "")
+
+
 def test_evidence_gate_comparison_adaptive_single_doc_workspace() -> None:
     """COMPARISON with single document workspace should not refuse if workspace_document_count=1."""
     strategy = get_strategy(IntentEnum.COMPARISON)

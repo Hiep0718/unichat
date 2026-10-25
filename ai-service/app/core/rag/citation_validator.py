@@ -43,6 +43,8 @@ def validate_generated_answer(
     doc_to_citation = {citation.documentId: citation.citationId for citation in citations}
     if not identifiers or not any(section.type == "DOCUMENT" for section in answer.sections):
         raise ValueError("DOCUMENT_EVIDENCE_REQUIRED")
+    if expanded and not any(section.type == "EXTERNAL" for section in answer.sections):
+        raise ValueError("EXPANSION_SECTION_REQUIRED")
     for section in answer.sections:
         if section.type == "DOCUMENT":
             for claim in section.claims:

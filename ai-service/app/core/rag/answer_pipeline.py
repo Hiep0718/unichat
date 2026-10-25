@@ -5,13 +5,18 @@ import time
 from dataclasses import dataclass
 
 from app.core.rag.context_policy import safe_context
+from app.core.rag.contextual_query import build_contextual_query
 from app.core.rag.contracts import (
     AnswerSection,
     CitationItem,
     RetrievalAnswerRequest,
     RetrievalAnswerResponse,
 )
-from app.core.rag.evidence_gate import DecisionEnum, evaluate_evidence
+from app.core.rag.evidence_gate import (
+    DecisionEnum,
+    evaluate_evidence,
+    select_evidence_candidates,
+)
 from app.core.rag.generation_policy import GenerationPolicy
 from app.core.rag.intent_detector import IntentEnum, detect_intent
 from app.core.rag.llm_provider import generate_rag_answer
@@ -82,12 +87,22 @@ def _retrieve(prepared: PreparedAnswer, cancelled: Cancellation | None) -> Prepa
             prepared, "CLARIFY_REQUIRED", "Vui lòng bổ sung rõ đối tượng cần hỏi.", "CLARIFY"
         )
     strategy = get_strategy(detected.intent)
+    contextual_query = build_contextual_query(request.question, history, summary)
+    logger.info(
+        "retrieval_query_variants",
+        extra={
+            "request_id": request.requestId,
+            "query_count": 2 if contextual_query is not None else 1,
+            "contextual_query_used": contextual_query is not None,
+        },
+    )
     check_cancelled(cancelled)
     prepared.candidates = retrieve_chunks(
         str(request.workspaceId),
         [str(value) for value in request.allowedDocumentIds],
         request.question,
         strategy,
+        contextual_query=contextual_query,
     )
     check_cancelled(cancelled)
     gate = evaluate_evidence(
@@ -106,6 +121,7 @@ def _retrieve(prepared: PreparedAnswer, cancelled: Cancellation | None) -> Prepa
             gate.refusal_reason or "Chưa đủ bằng chứng.",
             gate.decision.value,
         )
+    prepared.candidates = select_evidence_candidates(detected.intent, prepared.candidates)
     response.decision = "ANSWER"
     return prepared
 
