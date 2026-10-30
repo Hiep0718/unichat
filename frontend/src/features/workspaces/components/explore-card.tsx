@@ -35,6 +35,7 @@ export function ExploreCard({ workspace, animationIndex = 0, onJoin, isJoining }
         workspaceId={workspace.id}
         name={workspace.name}
         hasCover={workspace.hasCover}
+        topics={workspace.topics}
       />
       <span className="explore-card__scrim" />
 

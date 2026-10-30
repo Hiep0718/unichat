@@ -36,6 +36,8 @@ interface WorkspaceCardProps {
   readonly recentPostCount: number;
   readonly faces: readonly WorkspaceFace[];
   readonly hasCover: boolean;
+  /** What the group is about, which decides its default picture. */
+  readonly topics?: readonly string[] | undefined;
   readonly updatedAt: string;
   /** Index used for staggered entrance animation delay. */
   readonly animationIndex?: number;
@@ -53,6 +55,7 @@ export function WorkspaceCard({
   recentPostCount,
   faces,
   hasCover,
+  topics,
   updatedAt,
   animationIndex = 0,
 }: WorkspaceCardProps) {
@@ -64,7 +67,7 @@ export function WorkspaceCard({
       className="workspace-card"
       style={{ '--card-index': animationIndex } as React.CSSProperties}
     >
-      <WorkspaceCover workspaceId={id} name={name} hasCover={hasCover} />
+      <WorkspaceCover workspaceId={id} name={name} hasCover={hasCover} topics={topics} />
 
       {/* Darkens only the lower half, so the picture stays visible while the
           title over it keeps its contrast whatever was uploaded. */}

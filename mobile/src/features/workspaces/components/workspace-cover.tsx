@@ -4,10 +4,13 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 import { defaultCoverFor } from '../default-covers';
 import { groupThemeFor } from '../group-theme';
+import { topicCoverFor } from '../topic-covers';
 
 interface WorkspaceCoverProps {
   workspaceId: string;
   name: string;
+  /** What the group is about, which decides the picture when it is known. */
+  topics?: readonly string[];
 }
 
 /**
@@ -23,10 +26,15 @@ interface WorkspaceCoverProps {
  * card is never a grey rectangle for a frame, and it is what remains if the
  * file cannot be read at all. Mobile previously stopped at that gradient,
  * which is why its cards carried no picture while the web's did.
+ *
+ * What the group is about wins over the hashed default where it is known, so
+ * a card shows what the group holds rather than a colour it was dealt. Groups
+ * sharing a topic share a picture, deliberately; the name and counts written
+ * over it still tell them apart.
  */
-export function WorkspaceCover({ workspaceId, name }: WorkspaceCoverProps) {
+export function WorkspaceCover({ workspaceId, name, topics }: WorkspaceCoverProps) {
   const [broken, setBroken] = useState(false);
-  const { source } = defaultCoverFor(workspaceId);
+  const { source } = topicCoverFor(topics) ?? defaultCoverFor(workspaceId);
   const theme = groupThemeFor(workspaceId);
   const initial = name.trim().charAt(0).toUpperCase() || '?';
 

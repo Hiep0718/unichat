@@ -6,6 +6,11 @@ export interface WorkspaceItem {
   documentCount: number;
   memberCount: number;
   userRole?: 'OWNER' | 'ADMIN' | 'MEMBER' | 'VIEWER' | null;
+  /**
+   * What the group is about. Empty for groups created before topics, and for
+   * owners who skipped the picker; the cover falls back to the hashed set.
+   */
+  topics?: string[];
   createdAt?: string;
   updatedAt?: string;
 }

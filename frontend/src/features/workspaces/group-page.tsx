@@ -44,6 +44,7 @@ export function GroupPage() {
         workspaceId={workspaceId}
         name={workspace.name}
         hasCover={details?.hasCover ?? false}
+        topics={workspace.topics}
         canEdit={canEdit}
         onChanged={() => {
           void queryClient.invalidateQueries({ queryKey: ['workspaces'] });

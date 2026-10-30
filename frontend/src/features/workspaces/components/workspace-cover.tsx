@@ -29,9 +29,11 @@ interface WorkspaceCoverProps {
   readonly name: string;
   /** Whether a picture was uploaded; skips the request when false. */
   readonly hasCover: boolean;
+  /** What the group is about, which decides the default picture when set. */
+  readonly topics?: readonly string[] | undefined;
 }
 
-export function WorkspaceCover({ workspaceId, name, hasCover }: WorkspaceCoverProps) {
+export function WorkspaceCover({ workspaceId, name, hasCover, topics }: WorkspaceCoverProps) {
   // The id is kept beside the URL rather than reset in the effect: a card
   // component reused for a different group would otherwise show the previous
   // group's picture for a frame.
@@ -39,7 +41,7 @@ export function WorkspaceCover({ workspaceId, name, hasCover }: WorkspaceCoverPr
   // Set when even the bundled default cannot be fetched — an offline tab, or a
   // deployment serving the app without its static files.
   const [broken, setBroken] = useState(false);
-  const { src: defaultCover } = useAssignedCover(workspaceId);
+  const { src: defaultCover } = useAssignedCover(workspaceId, topics);
 
   useEffect(() => {
     if (!hasCover) {

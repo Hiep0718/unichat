@@ -172,6 +172,7 @@ function RecentSection({ workspaces }: RecentSectionProps) {
             recentPostCount={ws.recentPostCount}
             faces={ws.faces}
             hasCover={ws.hasCover}
+            topics={ws.topics}
             updatedAt={ws.updatedAt}
             animationIndex={i}
           />
@@ -327,6 +328,7 @@ function AllWorkspacesSection({
                 recentPostCount={ws.recentPostCount}
                 faces={ws.faces}
                 hasCover={ws.hasCover}
+                topics={ws.topics}
                 updatedAt={ws.updatedAt}
                 animationIndex={i}
               />

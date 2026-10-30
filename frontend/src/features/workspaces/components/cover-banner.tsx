@@ -18,6 +18,8 @@ interface CoverBannerProps {
   readonly workspaceId: string;
   readonly name: string;
   readonly hasCover: boolean;
+  /** What the group is about, which decides its default picture. */
+  readonly topics?: readonly string[] | undefined;
   /** Owners and editors get the controls; everyone else sees the picture. */
   readonly canEdit: boolean;
   /** Called after a change lands, so the caller can refetch the group. */
@@ -32,6 +34,7 @@ export function CoverBanner({
   workspaceId,
   name,
   hasCover,
+  topics,
   canEdit,
   onChanged,
 }: CoverBannerProps) {
@@ -70,7 +73,7 @@ export function CoverBanner({
   return (
     <div className="cover-banner">
       <div className="cover-banner__art" key={version}>
-        <WorkspaceCover workspaceId={workspaceId} name={name} hasCover={hasCover} />
+        <WorkspaceCover workspaceId={workspaceId} name={name} hasCover={hasCover} topics={topics} />
       </div>
 
       {canEdit && (

@@ -49,7 +49,11 @@ export function WorkspaceCard({
         style={styles.card}
       >
         <View style={styles.cover}>
-          <WorkspaceCover workspaceId={workspace.id} name={workspace.name} />
+          <WorkspaceCover
+            workspaceId={workspace.id}
+            name={workspace.name}
+            topics={workspace.topics}
+          />
 
           <View style={styles.coverTop}>
             <View style={styles.visibility}>
