@@ -79,7 +79,7 @@ const TabButton = React.memo(function TabButton({
   isFocused: boolean;
   tabBarBadge?: number | string;
   accessibilityLabel?: string;
-  onPress: (key: string, name: string) => void;
+  onPress: (key: string) => void;
 }) {
   const scale = useSharedValue(1);
   const floatY = useSharedValue(0);
@@ -113,8 +113,8 @@ const TabButton = React.memo(function TabButton({
     if (Platform.OS === 'ios') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
-    onPress(routeKey, routeName);
-  }, [routeKey, routeName, onPress]);
+    onPress(routeKey);
+  }, [routeKey, onPress]);
 
   const label = getTabLabel(routeName, title);
   const iconName = getTabIcon(routeName, isFocused);
@@ -191,7 +191,8 @@ const TabButton = React.memo(function TabButton({
 export function UCLiquidGlassTabBar({
   state,
   descriptors,
-  navigation,
+  emitter,
+  navigateToTab,
   insets,
 }: LiquidGlassTabBarProps) {
   const dockWidth = useSharedValue(0);
@@ -225,23 +226,23 @@ export function UCLiquidGlassTabBar({
     }
   }, [dockWidth, capsuleX, state.index, tabCount]);
 
-  const handleTabPress = useCallback((routeKey: string, routeName: string) => {
+  const handleTabPress = useCallback((routeKey: string) => {
     const route = state.routes.find((r) => r.key === routeKey);
     if (!route) return;
 
     const index = state.routes.indexOf(route);
     const isFocused = state.index === index;
 
-    const event = navigation.emit({
+    const event = emitter.emit({
       type: 'tabPress',
       target: routeKey,
       canPreventDefault: true,
     });
 
     if (!isFocused && !event.defaultPrevented) {
-      navigation.navigate(routeName);
+      navigateToTab(routeKey);
     }
-  }, [state, navigation]);
+  }, [state, emitter, navigateToTab]);
 
   const capsuleStyle = useAnimatedStyle(() => {
     const slotWidth = tabCount > 0 ? dockWidth.value / tabCount : 0;
