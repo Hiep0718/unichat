@@ -20,6 +20,13 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Changed
 
+- Workspace cards now show a photograph of what the group is about, one per topic in the Core API vocabulary, instead of an abstract picture dealt from the group id; groups with no topic keep the abstract set.
+- The mobile app reads a workspace's topics, which it previously ignored, so a group looks the same on a phone as it does in the browser.
+- Upgraded the mobile app to Expo SDK 58 (React Native 0.88.1, React 19.3.0) so it opens in the current Expo Go on iOS, where Apple serves only the latest build; see ADR-0006.
+- Pinned a single `react-native` resolution for the workspace, ending a duplicate 0.86.3/0.88.1 tree that made third-party component types disagree with application code.
+- Aligned the monorepo on React 19.3.0, the version Expo SDK 58 pins, moving the web frontend up from 19.2.7; a split React/React DOM resolution was breaking the web app at startup.
+- Declared the ESLint toolchain in the mobile workspace, which previously relied on the frontend's copies being hoisted to the repository root.
+- Migrated the mobile test suite to the asynchronous React Native Testing Library v14 API, and the tab bar to expo-router 58's `emitter`/`navigateToTab` props.
 - Kept the canonical readiness status at `NOT READY` until two-machine evidence is merged.
 - Aligned the JWT public-key example with `JWT_PUBLIC_KEY_LOCATION` and removed speculative JWT/refresh-token variables from the active environment contract.
 - Hardened the Windows Maven Wrapper path handling for non-symlink Maven homes.
