@@ -1,94 +1,154 @@
 /* ==========================================================================
-   UniChat Design System — Academic Precision
-   CSS Variables (Design Tokens) + Base Styles
+   UniChat Design System — Giấy, mực và dấu
+
+   UniChat không phải một ứng dụng chat. Nó là công cụ đọc và kiểm chứng:
+   người học hỏi, hệ thống trả lời dựa trên tài liệu của chính họ, kèm trích
+   dẫn lần ngược được. Thứ phân biệt nó với mọi chatbot là bằng chứng. Nên
+   ngôn ngữ thị giác ở đây lấy từ bộ máy học thuật — trích dẫn, chú giải bên
+   lề, bản in có ghi chú — chứ không phải từ dashboard SaaS.
+
+   Trước đây có HAI hệ token chạy song song: thang Material 3 (navy #00236f,
+   bề mặt #f9f9ff) và thang "Workplace" (indigo #4f46e5 với gradient tím, nền
+   #f3f5f9). Cùng một nút cho ra hai màu tùy màn hình nào vẽ nó. File này gộp
+   chúng lại: tên biến giữ nguyên để 2.258 chỗ dùng var() không phải sửa, chỉ
+   giá trị trỏ về một bảng màu duy nhất khai báo ngay bên dưới.
    ========================================================================== */
 
-/* ---------- Color Tokens ---------- */
 :root {
-  /* Primary */
-  --color-primary: #00236f;
-  --color-on-primary: #ffffff;
-  --color-primary-container: #1e3a8a;
-  --color-on-primary-container: #90a8ff;
-  --color-inverse-primary: #b6c4ff;
-  --color-primary-fixed: #dce1ff;
-  --color-primary-fixed-dim: #b6c4ff;
-  --color-on-primary-fixed: #00164e;
-  --color-on-primary-fixed-variant: #264191;
+  /* ---------- Bảng màu gốc ----------
+     Sáu giá trị, và đúng MỘT màu bão hòa. Mọi token khác là bí danh của
+     chúng, nên không thể có màu thứ hai lọt vào qua một màn hình nào đó. */
 
-  /* Secondary */
-  --color-secondary: #00687a;
-  --color-on-secondary: #ffffff;
-  --color-secondary-container: #57dffe;
-  --color-on-secondary-container: #006172;
-  --color-secondary-fixed: #acedff;
-  --color-secondary-fixed-dim: #4cd7f6;
-  --color-on-secondary-fixed: #001f26;
-  --color-on-secondary-fixed-variant: #004e5c;
+  /* Giấy: hơi ngả xám-lục. Không phải #f9f9ff ngả lam của Material, cũng
+     không phải sắc kem mà phần lớn trang do AI dựng đều rơi vào. */
+  --giay: #eef0ea;
+  --giay-chim: #e0e4dc;
+  --giay-sang: #f6f7f3;
+  --giay-noi: #ffffff;
 
-  /* Tertiary */
-  --color-tertiary: #4b1c00;
-  --color-on-tertiary: #ffffff;
-  --color-tertiary-container: #6e2c00;
-  --color-on-tertiary-container: #f39461;
-  --color-tertiary-fixed: #ffdbcb;
-  --color-tertiary-fixed-dim: #ffb691;
-  --color-on-tertiary-fixed: #341100;
-  --color-on-tertiary-fixed-variant: #773205;
+  /* Mực: đen ấm. Tránh #0b0b0b hay #111 — kiểu "gần đen có ám sắc" là một
+     trong những dấu vết rõ nhất của giao diện sinh tự động. */
+  --muc: #171a16;
+  --muc-nhat: #5a6158;
+  --muc-mo: #868c84;
 
-  /* Error */
-  --color-error: #ba1a1a;
-  --color-on-error: #ffffff;
-  --color-error-container: #ffdad6;
-  --color-on-error-container: #93000a;
+  /* Nét kẻ. Thẻ được tách bằng kẻ, không bằng bóng đổ. */
+  --ke: #d5d9cf;
+  --ke-dam: #b9c0b3;
 
-  /* Surface */
-  --color-surface: #f9f9ff;
-  --color-surface-dim: #d3daea;
-  --color-surface-bright: #f9f9ff;
-  --color-surface-container-lowest: #ffffff;
-  --color-surface-container-low: #f0f3ff;
-  --color-surface-container: #e7eefe;
-  --color-surface-container-high: #e2e8f8;
-  --color-surface-container-highest: #dce2f3;
-  --color-on-surface: #151c27;
-  --color-on-surface-variant: #444651;
-  --color-surface-variant: #dce2f3;
-  --color-surface-tint: #4059aa;
-  --color-inverse-surface: #2a313d;
-  --color-inverse-on-surface: #ebf1ff;
+  /* Đỏ dấu triện — màu bão hòa duy nhất, DÀNH RIÊNG cho bằng chứng: ký hiệu
+     trích dẫn, rãnh nguồn, hành động chính. Dùng nó để trang trí là tiêu mất
+     thứ duy nhất đang mang nghĩa trong bảng màu này. */
+  --dau: #a33b1f;
+  --dau-dam: #7a2b16;
+  --dau-nhat: #f6e8e3;
 
-  /* Outline */
-  --color-outline: #757682;
-  --color-outline-variant: #c5c5d3;
+  /* Chiều rộng cột đọc. Quá 68 ký tự thì mắt lạc hàng khi xuống dòng, mà
+     nội dung cốt lõi ở đây là văn bản dài cần đọc kỹ và đối chiếu. */
+  --measure: 68ch;
 
-  /* Background */
-  --color-background: #f9f9ff;
-  --color-on-background: #151c27;
+  /* ---------- Primary: hành động ----------
+     Nút chính là mực đặc, không gradient. */
+  --color-primary: var(--muc);
+  --color-on-primary: var(--giay-noi);
+  --color-primary-container: #dde2d8;
+  --color-on-primary-container: var(--muc);
+  --color-inverse-primary: #c9cfc6;
+  --color-primary-fixed: #dde2d8;
+  --color-primary-fixed-dim: #c9cfc6;
+  --color-on-primary-fixed: var(--muc);
+  --color-on-primary-fixed-variant: var(--muc-nhat);
 
-  /* Functional */
-  --color-success: #10b981;
-  --color-warning: #f59e0b;
-  --color-ai-bubble: #ecfeff;
-  --color-ai-bubble-border: #a5f3fc;
+  /* ---------- Secondary: giữ im lặng ----------
+     Màu bão hòa đã dành cho bằng chứng, nên lớp thứ hai là mực nhạt. */
+  --color-secondary: var(--muc-nhat);
+  --color-on-secondary: var(--giay-noi);
+  --color-secondary-container: #e4e7df;
+  --color-on-secondary-container: var(--muc);
+  --color-secondary-fixed: #e4e7df;
+  --color-secondary-fixed-dim: #ced4c7;
+  --color-on-secondary-fixed: var(--muc);
+  --color-on-secondary-fixed-variant: var(--muc-nhat);
 
-  /* ---------- Typography ---------- */
-  --font-family: 'Inter Variable', 'Inter', system-ui, -apple-system, sans-serif;
+  /* ---------- Tertiary: nơi đỏ dấu triện sống ---------- */
+  --color-tertiary: var(--dau);
+  --color-on-tertiary: var(--giay-noi);
+  --color-tertiary-container: var(--dau-nhat);
+  --color-on-tertiary-container: var(--dau-dam);
+  --color-tertiary-fixed: var(--dau-nhat);
+  --color-tertiary-fixed-dim: #e8c4b8;
+  --color-on-tertiary-fixed: var(--dau-dam);
+  --color-on-tertiary-fixed-variant: var(--dau);
 
-  --font-headline-xl: 700 32px/40px var(--font-family);
-  --font-headline-lg: 600 24px/32px var(--font-family);
-  --font-headline-lg-mobile: 600 20px/28px var(--font-family);
-  --font-headline-md: 600 18px/26px var(--font-family);
-  --font-body-lg: 400 16px/24px var(--font-family);
-  --font-body-md: 400 14px/20px var(--font-family);
-  --font-label-md: 600 13px/18px var(--font-family);
+  /* ---------- Lỗi ----------
+     Đỏ lạnh, tách khỏi đỏ dấu triện ngả cam. Nếu hai thứ cùng sắc thì một
+     trích dẫn và một thông báo lỗi trông như nhau. */
+  --color-error: #8e1b1b;
+  --color-on-error: var(--giay-noi);
+  --color-error-container: #f7e0e0;
+  --color-on-error-container: #6b1212;
+
+  /* ---------- Bề mặt: thang giấy ---------- */
+  --color-surface: var(--giay);
+  --color-surface-dim: var(--giay-chim);
+  --color-surface-bright: var(--giay-sang);
+  --color-surface-container-lowest: var(--giay-noi);
+  --color-surface-container-low: #f4f6f1;
+  --color-surface-container: #eaede6;
+  --color-surface-container-high: #e4e8df;
+  --color-surface-container-highest: #dee2d9;
+  --color-on-surface: var(--muc);
+  --color-on-surface-variant: var(--muc-nhat);
+  --color-surface-variant: #e4e8df;
+  --color-surface-tint: var(--muc);
+  --color-inverse-surface: #2b2f29;
+  --color-inverse-on-surface: var(--giay);
+
+  /* ---------- Đường viền ---------- */
+  --color-outline: #9ba298;
+  --color-outline-variant: var(--ke);
+
+  /* ---------- Nền ---------- */
+  --color-background: var(--giay);
+  --color-on-background: var(--muc);
+
+  /* ---------- Trạng thái ----------
+     Giảm bão hòa để không cạnh tranh với đỏ dấu triện. */
+  --color-success: #3f6b4a;
+  --color-warning: #96650f;
+
+  /* Bong bóng trả lời của AI chính là cột đọc: giấy nổi, tách bằng kẻ. */
+  --color-ai-bubble: var(--giay-noi);
+  --color-ai-bubble-border: var(--ke);
+
+  /* ---------- Chữ ----------
+     Hai họ, vai trò tách bạch. Ràng buộc cứng của dự án: phải đủ dấu tiếng
+     Việt, điều này loại phần lớn font display.
+
+     Source Serif 4 cho nội dung đọc và tiêu đề trang — lựa chọn này đến từ
+     chủ thể, vì việc người dùng thực sự làm ở đây là đọc và đối chiếu văn
+     bản dài. IBM Plex Sans cho khung giao diện: nhãn, nút, điều hướng, số
+     liệu. Bỏ Inter, vốn là font mặc định mà mọi dự án đều với tới. */
+  --font-family: 'IBM Plex Sans Variable', system-ui, -apple-system, sans-serif;
+  --font-doc: 'Source Serif 4 Variable', Georgia, 'Times New Roman', serif;
+  --font-mono: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+
+  --font-headline-xl: 600 34px/42px var(--font-doc);
+  --font-headline-lg: 600 25px/33px var(--font-doc);
+  --font-headline-lg-mobile: 600 21px/29px var(--font-doc);
+  --font-headline-md: 600 19px/27px var(--font-doc);
+  /* Thân bài trong cột đọc: serif, giãn dòng rộng hơn sans cùng cỡ. */
+  --font-body-lg: 400 17px/28px var(--font-doc);
+  /* Chữ của giao diện vẫn là sans — serif ở mật độ này sẽ nặng. */
+  --font-body-md: 400 14px/21px var(--font-family);
+  --font-label-md: 500 13px/18px var(--font-family);
   --font-label-sm: 500 12px/16px var(--font-family);
-  --font-code-sm: 400 13px/20px var(--font-family);
+  --font-code-sm: 400 13px/20px var(--font-mono);
 
-  --letter-spacing-headline-xl: -0.02em;
+  --letter-spacing-headline-xl: -0.015em;
   --letter-spacing-headline-lg: -0.01em;
 
-  /* ---------- Spacing ---------- */
+  /* ---------- Khoảng cách ---------- */
   --container-max: 1440px;
   --sidebar-width: 68px;
   --gutter: 24px;
@@ -97,62 +157,82 @@
   --stack-md: 16px;
   --stack-lg: 24px;
 
-  /* ---------- Border Radius ---------- */
-  --radius-sm: 0.125rem;
-  --radius-default: 0.25rem;
-  --radius-md: 0.375rem;
-  --radius-lg: 0.5rem;
-  --radius-xl: 0.75rem;
-  --radius-2xl: 1rem;
-  --radius-3xl: 1.5rem;
+  /* ---------- Bo góc ----------
+     Nén lại gần phẳng, nhưng không về 0: bo góc bằng 0 cộng kẻ hairline là
+     khuôn mẫu "báo in" mà giao diện sinh tự động cũng hay rơi vào. Vài pixel
+     là một lựa chọn; 0 là rơi sang một khuôn mẫu khác. */
+  --radius-sm: 2px;
+  --radius-default: 3px;
+  --radius-md: 3px;
+  --radius-lg: 4px;
+  --radius-xl: 5px;
+  --radius-2xl: 6px;
+  --radius-3xl: 8px;
   --radius-full: 9999px;
 
-  /* ---------- Elevation ---------- */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.04);
-  --shadow-xl: 0 20px 50px rgba(0, 35, 111, 0.1);
+  /* ---------- Độ nổi ----------
+     Thẻ tách bằng VÒNG KẺ chứ không bằng bóng. Đổi ở token nên mọi thẻ trong
+     104 file CSS chuyển cùng lúc, không phải sửa từng nơi. Riêng shadow-xl
+     giữ chiều sâu thật, vì hộp thoại và popover thực sự nổi lên trên mặt
+     phẳng của trang. */
+  --shadow-sm: 0 0 0 1px rgb(23 26 22 / 7%);
+  --shadow-md: 0 0 0 1px rgb(23 26 22 / 9%);
+  --shadow-lg: 0 1px 2px rgb(23 26 22 / 5%), 0 0 0 1px rgb(23 26 22 / 8%);
+  --shadow-xl: 0 10px 28px rgb(23 26 22 / 10%), 0 0 0 1px rgb(23 26 22 / 9%);
 
-  /* ---------- Transitions ---------- */
-  --transition-fast: 150ms ease;
-  --transition-normal: 200ms ease;
-  --transition-slow: 300ms ease;
-  --transition-transform: 500ms ease;
+  /* ---------- Chuyển động ----------
+     Chuyển động không do người dùng kích hoạt dùng rất dè dặt. Hiệu ứng
+     trôi-lên cho từng khối và transition hover trên mọi thẻ là mặc định, và
+     đọc ra ngay là giao diện sinh tự động. */
+  --transition-fast: 120ms ease;
+  --transition-normal: 180ms ease;
+  --transition-slow: 260ms ease;
+  --transition-transform: 320ms ease;
 
-  /* ---------- Workplace surfaces ----------
-     Cards separate by elevation, not by a 1px outline: an interface whose
-     every box is drawn round reads as a wireframe. Rolled out on the feed and
-     Work Chat first; the remaining screens still use the Material scale above. */
-  --ws-canvas: #f3f5f9;
-  --ws-card: #ffffff;
-  --ws-card-shadow: 0 1px 3px rgb(15 23 42 / 8%);
-  --ws-card-shadow-hover: 0 4px 12px rgb(15 23 42 / 11%);
-  --ws-line: #eef2f7;
-  --ws-chip: #f1f5f9;
+  /* ---------- Thang Workplace ----------
+     Giữ tên để các màn hình đã chuyển sang thang này không phải sửa, nhưng
+     giá trị giờ trỏ về cùng bảng màu trên. Đây là chỗ hai hệ thống thôi đánh
+     nhau. */
+  --ws-canvas: var(--giay);
+  --ws-card: var(--giay-noi);
+  --ws-card-shadow: 0 0 0 1px var(--ke);
+  --ws-card-shadow-hover: 0 0 0 1px var(--ke-dam);
+  --ws-line: var(--ke);
+  --ws-chip: #e4e8df;
 
-  --ws-ink: #0f172a;
-  --ws-ink-soft: #475569;
-  --ws-ink-muted: #64748b;
+  --ws-ink: var(--muc);
+  --ws-ink-soft: var(--muc-nhat);
+  --ws-ink-muted: var(--muc-mo);
 
-  /* The one saturated colour, used for what the reader should act on. */
-  /* Indigo, from the group-page mockups, where it is the colour of both the
-     primary button and the assistant pill. Changed on the token rather than
-     per screen: the one thing a design system cannot survive is a second
-     accent introduced by whichever page was redrawn last. */
-  --ws-accent: #4f46e5;
-  /* The filled buttons carry this rather than the flat accent. One token, so
-     the sidebar's upload button and the header's assistant button cannot
-     drift apart the way they had — each was reaching for --color-primary,
-     the old navy, from its own stylesheet. */
-  --ws-accent-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-  --ws-accent-ink: #ffffff;
-  --ws-accent-soft: #eef2ff;
+  --ws-accent: var(--dau);
+  /* Gradient cũ (#4f46e5 → #7c3aed) là một trong những dấu vết rõ nhất. Giữ
+     tên biến, trả về màu phẳng, thế là gradient biến mất khắp nơi cùng lúc. */
+  --ws-accent-gradient: var(--dau);
+  --ws-accent-ink: var(--giay-noi);
+  --ws-accent-soft: var(--dau-nhat);
 
-  --ws-ok-bg: #dcfce7;
-  --ws-ok-ink: #166534;
-  --ws-warn-bg: #fef3c7;
-  --ws-warn-ink: #854d0e;
-  --ws-alert: #b91c1c;
+  --ws-ok-bg: #e2ebe2;
+  --ws-ok-ink: #2f5a3a;
+  --ws-warn-bg: #f3ebd8;
+  --ws-warn-ink: #7a5410;
+  --ws-alert: var(--color-error);
+
+  /* ---------- Token bị tham chiếu mà chưa từng được khai báo ----------
+     Mười cái tên dưới đây đã nằm rải rác trong các stylesheet nhưng không
+     chỗ nào định nghĩa, nên trình duyệt bỏ qua nguyên khai báo chứa chúng và
+     phần tử âm thầm kế thừa giá trị khác. Riêng --font-body-sm được dùng
+     mười ba lần. Khai báo ở đây vì đây là lúc gộp tầng token, chứ không phải
+     thêm token mới: chúng vốn đã được dùng như thể có thật. */
+  --color-danger: var(--color-error);
+  --color-text-primary: var(--muc);
+  --color-text-secondary: var(--muc-nhat);
+  --font-primary: var(--font-family);
+  --font-body-sm: 400 13px/19px var(--font-family);
+  --font-headline-sm: 600 17px/25px var(--font-doc);
+  --font-title-lg: 600 17px/24px var(--font-family);
+  --font-title-md: 600 15px/22px var(--font-family);
+  --font-title-sm: 600 13px/18px var(--font-family);
+  --transition-medium: var(--transition-normal);
 }
 
 /* ==========================================================================
