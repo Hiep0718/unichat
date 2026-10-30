@@ -6,14 +6,13 @@
   overflow-x: hidden;
   overflow-y: auto;
   padding: clamp(24px, 5vw, 72px);
-  background: #f2f6fb;
+  background: var(--giay-sang);
 }
 
-.login-page__bg { position: fixed; inset: 0; pointer-events: none; }
-.login-page__blob { position: absolute; border-radius: 50%; filter: blur(90px); }
-.login-page__blob--1 { top: -18%; left: -8%; width: 44vw; height: 44vw; background: rgb(87 223 254 / 24%); }
-.login-page__blob--2 { right: -12%; bottom: -22%; width: 58vw; height: 58vw; background: rgb(30 58 138 / 12%); }
-.login-page__blob--3 { top: 35%; right: 42%; width: 24vw; height: 24vw; background: rgb(255 255 255 / 85%); }
+/* Ba vệt gradient mờ từng nằm sau biểu mẫu đã được bỏ. Trang đứng trên
+   nền giấy, và chính nét kẻ cùng mặt nổi của biểu mẫu làm việc tách lớp.
+   Giữ lại .login-page__bg rỗng để đánh dấu không còn lớp trang trí nào. */
+.login-page__bg { display: none; }
 
 .login-page__main {
   position: relative;
@@ -34,24 +33,24 @@
   height: 48px;
   place-items: center;
   border-radius: 16px;
-  background: #102b78;
+  background: var(--muc);
   color: white;
   box-shadow: 0 10px 24px rgb(16 43 120 / 22%);
 }
-.login-page__logo-text { color: #102b78; font-size: 25px; font-weight: 750; letter-spacing: -.045em; }
-.login-page__eyebrow { color: #167487; font-size: 11px; font-weight: 750; letter-spacing: .16em; }
-.login-page__story h2 { margin: 18px 0; color: #10244e; font-size: clamp(34px, 4.2vw, 54px); line-height: 1.12; letter-spacing: -.045em; }
-.login-page__story > p { max-width: 400px; color: #58677e; font-size: 16px; line-height: 1.8; }
+.login-page__logo-text { color: var(--muc); font-size: 25px; font-weight: 750; letter-spacing: -.045em; }
+.login-page__eyebrow { color: var(--muc); font-size: 11px; font-weight: 750; letter-spacing: .16em; }
+.login-page__story h2 { margin: 18px 0; color: var(--muc); font-size: clamp(34px, 4.2vw, 54px); line-height: 1.12; letter-spacing: -.045em; }
+.login-page__story > p { max-width: 400px; color: var(--muc-nhat); font-size: 16px; line-height: 1.8; }
 .login-page__story-note {
   display: flex;
   align-items: center;
   gap: 12px;
   margin-top: 36px;
-  color: #263d62;
+  color: var(--muc);
   font-size: 13px;
   font-weight: 600;
 }
-.login-page__story-note .material-symbols-outlined { color: #168398; }
+.login-page__story-note .material-symbols-outlined { color: var(--muc); }
 
 .login-page .login-card {
   padding: clamp(26px, 4vw, 44px);
@@ -62,18 +61,18 @@
   backdrop-filter: blur(18px);
 }
 .login-page .login-card__header { margin-bottom: 30px; text-align: left; }
-.login-page .login-card__title { margin-bottom: 8px; color: #152748; font-size: 25px; letter-spacing: -.035em; }
-.login-page .login-card__subtitle { color: #6a778d; font-size: 14px; }
+.login-page .login-card__title { margin-bottom: 8px; color: var(--muc); font-size: 25px; letter-spacing: -.035em; }
+.login-page .login-card__subtitle { color: var(--muc-mo); font-size: 14px; }
 .login-page__badge {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   margin-top: 22px;
-  color: #69768a;
+  color: var(--muc-mo);
   font-size: 11px;
 }
-.login-page__badge-icon { color: #168398; }
+.login-page__badge-icon { color: var(--muc); }
 
 @media (max-width: 760px) {
   .login-page { min-height: 100svh; align-items: start; padding: 22px 16px 34px; }
