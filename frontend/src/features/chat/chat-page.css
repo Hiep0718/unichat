@@ -431,18 +431,59 @@
 }
 
 /* Assistant Message Card Surface — sleek modern RAG SaaS card */
+/* Cột đọc. Giấy nổi, một nét kẻ, không bóng đổ và không đuôi bong bóng:
+   đây là văn bản để đọc và đối chiếu, không phải một lời thoại. */
 .chat-msg--assistant .chat-msg__bubble {
   background: var(--giay-noi);
-  border: 1px solid var(--color-outline-variant, var(--ke));
-  padding: 20px 24px;
-  border-radius: 4px 18px 18px 18px;
-  box-shadow: 0 4px 20px -4px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid var(--ke);
+  padding: 22px 26px;
+  border-radius: var(--radius-lg);
 }
 
-.chat-msg--assistant .chat-msg__bubble:hover {
-  border-color: var(--ke-dam);
-  box-shadow: 0 8px 24px -4px rgba(15, 23, 42, 0.09), 0 2px 8px -1px rgba(15, 23, 42, 0.04);
+/* Chữ của câu trả lời đặt trong mặt chữ dùng để đọc, giãn dòng rộng hơn chữ
+   giao diện cùng cỡ. Phần còn lại của màn hình vẫn là sans. */
+.chat-msg--assistant .chat-msg__bubble {
+  font: var(--font-body-lg);
+  color: var(--muc);
+}
+
+/* ==========================================================================
+   Cột đọc và lề bằng chứng
+
+   Lề được chừa bằng padding chứ không phải bằng một cột lưới. Một ô lưới cao
+   hơn hàng của nó sẽ kéo cao chính hàng đó, và rãnh — vốn dài — đã kéo cao
+   hàng tiêu đề rồi đẩy câu trả lời xuống đáy tin nhắn. Rãnh là chú giải cho
+   cột đọc, nó không được quyền sắp đặt cột đọc.
+   ========================================================================== */
+
+.chat-msg--assistant .chat-msg__content-zone {
+  position: relative;
+  max-inline-size: calc(var(--measure) + 292px);
+  padding-inline-end: 292px;
+}
+
+/* Neo lên đầu, lề trên đẩy nó xuống qua dòng tên người trả lời để dòng đầu
+   của rãnh canh ngang với đoạn văn đầu tiên. */
+.chat-msg--assistant .evidence-rail {
+  position: absolute;
+  inset-block-start: 34px;
+  inset-inline-end: 0;
+  inline-size: 252px;
+}
+
+/* Dưới ngưỡng này không còn lề để viết vào: trả lại một cột, rãnh xuống dưới
+   câu trả lời và nét kẻ xoay thành kẻ ngang (xem citation-panel.css). */
+@media (max-width: 1100px) {
+  .chat-msg--assistant .chat-msg__content-zone {
+    max-inline-size: none;
+    padding-inline-end: 0;
+  }
+
+  .chat-msg--assistant .evidence-rail {
+    position: static;
+    inline-size: auto;
+    margin-block-start: 4px;
+  }
 }
 
 /* AI Thinking Message Bubble Placeholder */
@@ -495,11 +536,12 @@
   padding: 2px 0;
 }
 
+/* Thân câu trả lời là nội dung để đọc, không phải chữ của giao diện: đặt nó
+   trong mặt chữ dùng để đọc, cùng một mặt chữ với trích đoạn ở rãnh bên
+   cạnh, nên mắt không phải đổi mặt chữ khi đối chiếu luận điểm với nguồn. */
 .chat-msg__markdown {
-  font: var(--font-body-md);
-  font-size: 14.5px;
-  color: var(--color-on-surface, var(--muc));
-  line-height: 1.7;
+  font: var(--font-body-lg);
+  color: var(--muc);
 }
 
 .chat-msg__markdown p {
