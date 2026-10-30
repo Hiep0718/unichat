@@ -164,7 +164,6 @@ function ForgotPasswordPage() {
                 disabled={requestOtpMutation.isPending}
               >
                 {requestOtpMutation.isPending ? 'Đang gửi yêu cầu...' : 'Gửi mã OTP'}
-                {!requestOtpMutation.isPending && <Icon name="arrow_forward" size={18} />}
               </button>
             </form>
           ) : (

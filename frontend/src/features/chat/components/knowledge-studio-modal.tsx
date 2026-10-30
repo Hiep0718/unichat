@@ -698,7 +698,7 @@ export const KnowledgeStudioModal: React.FC<KnowledgeStudioModalProps> = ({
             <div className="unichat-modal-report">
               <div className="unichat-report-paper">
                 <div className="unichat-report-paper__cover">
-                  <span className="unichat-report-paper__badge">BÁO CÁO HỌC THUẬT RAG</span>
+                  <span className="unichat-report-paper__badge">Báo cáo học thuật RAG</span>
                   <h2 className="unichat-report-paper__title">{reportData.title}</h2>
                   <span className="unichat-report-paper__meta">{reportData.meta}</span>
                 </div>

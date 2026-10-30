@@ -86,7 +86,6 @@ export function RegisterForm() {
         disabled={registerMutation.isPending}
       >
         {registerMutation.isPending ? 'Đang xử lý...' : 'Tạo tài khoản'}
-        {!registerMutation.isPending && <Icon name="arrow_forward" size={18} />}
       </button>
 
       <div className="register-form__footer">

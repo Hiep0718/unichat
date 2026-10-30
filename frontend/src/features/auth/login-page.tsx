@@ -24,7 +24,6 @@ function LoginPage() {
             <div className="login-page__logo-icon"><Icon name="school" size={25} filled /></div>
             <h1 className="login-page__logo-text">UniChat</h1>
           </div>
-          <span className="login-page__eyebrow">TRI THỨC, KẾT NỐI, PHÁT TRIỂN</span>
           <h2>Không gian học thuật<br />dành riêng cho bạn.</h2>
           <p>Tập trung tài liệu, trao đổi cùng AI và tiếp tục hành trình học tập ngay tại nơi bạn dừng lại.</p>
           <div className="login-page__story-note">

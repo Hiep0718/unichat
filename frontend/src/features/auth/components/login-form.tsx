@@ -111,7 +111,6 @@ export function LoginForm() {
           disabled={loginMutation.isPending}
         >
           {loginMutation.isPending ? 'Đang xử lý...' : 'Đăng nhập'}
-          {!loginMutation.isPending && <Icon name="arrow_forward" size={18} />}
         </button>
 
 

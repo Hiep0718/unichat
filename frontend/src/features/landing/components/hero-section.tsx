@@ -46,7 +46,6 @@ function HeroCopy() {
       <div className="hero__cta-group">
         <button className="hero__cta-primary" type="button">
           Bắt đầu miễn phí
-          <Icon name="arrow_forward" size={18} />
         </button>
         <button className="hero__cta-secondary" type="button">
           <Icon name="play_circle" size={18} />
