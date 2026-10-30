@@ -5,45 +5,22 @@
   align-items: center;
   justify-content: space-between;
   padding: 34px 36px;
-  /* The picture, over the gradient that used to be the whole banner. Listed
-     first because the first layer is the topmost: the gradient is no longer
-     what is seen, it is what paints instantly while the picture decodes and
-     what remains if the file cannot be fetched at all. It travels navy →
-     indigo → violet, the same journey the picture makes, so the swap between
-     them is not a change of subject.
-
-     Chosen to the rule the workspace covers follow — dark, close to abstract,
-     calm on the left where the greeting is written. See
-     public/covers/README.md. */
-  background-image: url('/covers/banner-dashboard.jpg'),
-    linear-gradient(120deg, var(--dau-dam) 0%, var(--dau) 46%, var(--dau-dam) 100%);
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  /* Giấy nổi, tách bằng một nét kẻ. Dải này từng mang một bức ảnh tối phủ
+     lớp màn navy; trên nền giấy nó đọc ra như một lỗ thủng cắt vào trang, và
+     là thứ ồn nhất trên một màn hình mà chủ thể thật — các không gian của
+     người dùng — lại nằm yên lặng bên dưới. Bức ảnh cũng không nói gì về
+     người này hay nhóm của họ, nên nó là trang trí thuần túy. */
+  background: var(--giay-noi);
+  box-shadow: 0 0 0 1px var(--ke);
   border-radius: var(--radius-xl);
-  color: var(--giay-noi);
+  color: var(--muc);
   position: relative;
   overflow: hidden;
   isolation: isolate;
 }
 
-/* Darkens the left, where the greeting and its subtitle are written, and lets
-   the picture through on the right. The cards carry the same guarantee with a
-   scrim weighted to their lower edge; this one is weighted sideways because
-   that is where this text sits. */
-.welcome-banner::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    100deg,
-    rgb(8 11 36 / 72%) 0%,
-    rgb(8 11 36 / 46%) 38%,
-    rgb(8 11 36 / 6%) 72%,
-    transparent 100%
-  );
-  pointer-events: none;
-}
+/* Lớp màn đã được bỏ cùng với bức ảnh: chữ mực trên giấy không cần ai làm
+   tối nền giúp. */
 
 .welcome-banner__content {
   position: relative;
@@ -54,7 +31,7 @@
   font: var(--font-headline-lg);
   font-weight: 700;
   letter-spacing: -0.015em;
-  color: var(--giay-noi);
+  color: var(--muc);
   margin-bottom: 6px;
   display: flex;
   align-items: center;
@@ -63,7 +40,7 @@
 
 .welcome-banner__subtitle {
   font: var(--font-body-md);
-  color: rgb(255 255 255 / 82%);
+  color: var(--muc-nhat);
 }
 
 .welcome-banner__emoji {
