@@ -16,7 +16,7 @@
 .post-bg__text {
   margin: 0;
   max-width: 34ch;
-  color: #fff;
+  color: var(--giay-noi);
   font-size: 25px;
   font-weight: 700;
   line-height: 1.34;

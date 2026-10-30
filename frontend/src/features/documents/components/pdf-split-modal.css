@@ -25,8 +25,8 @@
 .pdf-split-modal {
   width: 100%;
   max-width: 560px;
-  background: var(--color-surface, #ffffff);
-  border: 1px solid var(--color-outline-variant, #e2e8f0);
+  background: var(--color-surface, var(--giay-noi));
+  border: 1px solid var(--color-outline-variant, var(--ke));
   border-radius: var(--radius-xl, 16px);
   padding: 24px;
   box-shadow: var(--shadow-xl, 0 20px 25px -5px rgba(0, 0, 0, 0.1));
@@ -45,8 +45,8 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: #fef3c7;
-  color: #d97706;
+  background: var(--ws-warn-bg);
+  color: var(--ws-warn-ink);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -59,24 +59,24 @@
   font: var(--font-headline-md);
   font-size: 16px;
   font-weight: 700;
-  color: var(--color-on-surface, #0f172a);
+  color: var(--color-on-surface, var(--muc));
 }
 
 .pdf-split-modal__subtitle {
   margin: 0;
   font: var(--font-body-md);
   font-size: 13px;
-  color: var(--color-on-surface-variant, #64748b);
+  color: var(--color-on-surface-variant, var(--muc-nhat));
   line-height: 1.4;
 }
 
 .pdf-split-modal__file-list {
   max-height: 140px;
   overflow-y: auto;
-  border: 1px solid var(--color-outline-variant, #e2e8f0);
+  border: 1px solid var(--color-outline-variant, var(--ke));
   border-radius: var(--radius-md, 8px);
   padding: 8px 12px;
-  background: var(--color-surface-container-low, #f8fafc);
+  background: var(--color-surface-container-low, var(--giay-sang));
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -92,7 +92,7 @@
 
 .pdf-split-modal__file-name {
   font-weight: 600;
-  color: var(--color-on-surface, #0f172a);
+  color: var(--color-on-surface, var(--muc));
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -100,14 +100,14 @@
 }
 
 .pdf-split-modal__file-size {
-  color: #dc2626;
+  color: var(--color-error);
   font-weight: 700;
   font-size: 12px;
 }
 
 .pdf-split-modal__warning-box {
-  background: #fffbeb;
-  border: 1px solid #fef3c7;
+  background: var(--giay-sang);
+  border: 1px solid var(--ws-warn-bg);
   border-radius: var(--radius-md, 8px);
   padding: 12px 14px;
 }
@@ -117,7 +117,7 @@
   font: var(--font-label-md);
   font-size: 13px;
   font-weight: 700;
-  color: #92400e;
+  color: var(--ws-warn-ink);
 }
 
 .pdf-split-modal__warning-list {
@@ -125,7 +125,7 @@
   padding-left: 18px;
   font: var(--font-body-md);
   font-size: 12px;
-  color: #78350f;
+  color: var(--ws-warn-ink);
   line-height: 1.5;
   display: flex;
   flex-direction: column;
@@ -138,8 +138,8 @@
   gap: 8px;
   font: var(--font-label-md);
   font-size: 13px;
-  color: var(--color-primary, #2563eb);
-  background: var(--color-surface-container-low, #f8fafc);
+  color: var(--color-primary, var(--dau));
+  background: var(--color-surface-container-low, var(--giay-sang));
   padding: 8px 12px;
   border-radius: var(--radius-md, 8px);
 }
@@ -176,22 +176,22 @@
 
 .pdf-split-modal__btn--cancel {
   background: transparent;
-  border: 1px solid var(--color-outline-variant, #cbd5e1);
-  color: var(--color-on-surface-variant, #475569);
+  border: 1px solid var(--color-outline-variant, var(--ke-dam));
+  color: var(--color-on-surface-variant, var(--muc-nhat));
 }
 
 .pdf-split-modal__btn--cancel:hover:not(:disabled) {
-  background: var(--color-surface-container-high, #f1f5f9);
+  background: var(--color-surface-container-high, var(--giay-chim));
 }
 
 .pdf-split-modal__btn--confirm {
-  background: var(--color-primary, #2563eb);
-  border: 1px solid var(--color-primary, #2563eb);
-  color: #ffffff;
+  background: var(--color-primary, var(--dau));
+  border: 1px solid var(--color-primary, var(--dau));
+  color: var(--giay-noi);
 }
 
 .pdf-split-modal__btn--confirm:hover:not(:disabled) {
-  background: #1d4ed8;
+  background: var(--dau);
 }
 
 .pdf-split-modal__btn:disabled {

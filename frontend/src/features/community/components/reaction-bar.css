@@ -101,8 +101,8 @@
   transform: translateX(-50%);
   padding: 3px 8px;
   border-radius: var(--radius-full);
-  background: var(--color-inverse-surface, #1f2937);
-  color: var(--color-inverse-on-surface, #ffffff);
+  background: var(--color-inverse-surface, var(--muc));
+  color: var(--color-inverse-on-surface, var(--giay-noi));
   font: var(--font-label-sm);
   font-size: 11px;
   white-space: nowrap;

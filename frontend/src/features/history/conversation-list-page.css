@@ -17,7 +17,7 @@
   justify-content: space-between;
   gap: 20px;
   padding-bottom: 24px;
-  border-bottom: 1px solid var(--color-outline-variant, #e2e8f0);
+  border-bottom: 1px solid var(--color-outline-variant, var(--ke));
 }
 
 .conv-list-header__info {
@@ -30,8 +30,8 @@
   width: 52px;
   height: 52px;
   border-radius: var(--radius-xl, 16px);
-  background: linear-gradient(135deg, #00687a 0%, #0284c7 100%);
-  color: #ffffff;
+  background: linear-gradient(135deg, var(--muc) 0%, var(--dau) 100%);
+  color: var(--giay-noi);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -49,7 +49,7 @@
   font: var(--font-headline-lg);
   font-size: 22px;
   font-weight: 800;
-  color: var(--color-on-surface, #0f172a);
+  color: var(--color-on-surface, var(--muc));
   margin: 0;
   letter-spacing: -0.3px;
 }
@@ -57,7 +57,7 @@
 .conv-list-header__desc {
   font: var(--font-body-md);
   font-size: 14px;
-  color: var(--color-on-surface-variant, #64748b);
+  color: var(--color-on-surface-variant, var(--muc-nhat));
   margin: 0;
 }
 
@@ -66,8 +66,8 @@
   align-items: center;
   gap: 8px;
   padding: 12px 22px;
-  background: linear-gradient(135deg, #00687a 0%, #0284c7 100%);
-  color: #ffffff;
+  background: linear-gradient(135deg, var(--muc) 0%, var(--dau) 100%);
+  color: var(--giay-noi);
   border: none;
   border-radius: var(--radius-lg, 12px);
   font: var(--font-label-md);
@@ -103,7 +103,7 @@
   left: 14px;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--color-outline, #94a3b8);
+  color: var(--color-outline, var(--muc-mo));
   font-size: 20px;
   pointer-events: none;
 }
@@ -111,18 +111,18 @@
 .conv-list-search__input {
   width: 100%;
   padding: 10px 16px 10px 44px;
-  background: #ffffff;
-  border: 1.5px solid var(--color-outline-variant, #cbd5e1);
+  background: var(--giay-noi);
+  border: 1.5px solid var(--color-outline-variant, var(--ke-dam));
   border-radius: var(--radius-lg, 12px);
   font: var(--font-body-md);
   font-size: 14px;
-  color: var(--color-on-surface, #0f172a);
+  color: var(--color-on-surface, var(--muc));
   outline: none;
   transition: all var(--transition-fast, 0.15s ease);
 }
 
 .conv-list-search__input:focus {
-  border-color: var(--color-secondary, #0284c7);
+  border-color: var(--color-secondary, var(--dau));
   box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.12);
 }
 
@@ -131,13 +131,13 @@
   align-items: center;
   gap: 6px;
   padding: 8px 16px;
-  background: var(--color-surface-container-low, #f1f5f9);
-  border: 1px solid var(--color-outline-variant, #e2e8f0);
+  background: var(--color-surface-container-low, var(--giay-chim));
+  border: 1px solid var(--color-outline-variant, var(--ke));
   border-radius: var(--radius-full, 9999px);
   font: var(--font-label-sm);
   font-size: 13px;
   font-weight: 700;
-  color: var(--color-on-surface-variant, #475569);
+  color: var(--color-on-surface-variant, var(--muc-nhat));
 }
 
 /* ── Conversations List Cards Grid ── */
@@ -153,8 +153,8 @@
   justify-content: space-between;
   gap: 20px;
   padding: 18px 24px;
-  background: #ffffff;
-  border: 1.5px solid var(--color-outline-variant, #e2e8f0);
+  background: var(--giay-noi);
+  border: 1.5px solid var(--color-outline-variant, var(--ke));
   border-radius: var(--radius-xl, 14px);
   text-decoration: none;
   color: inherit;
@@ -164,7 +164,7 @@
 }
 
 .conv-card:hover {
-  border-color: var(--color-secondary, #0284c7);
+  border-color: var(--color-secondary, var(--dau));
   transform: translateY(-2px);
   box-shadow: 0 10px 24px -4px rgba(2, 132, 199, 0.14);
 }
@@ -180,8 +180,8 @@
   width: 44px;
   height: 44px;
   border-radius: var(--radius-lg, 12px);
-  background: var(--color-secondary-container, #e0f2fe);
-  color: var(--color-secondary, #0284c7);
+  background: var(--color-secondary-container, var(--dau-nhat));
+  color: var(--color-secondary, var(--dau));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -190,8 +190,8 @@
 }
 
 .conv-card:hover .conv-card__icon-box {
-  background: var(--color-secondary, #0284c7);
-  color: #ffffff;
+  background: var(--color-secondary, var(--dau));
+  color: var(--giay-noi);
 }
 
 .conv-card__details {
@@ -205,7 +205,7 @@
   font: var(--font-headline-md);
   font-size: 15px;
   font-weight: 700;
-  color: var(--color-on-surface, #0f172a);
+  color: var(--color-on-surface, var(--muc));
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
@@ -218,7 +218,7 @@
   gap: 12px;
   font: var(--font-label-sm);
   font-size: 12px;
-  color: var(--color-outline, #94a3b8);
+  color: var(--color-outline, var(--muc-mo));
 }
 
 .conv-card__time {
@@ -239,9 +239,9 @@
   align-items: center;
   gap: 6px;
   padding: 8px 16px;
-  background: var(--color-surface-container-low, #f1f5f9);
-  color: var(--color-secondary, #0284c7);
-  border: 1px solid var(--color-outline-variant, #e2e8f0);
+  background: var(--color-surface-container-low, var(--giay-chim));
+  color: var(--color-secondary, var(--dau));
+  border: 1px solid var(--color-outline-variant, var(--ke));
   border-radius: var(--radius-md, 8px);
   font: var(--font-label-md);
   font-size: 13px;
@@ -250,16 +250,16 @@
 }
 
 .conv-card:hover .conv-card__continue-btn {
-  background: var(--color-secondary, #0284c7);
-  color: #ffffff;
-  border-color: var(--color-secondary, #0284c7);
+  background: var(--color-secondary, var(--dau));
+  color: var(--giay-noi);
+  border-color: var(--color-secondary, var(--dau));
 }
 
 .conv-card__delete-btn {
   padding: 8px;
   background: transparent;
   border: none;
-  color: var(--color-outline, #94a3b8);
+  color: var(--color-outline, var(--muc-mo));
   border-radius: var(--radius-md, 8px);
   cursor: pointer;
   display: flex;
@@ -269,8 +269,8 @@
 }
 
 .conv-card__delete-btn:hover {
-  background: #ffe4e6;
-  color: #e11d48;
+  background: var(--giay-sang);
+  color: var(--color-error);
 }
 
 /* ── Skeleton Loading Grid ── */
@@ -281,8 +281,8 @@
 
 .conv-list-skeleton-card {
   height: 80px;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: var(--giay-noi);
+  border: 1px solid var(--ke);
   border-radius: 14px;
   padding: 18px 24px;
   display: flex;
@@ -297,8 +297,8 @@
   align-items: center;
   justify-content: center;
   padding: 60px 24px;
-  background: #ffffff;
-  border: 2px dashed var(--color-outline-variant, #cbd5e1);
+  background: var(--giay-noi);
+  border: 2px dashed var(--color-outline-variant, var(--ke-dam));
   border-radius: var(--radius-xl, 16px);
   text-align: center;
   gap: 14px;
@@ -308,8 +308,8 @@
   width: 64px;
   height: 64px;
   border-radius: 20px;
-  background: #e0f2fe;
-  color: #0284c7;
+  background: var(--dau-nhat);
+  color: var(--dau);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -318,13 +318,13 @@
 .conv-list-empty__title {
   font-size: 18px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--muc);
   margin: 0;
 }
 
 .conv-list-empty__desc {
   font-size: 14px;
-  color: #64748b;
+  color: var(--muc-nhat);
   max-width: 420px;
   margin: 0;
   line-height: 1.5;

@@ -2,7 +2,7 @@
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  color: #fff;
+  color: var(--giay-noi);
   font-weight: 700;
   line-height: 1;
   user-select: none;

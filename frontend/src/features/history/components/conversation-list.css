@@ -71,13 +71,13 @@
 .conversation-item__delete {
   background: transparent;
   border: none;
-  color: #ef4444;
+  color: var(--color-error);
   cursor: pointer;
   font-size: 14px;
   padding: 2px 6px;
 }
 
 .conversation-item__delete:hover {
-  background: #fef2f2;
+  background: var(--giay-noi);
   border-radius: 4px;
 }

@@ -31,7 +31,7 @@
   overflow-y: auto;
   /* A faint tint separates the transcript from the chrome above and below
      without drawing another line across the panel. */
-  background: #fbfcfe;
+  background: var(--giay-noi);
 }
 
 .message-thread__empty {

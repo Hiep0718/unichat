@@ -6,8 +6,8 @@
   height: 100%;
   width: 360px;
   flex-shrink: 0;
-  background: var(--color-surface, #ffffff);
-  border-left: 1px solid var(--color-outline-variant, #e2e8f0);
+  background: var(--color-surface, var(--giay-noi));
+  border-left: 1px solid var(--color-outline-variant, var(--ke));
   box-shadow: -4px 0 24px rgba(15, 23, 42, 0.04);
   z-index: 15;
   overflow: hidden;
@@ -19,8 +19,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 16px 20px;
-  background: var(--color-surface-container-lowest, #f8fafc);
-  border-bottom: 1px solid var(--color-outline-variant, #e2e8f0);
+  background: var(--color-surface-container-lowest, var(--giay-sang));
+  border-bottom: 1px solid var(--color-outline-variant, var(--ke));
 }
 
 .unichat-studio-header__title-group {
@@ -31,13 +31,13 @@
 
 .unichat-studio-header__icon {
   font-size: 22px;
-  color: var(--color-primary, #0284c7);
+  color: var(--color-primary, var(--dau));
 }
 
 .unichat-studio-header__title {
   font-size: 15px;
   font-weight: 700;
-  color: var(--color-on-surface, #0f172a);
+  color: var(--color-on-surface, var(--muc));
   margin: 0;
   letter-spacing: -0.2px;
 }
@@ -51,14 +51,14 @@
   border: none;
   border-radius: var(--radius-md, 8px);
   background: transparent;
-  color: var(--color-on-surface-variant, #64748b);
+  color: var(--color-on-surface-variant, var(--muc-nhat));
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .unichat-studio-close-btn:hover {
-  background: var(--color-surface-container-high, #e2e8f0);
-  color: var(--color-on-surface, #0f172a);
+  background: var(--color-surface-container-high, var(--ke));
+  color: var(--color-on-surface, var(--muc));
 }
 
 /* Navigation Tabs */
@@ -68,8 +68,8 @@
   justify-content: space-between;
   gap: 10px;
   padding: 10px 14px;
-  background: var(--color-surface-container-lowest, #f8fafc);
-  border-bottom: 1px solid var(--color-outline-variant, #e2e8f0);
+  background: var(--color-surface-container-lowest, var(--giay-sang));
+  border-bottom: 1px solid var(--color-outline-variant, var(--ke));
 }
 
 .unichat-studio-tabs__group {
@@ -94,7 +94,7 @@
   background: transparent;
   font-size: 13px;
   font-weight: 600;
-  color: var(--color-on-surface-variant, #64748b);
+  color: var(--color-on-surface-variant, var(--muc-nhat));
   white-space: nowrap;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -112,14 +112,14 @@
 }
 
 .unichat-studio-tab:hover {
-  background: var(--color-surface-container, #f1f5f9);
-  color: var(--color-on-surface, #1e293b);
+  background: var(--color-surface-container, var(--giay-chim));
+  color: var(--color-on-surface, var(--muc));
 }
 
 .unichat-studio-tab--active {
-  background: var(--color-surface, #ffffff);
-  color: var(--color-primary, #0284c7);
-  border-color: var(--color-outline-variant, #cbd5e1);
+  background: var(--color-surface, var(--giay-noi));
+  color: var(--color-primary, var(--dau));
+  border-color: var(--color-outline-variant, var(--ke-dam));
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
@@ -142,19 +142,19 @@
   font-weight: 800;
   letter-spacing: 0.6px;
   text-transform: uppercase;
-  color: var(--color-on-surface-variant, #64748b);
+  color: var(--color-on-surface-variant, var(--muc-nhat));
 }
 
 .unichat-section-title .material-symbols-outlined {
   font-size: 16px;
-  color: var(--color-primary, #0284c7);
+  color: var(--color-primary, var(--dau));
 }
 
 /* Info Card Banner */
 .unichat-info-card {
   padding: 14px 16px;
-  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-  border: 1px solid #bae6fd;
+  background: linear-gradient(135deg, var(--dau-nhat) 0%, var(--dau-nhat) 100%);
+  border: 1px solid var(--dau);
   border-radius: var(--radius-lg, 12px);
 }
 
@@ -162,7 +162,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #0284c7;
+  color: var(--dau);
   margin-bottom: 4px;
 }
 
@@ -173,12 +173,12 @@
 .unichat-info-card__title {
   font-size: 13px;
   font-weight: 700;
-  color: #0369a1;
+  color: var(--dau-dam);
 }
 
 .unichat-info-card__desc {
   font-size: 12px;
-  color: #0c4a6e;
+  color: var(--muc);
   line-height: 1.45;
   margin: 0;
 }
@@ -195,8 +195,8 @@
   align-items: center;
   gap: 12px;
   padding: 12px 14px;
-  background: var(--color-surface, #ffffff);
-  border: 1px solid var(--color-outline-variant, #e2e8f0);
+  background: var(--color-surface, var(--giay-noi));
+  border: 1px solid var(--color-outline-variant, var(--ke));
   border-radius: var(--radius-lg, 12px);
   text-align: left;
   cursor: pointer;
@@ -206,8 +206,8 @@
 }
 
 .unichat-action-row:hover {
-  background: var(--color-surface-container-lowest, #f8fafc);
-  border-color: var(--color-primary, #0284c7);
+  background: var(--color-surface-container-lowest, var(--giay-sang));
+  border-color: var(--color-primary, var(--dau));
   transform: translateX(2px);
   box-shadow: 0 4px 12px rgba(2, 132, 199, 0.08);
 }
@@ -219,7 +219,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;
+  color: var(--giay-noi);
   flex-shrink: 0;
 }
 
@@ -227,12 +227,12 @@
   font-size: 20px;
 }
 
-.unichat-action-row__icon-box--cyan { background: linear-gradient(135deg, #0284c7, #38bdf8); }
-.unichat-action-row__icon-box--purple { background: linear-gradient(135deg, #8b5cf6, #c084fc); }
-.unichat-action-row__icon-box--emerald { background: linear-gradient(135deg, #10b981, #34d399); }
-.unichat-action-row__icon-box--amber { background: linear-gradient(135deg, #f59e0b, #fbbf24); }
-.unichat-action-row__icon-box--rose { background: linear-gradient(135deg, #e11d48, #fb7185); }
-.unichat-action-row__icon-box--indigo { background: linear-gradient(135deg, #4f46e5, #818cf8); }
+.unichat-action-row__icon-box--cyan { background: linear-gradient(135deg, var(--dau), var(--dau)); }
+.unichat-action-row__icon-box--purple { background: linear-gradient(135deg, var(--dau), var(--dau)); }
+.unichat-action-row__icon-box--emerald { background: linear-gradient(135deg, var(--color-success), var(--ws-ok-ink)); }
+.unichat-action-row__icon-box--amber { background: linear-gradient(135deg, var(--color-warning), var(--ws-warn-ink)); }
+.unichat-action-row__icon-box--rose { background: linear-gradient(135deg, var(--color-error), var(--color-error)); }
+.unichat-action-row__icon-box--indigo { background: linear-gradient(135deg, var(--dau), var(--dau)); }
 
 .unichat-action-row__text {
   flex: 1;
@@ -242,7 +242,7 @@
 .unichat-action-row__title {
   font-size: 13px;
   font-weight: 700;
-  color: var(--color-on-surface, #0f172a);
+  color: var(--color-on-surface, var(--muc));
   margin-bottom: 2px;
   line-height: 1.3;
   overflow: hidden;
@@ -252,7 +252,7 @@
 
 .unichat-action-row__desc {
   font-size: 11px;
-  color: var(--color-on-surface-variant, #64748b);
+  color: var(--color-on-surface-variant, var(--muc-nhat));
   line-height: 1.35;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -261,12 +261,12 @@
 
 .unichat-action-row__chevron {
   font-size: 18px;
-  color: var(--color-outline, #94a3b8);
+  color: var(--color-outline, var(--muc-mo));
   transition: transform 0.2s ease;
 }
 
 .unichat-action-row:hover .unichat-action-row__chevron {
-  color: var(--color-primary, #0284c7);
+  color: var(--color-primary, var(--dau));
   transform: translateX(2px);
 }
 
@@ -289,7 +289,7 @@
   gap: 4px;
   border: none;
   background: transparent;
-  color: var(--color-primary, #0284c7);
+  color: var(--color-primary, var(--dau));
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -303,9 +303,9 @@
 .unichat-tool-detail__badge {
   font-size: 12px;
   font-weight: 700;
-  color: var(--color-on-surface-variant, #64748b);
+  color: var(--color-on-surface-variant, var(--muc-nhat));
   padding: 2px 8px;
-  background: var(--color-surface-container, #f1f5f9);
+  background: var(--color-surface-container, var(--giay-chim));
   border-radius: 9999px;
 }
 
@@ -341,13 +341,13 @@
 }
 
 .unichat-card-flip__front {
-  background: linear-gradient(145deg, #ffffff 0%, #f0f9ff 100%);
-  border: 1px solid #bae6fd;
+  background: linear-gradient(145deg, var(--giay-noi) 0%, var(--dau-nhat) 100%);
+  border: 1px solid var(--dau);
 }
 
 .unichat-card-flip__back {
-  background: linear-gradient(145deg, #f0fdf4 0%, #dcfce7 100%);
-  border: 1px solid #86efac;
+  background: linear-gradient(145deg, var(--giay-sang) 0%, var(--ws-ok-bg) 100%);
+  border: 1px solid var(--ws-ok-ink);
   transform: rotateY(180deg);
 }
 
@@ -356,20 +356,20 @@
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.6px;
-  color: #0369a1;
+  color: var(--dau-dam);
 }
 
 .unichat-card-flip__term {
   font-size: 16px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--muc);
   margin: 0;
 }
 
 .unichat-card-flip__def {
   font-size: 13px;
   line-height: 1.5;
-  color: #166534;
+  color: var(--ws-ok-ink);
   margin: 0;
 }
 
@@ -379,7 +379,7 @@
   justify-content: center;
   gap: 4px;
   font-size: 11px;
-  color: #64748b;
+  color: var(--muc-nhat);
 }
 
 .unichat-card-flip__controls {
@@ -394,28 +394,28 @@
   justify-content: center;
   gap: 4px;
   padding: 8px 16px;
-  border: 1px solid var(--color-outline-variant, #cbd5e1);
+  border: 1px solid var(--color-outline-variant, var(--ke-dam));
   border-radius: var(--radius-md, 8px);
-  background: var(--color-surface, #ffffff);
+  background: var(--color-surface, var(--giay-noi));
   font-size: 13px;
   font-weight: 600;
-  color: var(--color-on-surface, #334155);
+  color: var(--color-on-surface, var(--muc-nhat));
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .unichat-btn:hover:not(:disabled) {
-  background: var(--color-surface-container, #f1f5f9);
+  background: var(--color-surface-container, var(--giay-chim));
 }
 
 .unichat-btn--primary {
-  background: var(--color-primary, #0284c7);
-  color: #ffffff;
-  border-color: var(--color-primary, #0284c7);
+  background: var(--color-primary, var(--dau));
+  color: var(--giay-noi);
+  border-color: var(--color-primary, var(--dau));
 }
 
 .unichat-btn--primary:hover:not(:disabled) {
-  background: #0369a1;
+  background: var(--dau-dam);
 }
 
 .unichat-btn:disabled {
@@ -432,14 +432,14 @@
 
 .unichat-quiz-card {
   padding: 16px;
-  background: var(--color-surface-container-lowest, #f8fafc);
-  border: 1px solid var(--color-outline-variant, #e2e8f0);
+  background: var(--color-surface-container-lowest, var(--giay-sang));
+  border: 1px solid var(--color-outline-variant, var(--ke));
   border-radius: var(--radius-lg, 12px);
 }
 
 .unichat-quiz-card__title {
   font-size: 13px;
-  color: #0f172a;
+  color: var(--muc);
   margin-bottom: 12px;
   line-height: 1.45;
 }
@@ -452,32 +452,32 @@
 
 .unichat-quiz-option {
   padding: 10px 14px;
-  border: 1px solid var(--color-outline-variant, #cbd5e1);
+  border: 1px solid var(--color-outline-variant, var(--ke-dam));
   border-radius: var(--radius-md, 8px);
-  background: var(--color-surface, #ffffff);
+  background: var(--color-surface, var(--giay-noi));
   font-size: 12px;
   text-align: left;
-  color: #334155;
+  color: var(--muc-nhat);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .unichat-quiz-option:hover {
-  background: #e0f2fe;
-  border-color: #38bdf8;
+  background: var(--dau-nhat);
+  border-color: var(--dau);
 }
 
 .unichat-quiz-option--correct {
-  background: #dcfce7 !important;
-  border-color: #22c55e !important;
-  color: #15803d !important;
+  background: var(--ws-ok-bg) !important;
+  border-color: var(--ws-ok-ink) !important;
+  color: var(--ws-ok-ink) !important;
   font-weight: 700;
 }
 
 .unichat-quiz-option--wrong {
-  background: #fee2e2 !important;
-  border-color: #ef4444 !important;
-  color: #b91c1c !important;
+  background: var(--giay-sang) !important;
+  border-color: var(--color-error) !important;
+  color: var(--color-error) !important;
 }
 
 .unichat-quiz-explain {
@@ -492,13 +492,13 @@
 }
 
 .unichat-quiz-explain--correct {
-  background: #f0fdf4;
-  color: #166534;
+  background: var(--giay-sang);
+  color: var(--ws-ok-ink);
 }
 
 .unichat-quiz-explain--wrong {
-  background: #fef2f2;
-  color: #991b1b;
+  background: var(--giay-noi);
+  color: var(--color-error);
 }
 
 /* Saved Notes Pinboard */
@@ -516,16 +516,16 @@
   text-align: center;
   gap: 8px;
   padding: 28px 16px;
-  background: var(--color-surface-container-lowest, #f8fafc);
-  border: 1px dashed var(--color-outline-variant, #cbd5e1);
+  background: var(--color-surface-container-lowest, var(--giay-sang));
+  border: 1px dashed var(--color-outline-variant, var(--ke-dam));
   border-radius: var(--radius-lg, 12px);
-  color: var(--color-on-surface-variant, #64748b);
+  color: var(--color-on-surface-variant, var(--muc-nhat));
   font-size: 12px;
 }
 
 .unichat-notes-empty .material-symbols-outlined {
   font-size: 32px;
-  color: var(--color-outline, #94a3b8);
+  color: var(--color-outline, var(--muc-mo));
 }
 
 .unichat-notes-empty p {
@@ -541,8 +541,8 @@
 
 .unichat-note-card {
   padding: 12px 14px;
-  background: #fffbeb;
-  border: 1px solid #fde68a;
+  background: var(--giay-sang);
+  border: 1px solid var(--ws-warn-ink);
   border-radius: var(--radius-lg, 12px);
 }
 
@@ -556,7 +556,7 @@
 .unichat-note-card__title {
   font-size: 13px;
   font-weight: 700;
-  color: #78350f;
+  color: var(--ws-warn-ink);
 }
 
 .unichat-note-card__actions {
@@ -568,7 +568,7 @@
 .unichat-icon-btn {
   border: none;
   background: transparent;
-  color: #92400e;
+  color: var(--ws-warn-ink);
   cursor: pointer;
   padding: 2px;
   border-radius: 4px;
@@ -581,19 +581,19 @@
 }
 
 .unichat-icon-btn--danger:hover {
-  color: #ef4444;
+  color: var(--color-error);
 }
 
 .unichat-note-card__content {
   font-size: 12px;
   line-height: 1.45;
-  color: #92400e;
+  color: var(--ws-warn-ink);
   margin: 0 0 6px 0;
 }
 
 .unichat-note-card__time {
   font-size: 10px;
-  color: #b45309;
+  color: var(--ws-warn-ink);
 }
 
 /* Citation Inspector Tab */
@@ -605,22 +605,22 @@
 
 .unichat-citation-card {
   padding: 12px 14px;
-  background: var(--color-surface-container-lowest, #f8fafc);
-  border: 1px solid var(--color-outline-variant, #e2e8f0);
+  background: var(--color-surface-container-lowest, var(--giay-sang));
+  border: 1px solid var(--color-outline-variant, var(--ke));
   border-radius: var(--radius-lg, 12px);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .unichat-citation-card:hover {
-  background: var(--color-surface, #ffffff);
-  border-color: var(--color-primary, #0284c7);
+  background: var(--color-surface, var(--giay-noi));
+  border-color: var(--color-primary, var(--dau));
   box-shadow: 0 2px 8px rgba(2, 132, 199, 0.08);
 }
 
 .unichat-citation-card--selected {
-  background: #f0f9ff !important;
-  border-color: #0284c7 !important;
+  background: var(--dau-nhat) !important;
+  border-color: var(--dau) !important;
   box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2);
 }
 
@@ -635,13 +635,13 @@
 .unichat-citation-card__badge {
   font-size: 12px;
   font-weight: 800;
-  color: #0284c7;
+  color: var(--dau);
 }
 
 .unichat-citation-card__filename {
   font-size: 12px;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--muc);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -653,8 +653,8 @@
   font-weight: 700;
   padding: 2px 6px;
   border-radius: 9999px;
-  background: #dcfce7;
-  color: #15803d;
+  background: var(--ws-ok-bg);
+  color: var(--ws-ok-ink);
 }
 
 .unichat-citation-card__locator {
@@ -662,7 +662,7 @@
   align-items: center;
   gap: 4px;
   font-size: 11px;
-  color: #64748b;
+  color: var(--muc-nhat);
   margin-bottom: 6px;
 }
 
@@ -673,7 +673,7 @@
 .unichat-citation-card__excerpt {
   font-size: 12px;
   line-height: 1.45;
-  color: #334155;
+  color: var(--muc-nhat);
   font-style: italic;
   margin: 0;
 }
@@ -686,10 +686,10 @@
   gap: 8px;
   margin: 10px 16px 0 16px;
   padding: 8px 12px;
-  background: #dcfce7;
-  border: 1px solid #86efac;
+  background: var(--ws-ok-bg);
+  border: 1px solid var(--ws-ok-ink);
   border-radius: 8px;
-  color: #15803d;
+  color: var(--ws-ok-ink);
   font-size: 12px;
   font-weight: 600;
 
@@ -708,8 +708,8 @@
   text-align: center;
   gap: 12px;
   padding: 20px;
-  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-  border: 1px solid #bae6fd;
+  background: linear-gradient(135deg, var(--dau-nhat) 0%, var(--dau-nhat) 100%);
+  border: 1px solid var(--dau);
   border-radius: var(--radius-xl, 16px);
 }
 
@@ -717,8 +717,8 @@
   width: 54px;
   height: 54px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #0284c7, #38bdf8);
-  color: #ffffff;
+  background: linear-gradient(135deg, var(--dau), var(--dau));
+  color: var(--giay-noi);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -732,13 +732,13 @@
 .unichat-podcast-player__info h4 {
   font-size: 14px;
   font-weight: 700;
-  color: #0c4a6e;
+  color: var(--muc);
   margin: 0 0 4px 0;
 }
 
 .unichat-podcast-player__info p {
   font-size: 12px;
-  color: #0369a1;
+  color: var(--dau-dam);
   margin: 0;
 }
 
@@ -751,8 +751,8 @@
 .unichat-artifact-box {
   display: flex;
   flex-direction: column;
-  background: var(--color-surface-container-lowest, #f8fafc);
-  border: 1px solid var(--color-outline-variant, #e2e8f0);
+  background: var(--color-surface-container-lowest, var(--giay-sang));
+  border: 1px solid var(--color-outline-variant, var(--ke));
   border-radius: var(--radius-lg, 12px);
   overflow: hidden;
 }
@@ -762,11 +762,11 @@
   align-items: center;
   justify-content: space-between;
   padding: 10px 14px;
-  background: var(--color-surface-container, #f1f5f9);
-  border-bottom: 1px solid var(--color-outline-variant, #e2e8f0);
+  background: var(--color-surface-container, var(--giay-chim));
+  border-bottom: 1px solid var(--color-outline-variant, var(--ke));
   font-size: 12px;
   font-weight: 700;
-  color: #334155;
+  color: var(--muc-nhat);
 }
 
 .unichat-artifact-box__pre {
@@ -774,7 +774,7 @@
   margin: 0;
   font-size: 12px;
   line-height: 1.5;
-  color: #0f172a;
+  color: var(--muc);
   white-space: pre-wrap;
   word-break: break-word;
   max-height: 280px;
@@ -787,10 +787,10 @@
   align-items: center;
   gap: 4px;
   padding: 6px 12px;
-  border: 1px solid #bae6fd;
+  border: 1px solid var(--dau);
   border-radius: 6px;
-  background: #f0f9ff;
-  color: #0284c7;
+  background: var(--dau-nhat);
+  color: var(--dau);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -798,8 +798,8 @@
 }
 
 .unichat-save-btn:hover {
-  background: #e0f2fe;
-  border-color: #0284c7;
+  background: var(--dau-nhat);
+  border-color: var(--dau);
 }
 
 .unichat-save-btn--full {
@@ -811,8 +811,8 @@
 }
 
 .unichat-mindmap-view {
-  background: #ffffff;
-  border: 1px solid var(--color-outline-variant, #e2e8f0);
+  background: var(--giay-noi);
+  border: 1px solid var(--color-outline-variant, var(--ke));
   border-radius: var(--radius-lg, 12px);
   padding: 12px;
   max-height: 380px;
@@ -846,7 +846,7 @@
   box-shadow: none;
   animation: none;
   border-radius: var(--radius-lg, 12px);
-  border: 1px solid var(--color-outline-variant, #e2e8f0);
+  border: 1px solid var(--color-outline-variant, var(--ke));
   overflow-y: auto;
 }
 

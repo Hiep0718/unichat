@@ -57,10 +57,10 @@
   align-items: center;
   gap: 5px;
   padding: 7px 14px;
-  border: 1px solid var(--color-outline-variant, #cbd5e1);
+  border: 1px solid var(--color-outline-variant, var(--ke-dam));
   border-radius: var(--radius-full, 999px);
-  background: var(--color-surface, #fff);
-  color: var(--color-on-surface, #0f172a);
+  background: var(--color-surface, var(--giay-noi));
+  color: var(--color-on-surface, var(--muc));
   font: inherit;
   font-size: 0.8125rem;
   cursor: pointer;
@@ -68,13 +68,13 @@
 }
 
 .explore-topics__chip:hover {
-  border-color: var(--color-primary, #00236f);
+  border-color: var(--color-primary, var(--dau));
 }
 
 .explore-topics__chip--active {
-  border-color: var(--color-primary, #00236f);
-  background: var(--color-primary, #00236f);
-  color: #fff;
+  border-color: var(--color-primary, var(--dau));
+  background: var(--color-primary, var(--dau));
+  color: var(--giay-noi);
   font-weight: 600;
 }
 
@@ -84,8 +84,8 @@
   min-width: 18px;
   padding: 0 5px;
   border-radius: var(--radius-full, 999px);
-  background: var(--color-surface-container-high, #e2e8f0);
-  color: var(--color-on-surface-variant, #64748b);
+  background: var(--color-surface-container-high, var(--ke));
+  color: var(--color-on-surface-variant, var(--muc-nhat));
   font-size: 11px;
   font-variant-numeric: tabular-nums;
   text-align: center;
@@ -93,5 +93,5 @@
 
 .explore-topics__chip--active .explore-topics__count {
   background: rgba(255, 255, 255, 0.25);
-  color: #fff;
+  color: var(--giay-noi);
 }

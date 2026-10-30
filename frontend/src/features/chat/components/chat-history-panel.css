@@ -12,8 +12,8 @@
   flex: none;
   padding: 14px 12px;
   overflow-y: auto;
-  border-right: 1px solid #e3e8ef;
-  background: var(--ws-canvas, #f3f5f9);
+  border-right: 1px solid var(--giay);
+  background: var(--ws-canvas, var(--giay));
 }
 
 .chat-history__head {
@@ -26,7 +26,7 @@
 
 .chat-history__title {
   margin: 0;
-  color: var(--ws-ink, #0f172a);
+  color: var(--ws-ink, var(--muc));
   font-size: 0.875rem;
   font-weight: 700;
 }
@@ -39,13 +39,13 @@
   border: none;
   border-radius: 8px;
   background: none;
-  color: var(--ws-ink-muted, #64748b);
+  color: var(--ws-ink-muted, var(--muc-nhat));
   cursor: pointer;
 }
 
 .chat-history__icon-btn:hover {
-  background: var(--ws-chip, #f1f5f9);
-  color: var(--ws-ink, #0f172a);
+  background: var(--ws-chip, var(--giay-chim));
+  color: var(--ws-ink, var(--muc));
 }
 
 .chat-history__new {
@@ -57,7 +57,7 @@
   border: none;
   border-radius: 10px;
   background: var(--ws-accent-gradient);
-  color: #fff;
+  color: var(--giay-noi);
   font: inherit;
   font-size: 0.8125rem;
   font-weight: 600;
@@ -70,7 +70,7 @@
 
 .chat-history__note {
   margin: 4px 2px;
-  color: var(--ws-ink-muted, #64748b);
+  color: var(--ws-ink-muted, var(--muc-nhat));
   font-size: 0.8125rem;
 }
 
@@ -92,7 +92,7 @@
   border: none;
   border-radius: 9px;
   background: none;
-  color: var(--ws-ink-soft, #475569);
+  color: var(--ws-ink-soft, var(--muc-nhat));
   font: inherit;
   font-size: 0.8125rem;
   text-align: left;
@@ -100,16 +100,16 @@
 }
 
 .chat-history__item:hover {
-  background: #fff;
-  color: var(--ws-ink, #0f172a);
+  background: var(--giay-noi);
+  color: var(--ws-ink, var(--muc));
 }
 
 /* The open conversation is marked by weight and a surface, not by the accent:
    accent here would compete with the New button, which is the one thing in
    this column that performs an action rather than naming where you are. */
 .chat-history__item--current {
-  background: #fff;
-  color: var(--ws-ink, #0f172a);
+  background: var(--giay-noi);
+  color: var(--ws-ink, var(--muc));
   font-weight: 700;
   box-shadow: 0 1px 3px rgb(15 23 42 / 8%);
 }
@@ -123,7 +123,7 @@
 
 .chat-history__item-when {
   flex: none;
-  color: var(--ws-ink-muted, #64748b);
+  color: var(--ws-ink-muted, var(--muc-nhat));
   font-size: 0.6875rem;
   font-variant-numeric: tabular-nums;
 }

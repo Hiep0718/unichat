@@ -7,7 +7,7 @@
 .invite-panel__intro,
 .invite-panel__disabled {
   margin: 0;
-  color: var(--color-on-surface-variant, #64748b);
+  color: var(--color-on-surface-variant, var(--muc-nhat));
   font-size: 0.875rem;
   line-height: 1.55;
 }
@@ -24,17 +24,17 @@
   flex-direction: column;
   gap: 4px;
   font-size: 0.8125rem;
-  color: var(--color-on-surface-variant, #64748b);
+  color: var(--color-on-surface-variant, var(--muc-nhat));
 }
 
 .invite-panel__field select,
 .invite-panel__field input {
   padding: 8px 10px;
-  border: 1px solid var(--color-outline-variant, #cbd5e1);
+  border: 1px solid var(--color-outline-variant, var(--ke-dam));
   border-radius: var(--radius-md, 6px);
   font: inherit;
-  color: var(--color-on-surface, #0f172a);
-  background: var(--color-surface, #fff);
+  color: var(--color-on-surface, var(--muc));
+  background: var(--color-surface, var(--giay-noi));
 }
 
 .invite-panel__field input {
@@ -45,8 +45,8 @@
   padding: 9px 18px;
   border: none;
   border-radius: var(--radius-md, 6px);
-  background: var(--color-primary, #0284c7);
-  color: #fff;
+  background: var(--color-primary, var(--dau));
+  color: var(--giay-noi);
   font: inherit;
   font-weight: 600;
   cursor: pointer;
@@ -60,9 +60,9 @@
 /* Shown once and never again, so it is loud on purpose. */
 .invite-panel__fresh {
   padding: 12px 14px;
-  border: 1px solid #fcd34d;
+  border: 1px solid var(--ws-warn-ink);
   border-radius: var(--radius-md, 8px);
-  background: #fffbeb;
+  background: var(--giay-sang);
 }
 
 .invite-panel__fresh-note {
@@ -70,7 +70,7 @@
   align-items: center;
   gap: 6px;
   margin: 0 0 8px;
-  color: #92400e;
+  color: var(--ws-warn-ink);
   font-size: 0.8125rem;
 }
 
@@ -83,18 +83,18 @@
   flex: 1;
   min-width: 0;
   padding: 8px 10px;
-  border: 1px solid var(--color-outline-variant, #cbd5e1);
+  border: 1px solid var(--color-outline-variant, var(--ke-dam));
   border-radius: var(--radius-md, 6px);
   font-family: ui-monospace, monospace;
   font-size: 0.8125rem;
-  background: #fff;
+  background: var(--giay-noi);
 }
 
 .invite-panel__fresh-row button {
   padding: 8px 16px;
-  border: 1px solid var(--color-outline-variant, #cbd5e1);
+  border: 1px solid var(--color-outline-variant, var(--ke-dam));
   border-radius: var(--radius-md, 6px);
-  background: #fff;
+  background: var(--giay-noi);
   font: inherit;
   cursor: pointer;
 }
@@ -113,7 +113,7 @@
   align-items: center;
   gap: 10px;
   padding: 9px 12px;
-  border: 1px solid var(--color-outline-variant, #e2e8f0);
+  border: 1px solid var(--color-outline-variant, var(--ke));
   border-radius: var(--radius-md, 6px);
   font-size: 0.8125rem;
 }
@@ -124,18 +124,18 @@
 
 .invite-panel__item-role {
   font-weight: 600;
-  color: var(--color-on-surface, #0f172a);
+  color: var(--color-on-surface, var(--muc));
 }
 
 .invite-panel__item-meta {
   flex: 1;
-  color: var(--color-on-surface-variant, #64748b);
+  color: var(--color-on-surface-variant, var(--muc-nhat));
 }
 
 .invite-panel__list button {
   border: none;
   background: none;
-  color: #e11d48;
+  color: var(--color-error);
   font: inherit;
   cursor: pointer;
 }
@@ -144,7 +144,7 @@
   margin: 0;
   padding: 9px 12px;
   border-radius: var(--radius-md, 6px);
-  background: #fff1f2;
-  color: #9f1239;
+  background: var(--giay-noi);
+  color: var(--color-error);
   font-size: 0.875rem;
 }

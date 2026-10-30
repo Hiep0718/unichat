@@ -186,9 +186,9 @@
 }
 
 .refusal-card--clarify {
-  background: #fefce8;
-  border: 1px solid #fef08a;
-  color: #713f12;
+  background: var(--giay-sang);
+  border: 1px solid var(--ws-warn-ink);
+  color: var(--ws-warn-ink);
 }
 
 .refusal-card__header {

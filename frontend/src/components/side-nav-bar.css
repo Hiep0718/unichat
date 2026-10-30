@@ -12,9 +12,9 @@
   gap: 12px;
   background: var(--color-surface);
   /* Was transparent, so the rail dissolved into whatever it stood against:
-     its own #f9f9ff beside the assistant's #f3f5f9 column is a difference of
+     its own var(--giay) beside the assistant's var(--giay) column is a difference of
      nothing. The seam is what tells a reader these are two regions. */
-  border-right: 1px solid var(--ws-line, #eef2f7);
+  border-right: 1px solid var(--ws-line, var(--ke));
   box-shadow: inset -1px 0 0 rgb(15 23 42 / 6%);
   overflow: hidden;
   z-index: 100;
@@ -29,7 +29,7 @@
 .side-nav--expanded {
   width: 260px;
   box-shadow: 0 12px 36px -4px rgba(15, 23, 42, 0.16), 0 4px 12px rgba(15, 23, 42, 0.08);
-  background: #ffffff;
+  background: var(--giay-noi);
 }
 
 .side-nav__header {
@@ -53,8 +53,8 @@
   height: 40px;
   min-width: 40px;
   border-radius: 13px;
-  background: linear-gradient(140deg, #1e3a8a 0%, #4f46e5 58%, #7c3aed 100%);
-  color: #fff;
+  background: linear-gradient(140deg, var(--dau-dam) 0%, var(--dau) 58%, var(--dau-dam) 100%);
+  color: var(--giay-noi);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -291,36 +291,36 @@ button.side-nav__item,
 }
 
 .side-nav__item--admin {
-  color: #4f46e5;
+  color: var(--dau);
   font-weight: 600;
 }
 
 .side-nav__item--admin:hover:not(.side-nav__item--active) {
-  background: #ede9fe;
-  color: #4338ca;
+  background: var(--giay-sang);
+  color: var(--dau);
 }
 
 .side-nav__item--active {
-  background: linear-gradient(120deg, #1e3a8a 0%, #4f46e5 62%, #6d28d9 100%);
-  color: #fff;
+  background: linear-gradient(120deg, var(--dau-dam) 0%, var(--dau) 62%, var(--dau) 100%);
+  color: var(--giay-noi);
   font-weight: 600;
   box-shadow: 0 4px 14px rgb(79 70 229 / 30%);
 }
 
 /* AI Assistant Navigation Highlight */
 .side-nav__item--ai {
-  color: #0284c7;
+  color: var(--dau);
   font-weight: 600;
 }
 
 .side-nav__item--ai .material-symbols-outlined {
-  color: #0284c7;
+  color: var(--dau);
   transition: transform var(--transition-fast);
 }
 
 .side-nav__item--ai:hover:not(.side-nav__item--active) {
-  background: #f0f9ff;
-  color: #0369a1;
+  background: var(--dau-nhat);
+  color: var(--dau-dam);
 }
 
 .side-nav__item--ai:hover .material-symbols-outlined {
@@ -328,13 +328,13 @@ button.side-nav__item,
 }
 
 .side-nav__item--ai.side-nav__item--active {
-  background: linear-gradient(120deg, #0369a1 0%, #0284c7 50%, #38bdf8 100%);
-  color: #ffffff;
+  background: linear-gradient(120deg, var(--dau-dam) 0%, var(--dau) 50%, var(--dau) 100%);
+  color: var(--giay-noi);
   box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
 }
 
 .side-nav__item--ai.side-nav__item--active .material-symbols-outlined {
-  color: #ffffff;
+  color: var(--giay-noi);
 }
 
 /* Group row with quick AI chat action */
@@ -379,17 +379,17 @@ button.side-nav__item,
 .side-nav__quick-chat:hover {
   opacity: 1 !important;
   background: rgba(2, 132, 199, 0.16);
-  color: #0284c7;
+  color: var(--dau);
   transform: scale(1.15) !important;
 }
 
 .side-nav__group-row--active .side-nav__quick-chat {
-  color: #ffffff;
+  color: var(--giay-noi);
 }
 
 .side-nav__group-row--active .side-nav__quick-chat:hover {
   background: rgba(255, 255, 255, 0.28);
-  color: #ffffff;
+  color: var(--giay-noi);
 }
 
 .side-nav__item--active .group-mark {

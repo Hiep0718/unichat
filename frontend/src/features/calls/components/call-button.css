@@ -6,7 +6,7 @@
   border: none;
   border-radius: var(--radius-full, 999px);
   background: transparent;
-  color: var(--color-on-surface-variant, #64748b);
+  color: var(--color-on-surface-variant, var(--muc-nhat));
   cursor: pointer;
   transition:
     background var(--transition-fast, 120ms),
@@ -14,12 +14,12 @@
 }
 
 .call-button:hover:not(:disabled) {
-  background: var(--color-surface-container-high, #e2e8f0);
-  color: var(--color-primary, #00236f);
+  background: var(--color-surface-container-high, var(--ke));
+  color: var(--color-primary, var(--dau));
 }
 
 .call-button:focus-visible {
-  outline: 2px solid var(--color-primary, #00236f);
+  outline: 2px solid var(--color-primary, var(--dau));
   outline-offset: 2px;
 }
 

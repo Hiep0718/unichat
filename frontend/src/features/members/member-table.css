@@ -57,7 +57,7 @@
 .member-table__wrapper {
   overflow-x: auto;
   border-radius: var(--radius-2xl, 16px);
-  background: var(--ws-card, #fff);
+  background: var(--ws-card, var(--giay-noi));
   box-shadow: var(--ws-card-shadow, 0 1px 3px rgb(15 23 42 / 8%));
 }
 
@@ -75,7 +75,7 @@
   letter-spacing: 0.05em;
   color: var(--color-on-surface-variant);
   background: var(--color-surface-container-high);
-  border-bottom: 1px solid var(--ws-line, #eef2f7);
+  border-bottom: 1px solid var(--ws-line, var(--ke));
 }
 
 .member-table__th--actions {
@@ -94,7 +94,7 @@
 .member-table__td {
   padding: 12px 16px;
   color: var(--color-on-surface);
-  border-bottom: 1px solid var(--ws-line, #eef2f7);
+  border-bottom: 1px solid var(--ws-line, var(--ke));
   vertical-align: middle;
 }
 
@@ -148,8 +148,8 @@
 }
 
 .member-table__role--editor {
-  color: #065f46;
-  background: #ecfdf5;
+  color: var(--ws-ok-ink);
+  background: var(--giay-sang);
 }
 
 .member-table__role--viewer {
@@ -163,7 +163,7 @@
   padding: 4px 8px;
   font: var(--font-label-sm);
   color: var(--color-on-surface);
-  background: var(--ws-chip, #f1f5f9);
+  background: var(--ws-chip, var(--giay-chim));
   border: none;
   border-radius: 10px;
   cursor: pointer;
@@ -288,7 +288,7 @@
   width: 100%;
   max-width: 28rem;
   padding: var(--gutter);
-  background: var(--ws-card, #fff);
+  background: var(--ws-card, var(--giay-noi));
   border-radius: var(--radius-2xl, 16px);
   box-shadow: 0 8px 28px rgb(15 23 42 / 12%);
   animation: invite-slide-up var(--transition-normal) ease;
@@ -353,7 +353,7 @@
   padding: 10px 12px;
   font: var(--font-body-md);
   color: var(--color-on-surface);
-  background: var(--ws-chip, #f1f5f9);
+  background: var(--ws-chip, var(--giay-chim));
   border: none;
   border-radius: 10px;
   outline: none;
@@ -373,7 +373,7 @@
   padding: 10px 12px;
   font: var(--font-body-md);
   color: var(--color-on-surface);
-  background: var(--ws-chip, #f1f5f9);
+  background: var(--ws-chip, var(--giay-chim));
   border: none;
   border-radius: 10px;
   outline: none;
@@ -403,7 +403,7 @@
   padding: 8px 16px;
   font: var(--font-label-md);
   color: var(--color-on-surface);
-  background: var(--ws-chip, #f1f5f9);
+  background: var(--ws-chip, var(--giay-chim));
   border: none;
   border-radius: 10px;
   cursor: pointer;

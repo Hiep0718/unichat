@@ -26,7 +26,7 @@
   background: linear-gradient(
     to bottom,
     rgb(255 255 255 / 0%),
-    var(--color-surface-container-lowest, #fff) 92%
+    var(--color-surface-container-lowest, var(--giay-noi)) 92%
   );
   pointer-events: none;
 }
@@ -59,7 +59,7 @@
   background: linear-gradient(
     to bottom,
     rgb(236 254 255 / 0%),
-    var(--color-ai-bubble, #ecfeff) 92%
+    var(--color-ai-bubble, var(--giay-sang)) 92%
   );
 }
 

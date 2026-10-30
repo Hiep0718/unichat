@@ -6,7 +6,7 @@
   aspect-ratio: 16 / 11;
   border-radius: var(--radius-xl);
   overflow: hidden;
-  color: #fff;
+  color: var(--giay-noi);
   isolation: isolate;
   box-shadow: var(--shadow-sm, 0 1px 3px rgb(0 0 0 / 12%));
   transition: box-shadow var(--transition-normal), transform var(--transition-normal);
@@ -51,7 +51,7 @@
   background: rgb(255 255 255 / 20%);
   border: 1px solid rgb(255 255 255 / 26%);
   backdrop-filter: blur(8px);
-  color: #fff;
+  color: var(--giay-noi);
   font: var(--font-label-sm);
   font-weight: 600;
 }
@@ -71,7 +71,7 @@
   font-weight: 700;
   line-height: 1.25;
   letter-spacing: -0.01em;
-  color: #fff;
+  color: var(--giay-noi);
   text-shadow: 0 1px 10px rgb(2 6 23 / 55%);
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -129,8 +129,8 @@
   gap: 6px;
   flex-shrink: 0;
   padding: 8px 16px;
-  background: #fff;
-  color: #0f172a;
+  background: var(--giay-noi);
+  color: var(--muc);
   font: var(--font-label-md);
   font-weight: 600;
   border: none;
@@ -241,8 +241,8 @@
 }
 
 .explore-grid--list .explore-card__join-btn {
-  background: linear-gradient(120deg, #4f46e5 0%, #6d28d9 100%);
-  color: #fff;
+  background: linear-gradient(120deg, var(--dau) 0%, var(--dau) 100%);
+  color: var(--giay-noi);
   padding: 7px 15px;
 }
 

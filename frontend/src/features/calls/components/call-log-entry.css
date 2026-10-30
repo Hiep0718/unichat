@@ -9,8 +9,8 @@
   margin: 2px 0;
   padding: 7px 14px 7px 9px;
   border-radius: 999px;
-  background: var(--ws-chip, #f1f5f9);
-  color: var(--ws-ink-soft, #475569);
+  background: var(--ws-chip, var(--giay-chim));
+  color: var(--ws-ink-soft, var(--muc-nhat));
   font-size: 0.8125rem;
 }
 
@@ -21,8 +21,8 @@
   height: 26px;
   flex: none;
   border-radius: 999px;
-  background: #fff;
-  color: var(--ws-ink-muted, #64748b);
+  background: var(--giay-noi);
+  color: var(--ws-ink-muted, var(--muc-nhat));
 }
 
 .call-log__text {
@@ -35,7 +35,7 @@
 /* Tabular figures so a list of calls lines up down the column. */
 .call-log__duration {
   flex: none;
-  color: var(--ws-ink-muted, #64748b);
+  color: var(--ws-ink-muted, var(--muc-nhat));
   font-variant-numeric: tabular-nums;
 }
 
@@ -46,7 +46,7 @@
 
 .call-log__time {
   flex: none;
-  color: var(--ws-ink-muted, #64748b);
+  color: var(--ws-ink-muted, var(--muc-nhat));
   font-size: 0.75rem;
   font-variant-numeric: tabular-nums;
 }
@@ -55,15 +55,15 @@
    and needs nothing from the reader, so colouring it would spend attention
    on a line that is pure history. */
 .call-log--missed {
-  background: #fef2f2;
-  color: #b91c1c;
+  background: var(--giay-noi);
+  color: var(--color-error);
 }
 
 .call-log--missed .call-log__icon {
-  color: #dc2626;
+  color: var(--color-error);
 }
 
 .call-log--missed .call-log__duration,
 .call-log--missed .call-log__time {
-  color: #ef4444;
+  color: var(--color-error);
 }

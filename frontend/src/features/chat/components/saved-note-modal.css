@@ -18,8 +18,8 @@
   width: 100%;
   max-width: 720px;
   max-height: 85vh;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: var(--giay-noi);
+  border: 1px solid var(--ke);
   border-radius: 20px;
   box-shadow: 0 20px 48px -8px rgba(15, 23, 42, 0.22);
   display: flex;
@@ -30,8 +30,8 @@
 
 .unichat-saved-note-modal__header {
   padding: 16px 20px;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-  border-bottom: 1px solid #e2e8f0;
+  background: linear-gradient(135deg, var(--giay-noi) 0%, var(--giay-sang) 100%);
+  border-bottom: 1px solid var(--ke);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -45,23 +45,23 @@
 
 .unichat-saved-note-modal__icon {
   font-size: 22px;
-  color: #0284c7;
+  color: var(--dau);
   padding: 8px;
   border-radius: 10px;
-  background: #f0f9ff;
-  border: 1px solid #bae6fd;
+  background: var(--dau-nhat);
+  border: 1px solid var(--dau);
 }
 
 .unichat-saved-note-modal__title {
   font-size: 16px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--muc);
   margin: 0 0 2px 0;
 }
 
 .unichat-saved-note-modal__time {
   font-size: 12px;
-  color: #64748b;
+  color: var(--muc-nhat);
 }
 
 .unichat-saved-note-modal__close {
@@ -73,13 +73,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #64748b;
+  color: var(--muc-nhat);
   cursor: pointer;
 }
 
 .unichat-saved-note-modal__close:hover {
-  background: #f1f5f9;
-  color: #0f172a;
+  background: var(--giay-chim);
+  color: var(--muc);
 }
 
 .unichat-saved-note-toast {
@@ -88,10 +88,10 @@
   gap: 8px;
   margin: 12px 20px 0 20px;
   padding: 8px 14px;
-  background: #dcfce7;
-  border: 1px solid #86efac;
+  background: var(--ws-ok-bg);
+  border: 1px solid var(--ws-ok-ink);
   border-radius: 8px;
-  color: #15803d;
+  color: var(--ws-ok-ink);
   font-size: 13px;
   font-weight: 600;
 }
@@ -103,26 +103,26 @@
 }
 
 .unichat-saved-note-content {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--giay-sang);
+  border: 1px solid var(--ke);
   border-radius: 12px;
   padding: 20px;
   font-size: 14px;
   line-height: 1.65;
-  color: #1e293b;
+  color: var(--muc);
 }
 
 .unichat-saved-note-content h1,
 .unichat-saved-note-content h2,
 .unichat-saved-note-content h3,
 .unichat-saved-note-content h4 {
-  color: #0f172a;
+  color: var(--muc);
   margin-top: 16px;
   margin-bottom: 8px;
   font-weight: 700;
 }
 
-.unichat-saved-note-content h1 { font-size: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; }
+.unichat-saved-note-content h1 { font-size: 20px; border-bottom: 1px solid var(--ke); padding-bottom: 6px; }
 .unichat-saved-note-content h2 { font-size: 17px; }
 .unichat-saved-note-content h3 { font-size: 15px; }
 
@@ -150,37 +150,37 @@
 .unichat-saved-note-content th,
 .unichat-saved-note-content td {
   padding: 8px 12px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--ke-dam);
   text-align: left;
 }
 
 .unichat-saved-note-content th {
-  background: #f1f5f9;
+  background: var(--giay-chim);
   font-weight: 700;
 }
 
 .unichat-saved-note-content blockquote {
   margin: 12px 0;
   padding: 8px 14px;
-  background: #f0f9ff;
-  border-left: 4px solid #0284c7;
-  color: #0c4a6e;
+  background: var(--dau-nhat);
+  border-left: 4px solid var(--dau);
+  color: var(--muc);
   border-radius: 4px;
 }
 
 .unichat-saved-note-content code {
   font-family: monospace;
   font-size: 12px;
-  background: #e2e8f0;
+  background: var(--ke);
   padding: 2px 6px;
   border-radius: 4px;
-  color: #0f172a;
+  color: var(--muc);
 }
 
 .unichat-saved-note-modal__footer {
   padding: 14px 20px;
-  border-top: 1px solid #e2e8f0;
-  background: #ffffff;
+  border-top: 1px solid var(--ke);
+  background: var(--giay-noi);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -193,11 +193,11 @@
 }
 
 .unichat-btn--danger-ghost {
-  color: #dc2626;
+  color: var(--color-error);
   background: transparent;
-  border: 1px solid #fca5a5;
+  border: 1px solid var(--color-error);
 }
 
 .unichat-btn--danger-ghost:hover {
-  background: #fef2f2;
+  background: var(--giay-noi);
 }

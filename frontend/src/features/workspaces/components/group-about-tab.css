@@ -29,12 +29,12 @@
 .group-about__card {
   padding: 18px 20px;
   border-radius: var(--radius-2xl, 16px);
-  background: var(--ws-card, #fff);
+  background: var(--ws-card, var(--giay-noi));
   box-shadow: var(--ws-card-shadow, 0 1px 3px rgb(15 23 42 / 8%));
 }
 
 .group-about__card--quiet {
-  background: var(--ws-chip, #f1f5f9);
+  background: var(--ws-chip, var(--giay-chim));
   box-shadow: none;
 }
 
@@ -42,7 +42,7 @@
    carries colour. Soft rather than saturated: the button inside it is the
    thing to press, and two saturated surfaces would compete. */
 .group-about__card--ai {
-  background: var(--ws-accent-soft, #e6ebf7);
+  background: var(--ws-accent-soft, var(--giay-sang));
   box-shadow: none;
 }
 
@@ -59,7 +59,7 @@
   align-items: center;
   gap: 8px;
   margin: 0;
-  color: var(--ws-ink, #0f172a);
+  color: var(--ws-ink, var(--muc));
   font-size: 0.9375rem;
   font-weight: 700;
 }
@@ -69,7 +69,7 @@
   align-items: center;
   gap: 7px;
   margin: 0 0 6px;
-  color: var(--ws-ink, #0f172a);
+  color: var(--ws-ink, var(--muc));
   font-size: 0.875rem;
   font-weight: 700;
 }
@@ -77,8 +77,8 @@
 .group-about__badge {
   padding: 3px 9px;
   border-radius: 999px;
-  background: var(--ws-accent, #1e3a8a);
-  color: var(--ws-accent-ink, #fff);
+  background: var(--ws-accent, var(--dau-dam));
+  color: var(--ws-accent-ink, var(--giay-noi));
   font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -86,14 +86,14 @@
 
 .group-about__description {
   margin: 0;
-  color: var(--ws-ink-soft, #475569);
+  color: var(--ws-ink-soft, var(--muc-nhat));
   font-size: 0.875rem;
   line-height: 1.65;
 }
 
 .group-about__note {
   margin: 0;
-  color: var(--ws-ink-muted, #64748b);
+  color: var(--ws-ink-muted, var(--muc-nhat));
   font-size: 0.8125rem;
   line-height: 1.55;
 }
@@ -102,7 +102,7 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  color: var(--ws-accent, #1e3a8a);
+  color: var(--ws-accent, var(--dau-dam));
   font-size: 0.8125rem;
   font-weight: 600;
   text-decoration: none;
@@ -127,14 +127,14 @@
   display: flex;
   align-items: flex-start;
   gap: 9px;
-  color: var(--ws-ink-soft, #475569);
+  color: var(--ws-ink-soft, var(--muc-nhat));
   font-size: 0.8125rem;
   line-height: 1.5;
 }
 
 .group-about__points .material-symbols-outlined {
   flex: none;
-  color: var(--ws-accent, #1e3a8a);
+  color: var(--ws-accent, var(--dau-dam));
 }
 
 .group-about__cta {
@@ -144,7 +144,7 @@
   padding: 11px 18px;
   border-radius: 12px;
   background: var(--ws-accent-gradient);
-  color: var(--ws-accent-ink, #fff);
+  color: var(--ws-accent-ink, var(--giay-noi));
   font-size: 0.875rem;
   font-weight: 700;
   text-decoration: none;
@@ -179,7 +179,7 @@
   justify-content: space-between;
   gap: 12px;
   padding: 11px 0;
-  border-bottom: 1px solid var(--ws-line, #eef2f7);
+  border-bottom: 1px solid var(--ws-line, var(--ke));
 }
 
 .group-about__fact:last-child {
@@ -188,7 +188,7 @@
 }
 
 .group-about__fact dt {
-  color: var(--ws-ink-muted, #64748b);
+  color: var(--ws-ink-muted, var(--muc-nhat));
   font-size: 0.8125rem;
 }
 
@@ -197,7 +197,7 @@
   align-items: center;
   gap: 10px;
   margin: 0;
-  color: var(--ws-ink, #0f172a);
+  color: var(--ws-ink, var(--muc));
   font-size: 0.875rem;
   font-weight: 700;
 }
@@ -205,14 +205,14 @@
 .group-about__role {
   padding: 3px 10px;
   border-radius: 999px;
-  background: var(--ws-accent-soft, #e6ebf7);
-  color: var(--ws-accent, #1e3a8a);
+  background: var(--ws-accent-soft, var(--giay-sang));
+  color: var(--ws-accent, var(--dau-dam));
   font-size: 0.75rem;
   font-weight: 700;
 }
 
 .group-about__jump {
-  color: var(--ws-accent, #1e3a8a);
+  color: var(--ws-accent, var(--dau-dam));
   font-size: 0.75rem;
   font-weight: 600;
   text-decoration: none;

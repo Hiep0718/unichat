@@ -47,6 +47,6 @@
 
 /* Resolved — the only green in the feed, so it reads instantly. */
 .answer-status--resolved {
-  background: #dcfce7;
-  color: #15803d;
+  background: var(--ws-ok-bg);
+  color: var(--ws-ok-ink);
 }

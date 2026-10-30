@@ -7,8 +7,8 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: #ffffff;
-  border-left: 1px solid var(--color-outline-variant, #e2e8f0);
+  background: var(--giay-noi);
+  border-left: 1px solid var(--color-outline-variant, var(--ke));
   box-shadow: -6px 0 24px -4px rgba(15, 23, 42, 0.08);
   z-index: 40;
   flex-shrink: 0;
@@ -34,8 +34,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--color-surface-container-lowest, #f8fafc);
-  border-bottom: 1px solid var(--color-outline-variant, #e2e8f0);
+  background: var(--color-surface-container-lowest, var(--giay-sang));
+  border-bottom: 1px solid var(--color-outline-variant, var(--ke));
   flex-shrink: 0;
   gap: 8px;
 }
@@ -50,14 +50,14 @@
 
 .citation-drawer__icon {
   font-size: 18px;
-  color: var(--color-primary, #00687a);
+  color: var(--color-primary, var(--muc));
   flex-shrink: 0;
 }
 
 .citation-drawer__filename {
   font-size: 13px;
   font-weight: 700;
-  color: var(--color-on-surface, #0f172a);
+  color: var(--color-on-surface, var(--muc));
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
@@ -79,15 +79,15 @@
 }
 
 .citation-drawer__badge--page {
-  background: #e0f2fe;
-  color: #0284c7;
-  border: 1px solid #bae6fd;
+  background: var(--dau-nhat);
+  color: var(--dau);
+  border: 1px solid var(--dau);
 }
 
 .citation-drawer__badge--score {
-  background: #dcfce7;
-  color: #15803d;
-  border: 1px solid #bbf7d0;
+  background: var(--ws-ok-bg);
+  color: var(--ws-ok-ink);
+  border: 1px solid var(--ws-ok-bg);
 }
 
 .citation-drawer__header-actions {
@@ -107,16 +107,16 @@
   border-radius: var(--radius-md, 6px);
   border: 1px solid transparent;
   background: transparent;
-  color: var(--color-on-surface-variant, #64748b);
+  color: var(--color-on-surface-variant, var(--muc-nhat));
   cursor: pointer;
   transition: all var(--transition-fast, 0.15s ease);
 }
 
 .citation-drawer__action-btn:hover,
 .citation-drawer__close-btn:hover {
-  background: var(--color-surface-container, #e2e8f0);
-  color: var(--color-on-surface, #0f172a);
-  border-color: var(--color-outline-variant, #cbd5e1);
+  background: var(--color-surface-container, var(--ke));
+  color: var(--color-on-surface, var(--muc));
+  border-color: var(--color-outline-variant, var(--ke-dam));
 }
 
 .citation-drawer__action-btn .material-symbols-outlined,
@@ -132,7 +132,7 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  background: #ffffff;
+  background: var(--giay-noi);
 }
 
 .citation-drawer__body::-webkit-scrollbar {
@@ -144,7 +144,7 @@
 }
 
 .citation-drawer__body::-webkit-scrollbar-thumb {
-  background: var(--color-outline-variant, #cbd5e1);
+  background: var(--color-outline-variant, var(--ke-dam));
   border-radius: 4px;
 }
 
@@ -160,7 +160,7 @@
   width: 100%;
   flex: 1;
   min-height: 400px;
-  border: 1px solid var(--color-outline-variant, #cbd5e1);
+  border: 1px solid var(--color-outline-variant, var(--ke-dam));
   border-radius: var(--radius-lg, 8px);
 }
 
@@ -178,12 +178,12 @@
 }
 
 .citation-drawer__context-box {
-  background: var(--color-surface-container-lowest, #f8fafc);
-  border: 1px dashed var(--color-outline-variant, #cbd5e1);
+  background: var(--color-surface-container-lowest, var(--giay-sang));
+  border: 1px dashed var(--color-outline-variant, var(--ke-dam));
   border-radius: var(--radius-lg, 10px);
   padding: 10px 12px;
   font-size: 12px;
-  color: var(--color-outline, #64748b);
+  color: var(--color-outline, var(--muc-nhat));
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
@@ -196,15 +196,15 @@
   display: block;
   font-size: 10px;
   font-weight: 700;
-  color: var(--color-outline, #94a3b8);
+  color: var(--color-outline, var(--muc-mo));
   margin-bottom: 3px;
   letter-spacing: 0.5px;
 }
 
 /* ── Highlight Container (Cited Excerpt) ── */
 .citation-drawer__highlight-container {
-  background: #fefce8;
-  border: 1.5px solid #fde047;
+  background: var(--giay-sang);
+  border: 1.5px solid var(--ws-warn-ink);
   border-radius: var(--radius-xl, 12px);
   padding: 12px;
   transition: all 0.3s ease;
@@ -218,25 +218,25 @@
   gap: 5px;
   font-size: 11px;
   font-weight: 700;
-  color: #a16207;
+  color: var(--ws-warn-ink);
   margin-bottom: 8px;
 }
 
 .citation-drawer__highlight-badge .material-symbols-outlined {
   font-size: 15px;
-  color: #ca8a04;
+  color: var(--ws-warn-ink);
 }
 
 .citation-drawer__highlight-body {
   font-size: 13.5px;
   line-height: 1.6;
-  color: #713f12;
+  color: var(--ws-warn-ink);
   font-weight: 500;
   font-style: italic;
   background: rgba(254, 240, 138, 0.4);
   padding: 10px 12px;
   border-radius: var(--radius-md, 8px);
-  border-left: 3px solid #eab308;
+  border-left: 3px solid var(--ws-warn-ink);
 }
 
 .citation-drawer__highlight-box--pulse {
@@ -260,9 +260,9 @@
   align-items: center;
   gap: 6px;
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--muc-mo);
   padding: 6px 10px;
-  background: var(--color-surface-container-lowest, #f8fafc);
+  background: var(--color-surface-container-lowest, var(--giay-sang));
   border-radius: var(--radius-md, 6px);
 }
 

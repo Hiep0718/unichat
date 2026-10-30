@@ -13,15 +13,15 @@
 .chat-welcome__title {
   font-size: 26px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--muc);
   line-height: 1.3;
   margin-bottom: 8px;
   letter-spacing: -0.3px;
 }
 
 .chat-welcome__title-ws {
-  color: #00687a;
-  background: linear-gradient(135deg, #00687a 0%, #0284c7 100%);
+  color: var(--muc);
+  background: linear-gradient(135deg, var(--muc) 0%, var(--dau) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -32,18 +32,18 @@
   gap: 8px;
   font-size: 13px;
   font-weight: 500;
-  color: #64748b;
+  color: var(--muc-nhat);
 }
 
 .chat-welcome__dot {
-  color: #cbd5e1;
+  color: var(--ke-dam);
 }
 
 .chat-welcome__overview {
   margin-bottom: 32px;
   padding: 20px 24px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--giay-sang);
+  border: 1px solid var(--ke);
   border-radius: 14px;
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
 }
@@ -51,7 +51,7 @@
 .chat-welcome__overview-text {
   font-size: 14px;
   line-height: 1.7;
-  color: #334155;
+  color: var(--muc-nhat);
   margin: 0;
 }
 
@@ -65,11 +65,11 @@
   gap: 8px;
   font-size: 14px;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--muc);
   margin-bottom: 16px;
 }
 
 .chat-welcome__suggestions-label .material-symbols-outlined {
   font-size: 18px;
-  color: #0284c7;
+  color: var(--dau);
 }

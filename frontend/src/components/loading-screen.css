@@ -11,7 +11,7 @@
   justify-content: center;
   min-height: 100vh;
   width: 100%;
-  background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 50%, #e2e8f0 100%);
+  background: linear-gradient(135deg, var(--giay-sang) 0%, var(--giay-sang) 50%, var(--ke) 100%);
   padding: 24px;
   box-sizing: border-box;
   text-align: center;
@@ -66,8 +66,8 @@
   inset: -6px;
   border-radius: 24px;
   border: 2px solid transparent;
-  border-top-color: #0284c7;
-  border-right-color: #38bdf8;
+  border-top-color: var(--dau);
+  border-right-color: var(--dau);
   animation: ring-rotate 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
@@ -102,7 +102,7 @@
   border-radius: 18px;
   object-fit: cover;
   box-shadow: 0 8px 24px rgba(2, 132, 199, 0.25);
-  border: 2px solid #ffffff;
+  border: 2px solid var(--giay-noi);
   position: relative;
   z-index: 2;
   animation: logo-float 2.5s ease-in-out infinite alternate;
@@ -130,7 +130,7 @@
   font-size: 20px;
   font-weight: 800;
   letter-spacing: -0.02em;
-  background: linear-gradient(135deg, #0b192c 0%, #0284c7 100%);
+  background: linear-gradient(135deg, var(--muc) 0%, var(--dau) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   margin: 0;

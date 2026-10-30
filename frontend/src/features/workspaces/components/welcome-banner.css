@@ -16,12 +16,12 @@
      calm on the left where the greeting is written. See
      public/covers/README.md. */
   background-image: url('/covers/banner-dashboard.jpg'),
-    linear-gradient(120deg, #1e3a8a 0%, #4f46e5 46%, #7c3aed 100%);
+    linear-gradient(120deg, var(--dau-dam) 0%, var(--dau) 46%, var(--dau-dam) 100%);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   border-radius: var(--radius-xl);
-  color: #fff;
+  color: var(--giay-noi);
   position: relative;
   overflow: hidden;
   isolation: isolate;
@@ -54,7 +54,7 @@
   font: var(--font-headline-lg);
   font-weight: 700;
   letter-spacing: -0.015em;
-  color: #fff;
+  color: var(--giay-noi);
   margin-bottom: 6px;
   display: flex;
   align-items: center;
@@ -90,6 +90,6 @@
   .welcome-banner__greeting {
     font: var(--font-headline-lg-mobile);
     font-weight: 700;
-    color: #fff;
+    color: var(--giay-noi);
   }
 }
