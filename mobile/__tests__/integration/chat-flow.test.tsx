@@ -15,7 +15,7 @@ jest.mock('../../src/features/auth/auth-context', () => ({
 }));
 
 describe('Integration Flow: Workspace to Chat Experience', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     jest.clearAllMocks();
   });
 
@@ -41,7 +41,7 @@ describe('Integration Flow: Workspace to Chat Experience', () => {
       totalElements: 0,
     });
 
-    const { getByText, getByTestId } = render(
+    const { getByText, getByTestId } = await render(
       <ToastProvider>
         <WorkspaceTabScreen />
       </ToastProvider>
@@ -59,6 +59,6 @@ describe('Integration Flow: Workspace to Chat Experience', () => {
     // Card exists and can be tapped
     const card = getByTestId('workspace-card-ws-rag-1');
     expect(card).toBeTruthy();
-    fireEvent.press(card);
+    await fireEvent.press(card);
   });
 });

@@ -11,12 +11,12 @@ jest.mock('../../../src/lib/api-client', () => ({
 describe('ChangePasswordScreen', () => {
   const mockFetchJson = apiClient.fetchJson as jest.MockedFunction<typeof apiClient.fetchJson>;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     jest.clearAllMocks();
   });
 
-  it('renders form inputs and submit button', () => {
-    const { getByText, getByPlaceholderText } = render(
+  it('renders form inputs and submit button', async () => {
+    const { getByText, getByPlaceholderText } = await render(
       <ToastProvider>
         <ChangePasswordScreen />
       </ToastProvider>
@@ -30,17 +30,17 @@ describe('ChangePasswordScreen', () => {
   });
 
   it('shows error when new password is too short', async () => {
-    const { getByText, getByPlaceholderText } = render(
+    const { getByText, getByPlaceholderText } = await render(
       <ToastProvider>
         <ChangePasswordScreen />
       </ToastProvider>
     );
 
-    fireEvent.changeText(getByPlaceholderText('Nhập mật khẩu hiện tại'), 'oldPassword123');
-    fireEvent.changeText(getByPlaceholderText('Tối thiểu 12 ký tự'), 'short');
-    fireEvent.changeText(getByPlaceholderText('Nhập lại mật khẩu mới'), 'short');
+    await fireEvent.changeText(getByPlaceholderText('Nhập mật khẩu hiện tại'), 'oldPassword123');
+    await fireEvent.changeText(getByPlaceholderText('Tối thiểu 12 ký tự'), 'short');
+    await fireEvent.changeText(getByPlaceholderText('Nhập lại mật khẩu mới'), 'short');
 
-    fireEvent.press(getByText('Lưu mật khẩu mới'));
+    await fireEvent.press(getByText('Lưu mật khẩu mới'));
 
     await waitFor(() => {
       expect(getByText('Mật khẩu mới phải từ 12 ký tự trở lên')).toBeTruthy();
@@ -51,17 +51,17 @@ describe('ChangePasswordScreen', () => {
   it('submits successfully when form is valid', async () => {
     mockFetchJson.mockResolvedValueOnce(undefined);
 
-    const { getByText, getByPlaceholderText } = render(
+    const { getByText, getByPlaceholderText } = await render(
       <ToastProvider>
         <ChangePasswordScreen />
       </ToastProvider>
     );
 
-    fireEvent.changeText(getByPlaceholderText('Nhập mật khẩu hiện tại'), 'validOldPassword123');
-    fireEvent.changeText(getByPlaceholderText('Tối thiểu 12 ký tự'), 'validNewPassword123');
-    fireEvent.changeText(getByPlaceholderText('Nhập lại mật khẩu mới'), 'validNewPassword123');
+    await fireEvent.changeText(getByPlaceholderText('Nhập mật khẩu hiện tại'), 'validOldPassword123');
+    await fireEvent.changeText(getByPlaceholderText('Tối thiểu 12 ký tự'), 'validNewPassword123');
+    await fireEvent.changeText(getByPlaceholderText('Nhập lại mật khẩu mới'), 'validNewPassword123');
 
-    fireEvent.press(getByText('Lưu mật khẩu mới'));
+    await fireEvent.press(getByText('Lưu mật khẩu mới'));
 
     await waitFor(() => {
       expect(mockFetchJson).toHaveBeenCalledWith('/users/me/password', {

@@ -20,7 +20,7 @@ function failedResponse(code: string): Response {
   return { ok: false, status: 503, text: async () => JSON.stringify({ errorCode: code, requestId: 'request-1', detail: 'raw provider body' }) } as Response;
 }
 describe('ChatApi', () => {
-  beforeEach(() => { jest.clearAllMocks(); invalidateSession(); });
+  beforeEach(async () => { jest.clearAllMocks(); invalidateSession(); });
   it.each(['AI_MAINTENANCE', 'PROVIDER_HTTP_401', 'PROVIDER_PROTOCOL_ERROR'])('should present %s without polling or replaying an explicit HTTP failure', async (code) => {
     jest.mocked(fetchAuthorized).mockResolvedValueOnce(failedResponse(code));
     const callbacks = { onError: jest.fn(), onReset: jest.fn(), onFinal: jest.fn(), onDone: jest.fn() };

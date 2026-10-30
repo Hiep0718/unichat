@@ -32,16 +32,16 @@ jest.mock('expo-router', () => ({
 describe('api-client', () => {
   const originalFetch = global.fetch;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     setAccessToken(null);
     jest.clearAllMocks();
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     global.fetch = originalFetch;
   });
 
-  it('should return default api base url if not overridden', () => {
+  it('should return default api base url if not overridden', async () => {
     const url = getApiBaseUrl();
     expect(url).toBeTruthy();
   });

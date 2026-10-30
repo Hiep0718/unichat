@@ -26,14 +26,14 @@ const BASE: FeedPost = {
   attachments: [],
 };
 
-const renderCard = (overrides: Partial<FeedPost> = {}, onBookmark?: jest.Mock) =>
-  render(
+const renderCard = async (overrides: Partial<FeedPost> = {}, onBookmark?: jest.Mock) =>
+  await render(
     <DiscussionCard post={{ ...BASE, ...overrides }} index={0} onBookmark={onBookmark} />
   );
 
 describe('DiscussionCard', () => {
-  it('should lead with the group, not the author, the way the web card does', () => {
-    const { getByText } = renderCard();
+  it('should lead with the group, not the author, the way the web card does', async () => {
+    const { getByText } = await renderCard();
 
     expect(getByText('Khoa CNTT')).toBeTruthy();
     expect(getByText(/Nguyễn Văn A/)).toBeTruthy();
@@ -41,30 +41,30 @@ describe('DiscussionCard', () => {
     expect(getByText('4 bình luận')).toBeTruthy();
   });
 
-  it('should report a question as discussing once it has replies but no accepted one', () => {
-    expect(renderCard().getByText('Đang thảo luận')).toBeTruthy();
+  it('should report a question as discussing once it has replies but no accepted one', async () => {
+    expect((await renderCard()).getByText('Đang thảo luận')).toBeTruthy();
   });
 
-  it('should report a question with no replies as unanswered', () => {
-    expect(renderCard({ replyCount: 0 }).getByText('Chưa có lời giải')).toBeTruthy();
+  it('should report a question with no replies as unanswered', async () => {
+    expect((await renderCard({ replyCount: 0 })).getByText('Chưa có lời giải')).toBeTruthy();
   });
 
-  it('should report a question as resolved once an answer is accepted', () => {
-    expect(renderCard({ acceptedReplyId: 'r-9' }).getByText('Đã giải đáp')).toBeTruthy();
+  it('should report a question as resolved once an answer is accepted', async () => {
+    expect((await renderCard({ acceptedReplyId: 'r-9' })).getByText('Đã giải đáp')).toBeTruthy();
   });
 
-  it('should give an announcement its label and no resolution state', () => {
+  it('should give an announcement its label and no resolution state', async () => {
     // Nobody is waiting on an announcement, so "chưa có lời giải" would be a
     // claim about it that is not true of any announcement.
-    const { getByText, queryByText } = renderCard({ label: 'ANNOUNCEMENT' });
+    const { getByText, queryByText } = await renderCard({ label: 'ANNOUNCEMENT' });
 
     expect(getByText('Thông báo')).toBeTruthy();
     expect(queryByText('Chưa có lời giải')).toBeNull();
     expect(queryByText('Đang thảo luận')).toBeNull();
   });
 
-  it('should strip Markdown from the preview rather than show the source', () => {
-    const { getByText, queryByText } = renderCard({
+  it('should strip Markdown from the preview rather than show the source', async () => {
+    const { getByText, queryByText } = await renderCard({
       body: '## Tiêu đề\nMột đoạn **in đậm** và `mã nguồn`.',
     });
 
@@ -72,8 +72,8 @@ describe('DiscussionCard', () => {
     expect(queryByText(/##|\*\*/)).toBeNull();
   });
 
-  it('should show the reaction faces that were actually used', () => {
-    const { getByText } = renderCard({
+  it('should show the reaction faces that were actually used', async () => {
+    const { getByText } = await renderCard({
       reactions: { counts: { LIKE: 7, LOVE: 2 }, total: 9, myReaction: null },
     });
 
@@ -81,8 +81,8 @@ describe('DiscussionCard', () => {
     expect(getByText('9')).toBeTruthy();
   });
 
-  it('should say how many files are attached', () => {
-    const { getByText } = renderCard({
+  it('should say how many files are attached', async () => {
+    const { getByText } = await renderCard({
       attachments: [
         {
           id: 'a-1',
@@ -97,29 +97,29 @@ describe('DiscussionCard', () => {
     expect(getByText('1 tệp đính kèm')).toBeTruthy();
   });
 
-  it('should hand the post id back when the bookmark is pressed', () => {
+  it('should hand the post id back when the bookmark is pressed', async () => {
     const onBookmark = jest.fn();
-    const { getByLabelText } = renderCard({}, onBookmark);
+    const { getByLabelText } = await renderCard({}, onBookmark);
 
-    fireEvent.press(getByLabelText('Lưu bài viết'));
+    await fireEvent.press(getByLabelText('Lưu bài viết'));
 
     expect(onBookmark).toHaveBeenCalledWith('p-1');
   });
 });
 
 /** The card's outermost node; `toJSON` widens to an array it never returns. */
-function rootStyle(tree: ReturnType<typeof renderCard>) {
+function rootStyle(tree: Awaited<ReturnType<typeof renderCard>>) {
   const root = tree.toJSON();
   const node = Array.isArray(root) ? root[0] : root;
   return StyleSheet.flatten(node!.props.style);
 }
 
 describe('DiscussionCard visual contract', () => {
-  it('should separate the card by elevation alone, never by a border', () => {
+  it('should separate the card by elevation alone, never by a border', async () => {
     // A card carrying both a border and a shadow reads as a wireframe, which
     // is what the web design notes set out to leave behind. This card used to
     // draw a 1px #E2E8F0 outline on top of its shadow.
-    const style = rootStyle(renderCard());
+    const style = rootStyle(await renderCard());
 
     expect(style.backgroundColor).toBe(workplace.card);
     expect(style.shadowOpacity).toBeGreaterThan(0);
@@ -127,18 +127,18 @@ describe('DiscussionCard visual contract', () => {
     expect(style.borderColor).toBeUndefined();
   });
 
-  it('should keep the title in ink, leaving accent for what can be acted on', () => {
+  it('should keep the title in ink, leaving accent for what can be acted on', async () => {
     const style = StyleSheet.flatten(
-      renderCard().getByText('Câu hỏi về Adaptive RAG').props.style
+      (await renderCard()).getByText('Câu hỏi về Adaptive RAG').props.style
     );
 
     expect(style.color).toBe(workplace.ink);
     expect(style.color).not.toBe(workplace.accent);
   });
 
-  it('should draw body text in the softer ink, not the heading ink', () => {
+  it('should draw body text in the softer ink, not the heading ink', async () => {
     const style = StyleSheet.flatten(
-      renderCard().getByText('Làm thế nào để điều chỉnh ngưỡng tương đồng vector?').props
+      (await renderCard()).getByText('Làm thế nào để điều chỉnh ngưỡng tương đồng vector?').props
         .style
     );
 

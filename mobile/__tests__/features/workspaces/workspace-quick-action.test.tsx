@@ -3,9 +3,9 @@ import { render, fireEvent } from '@testing-library/react-native';
 import { WorkspaceQuickAction } from '../../../src/features/workspaces/components/workspace-quick-action';
 
 describe('WorkspaceQuickAction', () => {
-  it('renders title, subtitle, and action text properly', () => {
+  it('renders title, subtitle, and action text properly', async () => {
     const onPressMock = jest.fn();
-    const { getByText, getByTestId } = render(
+    const { getByText, getByTestId } = await render(
       <WorkspaceQuickAction
         title="Kho tài liệu"
         subtitle="Xem và tải lên giáo trình, slide"
@@ -22,7 +22,7 @@ describe('WorkspaceQuickAction', () => {
     expect(getByText('Xem và tải lên giáo trình, slide')).toBeTruthy();
     expect(getByText('Quản lý tài liệu')).toBeTruthy();
 
-    fireEvent.press(getByTestId('action-documents'));
+    await fireEvent.press(getByTestId('action-documents'));
     expect(onPressMock).toHaveBeenCalledTimes(1);
   });
 });

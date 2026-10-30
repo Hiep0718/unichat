@@ -12,12 +12,12 @@ describe('useChatStream', () => {
     typeof sseClient.streamChatResponse
   >;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     jest.clearAllMocks();
   });
 
-  it('initializes with default empty state', () => {
-    const { result } = renderHook(() =>
+  it('initializes with default empty state', async () => {
+    const { result } = await renderHook(() =>
       useChatStream({ workspaceId: 'ws-1' })
     );
 
@@ -46,7 +46,7 @@ describe('useChatStream', () => {
     });
 
     const onConvCreatedMock = jest.fn();
-    const { result } = renderHook(() =>
+    const { result } = await renderHook(() =>
       useChatStream({
         workspaceId: 'ws-1',
         onConversationCreated: onConvCreatedMock,
@@ -67,12 +67,12 @@ describe('useChatStream', () => {
     expect(onConvCreatedMock).toHaveBeenCalledWith('conv-new');
   });
 
-  it('resets chat state properly', () => {
-    const { result } = renderHook(() =>
+  it('resets chat state properly', async () => {
+    const { result } = await renderHook(() =>
       useChatStream({ workspaceId: 'ws-1' })
     );
 
-    act(() => {
+    await act(() => {
       result.current.setMessages([
         {
           id: '1',
@@ -86,7 +86,7 @@ describe('useChatStream', () => {
 
     expect(result.current.messages.length).toBe(1);
 
-    act(() => {
+    await act(() => {
       result.current.resetChat();
     });
 

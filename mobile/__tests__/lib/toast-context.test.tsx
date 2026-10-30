@@ -22,19 +22,19 @@ function ToastTestConsumer() {
 }
 
 describe('ToastContext & ToastProvider', () => {
-  it('throws error if useToast is used outside ToastProvider', () => {
+  it('throws error if useToast is used outside ToastProvider', async () => {
     // Suppress console.error for expected thrown error
     const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
-    expect(() => render(<ToastTestConsumer />)).toThrow(
+    await expect(render(<ToastTestConsumer />)).rejects.toThrow(
       'useToast must be used within a ToastProvider'
     );
 
     spy.mockRestore();
   });
 
-  it('shows and hides toast message properly', () => {
-    const { getByTestId, queryByTestId, getByText } = render(
+  it('shows and hides toast message properly', async () => {
+    const { getByTestId, queryByTestId, getByText } = await render(
       <ToastProvider>
         <ToastTestConsumer />
       </ToastProvider>
@@ -42,12 +42,12 @@ describe('ToastContext & ToastProvider', () => {
 
     expect(queryByTestId('uc-toast-card')).toBeNull();
 
-    fireEvent.press(getByTestId('show-toast-button'));
+    await fireEvent.press(getByTestId('show-toast-button'));
 
     expect(getByTestId('uc-toast-card')).toBeTruthy();
     expect(getByText('Thành công rồi!')).toBeTruthy();
 
-    fireEvent.press(getByTestId('hide-toast-button'));
+    await fireEvent.press(getByTestId('hide-toast-button'));
 
     expect(queryByTestId('uc-toast-card')).toBeNull();
   });

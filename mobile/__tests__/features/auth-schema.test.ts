@@ -7,7 +7,7 @@ import {
 
 describe('Auth Validation Schemas (Zod v4)', () => {
   describe('loginSchema', () => {
-    it('should validate valid email and 12+ character password', () => {
+    it('should validate valid email and 12+ character password', async () => {
       const result = loginSchema.safeParse({
         email: 'student@unichat.vn',
         password: 'Password123456!',
@@ -15,7 +15,7 @@ describe('Auth Validation Schemas (Zod v4)', () => {
       expect(result.success).toBe(true);
     });
 
-    it('should reject invalid email format', () => {
+    it('should reject invalid email format', async () => {
       const result = loginSchema.safeParse({
         email: 'invalid-email',
         password: 'Password123456!',
@@ -26,7 +26,7 @@ describe('Auth Validation Schemas (Zod v4)', () => {
       }
     });
 
-    it('should accept a nonempty legacy login password without transforming it', () => {
+    it('should accept a nonempty legacy login password without transforming it', async () => {
       const result = loginSchema.safeParse({
         email: 'student@unichat.vn',
         password: 'short',
@@ -37,7 +37,7 @@ describe('Auth Validation Schemas (Zod v4)', () => {
   });
 
   describe('registerSchema', () => {
-    it('should validate matching passwords', () => {
+    it('should validate matching passwords', async () => {
       const result = registerSchema.safeParse({
         email: 'student@unichat.vn',
         password: 'SecurePassword123!',
@@ -46,7 +46,7 @@ describe('Auth Validation Schemas (Zod v4)', () => {
       expect(result.success).toBe(true);
     });
 
-    it('should reject mismatched password confirmation', () => {
+    it('should reject mismatched password confirmation', async () => {
       const result = registerSchema.safeParse({
         email: 'student@unichat.vn',
         password: 'SecurePassword123!',
@@ -60,12 +60,12 @@ describe('Auth Validation Schemas (Zod v4)', () => {
   });
 
   describe('forgotPasswordSchema & resetPasswordSchema', () => {
-    it('should validate email for forgotPassword', () => {
+    it('should validate email for forgotPassword', async () => {
       const result = forgotPasswordSchema.safeParse({ email: 'user@unichat.vn' });
       expect(result.success).toBe(true);
     });
 
-    it('should validate 6-digit OTP and new password for resetPassword', () => {
+    it('should validate 6-digit OTP and new password for resetPassword', async () => {
       const result = resetPasswordSchema.safeParse({
         email: 'user@unichat.vn',
         otp: '123456',
@@ -75,7 +75,7 @@ describe('Auth Validation Schemas (Zod v4)', () => {
       expect(result.success).toBe(true);
     });
 
-    it('should reject OTP not having 6 digits', () => {
+    it('should reject OTP not having 6 digits', async () => {
       const result = resetPasswordSchema.safeParse({
         email: 'user@unichat.vn',
         otp: '12',

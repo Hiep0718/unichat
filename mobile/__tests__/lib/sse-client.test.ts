@@ -20,7 +20,7 @@ function stream(chunks: string[]): Response {
 const metadata = { operationId: 'operation-1', conversationId: 'conversation-1', knowledgeMode: 'STRICT', provisional: true };
 
 describe('streamChatResponse', () => {
-  beforeEach(() => { jest.clearAllMocks(); invalidateSession(); });
+  beforeEach(async () => { jest.clearAllMocks(); invalidateSession(); });
   it('should replace provisional UTF-8 text and finish only after committed final', async () => {
     jest.mocked(fetchAuthorized).mockResolvedValueOnce(stream([
       frame('metadata', metadata), frame('pipeline-step', { stepIndex: 1, stepKey: 'RETRIEVAL', title: 'Truy hồi', detail: 'Đang tìm tài liệu' }),

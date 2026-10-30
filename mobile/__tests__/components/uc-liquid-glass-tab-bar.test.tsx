@@ -27,7 +27,7 @@ jest.mock('../../src/components/uc-icon', () => {
 
 
 describe('UCLiquidGlassTabBar', () => {
-  const mockNavigate = jest.fn();
+  const mockNavigateToTab = jest.fn();
   const mockEmit = jest.fn().mockReturnValue({ defaultPrevented: false });
 
   const createProps = (activeIndex = 0, hideTabBar = false): LiquidGlassTabBarProps => {
@@ -70,10 +70,8 @@ describe('UCLiquidGlassTabBar', () => {
           },
         } as any,
       },
-      navigation: {
-        navigate: mockNavigate,
-        emit: mockEmit,
-      } as any,
+      emitter: { emit: mockEmit } as any,
+      navigateToTab: mockNavigateToTab,
       insets: {
         top: 47,
         bottom: 34,
@@ -83,13 +81,13 @@ describe('UCLiquidGlassTabBar', () => {
     };
   };
 
-  beforeEach(() => {
+  beforeEach(async () => {
     jest.clearAllMocks();
   });
 
-  it('renders all 4 tabs with proper labels and badge', () => {
+  it('renders all 4 tabs with proper labels and badge', async () => {
     const props = createProps(0);
-    const { getByText } = render(<UCLiquidGlassTabBar {...props} />);
+    const { getByText } = await render(<UCLiquidGlassTabBar {...props} />);
 
     expect(getByText('Workspace')).toBeTruthy();
     expect(getByText('Hội thoại')).toBeTruthy();
@@ -98,12 +96,12 @@ describe('UCLiquidGlassTabBar', () => {
     expect(getByText('3')).toBeTruthy(); // Badge on feed tab
   });
 
-  it('navigates and emits event on tab press', () => {
+  it('navigates and emits event on tab press', async () => {
     const props = createProps(0);
-    const { getByText } = render(<UCLiquidGlassTabBar {...props} />);
+    const { getByText } = await render(<UCLiquidGlassTabBar {...props} />);
 
     const chatTab = getByText('Hội thoại');
-    fireEvent.press(chatTab);
+    await fireEvent.press(chatTab);
 
     expect(mockEmit).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -112,20 +110,20 @@ describe('UCLiquidGlassTabBar', () => {
         canPreventDefault: true,
       })
     );
-    expect(mockNavigate).toHaveBeenCalledWith('chat');
+    expect(mockNavigateToTab).toHaveBeenCalledWith('chat-key');
   });
 
-  it('triggers haptics on press', () => {
+  it('triggers haptics on press', async () => {
     const props = createProps(0);
-    const { getByText } = render(<UCLiquidGlassTabBar {...props} />);
+    const { getByText } = await render(<UCLiquidGlassTabBar {...props} />);
 
-    fireEvent.press(getByText('Tôi'));
+    await fireEvent.press(getByText('Tôi'));
     expect(Haptics.impactAsync).toHaveBeenCalledWith('light');
   });
 
-  it('returns null if screen requests tabBarStyle display: none', () => {
+  it('returns null if screen requests tabBarStyle display: none', async () => {
     const props = createProps(0, true);
-    const { queryByText } = render(<UCLiquidGlassTabBar {...props} />);
+    const { queryByText } = await render(<UCLiquidGlassTabBar {...props} />);
 
     expect(queryByText('Workspace')).toBeNull();
   });
