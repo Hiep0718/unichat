@@ -25,5 +25,10 @@
   },
   "dependencies": {
     "safe-buffer": "^5.2.1"
+  },
+  "overrides": {
+    "react-native": "0.88.1",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
   }
 }
