@@ -34,16 +34,30 @@ describe('WorkspaceCover', () => {
     expect(image).toHaveAttribute('src', expect.stringContaining('/covers/'));
   });
 
-  it('should paint the gradient underneath so a card is never a grey box', () => {
-    // Arrange and Act: the picture is a request; the gradient is not, and it
-    // is what shows for the frame before the picture decodes.
+  it('should hold a colour underneath so a card is never a grey box', () => {
+    // Arrange and Act: the picture is a request; the hold is not, and it is
+    // what shows for the frame before the picture decodes, or stays if the
+    // picture cannot be fetched at all.
     const { container } = render(
       <WorkspaceCover workspaceId={ID_A} name="Mongodb" hasCover={false} />,
     );
 
-    // Assert
+    // Assert: a colour, and a dark enough one to carry the white title that
+    // sits on it. The assertion used to name linear-gradient, which tied it
+    // to how the hold was drawn rather than to what it is for; the hold is a
+    // flat tone now, and the card is still never a grey box.
     const cover = container.querySelector('.workspace-cover') as HTMLElement;
-    expect(cover.style.background).toContain('linear-gradient');
+    // jsdom normalises a hex to rgb(); read whichever form comes back, so the
+    // test does not depend on which one the renderer happens to hand over.
+    const painted = cover.style.background.trim();
+    const parts = /rgb\((\d+),\s*(\d+),\s*(\d+)\)/.exec(painted)
+      ?? /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(painted);
+    expect(parts).not.toBeNull();
+
+    const radix = painted.startsWith('#') ? 16 : 10;
+    const [r, g, b] = (parts ?? []).slice(1, 4).map((part) => parseInt(part, radix));
+    const lightness = (r! * 0.2126 + g! * 0.7152 + b! * 0.0722) / 255;
+    expect(lightness).toBeLessThan(0.4);
   });
 
   it('should darken the picture where the card writes its name', () => {

@@ -43,12 +43,6 @@
   color: var(--muc-nhat);
 }
 
-.welcome-banner__emoji {
-  font-size: 28px;
-  line-height: 1;
-  animation: wave 2s ease-in-out infinite;
-}
-
 @keyframes wave {
   0%, 100% { transform: rotate(0deg); }
   10% { transform: rotate(14deg); }
@@ -67,6 +61,9 @@
   .welcome-banner__greeting {
     font: var(--font-headline-lg-mobile);
     font-weight: 700;
-    color: var(--nen);
+    /* Dải này là giấy từ khi bỏ bức ảnh; chữ trắng ở đây làm tiêu đề biến
+       mất hoàn toàn trên điện thoại. Máy đo bắt được, mắt thì không, vì
+       tôi chỉ chụp ở 1440px. */
+    color: var(--muc);
   }
 }

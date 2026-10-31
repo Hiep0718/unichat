@@ -1,0 +1,1682 @@
+{
+ "url": ".taste-skill/snapshots/workspaces.html",
+ "at": "2026-10-31T07:30:47.129Z",
+ "allow": [],
+ "viewports": [
+  {
+   "width": 1440,
+   "height": 900,
+   "load": "load",
+   "screens": 1,
+   "filled": [
+    0.52
+   ],
+   "motion": {
+    "elements": 18,
+    "css": 18,
+    "transitions": 0,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "page": {
+     "height": 900,
+     "screens": 1,
+     "words": 210,
+     "img": 16,
+     "video": 0,
+     "canvas": 0,
+     "svg": 0,
+     "sections": 4,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 10,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [
+      "topic-database.jpg",
+      "topic-programming.jpg",
+      "topic-programming.jpg",
+      "topic-database.jpg",
+      "topic-programming.jpg",
+      "topic-programming.jpg",
+      "topic-regulations.jpg",
+      "topic-project-management.jpg"
+     ],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [
+      "blob:http://127.0.0.1:5173/bd3756c2-7c82-451e-a40b-e101d0acaafd",
+      "blob:http://127.0.0.1:5173/bd3756c2-7c82-451e-a40b-e101d0acaafd",
+      "blob:http://127.0.0.1:5173/bd3756c2-7c82-451e-a40b-e101d0acaafd",
+      "blob:http://127.0.0.1:5173/bd3756c2-7c82-451e-a40b-e101d0acaafd"
+     ],
+     "emoji": [
+      "👋"
+     ],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "UniChat",
+     "words": 1,
+     "chars": 7,
+     "lines": 1,
+     "size": 17,
+     "vw": 1.2,
+     "font": "IBM Plex Sans Variable",
+     "weight": 700,
+     "tracking": -0.01,
+     "leading": 1.2,
+     "top": 24,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "h1": {
+     "text": "",
+     "words": 0,
+     "lines": 1,
+     "size": 17,
+     "font": "IBM Plex Sans Variable"
+    },
+    "headings": [
+     {
+      "text": "Chào buổi chiều, hungdz1372004 👋",
+      "words": 5,
+      "chars": 33,
+      "lines": 1,
+      "size": 28,
+      "vw": 1.9,
+      "font": "IBM Plex Sans Variable",
+      "weight": 700,
+      "tracking": -0.013,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.29,
+      "top": 66,
+      "tag": "h2",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 1,
+     "maxLines": 1,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 0,
+     "medianWords": null,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "IBM Plex Sans Variable",
+       "share": 0.66,
+       "mono": false
+      },
+      {
+       "family": "Material Symbols Outlined",
+       "share": 0.27,
+       "mono": true
+      },
+      {
+       "family": "Material Symbols Rounded",
+       "share": 0.08,
+       "mono": true
+      }
+     ],
+     "familyCount": 3,
+     "sizes": [
+      11,
+      12,
+      13,
+      14,
+      16,
+      18,
+      19,
+      20,
+      24,
+      26,
+      28
+     ],
+     "sizeCount": 11,
+     "notLoaded": [],
+     "body": null,
+     "measureChars": null,
+     "max": {
+      "size": 28,
+      "vw": 1.9,
+      "font": "IBM Plex Sans Variable",
+      "text": "👋"
+     },
+     "monoShare": 0.34,
+     "monoProseShare": 0.34,
+     "monoFamilies": [
+      "Material Symbols Rounded",
+      "Material Symbols Outlined"
+     ],
+     "monoSamples": [
+      "dynamic_feed",
+      "workspaces",
+      "forum",
+      "person",
+      "notifications",
+      "logout"
+     ],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0.01,
+     "centerShare": 0.13,
+     "smallText": 10
+    },
+    "eyebrows": [],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#f9f9f9",
+     "bodyBgHsl": {
+      "h": 0,
+      "s": 0,
+      "l": 0.98
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#f9f9f9",
+       "top": 0,
+       "hsl": {
+        "h": 0,
+        "s": 0,
+        "l": 0.98
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#ffffff",
+       "share": 0.66
+      },
+      {
+       "color": "#636361",
+       "share": 0.2
+      },
+      {
+       "color": "#1f201d",
+       "share": 0.12
+      },
+      {
+       "color": "#177836",
+       "share": 0.01
+      },
+      {
+       "color": "#175e78",
+       "share": 0.01
+      }
+     ],
+     "button": {
+      "bg": "#1f201d",
+      "hsl": {
+       "h": 80,
+       "s": 0.05,
+       "l": 0.12
+      },
+      "fg": "#ffffff"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 7,
+     "inHero": 7,
+     "radius": "pill",
+     "height": 36,
+     "withShadow": 4,
+     "withGradient": 3,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "workspaces",
+      "folder Không gian của tôi",
+      "add Tạo Workspace",
+      "Tất cả",
+      "Riêng tư"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 10,
+     "shadowOverlay": 1,
+     "shadowSamples": [
+      "section.welcome-banner → rgb(243, 243, 243) 0px 0px 0px 1px",
+      "button.dashboard-tab.dashboard-tab--active → rgba(15, 23, 42, 0.08) 0px 1px 2px 0px, rgba(15, 23, 42, 0.07) 0px 3px 10px 0px",
+      "div.quick-stats__card → rgba(15, 23, 42, 0.06) 0px 1px 2px 0px, rgba(15, 23, 42, 0.05) 0px 4px 14px 0px",
+      "div.quick-stats__icon-wrap.quick-stats__icon-wrap--workspace → rgba(99, 102, 241, 0.34) 0px 4px 12px 0px"
+     ],
+     "gradients": 30,
+     "scrims": 10,
+     "gradientSamples": [
+      "div.workspace-cover → linear-gradient(155deg, rgb(248, 113, 113) 0%, rgb(245, 158, 11) 48%, rgb(127, 29, 29) 100%)",
+      "span.workspace-cover__glow → radial-gradient(56% 56% at 84% 10%, rgba(254, 240, 138, 0.56), rgba(0, 0, 0, 0) 70%), radial-gradient(52% 52% ",
+      "span.workspace-card__scrim → linear-gradient(to top, rgba(2, 6, 23, 0.46) 0%, rgba(2, 6, 23, 0.24) 42%, rgba(2, 6, 23, 0.03) 72%, rgba(2, 6",
+      "div.workspace-cover → linear-gradient(155deg, rgb(248, 113, 113) 0%, rgb(245, 158, 11) 48%, rgb(127, 29, 29) 100%)"
+     ],
+     "gradientText": 0,
+     "hairlines": 1,
+     "hairlineSamples": [
+      "nav.side-nav 224px"
+     ],
+     "outlinedBoxes": 0,
+     "dashed": 0,
+     "blurred": 10,
+     "roundedBoxes": 4,
+     "boxRadius": 16,
+     "squareMedia": 0,
+     "roundedMedia": 10,
+     "mediaRadius": 16,
+     "textShadow": 10,
+     "cardRows": []
+    },
+    "heroMedia": [],
+    "nav": {
+     "links": 3,
+     "fixed": true,
+     "height": 900,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "material symbols outlined",
+     "material symbols rounded",
+     "ibm plex sans variable"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "pageH": 900,
+    "margins": {
+     "left": 291,
+     "right": 82
+    },
+    "sections": [],
+    "gaps": [],
+    "h1s": [],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 309,
+      "n": 3
+     },
+     {
+      "x": 291,
+      "n": 2
+     },
+     {
+      "x": 327,
+      "n": 1
+     },
+     {
+      "x": 670,
+      "n": 1
+     },
+     {
+      "x": 700,
+      "n": 1
+     },
+     {
+      "x": 1031,
+      "n": 1
+     }
+    ],
+    "leftBlocks": 9,
+    "bodySize": 14,
+    "stage": false,
+    "explains": false,
+    "slivers": [],
+    "voidShare": 0.09,
+    "voidBox": {
+     "x": 60,
+     "y": 120,
+     "w": 180,
+     "h": 660
+    }
+   },
+   "app": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "dark": false,
+    "ground": "#f9f9f9",
+    "sidebar": {
+     "w": 224,
+     "tag": "nav",
+     "links": 14,
+     "share": 0.16
+    },
+    "topbar": null,
+    "canvas": {
+     "left": 67,
+     "right": 82
+    },
+    "hero": {
+     "text": "UniChat",
+     "words": 1,
+     "chars": 7,
+     "lines": 1,
+     "size": 17,
+     "vw": 1.2,
+     "font": "IBM Plex Sans Variable",
+     "weight": 700,
+     "tracking": -0.01,
+     "leading": 1.2,
+     "top": 24,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "charts": 0,
+    "layout": {
+     "panels": 5,
+     "firstScreen": 5,
+     "ragged": [],
+     "voids": []
+    },
+    "tiles": 0,
+    "panels": {
+     "count": 6,
+     "radii": [
+      [
+       16,
+       4
+      ],
+      [
+       0,
+       2
+      ]
+     ],
+     "heavyBorders": 1,
+     "borderSamples": [
+      "#0d1a26 on #f9f9f9 (16.72:1)"
+     ],
+     "heavyShadows": 1,
+     "softShadows": 6,
+     "shadowSamples": [
+      "rgb(243, 243, 243) 0px 0px 0px 1px"
+     ],
+     "glass": 0
+    },
+    "chips": {
+     "count": 0,
+     "hues": 0,
+     "samples": []
+    },
+    "numbers": {
+     "cells": 0,
+     "leftAligned": 0,
+     "figures": 2,
+     "tabularShare": 1,
+     "kpiMax": 26
+    },
+    "rows": null,
+    "chartHues": 0,
+    "placeholders": [],
+    "type": {
+     "under13": 0.34,
+     "tiny": 0,
+     "tinySamples": [],
+     "sizes": [
+      12,
+      13,
+      14,
+      16,
+      18,
+      19,
+      20,
+      24,
+      26,
+      28
+     ]
+    },
+    "title": {
+     "text": "",
+     "size": 17,
+     "top": 24
+    },
+    "colourShare": 0.016
+   },
+   "consoleErrors": [
+    "Error: @vitejs/plugin-react can't detect preamble. Something is wrong.\n    at http://127.0.0.1:5173/src/components/loading-screen-view.tsx?t=1793430785173:106:11"
+   ]
+  },
+  {
+   "width": 768,
+   "height": 1024,
+   "load": "load",
+   "screens": 1,
+   "filled": [
+    0.45
+   ],
+   "motion": {
+    "elements": 18,
+    "css": 18,
+    "transitions": 0,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "page": {
+     "height": 1024,
+     "screens": 1,
+     "words": 210,
+     "img": 16,
+     "video": 0,
+     "canvas": 0,
+     "svg": 0,
+     "sections": 4,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 7,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [
+      "topic-database.jpg",
+      "topic-programming.jpg",
+      "topic-programming.jpg",
+      "topic-regulations.jpg",
+      "topic-project-management.jpg",
+      "topic-data-science.jpg",
+      "topic-artificial-intelligence.jpg"
+     ],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [
+      "blob:http://127.0.0.1:5173/bd3756c2-7c82-451e-a40b-e101d0acaafd",
+      "blob:http://127.0.0.1:5173/bd3756c2-7c82-451e-a40b-e101d0acaafd",
+      "blob:http://127.0.0.1:5173/bd3756c2-7c82-451e-a40b-e101d0acaafd",
+      "blob:http://127.0.0.1:5173/bd3756c2-7c82-451e-a40b-e101d0acaafd"
+     ],
+     "emoji": [
+      "👋"
+     ],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "UniChat",
+     "words": 1,
+     "chars": 7,
+     "lines": 1,
+     "size": 17,
+     "vw": 2.2,
+     "font": "IBM Plex Sans Variable",
+     "weight": 700,
+     "tracking": -0.01,
+     "leading": 1.2,
+     "top": 24,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "h1": {
+     "text": "",
+     "words": 0,
+     "lines": 1,
+     "size": 17,
+     "font": "IBM Plex Sans Variable"
+    },
+    "headings": [
+     {
+      "text": "Chào buổi chiều, hungdz1372004 👋",
+      "words": 5,
+      "chars": 33,
+      "lines": 1,
+      "size": 28,
+      "vw": 3.6,
+      "font": "IBM Plex Sans Variable",
+      "weight": 700,
+      "tracking": -0.013,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.54,
+      "top": 66,
+      "tag": "h2",
+      "kind": "heading"
+     },
+     {
+      "text": "14",
+      "words": 1,
+      "chars": 2,
+      "lines": 1,
+      "size": 26,
+      "vw": 3.4,
+      "font": "IBM Plex Sans Variable",
+      "weight": 700,
+      "tracking": -0.02,
+      "leading": 1.15,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.07,
+      "top": 279,
+      "tag": "span",
+      "kind": "heading"
+     },
+     {
+      "text": "7",
+      "words": 1,
+      "chars": 1,
+      "lines": 1,
+      "size": 26,
+      "vw": 3.4,
+      "font": "IBM Plex Sans Variable",
+      "weight": 700,
+      "tracking": -0.02,
+      "leading": 1.15,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.08,
+      "top": 287,
+      "tag": "span",
+      "kind": "heading"
+     },
+     {
+      "text": "40",
+      "words": 1,
+      "chars": 2,
+      "lines": 1,
+      "size": 26,
+      "vw": 3.4,
+      "font": "IBM Plex Sans Variable",
+      "weight": 700,
+      "tracking": -0.02,
+      "leading": 1.15,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.05,
+      "top": 287,
+      "tag": "span",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 4,
+     "maxLines": 1,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 0,
+     "medianWords": 1,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "IBM Plex Sans Variable",
+       "share": 0.66,
+       "mono": false
+      },
+      {
+       "family": "Material Symbols Outlined",
+       "share": 0.27,
+       "mono": true
+      },
+      {
+       "family": "Material Symbols Rounded",
+       "share": 0.08,
+       "mono": true
+      }
+     ],
+     "familyCount": 3,
+     "sizes": [
+      11,
+      12,
+      13,
+      14,
+      16,
+      18,
+      19,
+      20,
+      24,
+      26,
+      28
+     ],
+     "sizeCount": 11,
+     "notLoaded": [],
+     "body": null,
+     "measureChars": null,
+     "max": {
+      "size": 28,
+      "vw": 3.6,
+      "font": "IBM Plex Sans Variable",
+      "text": "👋"
+     },
+     "monoShare": 0.34,
+     "monoProseShare": 0.34,
+     "monoFamilies": [
+      "Material Symbols Rounded",
+      "Material Symbols Outlined"
+     ],
+     "monoSamples": [
+      "dynamic_feed",
+      "workspaces",
+      "forum",
+      "person",
+      "notifications",
+      "logout"
+     ],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0.01,
+     "centerShare": 0.13,
+     "smallText": 10
+    },
+    "eyebrows": [],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#f9f9f9",
+     "bodyBgHsl": {
+      "h": 0,
+      "s": 0,
+      "l": 0.98
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#f9f9f9",
+       "top": 0,
+       "hsl": {
+        "h": 0,
+        "s": 0,
+        "l": 0.98
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#ffffff",
+       "share": 0.66
+      },
+      {
+       "color": "#636361",
+       "share": 0.2
+      },
+      {
+       "color": "#1f201d",
+       "share": 0.12
+      },
+      {
+       "color": "#177836",
+       "share": 0.01
+      },
+      {
+       "color": "#175e78",
+       "share": 0.01
+      }
+     ],
+     "button": {
+      "bg": "#1f201d",
+      "hsl": {
+       "h": 80,
+       "s": 0.05,
+       "l": 0.12
+      },
+      "fg": "#ffffff"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 7,
+     "inHero": 7,
+     "radius": "pill",
+     "height": 32,
+     "withShadow": 4,
+     "withGradient": 3,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "workspaces",
+      "folder Không gian của tôi",
+      "add Tạo Workspace",
+      "Tất cả",
+      "Riêng tư"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 10,
+     "shadowOverlay": 1,
+     "shadowSamples": [
+      "section.welcome-banner → rgb(243, 243, 243) 0px 0px 0px 1px",
+      "button.dashboard-tab.dashboard-tab--active → rgba(15, 23, 42, 0.08) 0px 1px 2px 0px, rgba(15, 23, 42, 0.07) 0px 3px 10px 0px",
+      "div.quick-stats__card → rgba(15, 23, 42, 0.06) 0px 1px 2px 0px, rgba(15, 23, 42, 0.05) 0px 4px 14px 0px",
+      "div.quick-stats__icon-wrap.quick-stats__icon-wrap--workspace → rgba(99, 102, 241, 0.34) 0px 4px 12px 0px"
+     ],
+     "gradients": 30,
+     "scrims": 10,
+     "gradientSamples": [
+      "div.workspace-cover → linear-gradient(155deg, rgb(248, 113, 113) 0%, rgb(245, 158, 11) 48%, rgb(127, 29, 29) 100%)",
+      "span.workspace-cover__glow → radial-gradient(56% 56% at 84% 10%, rgba(254, 240, 138, 0.56), rgba(0, 0, 0, 0) 70%), radial-gradient(52% 52% ",
+      "span.workspace-card__scrim → linear-gradient(to top, rgba(2, 6, 23, 0.46) 0%, rgba(2, 6, 23, 0.24) 42%, rgba(2, 6, 23, 0.03) 72%, rgba(2, 6",
+      "div.workspace-cover → linear-gradient(155deg, rgb(248, 113, 113) 0%, rgb(245, 158, 11) 48%, rgb(127, 29, 29) 100%)"
+     ],
+     "gradientText": 0,
+     "hairlines": 1,
+     "hairlineSamples": [
+      "nav.side-nav 224px"
+     ],
+     "outlinedBoxes": 0,
+     "dashed": 0,
+     "blurred": 10,
+     "roundedBoxes": 4,
+     "boxRadius": 16,
+     "squareMedia": 0,
+     "roundedMedia": 7,
+     "mediaRadius": 16,
+     "textShadow": 10,
+     "cardRows": []
+    },
+    "heroMedia": [
+     {
+      "type": "img",
+      "ratio": 0.2
+     }
+    ],
+    "nav": {
+     "links": 3,
+     "fixed": true,
+     "height": 1024,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "material symbols outlined",
+     "material symbols rounded",
+     "ibm plex sans variable"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "pageH": 1024,
+    "margins": {
+     "left": 240,
+     "right": 31
+    },
+    "sections": [],
+    "gaps": [],
+    "h1s": [],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 258,
+      "n": 4
+     },
+     {
+      "x": 240,
+      "n": 2
+     },
+     {
+      "x": 276,
+      "n": 1
+     },
+     {
+      "x": 429,
+      "n": 1
+     },
+     {
+      "x": 600,
+      "n": 1
+     },
+     {
+      "x": 647,
+      "n": 1
+     }
+    ],
+    "leftBlocks": 10,
+    "bodySize": 14,
+    "stage": false,
+    "explains": false,
+    "slivers": [],
+    "voidShare": 0,
+    "voidBox": null
+   },
+   "app": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "dark": false,
+    "ground": "#f9f9f9",
+    "sidebar": {
+     "w": 224,
+     "tag": "nav",
+     "links": 14,
+     "share": 0.29
+    },
+    "topbar": null,
+    "canvas": {
+     "left": 16,
+     "right": 31
+    },
+    "hero": {
+     "text": "UniChat",
+     "words": 1,
+     "chars": 7,
+     "lines": 1,
+     "size": 17,
+     "vw": 2.2,
+     "font": "IBM Plex Sans Variable",
+     "weight": 700,
+     "tracking": -0.01,
+     "leading": 1.2,
+     "top": 24,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "charts": 0,
+    "layout": {
+     "panels": 5,
+     "firstScreen": 5,
+     "ragged": [],
+     "voids": []
+    },
+    "tiles": 0,
+    "panels": {
+     "count": 6,
+     "radii": [
+      [
+       16,
+       4
+      ],
+      [
+       0,
+       2
+      ]
+     ],
+     "heavyBorders": 1,
+     "borderSamples": [
+      "#0d1a26 on #f9f9f9 (16.72:1)"
+     ],
+     "heavyShadows": 1,
+     "softShadows": 6,
+     "shadowSamples": [
+      "rgb(243, 243, 243) 0px 0px 0px 1px"
+     ],
+     "glass": 0
+    },
+    "chips": {
+     "count": 0,
+     "hues": 0,
+     "samples": []
+    },
+    "numbers": {
+     "cells": 0,
+     "leftAligned": 0,
+     "figures": 2,
+     "tabularShare": 1,
+     "kpiMax": 26
+    },
+    "rows": null,
+    "chartHues": 0,
+    "placeholders": [],
+    "type": {
+     "under13": 0.34,
+     "tiny": 0,
+     "tinySamples": [],
+     "sizes": [
+      12,
+      13,
+      14,
+      16,
+      18,
+      19,
+      20,
+      24,
+      26,
+      28
+     ]
+    },
+    "title": {
+     "text": "",
+     "size": 17,
+     "top": 24
+    },
+    "colourShare": 0.006
+   },
+   "consoleErrors": [
+    "Error: @vitejs/plugin-react can't detect preamble. Something is wrong.\n    at http://127.0.0.1:5173/src/components/loading-screen-view.tsx?t=1793430785173:106:11"
+   ]
+  },
+  {
+   "width": 390,
+   "height": 844,
+   "load": "load",
+   "screens": 1,
+   "filled": [
+    0.53
+   ],
+   "motion": {
+    "elements": 18,
+    "css": 18,
+    "transitions": 0,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "page": {
+     "height": 844,
+     "screens": 1,
+     "words": 197,
+     "img": 16,
+     "video": 0,
+     "canvas": 0,
+     "svg": 0,
+     "sections": 4,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 10,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [
+      "topic-database.jpg",
+      "topic-programming.jpg",
+      "topic-programming.jpg",
+      "topic-database.jpg",
+      "topic-programming.jpg",
+      "topic-programming.jpg",
+      "topic-regulations.jpg",
+      "topic-project-management.jpg"
+     ],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [
+      "blob:http://127.0.0.1:5173/bd3756c2-7c82-451e-a40b-e101d0acaafd",
+      "blob:http://127.0.0.1:5173/bd3756c2-7c82-451e-a40b-e101d0acaafd",
+      "blob:http://127.0.0.1:5173/bd3756c2-7c82-451e-a40b-e101d0acaafd",
+      "blob:http://127.0.0.1:5173/bd3756c2-7c82-451e-a40b-e101d0acaafd"
+     ],
+     "emoji": [
+      "👋"
+     ],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "👋",
+     "words": 1,
+     "chars": 2,
+     "lines": 1,
+     "size": 28,
+     "vw": 7.2,
+     "font": "IBM Plex Sans Variable",
+     "weight": 700,
+     "tracking": -0.01,
+     "leading": 1,
+     "top": 67,
+     "tag": "span",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "h1": null,
+    "headings": [
+     {
+      "text": "👋",
+      "words": 1,
+      "chars": 2,
+      "lines": 1,
+      "size": 28,
+      "vw": 7.2,
+      "font": "IBM Plex Sans Variable",
+      "weight": 700,
+      "tracking": -0.011,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.1,
+      "top": 67,
+      "tag": "span",
+      "kind": "heading"
+     },
+     {
+      "text": "7",
+      "words": 1,
+      "chars": 1,
+      "lines": 1,
+      "size": 26,
+      "vw": 6.7,
+      "font": "IBM Plex Sans Variable",
+      "weight": 700,
+      "tracking": -0.02,
+      "leading": 1.15,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.15,
+      "top": 300,
+      "tag": "span",
+      "kind": "heading"
+     },
+     {
+      "text": "workspaces",
+      "words": 1,
+      "chars": 10,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Material Symbols Outlined",
+      "weight": 400,
+      "tracking": 0,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": true,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.12,
+      "top": 300,
+      "tag": "div",
+      "kind": "heading"
+     },
+     {
+      "text": "40",
+      "words": 1,
+      "chars": 2,
+      "lines": 1,
+      "size": 26,
+      "vw": 6.7,
+      "font": "IBM Plex Sans Variable",
+      "weight": 700,
+      "tracking": -0.02,
+      "leading": 1.15,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.1,
+      "top": 399,
+      "tag": "span",
+      "kind": "heading"
+     },
+     {
+      "text": "description",
+      "words": 1,
+      "chars": 11,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Material Symbols Outlined",
+      "weight": 400,
+      "tracking": 0,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": true,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.12,
+      "top": 399,
+      "tag": "div",
+      "kind": "heading"
+     },
+     {
+      "text": "14",
+      "words": 1,
+      "chars": 2,
+      "lines": 1,
+      "size": 26,
+      "vw": 6.7,
+      "font": "IBM Plex Sans Variable",
+      "weight": 700,
+      "tracking": -0.02,
+      "leading": 1.15,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.15,
+      "top": 498,
+      "tag": "span",
+      "kind": "heading"
+     },
+     {
+      "text": "group",
+      "words": 1,
+      "chars": 5,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Material Symbols Outlined",
+      "weight": 400,
+      "tracking": 0,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": true,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.12,
+      "top": 498,
+      "tag": "div",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 7,
+     "maxLines": 1,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 0,
+     "medianWords": 1,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "IBM Plex Sans Variable",
+       "share": 0.69,
+       "mono": false
+      },
+      {
+       "family": "Material Symbols Outlined",
+       "share": 0.28,
+       "mono": true
+      },
+      {
+       "family": "Material Symbols Rounded",
+       "share": 0.02,
+       "mono": true
+      }
+     ],
+     "familyCount": 3,
+     "sizes": [
+      11,
+      12,
+      13,
+      14,
+      16,
+      18,
+      19,
+      20,
+      24,
+      26,
+      28
+     ],
+     "sizeCount": 11,
+     "notLoaded": [],
+     "body": null,
+     "measureChars": null,
+     "max": {
+      "size": 28,
+      "vw": 7.2,
+      "font": "IBM Plex Sans Variable",
+      "text": "👋"
+     },
+     "monoShare": 0.31,
+     "monoProseShare": 0.31,
+     "monoFamilies": [
+      "Material Symbols Rounded",
+      "Material Symbols Outlined"
+     ],
+     "monoSamples": [
+      "folder",
+      "travel_explore",
+      "workspaces",
+      "description",
+      "group",
+      "bolt"
+     ],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0.01,
+     "centerShare": 0.13,
+     "smallText": 10
+    },
+    "eyebrows": [],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#f9f9f9",
+     "bodyBgHsl": {
+      "h": 0,
+      "s": 0,
+      "l": 0.98
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#f9f9f9",
+       "top": 0,
+       "hsl": {
+        "h": 0,
+        "s": 0,
+        "l": 0.98
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#ffffff",
+       "share": 0.72
+      },
+      {
+       "color": "#636361",
+       "share": 0.17
+      },
+      {
+       "color": "#1f201d",
+       "share": 0.09
+      },
+      {
+       "color": "#177836",
+       "share": 0.01
+      },
+      {
+       "color": "#175e78",
+       "share": 0.01
+      }
+     ],
+     "button": {
+      "bg": "#f3f3f3",
+      "hsl": {
+       "h": 0,
+       "s": 0,
+       "l": 0.95
+      },
+      "fg": "#636361"
+     },
+     "lowContrast": [
+      {
+       "text": "Chào buổi chiều, hungdz1372004",
+       "ratio": 1,
+       "need": 3,
+       "size": 20,
+       "fg": "#ffffff",
+       "bg": "#ffffff"
+      }
+     ]
+    },
+    "buttons": {
+     "count": 6,
+     "inHero": 1,
+     "radius": "pill",
+     "height": 32,
+     "withShadow": 3,
+     "withGradient": 2,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "folder Không gian của tôi"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 10,
+     "shadowOverlay": 0,
+     "shadowSamples": [
+      "section.welcome-banner → rgb(243, 243, 243) 0px 0px 0px 1px",
+      "button.dashboard-tab.dashboard-tab--active → rgba(15, 23, 42, 0.08) 0px 1px 2px 0px, rgba(15, 23, 42, 0.07) 0px 3px 10px 0px",
+      "div.quick-stats__card → rgba(15, 23, 42, 0.06) 0px 1px 2px 0px, rgba(15, 23, 42, 0.05) 0px 4px 14px 0px",
+      "div.quick-stats__icon-wrap.quick-stats__icon-wrap--workspace → rgba(99, 102, 241, 0.34) 0px 4px 12px 0px"
+     ],
+     "gradients": 31,
+     "scrims": 10,
+     "gradientSamples": [
+      "div.workspace-cover → linear-gradient(155deg, rgb(248, 113, 113) 0%, rgb(245, 158, 11) 48%, rgb(127, 29, 29) 100%)",
+      "span.workspace-cover__glow → radial-gradient(56% 56% at 84% 10%, rgba(254, 240, 138, 0.56), rgba(0, 0, 0, 0) 70%), radial-gradient(52% 52% ",
+      "span.workspace-card__scrim → linear-gradient(to top, rgba(2, 6, 23, 0.46) 0%, rgba(2, 6, 23, 0.24) 42%, rgba(2, 6, 23, 0.03) 72%, rgba(2, 6",
+      "div.workspace-cover → linear-gradient(155deg, rgb(248, 113, 113) 0%, rgb(245, 158, 11) 48%, rgb(127, 29, 29) 100%)"
+     ],
+     "gradientText": 0,
+     "hairlines": 0,
+     "hairlineSamples": [],
+     "outlinedBoxes": 0,
+     "dashed": 0,
+     "blurred": 10,
+     "roundedBoxes": 4,
+     "boxRadius": 16,
+     "squareMedia": 0,
+     "roundedMedia": 10,
+     "mediaRadius": 16,
+     "textShadow": 10,
+     "cardRows": []
+    },
+    "heroMedia": [
+     {
+      "type": "img",
+      "ratio": 0.24
+     }
+    ],
+    "nav": {
+     "links": 0,
+     "fixed": true,
+     "height": 0,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "material symbols outlined",
+     "material symbols rounded",
+     "ibm plex sans variable"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "pageH": 844,
+    "margins": {
+     "left": 16,
+     "right": 16
+    },
+    "sections": [],
+    "gaps": [],
+    "h1s": [],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 34,
+      "n": 3
+     },
+     {
+      "x": 16,
+      "n": 1
+     },
+     {
+      "x": 315,
+      "n": 1
+     }
+    ],
+    "leftBlocks": 5,
+    "bodySize": 14,
+    "stage": false,
+    "explains": false,
+    "slivers": [],
+    "voidShare": 0,
+    "voidBox": null
+   },
+   "app": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "dark": false,
+    "ground": "#f9f9f9",
+    "sidebar": null,
+    "topbar": null,
+    "canvas": {
+     "left": 16,
+     "right": 16
+    },
+    "hero": {
+     "text": "👋",
+     "words": 1,
+     "chars": 2,
+     "lines": 1,
+     "size": 28,
+     "vw": 7.2,
+     "font": "IBM Plex Sans Variable",
+     "weight": 700,
+     "tracking": -0.01,
+     "leading": 1,
+     "top": 67,
+     "tag": "span",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "charts": 0,
+    "layout": {
+     "panels": 4,
+     "firstScreen": 4,
+     "ragged": [],
+     "voids": []
+    },
+    "tiles": 0,
+    "panels": {
+     "count": 4,
+     "radii": [
+      [
+       16,
+       4
+      ]
+     ],
+     "heavyBorders": 0,
+     "borderSamples": [],
+     "heavyShadows": 1,
+     "softShadows": 6,
+     "shadowSamples": [
+      "rgb(243, 243, 243) 0px 0px 0px 1px"
+     ],
+     "glass": 0
+    },
+    "chips": {
+     "count": 0,
+     "hues": 0,
+     "samples": []
+    },
+    "numbers": {
+     "cells": 0,
+     "leftAligned": 0,
+     "figures": 2,
+     "tabularShare": 1,
+     "kpiMax": 26
+    },
+    "rows": null,
+    "chartHues": 0,
+    "placeholders": [],
+    "type": {
+     "under13": 0.34,
+     "tiny": 0,
+     "tinySamples": [],
+     "sizes": [
+      12,
+      13,
+      14,
+      16,
+      18,
+      19,
+      20,
+      24,
+      26,
+      28
+     ]
+    },
+    "title": null,
+    "colourShare": 0.007
+   },
+   "consoleErrors": [
+    "Error: @vitejs/plugin-react can't detect preamble. Something is wrong.\n    at http://127.0.0.1:5173/src/components/loading-screen-view.tsx?t=1793430785173:106:11"
+   ]
+  }
+ ],
+ "findings": [
+  {
+   "level": "FAIL",
+   "id": "emoji",
+   "width": 1440,
+   "message": "Emoji in the page: 👋",
+   "fix": "Remove. Use words or real imagery.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "gradient",
+   "width": 1440,
+   "message": "30 gradient fill(s): div.workspace-cover → linear-gradient(155deg, rgb(248, 113, 113) 0%, rgb(245, 158, 11) 48%, rgb(127, 29, 29) 100%) | span.workspace-cover__glow → radial-gradient(56% 56% at 84% 10%, rgba(254, 240, 138, 0.56), rgba(0, 0, 0, 0) 70%), radial-gradient(52% 52%  | span.workspace-card__scrim → linear-gradient(to top, rgba(2, 6, 23, 0.46) 0%, rgba(2, 6, 23, 0.24) 42%, rgba(2, 6, 23, 0.03) 72%, rgba(2, 6",
+   "fix": "Use a flat colour or a real image. The only gradient allowed by default is a neutral scrim over a photo for legibility.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "text-shadow",
+   "width": 1440,
+   "message": "10 text-shadow(s).",
+   "fix": "Remove; fix legibility with a scrim or a different crop.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "button-fx",
+   "width": 1440,
+   "message": "Buttons with gradient fill and shadow/glow.",
+   "fix": "Flat fill, one colour.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "font-count",
+   "width": 1440,
+   "message": "3 typefaces in use (IBM Plex Sans Variable, Material Symbols Outlined, Material Symbols Rounded).",
+   "fix": "Two at most.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "broken-image",
+   "width": 1440,
+   "message": "Broken image(s): blob:http://127.0.0.1:5173/bd3756c2-7c82-451e-a40b-e101d0acaafd, blob:http://127.0.0.1:5173/bd3756c2-7c82-451e-a40b-e101d0acaafd, blob:http://127.0.0.1:5173/bd3756c2-7c82-451e-a40b-e101d0acaafd, blob:http://127.0.0.1:5173/bd3756c2-7c82-451e-a40b-e101d0acaafd",
+   "fix": "Fix the URL or replace the asset.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "dev-server",
+   "width": 1440,
+   "message": "This page is served by a development server (Vite, webpack or Next in dev mode).",
+   "fix": "Run the last gate on the production build too (vite build && vite preview, next build && next start, or the built index.html): minifiers and bundlers change the CSS a visitor receives.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "font-not-dealt",
+   "width": 1440,
+   "message": "The sheet dealt Instrument Sans, but the page renders IBM Plex Sans Variable, Material Symbols Outlined.",
+   "fix": "Load the dealt face (the link on the sheet) and put it first in font-family. A build that falls back to a default face lands on the default look."
+  },
+  {
+   "level": "FAIL",
+   "id": "heavy-shadow",
+   "width": 1440,
+   "message": "1 panel shadow(s) heavy enough to read as floating: rgb(243, 243, 243) 0px 0px 0px 1px",
+   "fix": "Panels sit on the ground: separate them with a fill one step from the ground or a quiet 1px border. A shadow, if any, is under 8% black with a small blur. Real overlays (menus, dialogs, popovers) may float.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "contrast",
+   "width": 390,
+   "message": "Unreadable text: \"Chào buổi chiều, hungdz1372004\" 1:1 (#ffffff on #ffffff)",
+   "fix": "Raise contrast to at least 4.5:1 for text, 3:1 for large display."
+  },
+  {
+   "level": "FAIL",
+   "id": "no-title",
+   "width": 390,
+   "message": "The screen has no h1.",
+   "fix": "Name the screen in an h1 at the top of the canvas (18–28px): \"Overview\", \"Payouts\", the project's name."
+  }
+ ],
+ "images": [
+  {
+   "viewport": "desktop",
+   "width": 1440,
+   "fold": "D:\\DoAnTotNghiep\\unichat\\.taste-skill\\inspect\\workspaces\\desktop-fold.jpg",
+   "pages": [
+    "D:\\DoAnTotNghiep\\unichat\\.taste-skill\\inspect\\workspaces\\desktop-page-01.jpg"
+   ],
+   "film": []
+  },
+  {
+   "viewport": "tablet",
+   "width": 768,
+   "fold": "D:\\DoAnTotNghiep\\unichat\\.taste-skill\\inspect\\workspaces\\tablet-fold.jpg",
+   "pages": [
+    "D:\\DoAnTotNghiep\\unichat\\.taste-skill\\inspect\\workspaces\\tablet-page-01.jpg"
+   ],
+   "film": []
+  },
+  {
+   "viewport": "mobile",
+   "width": 390,
+   "fold": "D:\\DoAnTotNghiep\\unichat\\.taste-skill\\inspect\\workspaces\\mobile-fold.jpg",
+   "pages": [
+    "D:\\DoAnTotNghiep\\unichat\\.taste-skill\\inspect\\workspaces\\mobile-page-01.jpg"
+   ],
+   "film": []
+  }
+ ]
+}

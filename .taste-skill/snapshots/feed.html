@@ -1,0 +1,3929 @@
+<!DOCTYPE html><html lang="vi"><head>
+    <script type="module">import { injectIntoGlobalHook } from "/@react-refresh";
+injectIntoGlobalHook(window);
+window.$RefreshReg$ = () => {};
+window.$RefreshSig$ = () => (type) => type;</script>
+
+    <script type="module" src="http://127.0.0.1:5173/@vite/client"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="UniChat — nền tảng tri thức AI cho tài liệu học tập">
+    <link rel="icon" type="image/svg+xml" href="http://127.0.0.1:5173/favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0..1,0&amp;family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400..500,0..1,0&amp;display=swap" rel="stylesheet">
+    <title>UniChat — Nền tảng Tri thức AI RAG Workspace</title>
+    <script>
+      // Polyfill for sockjs-client which expects Node's 'global' object
+      if (typeof global === 'undefined') {
+        window.global = window;
+      }
+    </script>
+  <style type="text/css" data-vite-dev-id="D:/DoAnTotNghiep/unichat/frontend/src/components/loading-screen.css">/* Premium AI Loading Screen & Transition Component Styling */
+
+.loading-provider__content {
+  display: contents;
+}
+
+.loading-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100%;
+  background: linear-gradient(135deg, var(--nen) 0%, var(--nen) 50%, var(--ke) 100%);
+  padding: 24px;
+  box-sizing: border-box;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.loading-screen::before {
+  content: '';
+  position: absolute;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, rgba(2, 132, 199, 0) 70%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  animation: aura-pulse 3s ease-in-out infinite alternate;
+}
+
+.loading-screen--fullscreen {
+  position: fixed;
+  inset: 0;
+  min-height: 100dvh;
+  z-index: 1000;
+}
+
+@keyframes aura-pulse {
+  from {
+    transform: translate(-50%, -50%) scale(0.85);
+    opacity: 0.5;
+  }
+  to {
+    transform: translate(-50%, -50%) scale(1.25);
+    opacity: 0.9;
+  }
+}
+
+.loading-screen__emblem-container {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-screen__ring {
+  position: absolute;
+  inset: -6px;
+  border-radius: 24px;
+  border: 2px solid transparent;
+  border-top-color: var(--muc);
+  border-right-color: var(--muc);
+  animation: ring-rotate 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.loading-screen__ring--outer {
+  inset: -14px;
+  border-radius: 28px;
+  border: 1.5px dashed rgba(2, 132, 199, 0.3);
+  animation: ring-rotate-reverse 6s linear infinite;
+}
+
+@keyframes ring-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes ring-rotate-reverse {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+.loading-screen__logo-img {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  object-fit: cover;
+  box-shadow: 0 8px 24px rgba(2, 132, 199, 0.25);
+  border: 2px solid var(--nen);
+  position: relative;
+  z-index: 2;
+  animation: logo-float 2.5s ease-in-out infinite alternate;
+}
+
+@keyframes logo-float {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-6px);
+  }
+}
+
+.loading-screen__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  z-index: 2;
+}
+
+.loading-screen__brand {
+  font: var(--font-headline-md);
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--muc) 0%, var(--muc) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+}
+
+.loading-screen__message {
+  font: var(--font-body-md);
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--color-on-surface-variant);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.loading-screen__dots {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.loading-screen__dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  animation: dot-bounce 1.4s ease-in-out infinite both;
+}
+
+.loading-screen__dot:nth-child(1) {
+  animation-delay: 0s;
+}
+.loading-screen__dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.loading-screen__dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes dot-bounce {
+  0%, 80%, 100% {
+    transform: scale(0.6);
+    opacity: 0.4;
+  }
+  40% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}
+
+/* Inline Section Loader (For Tabs / Containers) */
+.loading-inline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.loading-inline__spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--color-outline-variant);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: ring-rotate 0.8s linear infinite;
+}
+
+.loading-inline__text {
+  font: var(--font-label-md);
+  color: var(--color-on-surface-variant);
+  font-weight: 500;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-screen::before,
+  .loading-screen__ring,
+  .loading-screen__ring--outer,
+  .loading-screen__logo-img,
+  .loading-screen__dot,
+  .loading-inline__spinner {
+    animation: none;
+  }
+}
+</style><style type="text/css" data-vite-dev-id="D:/DoAnTotNghiep/unichat/frontend/src/features/calls/components/call-overlay.css">/* Fixed rather than inside the chat layout: a call survives navigating away
+   from the conversation, so it cannot be positioned relative to it. */
+.call-overlay {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  min-width: 320px;
+  padding: 14px 18px;
+  border-radius: 20px;
+  background: var(--muc);
+  color: var(--nen);
+  box-shadow: 0 24px 48px rgb(15 23 42 / 38%), 0 2px 8px rgb(15 23 42 / 24%);
+  animation: call-overlay-in 200ms cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+
+/* While it is ringing the panel is a card, not a strip: deciding whether to
+   answer is the one moment the call deserves more of the screen than the
+   work behind it. Once talking, it shrinks back out of the way. */
+.call-overlay--card {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 18px;
+  width: 300px;
+  padding: 22px 20px 18px;
+}
+
+@keyframes call-overlay-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+  }
+}
+
+@media (max-width: 640px) {
+  .call-overlay {
+    right: 16px;
+    left: 16px;
+    min-width: 0;
+  }
+
+  .call-overlay--card {
+    width: auto;
+  }
+}
+
+/* ── Who ─────────────────────────────────────────────────── */
+
+.call-overlay__identity {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.call-overlay--card .call-overlay__identity {
+  flex-direction: column;
+  gap: 12px;
+  text-align: center;
+}
+
+.call-overlay__avatar {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border-radius: 999px;
+  background: linear-gradient(140deg, var(--muc), var(--muc));
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.call-overlay--card .call-overlay__avatar {
+  width: 76px;
+  height: 76px;
+  font-size: 1.75rem;
+}
+
+.call-overlay--ended .call-overlay__avatar {
+  background: rgb(255 255 255 / 12%);
+}
+
+/* Only while it is ringing: a steady pulse during a call would read as a
+   problem rather than as the call simply being in progress. The ring is a
+   shadow so it costs no layout and cannot nudge the name beside it. */
+.call-overlay--incoming .call-overlay__avatar,
+.call-overlay--outgoing .call-overlay__avatar {
+  animation: call-overlay-pulse 1.6s ease-out infinite;
+}
+
+@keyframes call-overlay-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgb(59 130 246 / 55%);
+  }
+
+  70% {
+    box-shadow: 0 0 0 16px rgb(59 130 246 / 0%);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgb(59 130 246 / 0%);
+  }
+}
+
+.call-overlay__text {
+  min-width: 0;
+}
+
+.call-overlay__name {
+  margin: 0;
+  overflow: hidden;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.call-overlay--card .call-overlay__name {
+  font-size: 1.125rem;
+}
+
+.call-overlay__status {
+  margin: 2px 0 0;
+  color: rgb(255 255 255 / 68%);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+/* Tabular figures so the seconds do not shift the layout as they tick. */
+.call-overlay__status--timer {
+  color: rgb(255 255 255 / 86%);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+.call-overlay__error {
+  margin: 4px 0 0;
+  color: var(--color-error);
+  font-size: 0.75rem;
+}
+
+/* ── Actions ─────────────────────────────────────────────── */
+
+.call-overlay__actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.call-overlay--card .call-overlay__actions {
+  margin-left: 0;
+}
+
+/* Answering and refusing share the row evenly: at the moment of deciding,
+   neither choice should be the easier target. */
+.call-overlay--card .call-overlay__button {
+  flex: 1;
+  justify-content: center;
+  padding: 11px 14px;
+}
+
+.call-overlay__button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 14px;
+  border: none;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 14%);
+  color: var(--nen);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 120ms ease, transform 120ms ease;
+}
+
+.call-overlay__button:hover {
+  background: rgb(255 255 255 / 26%);
+}
+
+.call-overlay__button:active {
+  transform: scale(0.97);
+}
+
+.call-overlay__button:focus-visible {
+  outline: 2px solid var(--nen);
+  outline-offset: 2px;
+}
+
+/* A round button for a toggle, a pill for a decision: shape says which of
+   these changes a setting and which ends the call. */
+.call-overlay__button--icon {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  justify-content: center;
+}
+
+/* Green to accept and red to end: the one pair of colours people already read
+   correctly on a ringing phone without being taught. */
+.call-overlay__button--accept {
+  background: var(--ws-ok-ink);
+}
+
+.call-overlay__button--accept:hover {
+  background: var(--ws-ok-ink);
+}
+
+.call-overlay__button--end {
+  background: var(--color-error);
+}
+
+.call-overlay__button--end:hover {
+  background: var(--color-error);
+}
+
+/* Muted is a state, so the button stays lit rather than only changing icon. */
+.call-overlay__button--on {
+  background: var(--nen);
+  color: var(--muc);
+}
+
+.call-overlay__button--on:hover {
+  background: rgb(255 255 255 / 88%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .call-overlay,
+  .call-overlay--incoming .call-overlay__avatar,
+  .call-overlay--outgoing .call-overlay__avatar {
+    animation: none;
+  }
+
+  .call-overlay__button:active {
+    transform: none;
+  }
+}
+</style><style type="text/css" data-vite-dev-id="D:/DoAnTotNghiep/unichat/frontend/src/features/community/notification-bell.css">/* ==========================================================================
+   Notification Bell & Dropdown Styles
+   ========================================================================== */
+
+.notification-bell {
+  position: relative;
+  width: 100%;
+}
+
+.notification-bell__badge {
+  position: absolute;
+  top: -5px;
+  right: -7px;
+  min-width: 17px;
+  height: 17px;
+  border-radius: var(--radius-full);
+  background: var(--color-error);
+  color: var(--color-on-error);
+  font: var(--font-label-sm);
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  animation: badgePop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 0 0 2px var(--color-surface);
+  z-index: 2;
+}
+
+.side-nav__item--active .notification-bell__badge {
+  box-shadow: 0 0 0 2px var(--muc);
+}
+
+@keyframes badgePop {
+  from { transform: scale(0); }
+  to { transform: scale(1); }
+}
+
+/* ---------- Dropdown ---------- */
+.notification-dropdown {
+  position: fixed;
+  width: min(380px, calc(100vw - 32px));
+  max-height: min(480px, calc(100vh - 32px));
+  background: var(--color-surface-container-lowest);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 16px 40px -6px rgba(15, 23, 42, 0.18), 0 4px 14px rgba(15, 23, 42, 0.08);
+  overflow: hidden;
+  z-index: 1000;
+  animation: dropdownSlide 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes dropdownSlide {
+  from { opacity: 0; transform: translateX(-8px) scale(0.98); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+.notification-dropdown__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--color-outline-variant);
+}
+
+.notification-dropdown__title {
+  font: var(--font-headline-md);
+  font-size: 15px;
+  color: var(--color-on-surface);
+}
+
+.notification-dropdown__mark-all {
+  font: var(--font-label-sm);
+  color: var(--color-primary);
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-default);
+  transition: background var(--transition-fast);
+}
+
+.notification-dropdown__mark-all:hover {
+  background: var(--color-surface-container-high);
+}
+
+.notification-dropdown__list {
+  overflow-y: auto;
+  max-height: 340px;
+}
+
+/* ---------- Notification Item ---------- */
+.notification-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  border-bottom: 1px solid var(--color-surface-container);
+}
+
+.notification-item:hover {
+  background: var(--color-surface-container-low);
+}
+
+.notification-item--unread {
+  background: var(--color-primary-fixed);
+}
+
+.notification-item--unread:hover {
+  background: var(--color-primary-fixed-dim);
+}
+
+.notification-item__icon {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.notification-item__icon--reply {
+  background: var(--be-mat);
+  color: var(--muc);
+}
+
+.notification-item__icon--ai {
+  background: var(--be-mat);
+  color: var(--muc);
+}
+
+.notification-item__icon--approval {
+  background: var(--ws-ok-bg);
+  color: var(--ws-ok-ink);
+}
+
+.notification-item__icon--mention {
+  background: var(--ws-warn-bg);
+  color: var(--ws-warn-ink);
+}
+
+.notification-item__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.notification-item__text {
+  font: var(--font-body-md);
+  color: var(--color-on-surface);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.notification-item__time {
+  font: var(--font-label-sm);
+  color: var(--color-on-surface-variant);
+  margin-top: 2px;
+}
+
+.notification-dropdown__empty {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--color-on-surface-variant);
+  font: var(--font-body-md);
+}
+</style><style type="text/css" data-vite-dev-id="D:/DoAnTotNghiep/unichat/frontend/src/features/workspaces/components/group-mark.css">.group-mark {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  color: var(--nen);
+  font-weight: 700;
+  line-height: 1;
+  user-select: none;
+  /* Lifts the tile off a white rail without needing a border. */
+  box-shadow: 0 1px 3px rgb(15 23 42 / 18%);
+}
+</style><style type="text/css" data-vite-dev-id="D:/DoAnTotNghiep/unichat/frontend/src/features/documents/components/pending-approval-badge.css">/* Pending-approval indicator on a side-nav item.
+ *
+ * The side nav is collapsed to icons by default and expands on hover, so the
+ * badge has two forms: a bare dot over the icon while collapsed, and the full
+ * count pill once there is room for it. */
+
+.pending-badge {
+  position: absolute;
+  top: 7px;
+  right: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 9px;
+  height: 9px;
+  min-width: 0;
+  padding: 0;
+  border-radius: 50%;
+  background: var(--color-error);
+  color: var(--nen);
+  /* Collapses the number without removing it from the accessibility tree. */
+  font-size: 0;
+  font-weight: 700;
+  line-height: 1;
+  transition: width 0.2s ease, height 0.2s ease, font-size 0.2s ease;
+}
+
+.side-nav:hover .pending-badge {
+  position: static;
+  margin-left: auto;
+  width: auto;
+  height: 20px;
+  min-width: 20px;
+  padding: 0 7px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+}
+</style><style type="text/css" data-vite-dev-id="D:/DoAnTotNghiep/unichat/frontend/src/components/side-nav-bar.css">/* Side Navigation Bar — Hover Expandable / Collapsible Sidebar */
+
+.side-nav {
+  display: none;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: var(--sidebar-width);
+  height: 100vh;
+  flex-direction: column;
+  padding: 16px 12px;
+  gap: 12px;
+  background: var(--color-surface);
+  /* Was transparent, so the rail dissolved into whatever it stood against:
+     its own var(--be-mat) beside the assistant's var(--be-mat) column is a difference of
+     nothing. The seam is what tells a reader these are two regions. */
+  border-right: 1px solid var(--ws-line, var(--ke));
+  box-shadow: inset -1px 0 0 rgb(15 23 42 / 6%);
+  overflow: hidden;
+  z-index: 100;
+  white-space: nowrap;
+  transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+              background 0.2s ease;
+}
+
+/* Hover / Active Expanded State */
+.side-nav:hover,
+.side-nav--expanded {
+  width: 260px;
+  box-shadow: 0 12px 36px -4px rgba(15, 23, 42, 0.16), 0 4px 12px rgba(15, 23, 42, 0.08);
+  background: var(--nen);
+}
+
+.side-nav__header {
+  display: flex;
+  align-items: center;
+  padding: 6px 4px;
+  margin-bottom: 8px;
+}
+
+.side-nav__brand-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: inherit;
+  width: 100%;
+}
+
+.side-nav__avatar {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  border-radius: 13px;
+  background: linear-gradient(140deg, var(--muc) 0%, var(--muc) 58%, var(--muc) 100%);
+  color: var(--nen);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgb(79 70 229 / 34%);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.side-nav__brand-link:hover .side-nav__avatar {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgb(79 70 229 / 44%);
+}
+
+.side-nav__brand-info {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-8px);
+  transition: opacity 0.22s ease 0.04s, transform 0.22s ease 0.04s, visibility 0.22s;
+}
+
+.side-nav:hover .side-nav__brand-info,
+.side-nav--expanded .side-nav__brand-info {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0);
+}
+
+.side-nav__title {
+  font: var(--font-headline-md);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--color-primary);
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.side-nav__subtitle {
+  font: var(--font-label-sm);
+  color: var(--color-on-surface-variant);
+  margin: 0;
+}
+
+.side-nav__ws-avatar {
+  min-width: 40px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-lg, 12px);
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.side-nav__brand-link--ws:hover .side-nav__ws-avatar {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.2);
+}
+
+.side-nav__title--ws {
+  font-size: 15px;
+  max-width: 175px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.side-nav__switch-btn {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.side-nav__switch-btn:hover {
+  background: var(--color-surface-container-high);
+  color: var(--color-primary);
+}
+
+/* Upload Button */
+.side-nav__upload-btn {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  width: 100%;
+  height: 44px;
+  padding: 0 12px;
+  background: var(--ws-accent-gradient);
+  color: var(--color-on-primary);
+  border: none;
+  border-radius: var(--radius-xl);
+  font: var(--font-label-md);
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 12px;
+  text-decoration: none;
+  overflow: hidden;
+  transition: background var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.side-nav__upload-btn:hover {
+  opacity: 0.95;
+  box-shadow: var(--shadow-md);
+}
+
+.side-nav__upload-btn .material-symbols-outlined {
+  min-width: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.side-nav__upload-text {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-8px);
+  transition: opacity 0.22s ease 0.04s, transform 0.22s ease 0.04s, visibility 0.22s;
+}
+
+.side-nav:hover .side-nav__upload-text,
+.side-nav--expanded .side-nav__upload-text {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0);
+}
+
+/* Nav Items */
+.side-nav__items {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Section label ("Nhóm"). Hidden while the rail is collapsed, where a divider
+   carries the grouping instead. */
+.side-nav__section {
+  margin: 14px 0 2px 14px;
+  font: var(--font-label-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-on-surface-variant);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.22s ease 0.04s, visibility 0.22s;
+}
+
+.side-nav:hover .side-nav__section,
+.side-nav--expanded .side-nav__section {
+  opacity: 1;
+  visibility: visible;
+}
+
+.side-nav:not(:hover):not(.side-nav--expanded) .side-nav__section {
+  margin: 10px 12px;
+  height: 1px;
+  background: var(--color-outline-variant);
+  font-size: 0;
+}
+
+.side-nav__item {
+  /* Anchors the pending-approval dot while the nav is collapsed. */
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  height: 44px;
+  padding: 0 12px;
+  border-radius: var(--radius-full);
+  color: var(--color-on-surface-variant);
+  font: var(--font-body-md);
+  font-size: 14.5px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background var(--transition-fast), color var(--transition-fast);
+  overflow: hidden;
+}
+
+button.side-nav__item,
+.side-nav__btn {
+  width: 100%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  font-size: 14.5px;
+  line-height: inherit;
+}
+
+.side-nav__icon-wrap {
+  position: relative;
+  min-width: 20px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.side-nav__item .material-symbols-outlined {
+  min-width: 20px;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.side-nav__label {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-8px);
+  transition: opacity 0.22s ease 0.04s, transform 0.22s ease 0.04s, visibility 0.22s;
+}
+
+.side-nav:hover .side-nav__label,
+.side-nav--expanded .side-nav__label {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0);
+}
+
+.side-nav__item:hover:not(.side-nav__item--active) {
+  background: var(--color-surface-container-high);
+  color: var(--color-on-surface);
+}
+
+.side-nav__item--danger:hover {
+  background: var(--color-error-container);
+  color: var(--color-error);
+}
+
+.side-nav__item--admin {
+  color: var(--muc);
+  font-weight: 600;
+}
+
+.side-nav__item--admin:hover:not(.side-nav__item--active) {
+  background: var(--nen);
+  color: var(--muc);
+}
+
+.side-nav__item--active {
+  background: linear-gradient(120deg, var(--muc) 0%, var(--muc) 62%, var(--muc) 100%);
+  color: var(--nen);
+  font-weight: 600;
+  box-shadow: 0 4px 14px rgb(79 70 229 / 30%);
+}
+
+/* AI Assistant Navigation Highlight */
+.side-nav__item--ai {
+  color: var(--muc);
+  font-weight: 600;
+}
+
+.side-nav__item--ai .material-symbols-outlined {
+  color: var(--muc);
+  transition: transform var(--transition-fast);
+}
+
+.side-nav__item--ai:hover:not(.side-nav__item--active) {
+  background: var(--be-mat);
+  color: var(--muc);
+}
+
+.side-nav__item--ai:hover .material-symbols-outlined {
+  transform: scale(1.15) rotate(12deg);
+}
+
+.side-nav__item--ai.side-nav__item--active {
+  background: linear-gradient(120deg, var(--muc) 0%, var(--muc) 50%, var(--muc) 100%);
+  color: var(--nen);
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+}
+
+.side-nav__item--ai.side-nav__item--active .material-symbols-outlined {
+  color: var(--nen);
+}
+
+/* Group row with quick AI chat action */
+.side-nav__group-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.side-nav__group-row .side-nav__item {
+  width: 100%;
+  padding-right: 36px;
+}
+
+.side-nav__quick-chat {
+  position: absolute;
+  right: 8px;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: transparent;
+  color: var(--color-on-surface-variant);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transform: scale(0.85);
+  transition: opacity 0.18s ease, transform 0.18s ease, background 0.18s ease, color 0.18s ease;
+  z-index: 2;
+}
+
+.side-nav:hover .side-nav__group-row:hover .side-nav__quick-chat,
+.side-nav--expanded .side-nav__group-row:hover .side-nav__quick-chat,
+.side-nav__group-row--active .side-nav__quick-chat {
+  opacity: 0.85;
+  transform: scale(1);
+}
+
+.side-nav__quick-chat:hover {
+  opacity: 1 !important;
+  background: rgba(2, 132, 199, 0.16);
+  color: var(--muc);
+  transform: scale(1.15) !important;
+}
+
+.side-nav__group-row--active .side-nav__quick-chat {
+  color: var(--nen);
+}
+
+.side-nav__group-row--active .side-nav__quick-chat:hover {
+  background: rgba(255, 255, 255, 0.28);
+  color: var(--nen);
+}
+
+.side-nav__item--active .group-mark {
+  box-shadow: 0 0 0 2px rgb(255 255 255 / 55%);
+}
+
+.side-nav__footer {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid rgb(15 23 42 / 8%);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+@media (min-width: 768px) {
+  .side-nav {
+    display: flex;
+  }
+}
+</style><style type="text/css" data-vite-dev-id="D:/DoAnTotNghiep/unichat/frontend/src/app/app-shell.css">/* Application Shell Layout */
+
+.app-shell {
+  display: flex;
+  height: 100vh;
+  max-height: 100vh;
+  width: 100%;
+  overflow: hidden !important;
+  background: var(--color-surface);
+}
+
+.app-shell__main {
+  flex: 1;
+  min-width: 0;
+  height: 100vh;
+  max-height: 100vh;
+  overflow-y: auto;
+  margin-left: 0;
+  transition: margin-left var(--transition-normal);
+
+  /* The room for the scrollbar is held whether or not one is needed. Pages
+     inside here are centred on a max-width, so a tab tall enough to scroll
+     narrowed this box by the scrollbar's width and moved everything sideways
+     by half of it — then moved it back on a tab that fits. Switching tabs
+     looked like the layout twitching, and it was. */
+  scrollbar-gutter: stable;
+}
+
+@media (min-width: 768px) {
+  .app-shell__main {
+    margin-left: var(--sidebar-width);
+  }
+}
+
+/* ── The rail and the assistant's history column ─────────── */
+
+/* The rail is fixed and widens from 68px to 260px on hover, so it paints
+   over whatever sits against it rather than pushing it aside. That is
+   harmless over a page's margin and hostile over the assistant's history,
+   which is a 268px column at exactly that edge: hovering on the way to it
+   covered the very list the reader was reaching for.
+
+   While that column is open the rail keeps its resting width. Its labels are
+   still one hover away everywhere else, and closing the column — the button
+   in the chat header — gives them back here too. */
+.app-shell:has(.chat-history) .side-nav:hover {
+  width: var(--sidebar-width);
+}
+
+/* The icons stay centred in the narrow rail rather than sliding toward
+   labels that are no longer going to appear. */
+.app-shell:has(.chat-history) .side-nav:hover .side-nav__brand-info,
+.app-shell:has(.chat-history) .side-nav:hover .side-nav__upload-text,
+.app-shell:has(.chat-history) .side-nav:hover .side-nav__section,
+.app-shell:has(.chat-history) .side-nav:hover .side-nav__label {
+  opacity: 0;
+  visibility: hidden;
+}
+</style><style type="text/css" data-vite-dev-id="D:/DoAnTotNghiep/unichat/frontend/src/styles/index.css">/* ibm-plex-sans-cyrillic-ext-wght-normal */
+@font-face {
+  font-family: 'IBM Plex Sans Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 700;
+  src: url(http://127.0.0.1:5173/@fs/D:/DoAnTotNghiep/unichat/node_modules/@fontsource-variable/ibm-plex-sans/files/ibm-plex-sans-cyrillic-ext-wght-normal.woff2) format('woff2-variations');
+  unicode-range: U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F;
+}
+
+/* ibm-plex-sans-cyrillic-wght-normal */
+@font-face {
+  font-family: 'IBM Plex Sans Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 700;
+  src: url(http://127.0.0.1:5173/@fs/D:/DoAnTotNghiep/unichat/node_modules/@fontsource-variable/ibm-plex-sans/files/ibm-plex-sans-cyrillic-wght-normal.woff2) format('woff2-variations');
+  unicode-range: U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;
+}
+
+/* ibm-plex-sans-greek-wght-normal */
+@font-face {
+  font-family: 'IBM Plex Sans Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 700;
+  src: url(http://127.0.0.1:5173/@fs/D:/DoAnTotNghiep/unichat/node_modules/@fontsource-variable/ibm-plex-sans/files/ibm-plex-sans-greek-wght-normal.woff2) format('woff2-variations');
+  unicode-range: U+0370-0377,U+037A-037F,U+0384-038A,U+038C,U+038E-03A1,U+03A3-03FF;
+}
+
+/* ibm-plex-sans-vietnamese-wght-normal */
+@font-face {
+  font-family: 'IBM Plex Sans Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 700;
+  src: url(http://127.0.0.1:5173/@fs/D:/DoAnTotNghiep/unichat/node_modules/@fontsource-variable/ibm-plex-sans/files/ibm-plex-sans-vietnamese-wght-normal.woff2) format('woff2-variations');
+  unicode-range: U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB;
+}
+
+/* ibm-plex-sans-latin-ext-wght-normal */
+@font-face {
+  font-family: 'IBM Plex Sans Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 700;
+  src: url(http://127.0.0.1:5173/@fs/D:/DoAnTotNghiep/unichat/node_modules/@fontsource-variable/ibm-plex-sans/files/ibm-plex-sans-latin-ext-wght-normal.woff2) format('woff2-variations');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+
+/* ibm-plex-sans-latin-wght-normal */
+@font-face {
+  font-family: 'IBM Plex Sans Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 700;
+  src: url(http://127.0.0.1:5173/@fs/D:/DoAnTotNghiep/unichat/node_modules/@fontsource-variable/ibm-plex-sans/files/ibm-plex-sans-latin-wght-normal.woff2) format('woff2-variations');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+/* source-serif-4-cyrillic-ext-wght-normal */
+@font-face {
+  font-family: 'Source Serif 4 Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 900;
+  src: url(http://127.0.0.1:5173/@fs/D:/DoAnTotNghiep/unichat/node_modules/@fontsource-variable/source-serif-4/files/source-serif-4-cyrillic-ext-wght-normal.woff2) format('woff2-variations');
+  unicode-range: U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F;
+}
+
+/* source-serif-4-cyrillic-wght-normal */
+@font-face {
+  font-family: 'Source Serif 4 Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 900;
+  src: url(http://127.0.0.1:5173/@fs/D:/DoAnTotNghiep/unichat/node_modules/@fontsource-variable/source-serif-4/files/source-serif-4-cyrillic-wght-normal.woff2) format('woff2-variations');
+  unicode-range: U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;
+}
+
+/* source-serif-4-greek-wght-normal */
+@font-face {
+  font-family: 'Source Serif 4 Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 900;
+  src: url(http://127.0.0.1:5173/@fs/D:/DoAnTotNghiep/unichat/node_modules/@fontsource-variable/source-serif-4/files/source-serif-4-greek-wght-normal.woff2) format('woff2-variations');
+  unicode-range: U+0370-0377,U+037A-037F,U+0384-038A,U+038C,U+038E-03A1,U+03A3-03FF;
+}
+
+/* source-serif-4-vietnamese-wght-normal */
+@font-face {
+  font-family: 'Source Serif 4 Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 900;
+  src: url(http://127.0.0.1:5173/@fs/D:/DoAnTotNghiep/unichat/node_modules/@fontsource-variable/source-serif-4/files/source-serif-4-vietnamese-wght-normal.woff2) format('woff2-variations');
+  unicode-range: U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB;
+}
+
+/* source-serif-4-latin-ext-wght-normal */
+@font-face {
+  font-family: 'Source Serif 4 Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 900;
+  src: url(http://127.0.0.1:5173/@fs/D:/DoAnTotNghiep/unichat/node_modules/@fontsource-variable/source-serif-4/files/source-serif-4-latin-ext-wght-normal.woff2) format('woff2-variations');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+
+/* source-serif-4-latin-wght-normal */
+@font-face {
+  font-family: 'Source Serif 4 Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 900;
+  src: url(http://127.0.0.1:5173/@fs/D:/DoAnTotNghiep/unichat/node_modules/@fontsource-variable/source-serif-4/files/source-serif-4-latin-wght-normal.woff2) format('woff2-variations');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+/* ==========================================================================
+   UniChat Design System — Editorial greeting
+
+   Bộ này được rút từ thư viện của tasteskill cho loại màn hình "workspace"
+   (hub nhóm và trang cá nhân), và các giá trị dưới đây đo từ màn hình sản
+   phẩm thật chứ không phải ước chừng. Dùng đúng như được cho.
+
+   Lần trước ở đây là bảng "giấy, mực, dấu triện" do tôi tự dựng. Nó hỏng ở
+   một điểm đo được: màu bão hòa lẽ ra chỉ dành cho bằng chứng lại bị lượt
+   quét tự động gom cả ba màu nhấn cũ vào, nên đỏ gạch phủ 236 chỗ trong 35
+   file không liên quan gì tới bằng chứng — nút, pill, icon, ô nav. Bộ nghiên
+   cứu nói thẳng hai điều về chuyện đó:
+
+     "Màu đi vào dữ liệu, không đi vào khung. Trung vị của màn hình thật là
+      khoảng 3% pixel có màu; 12 trong 23 màn hình không có nút tô màu nào."
+
+     "Đỏ làm accent: trong thử nghiệm nó đánh dấu một tuần kỷ lục mà đọc ra
+      như báo động. Đỏ chỉ dành cho sự kiện hỏng."
+
+   Nên accent giờ là teal đậm với ngân sách dưới 2% diện tích, và đỏ lui về
+   đúng vai trò báo lỗi.
+
+   Mặt chữ là chỗ duy nhất tôi lệch khỏi bộ được rút. Bộ cho Instrument Sans
+   và Instrument Serif; cả hai chỉ phục vụ latin và latin-ext, không có bộ
+   ký tự tiếng Việt — kiểm chứng bằng chính CSS mà Google Fonts trả về. Một
+   mặt chữ không dựng được ngôn ngữ của giao diện thì không dùng được, nên
+   giữ IBM Plex Sans ở vai grotesque và Source Serif 4 ở vai serif cho lời
+   chào. Cả hai đều có subset vietnamese.
+
+   Tên biến giữ nguyên để 2.258 chỗ dùng var() không phải sửa.
+   ========================================================================== */
+
+:root {
+  /* ---------- Lớp màu gốc, lấy nguyên từ bộ được rút ---------- */
+  --nen: #ffffff;        /* ground: tờ giấy trắng mà nội dung nằm trên */
+  --be-mat: #f9f9f9;     /* surface: panel có sắc độ, một bậc lệch khỏi trắng */
+  --khung: #f6f6f6;      /* chrome: nền thanh bên và thanh trên, khung chữ L */
+  --noi: #ffffff;        /* raised: thẻ trắng bên trong panel, dùng đúng một lần */
+  --vien: #eaeaea;       /* border */
+  --ke: #f3f3f3;         /* rule: nét kẻ mảnh hơn viền */
+  --dieu-khien: #d9d9d6; /* control */
+
+  --muc: #1f201d;        /* text */
+  --muc-nhat: #636361;   /* muted */
+  --muc-mo: #8c8c88;     /* chart-3, cũng dùng cho chữ mờ nhất */
+
+  /* Accent: teal đậm, ngân sách dưới 2% diện tích. Nó đánh dấu phần tử dữ
+     liệu chính của màn hình, không đánh dấu khung. */
+  --nhan: #1b6e66;
+  --nhan-nhat: #e8f1f0;
+
+  --tot: #2e7d32;
+  --hong: #b42318;
+  --canh-bao: #92400e;
+
+  /* Pill trạng thái, lấy nguyên từ bộ. */
+  --pill-tot-nen: #dcfae5;
+  --pill-tot-muc: #04250e;
+  --pill-hong-nen: #fdecea;
+  --pill-hong-muc: #7a1d14;
+  --pill-canh-nen: #fffbeb;
+  --pill-canh-muc: #92400e;
+  --pill-trung-nen: #f3f3f3;
+  --pill-trung-muc: #3d3d3a;
+
+  /* Chiều rộng cột đọc. Câu trả lời của trợ lý là văn bản dài cần đối chiếu
+     với nguồn, nên nó vẫn bị giữ trong một đo chữ đọc được. */
+  --measure: 68ch;
+
+  /* ---------- Primary: hành động ----------
+     Bộ nghiên cứu: 12 trong 23 màn hình thật không có nút tô màu nào. Nút
+     chính ở đây là mực đặc, không phải accent. */
+  --color-primary: var(--muc);
+  --color-on-primary: var(--nen);
+  --color-primary-container: var(--be-mat);
+  --color-on-primary-container: var(--muc);
+  --color-inverse-primary: #c9c9c5;
+  --color-primary-fixed: var(--be-mat);
+  --color-primary-fixed-dim: #ededed;
+  --color-on-primary-fixed: var(--muc);
+  --color-on-primary-fixed-variant: var(--muc-nhat);
+
+  /* ---------- Secondary: nền xám của nút phụ ---------- */
+  --color-secondary: var(--muc-nhat);
+  --color-on-secondary: var(--nen);
+  --color-secondary-container: #e5e5e5;
+  --color-on-secondary-container: var(--muc);
+  --color-secondary-fixed: #e5e5e5;
+  --color-secondary-fixed-dim: #d9d9d6;
+  --color-on-secondary-fixed: var(--muc);
+  --color-on-secondary-fixed-variant: var(--muc-nhat);
+
+  /* ---------- Tertiary: nơi accent sống ---------- */
+  --color-tertiary: var(--muc);
+  --color-on-tertiary: var(--nen);
+  --color-tertiary-container: var(--be-mat);
+  --color-on-tertiary-container: var(--muc);
+  --color-tertiary-fixed: var(--be-mat);
+  --color-tertiary-fixed-dim: #c9e0dd;
+  --color-on-tertiary-fixed: var(--muc);
+  --color-on-tertiary-fixed-variant: var(--muc-nhat);
+
+  /* ---------- Lỗi ---------- */
+  --color-error: var(--hong);
+  --color-on-error: var(--nen);
+  --color-error-container: var(--pill-hong-nen);
+  --color-on-error-container: var(--pill-hong-muc);
+
+  /* ---------- Bề mặt ---------- */
+  --color-surface: var(--be-mat);
+  --color-surface-dim: #f0f0f0;
+  --color-surface-bright: var(--nen);
+  --color-surface-container-lowest: var(--nen);
+  --color-surface-container-low: #fbfbfb;
+  --color-surface-container: var(--be-mat);
+  --color-surface-container-high: #f3f3f3;
+  --color-surface-container-highest: #ededed;
+  --color-on-surface: var(--muc);
+  --color-on-surface-variant: var(--muc-nhat);
+  --color-surface-variant: #f3f3f3;
+  --color-surface-tint: var(--muc);
+  --color-inverse-surface: #2b2c29;
+  --color-inverse-on-surface: var(--be-mat);
+
+  /* ---------- Đường viền ---------- */
+  --color-outline: #b4b4b0;
+  --color-outline-variant: var(--vien);
+
+  /* ---------- Nền ---------- */
+  --color-background: var(--be-mat);
+  --color-on-background: var(--muc);
+
+  /* ---------- Trạng thái ---------- */
+  --color-success: var(--tot);
+  --color-warning: var(--canh-bao);
+  --color-ai-bubble: var(--nen);
+  --color-ai-bubble-border: var(--vien);
+
+  /* ---------- Chữ ----------
+     Mọi con số đặt ở weight 400: bộ nghiên cứu thấy KPI là chữ, không phải
+     thẻ, và không màn hình nào đặt icon trong ô tròn có màu lên một KPI. */
+  --font-family: 'IBM Plex Sans Variable', Inter, system-ui, sans-serif;
+  --font-doc: 'Source Serif 4 Variable', Georgia, serif;
+  --font-mono: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+
+  /* Lời chào là h1 serif 48px. Mọi tiêu đề khác nhỏ hơn hẳn: bộ nghiên cứu
+     thấy 9 trong 23 màn hình không có tiêu đề nào quá 16px. */
+  --font-headline-xl: 400 48px/56px var(--font-doc);
+  --font-headline-lg: 600 24px/32px var(--font-family);
+  --font-headline-lg-mobile: 600 20px/28px var(--font-family);
+  --font-headline-md: 600 16px/24px var(--font-family);
+  /* Thân câu trả lời vẫn là mặt chữ đọc: nó là văn bản tài liệu, không phải
+     chữ của giao diện. */
+  --font-body-lg: 400 17px/28px var(--font-doc);
+  --font-body-md: 400 14px/21px var(--font-family);
+  --font-label-md: 500 14px/20px var(--font-family);
+  --font-label-sm: 400 12px/16px var(--font-family);
+  --font-code-sm: 400 13px/20px var(--font-mono);
+
+  --letter-spacing-headline-xl: -0.015em;
+  --letter-spacing-headline-lg: -0.005em;
+
+  /* ---------- Lưới và khoảng cách ----------
+     Mật độ thưa, đúng một giá trị gap cho cả ngang lẫn dọc. */
+  --container-max: 1100px;
+  --sidebar-width: 224px;
+  --gutter: 16px;
+  --margin-mobile: 16px;
+  --stack-sm: 8px;
+  --stack-md: 16px;
+  --stack-lg: 24px;
+  --gap: 16px;
+  --pad: 20px;
+  --row-height: 63px;
+  --control-height: 38px;
+
+  /* ---------- Bo góc ----------
+     Thẻ 22px, điều khiển bo tròn hẳn. Đây là "nước đi" của style, giữ nguyên. */
+  --radius-sm: 6px;
+  --radius-default: 8px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 22px;
+  --radius-3xl: 22px;
+  --radius-full: 999px;
+
+  /* ---------- Độ nổi ----------
+     Không bóng đổ trên bất cứ thứ gì ở trạng thái nghỉ. Phân tách bằng một
+     nét kẻ hoặc một bậc sắc độ. Chỉ hộp thoại nổi thật mới có bóng. */
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: 0 0 0 1px var(--vien);
+  --shadow-xl: 0 12px 32px rgb(31 32 29 / 12%), 0 0 0 1px var(--vien);
+
+  --transition-fast: 120ms ease;
+  --transition-normal: 180ms ease;
+  --transition-slow: 260ms ease;
+  --transition-transform: 320ms ease;
+
+  /* ---------- Thang Workplace ---------- */
+  --ws-canvas: var(--be-mat);
+  --ws-card: var(--nen);
+  --ws-card-shadow: 0 0 0 1px var(--vien);
+  --ws-card-shadow-hover: 0 0 0 1px var(--dieu-khien);
+  --ws-line: var(--ke);
+  --ws-chip: var(--pill-trung-nen);
+
+  --ws-ink: var(--muc);
+  --ws-ink-soft: var(--muc-nhat);
+  --ws-ink-muted: var(--muc-mo);
+
+  /* Khung không mang accent: nút chính là mực đặc. Accent được tiêu ở
+     citation-panel.css, trên ký hiệu trích dẫn, và không ở đâu khác. */
+  --ws-accent: var(--muc);
+  --ws-accent-gradient: var(--muc);
+  --ws-accent-ink: var(--nen);
+  --ws-accent-soft: var(--be-mat);
+
+  --ws-ok-bg: var(--pill-tot-nen);
+  --ws-ok-ink: var(--pill-tot-muc);
+  --ws-warn-bg: var(--pill-canh-nen);
+  --ws-warn-ink: var(--pill-canh-muc);
+  --ws-alert: var(--hong);
+
+  /* ---------- Token từng bị tham chiếu mà chưa khai báo ---------- */
+  --color-danger: var(--hong);
+  --color-text-primary: var(--muc);
+  --color-text-secondary: var(--muc-nhat);
+  --font-primary: var(--font-family);
+  --font-body-sm: 400 13px/19px var(--font-family);
+  --font-headline-sm: 600 15px/22px var(--font-family);
+  --font-title-lg: 500 16px/24px var(--font-family);
+  --font-title-md: 500 14px/21px var(--font-family);
+  --font-title-sm: 500 13px/18px var(--font-family);
+  --transition-medium: var(--transition-normal);
+
+  /* Mọi con số canh thẳng cột, kể cả khi đổi giá trị. */
+  font-variant-numeric: tabular-nums;
+}
+
+/* ==========================================================================
+   Base Reset & Defaults
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden !important;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-width: 320px;
+  color: var(--color-on-surface);
+  background: var(--color-surface);
+  font: var(--font-body-md);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+}
+
+p {
+  margin: 0;
+}
+
+ul, ol {
+  margin: 0;
+  padding: 0;
+}
+
+/* ==========================================================================
+   Material Symbols Icon Defaults
+   ========================================================================== */
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Same glyph names as Outlined, drawn with soft terminals and a touch more
+   weight — opted into per screen by <Icon rounded>, not swapped in globally. */
+.material-symbols-rounded {
+  font-family: 'Material Symbols Rounded';
+  font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+}
+
+/* ==========================================================================
+   Utility Classes
+   ========================================================================== */
+
+.sr-only,
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+</style><style type="text/css" data-vite-dev-id="D:/DoAnTotNghiep/unichat/frontend/src/features/community/components/background-picker.css">.bg-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bg-picker__label {
+  font: var(--font-label-sm);
+  font-weight: 600;
+  color: var(--color-on-surface-variant);
+}
+
+.bg-picker__swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.bg-picker__swatch {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  padding: 0;
+  /* The ring is always drawn so selecting does not shift the row. */
+  box-shadow: 0 0 0 2px transparent, 0 1px 3px rgb(15 23 42 / 16%);
+  transition: box-shadow var(--transition-fast), transform var(--transition-fast);
+}
+
+.bg-picker__swatch:hover {
+  transform: translateY(-1px);
+}
+
+.bg-picker__swatch--active {
+  box-shadow: 0 0 0 2px var(--color-surface-container-lowest),
+    0 0 0 4px var(--muc), 0 1px 3px rgb(15 23 42 / 16%);
+}
+
+.bg-picker__swatch--none {
+  display: grid;
+  place-items: center;
+  background: var(--color-surface-container-high);
+  color: var(--color-on-surface-variant);
+}
+</style><style type="text/css" data-vite-dev-id="D:/DoAnTotNghiep/unichat/frontend/src/features/community/components/post-background-panel.css">.post-bg {
+  display: grid;
+  place-items: center;
+  min-height: 260px;
+  margin: 12px 0 4px;
+  padding: 28px 32px;
+  border-radius: var(--radius-lg);
+  text-align: center;
+}
+
+.post-bg--compact {
+  min-height: 190px;
+  padding: 22px 24px;
+}
+
+.post-bg__text {
+  margin: 0;
+  max-width: 34ch;
+  color: var(--nen);
+  font-size: 25px;
+  font-weight: 700;
+  line-height: 1.34;
+  letter-spacing: -0.01em;
+  text-shadow: 0 1px 12px rgb(2 6 23 / 30%);
+  /* A pasted URL or a long compound word must wrap, not overflow. */
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.post-bg--compact .post-bg__text {
+  font-size: 20px;
+  line-height: 1.38;
+}
+
+@media (max-width: 640px) {
+  .post-bg {
+    min-height: 200px;
+    padding: 22px 20px;
+  }
+
+  .post-bg__text {
+    font-size: 20px;
+  }
+}
+</style><style type="text/css" data-vite-dev-id="D:/DoAnTotNghiep/unichat/frontend/src/features/community/components/compose-suggestions.css">.compose-suggestions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.compose-suggestions__library {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: var(--color-on-surface-variant);
+  font: var(--font-label-sm);
+}
+
+/* An empty library is a limitation to state, not a warning to alarm anyone. */
+.compose-suggestions__library--empty {
+  opacity: 0.85;
+}
+
+.compose-suggestions__matches {
+  padding: 10px 12px;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-container-low);
+}
+
+.compose-suggestions__heading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 8px;
+  color: var(--color-on-surface);
+  font: var(--font-label-sm);
+  font-weight: 700;
+}
+
+.compose-suggestions__list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.compose-suggestions__item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-default);
+  background: var(--color-surface-container);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.compose-suggestions__item:hover {
+  border-color: var(--color-outline-variant);
+  background: var(--color-surface-container-high);
+}
+
+.compose-suggestions__item-title {
+  overflow: hidden;
+  color: var(--color-on-surface);
+  font: var(--font-label-md);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.compose-suggestions__item-meta {
+  color: var(--color-on-surface-variant);
+  font: var(--font-label-sm);
+}
+
+.compose-suggestions__resolved {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-primary);
+  font-weight: 600;
+}
+</style><style type="text/css" data-vite-dev-id="D:/DoAnTotNghiep/unichat/frontend/src/features/community/components/mention-textarea.css">.mention-input {
+  position: relative;
+}
+
+.mention-input textarea {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.mention-input__list {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  z-index: 60;
+  list-style: none;
+  margin: 0;
+  padding: 5px;
+  min-width: 190px;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-container-lowest);
+  box-shadow: var(--shadow-lg);
+}
+
+.mention-input__item {
+  display: block;
+  width: 100%;
+  padding: 7px 11px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-on-surface);
+  font: var(--font-body-sm);
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.mention-input__item:hover,
+.mention-input__item--active {
+  background: var(--color-primary-fixed);
+  color: var(--color-on-primary-fixed-variant);
+}
+</style><style type="text/css" data-vite-dev-id="D:/DoAnTotNghiep/unichat/frontend/src/features/community/components/create-post-modal.css">/* Create Post Modal — extracted from feed-page.css so the feed styles could be
+   rewritten without touching the modal. */
+
+.create-post-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.create-post-modal {
+  width: min(600px, 92vw);
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--color-surface-container-lowest);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-xl);
+  animation: slideUp 0.2s ease;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.create-post-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--color-outline-variant);
+}
+
+.create-post-modal__title {
+  font: var(--font-headline-md);
+  color: var(--color-on-surface);
+  margin: 0;
+}
+
+.create-post-modal__close {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-on-surface-variant);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition-fast);
+}
+
+.create-post-modal__close:hover {
+  background: var(--color-surface-container-high);
+}
+
+.create-post-modal__body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.create-post-modal__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.create-post-modal__label {
+  font: var(--font-label-md);
+  color: var(--color-on-surface);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.create-post-modal__select,
+.create-post-modal__input {
+  padding: 10px 14px;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  font: var(--font-body-md);
+  color: var(--color-on-surface);
+  background: var(--color-surface);
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.create-post-modal__select:focus,
+.create-post-modal__input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(0, 35, 111, 0.08);
+}
+
+.create-post-modal__textarea {
+  padding: 12px 14px;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  font: var(--font-body-md);
+  color: var(--color-on-surface);
+  background: var(--color-surface);
+  outline: none;
+  min-height: 140px;
+  resize: vertical;
+  transition: border-color var(--transition-fast);
+}
+
+.create-post-modal__textarea:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(0, 35, 111, 0.08);
+}
+
+.create-post-modal__label-pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.create-post-modal__pill {
+  padding: 6px 14px;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  color: var(--color-on-surface-variant);
+  font: var(--font-label-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.create-post-modal__pill:hover {
+  background: var(--color-surface-container-high);
+}
+
+.create-post-modal__pill--active {
+  background: var(--ws-accent-gradient);
+  color: var(--color-on-primary);
+  border-color: var(--color-primary);
+}
+
+.create-post-modal__char-count {
+  font: var(--font-label-sm);
+  color: var(--color-on-surface-variant);
+  text-align: right;
+}
+
+.create-post-modal__ws-hint {
+  font: var(--font-label-sm);
+  color: var(--color-primary);
+}
+
+.create-post-modal__ws-loading,
+.create-post-modal__ws-empty {
+  font: var(--font-body-md);
+  color: var(--color-on-surface-variant);
+  padding: 12px;
+  text-align: center;
+}
+
+.create-post-modal__error {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0 24px 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius-lg);
+  background: var(--color-error-container);
+  color: var(--color-on-error-container);
+  font: var(--font-body-sm);
+  line-height: 1.5;
+}
+
+.create-post-modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--color-outline-variant);
+}
+
+.create-post-modal__cancel-btn {
+  padding: 10px 20px;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--color-on-surface-variant);
+  font: var(--font-label-md);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.create-post-modal__cancel-btn:hover {
+  background: var(--color-surface-container-high);
+}
+
+.create-post-modal__submit-btn {
+  padding: 10px 24px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--ws-accent-gradient);
+  color: var(--color-on-primary);
+  font: var(--font-label-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.create-post-modal__submit-btn:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.create-post-modal__submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ---------- Attachments ---------- */
+
+.create-post-modal__attachments {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 24px 12px;
+}
+
+.create-post-modal__attach-btn {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px dashed var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  background: transparent;
+  color: var(--color-on-surface-variant);
+  font: var(--font-label-md);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.create-post-modal__attach-btn:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.create-post-modal__attach-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.create-post-modal__file-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.create-post-modal__file-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  font: var(--font-body-sm);
+  color: var(--color-on-surface);
+}
+
+.create-post-modal__file-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.create-post-modal__file-list button {
+  display: inline-flex;
+  padding: 3px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-on-surface-variant);
+  cursor: pointer;
+}
+
+.create-post-modal__file-list button:hover:not(:disabled) {
+  background: var(--color-surface-container-high);
+}
+
+.create-post-modal__file-progress {
+  font: var(--font-label-sm);
+  font-weight: 700;
+  color: var(--color-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.create-post-modal__attach-hint {
+  margin: 0;
+  font: var(--font-label-sm);
+  line-height: 1.5;
+  color: var(--color-on-surface-variant);
+}
+</style><style type="text/css" data-vite-dev-id="D:/DoAnTotNghiep/unichat/frontend/src/features/community/components/answer-status.css">/* Resolution state of a question. One colour per meaning, used identically on
+   the feed, the post page and any badge. */
+
+.answer-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Labelled pill — used on the post detail header. */
+.answer-status--pill {
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font: var(--font-label-sm);
+  font-weight: 600;
+}
+
+/* Compact rail — used on the left edge of a feed card. */
+.answer-status--rail {
+  flex-direction: column;
+  gap: 2px;
+  width: 44px;
+  padding: 8px 0;
+  border-radius: var(--radius-lg);
+  font: var(--font-label-sm);
+}
+
+.answer-status__count {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* Needs help — warm, draws the eye first. */
+.answer-status--unanswered {
+  background: var(--color-tertiary-fixed);
+  color: var(--color-on-tertiary-fixed-variant);
+}
+
+/* In progress — neutral, present but not urgent. */
+.answer-status--discussing {
+  background: var(--color-surface-container-high);
+  color: var(--color-on-surface-variant);
+}
+
+/* Resolved — the only green in the feed, so it reads instantly. */
+.answer-status--resolved {
+  background: var(--ws-ok-bg);
+  color: var(--ws-ok-ink);
+}
+</style><style type="text/css" data-vite-dev-id="D:/DoAnTotNghiep/unichat/frontend/src/features/community/components/reaction-bar.css">.reaction-bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.reaction-bar__trigger-wrap {
+  position: relative;
+}
+
+.reaction-bar__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--color-on-surface-variant);
+  font: var(--font-label-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast),
+              border-color var(--transition-fast);
+}
+
+.reaction-bar__trigger:hover:not(:disabled) {
+  background: var(--color-surface-container-high);
+  color: var(--color-on-surface);
+}
+
+.reaction-bar__trigger:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.reaction-bar__trigger--mine {
+  border-color: transparent;
+  background: var(--color-primary-fixed);
+  color: var(--color-on-primary-fixed-variant);
+}
+
+/* ── Picker ─────────────────────────────────────────────── */
+
+.reaction-bar__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+}
+
+.reaction-bar__picker {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  z-index: 50;
+  display: flex;
+  gap: 2px;
+  padding: 6px;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-full);
+  background: var(--color-surface-container-lowest);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Seven of these now, so the name moves out of the row and onto hover — the
+   way Facebook does it. Laying seven labelled columns side by side made the
+   picker wider than a phone screen. */
+.reaction-bar__option {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-full);
+  background: transparent;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform var(--transition-fast), background var(--transition-fast);
+}
+
+.reaction-bar__option:hover,
+.reaction-bar__option:focus-visible {
+  background: var(--color-surface-container-high);
+  transform: scale(1.25) translateY(-3px);
+}
+
+.reaction-bar__option--mine {
+  background: var(--color-primary-fixed);
+}
+
+/* Kept in the DOM, not display:none, so it is still the button's accessible
+   name; only its presentation changes. */
+.reaction-bar__option-label {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  background: var(--color-inverse-surface, var(--muc));
+  color: var(--color-inverse-on-surface, var(--nen));
+  font: var(--font-label-sm);
+  font-size: 11px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-fast);
+}
+
+.reaction-bar__option:hover .reaction-bar__option-label,
+.reaction-bar__option:focus-visible .reaction-bar__option-label {
+  opacity: 1;
+}
+
+/* Someone who prefers less motion still gets the hover highlight and the
+   name; they just do not get the jump. */
+@media (prefers-reduced-motion: reduce) {
+  .reaction-bar__option:hover,
+  .reaction-bar__option:focus-visible {
+    transform: none;
+  }
+}
+
+/* ── Tally ──────────────────────────────────────────────── */
+
+.reaction-bar__tally {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font: var(--font-label-md);
+  color: var(--color-on-surface-variant);
+  font-variant-numeric: tabular-nums;
+}
+
+.reaction-bar__emojis {
+  display: inline-flex;
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* Overlap the emoji slightly, as a stack of reactions rather than a list. */
+.reaction-bar__emojis span + span {
+  margin-left: -3px;
+}
+
+.reaction-bar__error {
+  font: var(--font-label-sm);
+  color: var(--color-error);
+}
+
+/* ── Compact variant for replies ────────────────────────── */
+
+.reaction-bar--compact .reaction-bar__trigger {
+  padding: 4px 10px;
+  font-size: 12.5px;
+}
+
+.reaction-bar--compact .reaction-bar__tally {
+  font-size: 12.5px;
+}
+</style><style type="text/css" data-vite-dev-id="D:/DoAnTotNghiep/unichat/frontend/src/features/community/components/attachment-summary.css">.attachment-summary {
+  margin-top: 8px;
+}
+
+.attachment-summary__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border: none;
+  border-radius: var(--radius-default);
+  background: transparent;
+  color: var(--color-primary);
+  font: var(--font-label-sm);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.attachment-summary__toggle:hover {
+  background: var(--color-surface-container-high);
+}
+
+.attachment-summary__text {
+  margin: 4px 0 0;
+  padding: 10px 12px;
+  border-left: 3px solid var(--color-primary-fixed);
+  border-radius: 0 var(--radius-default) var(--radius-default) 0;
+  background: var(--color-surface-container-low);
+  color: var(--color-on-surface);
+  font: var(--font-body-md);
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+
+/* A state line, not a summary: kept quiet so it never reads as content. */
+.attachment-summary__note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 8px 0 0;
+  color: var(--color-on-surface-variant);
+  font: var(--font-label-sm);
+}
+
+.attachment-summary__note--muted {
+  opacity: 0.75;
+}
+</style><style type="text/css" data-vite-dev-id="D:/DoAnTotNghiep/unichat/frontend/src/features/community/components/post-attachments.css">.post-attachments {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 14px 0;
+}
+
+/* ── Images ─────────────────────────────────────────────── */
+
+.post-attachments__grid {
+  display: grid;
+  gap: 8px;
+}
+
+.post-attachments__grid--multi {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.post-attachments__image {
+  width: 100%;
+  max-height: 420px;
+  object-fit: cover;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-outline-variant);
+  background: var(--color-surface-container-low);
+  display: block;
+}
+
+.post-attachments__image--loading {
+  min-height: 200px;
+  animation: post-attachment-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes post-attachment-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+.post-attachments__image--failed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 140px;
+  color: var(--color-on-surface-variant);
+  font: var(--font-label-sm);
+}
+
+/* ── Feed card preview ──────────────────────────────────── */
+
+.post-attachments__preview {
+  position: relative;
+  margin-top: 8px;
+}
+
+.post-attachments__preview .post-attachments__image {
+  max-height: 220px;
+}
+
+.post-attachments__more {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  background: rgba(15, 23, 42, 0.72);
+  color: var(--nen);
+  font: var(--font-label-sm);
+  font-weight: 700;
+}
+
+/* ── Document chips ─────────────────────────────────────── */
+
+.post-attachments__files {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.post-attachments__file {
+  display: flex;
+  /* The chip now stacks its own row above an optional AI summary. */
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  padding: 10px 14px;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-container-lowest);
+  color: var(--color-on-surface-variant);
+}
+
+.post-attachments__file-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.post-attachments__file-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.post-attachments__file-name {
+  font: var(--font-label-md);
+  font-weight: 600;
+  color: var(--color-on-surface);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.post-attachments__file-sub {
+  font: var(--font-label-sm);
+}
+
+/* The assistant can cite this file — the reason a document attachment matters. */
+.post-attachments__ready {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--color-secondary);
+  font-weight: 600;
+}
+</style><style type="text/css" data-vite-dev-id="D:/DoAnTotNghiep/unichat/frontend/src/features/community/discussion-page.css">/* ==========================================================================
+   Discussion Page Styles — workspace-scoped discussion list
+   Design: Academic Precision (DESIGN.md)
+   ========================================================================== */
+
+/* ---------- Discussion List ----------
+   Rendered inside the group page, which owns the page padding and width. */
+/* No width of its own: the group page frame sets it, so this tab lines up
+   with Tệp and Thành viên instead of jumping narrower when it opens. */
+.disc-list {
+  width: 100%;
+}
+
+.disc-list__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.disc-list__title {
+  font: var(--font-headline-lg);
+  color: var(--color-on-surface);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+}
+
+.disc-list__title-icon {
+  color: var(--color-primary);
+}
+
+.disc-list__controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.disc-list__divider {
+  width: 1px;
+  height: 24px;
+  background-color: var(--color-outline-variant);
+  margin: 0 4px;
+}
+
+/* No `border` was ever set here, so the browser's own button border showed
+   through as a grey box around every chip — the boxed look that did not
+   match the mockup's borderless pills. */
+.disc-list__filter-btn {
+  padding: 6px 14px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--ws-chip, var(--color-surface-dim));
+  color: var(--ws-ink-soft, var(--muc-nhat));
+  font: var(--font-label-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.disc-list__filter-btn:hover {
+  background: var(--be-mat);
+}
+
+.disc-list__filter-btn--active {
+  background: var(--ws-accent-gradient);
+  color: var(--color-on-primary);
+  border-color: var(--color-primary);
+}
+
+.disc-list__new-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: var(--ws-accent-gradient);
+  color: var(--color-on-primary);
+  font: var(--font-label-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+}
+
+.disc-list__new-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+/* ---------- Card list ---------- */
+.disc-list__cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ---------- Empty State ---------- */
+.disc-list__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 60px 20px;
+  color: var(--color-on-surface-variant);
+  text-align: center;
+  background: var(--color-surface-container-lowest);
+  border-radius: var(--radius-xl);
+}
+
+.disc-list__empty h3 {
+  font: var(--font-headline-md);
+  color: var(--color-on-surface);
+  margin: 0;
+}
+
+.disc-list__empty p {
+  font: var(--font-body-md);
+  margin: 0;
+}
+
+.disc-list__empty-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--color-surface-container);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+}
+
+/* ---------- Reply Form (shared by PostDetailPage) ---------- */
+.reply-form {
+  background: var(--color-surface-container-lowest);
+  border-radius: var(--radius-lg);
+  padding: 12px;
+  transition: border-color var(--transition-fast);
+}
+
+.reply-form:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 1px var(--color-primary);
+}
+
+.reply-form__input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  font: var(--font-body-md);
+  color: var(--color-on-surface);
+  resize: vertical;
+  min-height: 60px;
+}
+
+.reply-form__input::placeholder {
+  color: var(--color-on-surface-variant);
+}
+
+.reply-form__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.reply-form__cancel {
+  padding: 6px 16px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--color-on-surface-variant);
+  font: var(--font-label-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.reply-form__cancel:hover {
+  background: var(--color-surface-container);
+}
+
+.reply-form__submit {
+  padding: 6px 16px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font: var(--font-label-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.reply-form__submit:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.reply-form__submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ---------- Reply Thread (threaded comments) ---------- */
+.reply-thread {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.reply-thread__children {
+  padding-left: 24px;
+  position: relative;
+}
+
+.reply-thread__children::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 15px;
+  width: 2px;
+  background-color: var(--ws-line, var(--ke));
+  border-radius: 2px;
+  transition: background-color var(--transition-fast);
+}
+
+.reply-thread__children:hover::before {
+  background-color: var(--color-primary);
+}
+
+.reply-node {
+  display: flex;
+  gap: 12px;
+  padding: 12px 0;
+}
+
+.reply-node--ai {
+  background: var(--color-ai-bubble, var(--nen));
+  padding: 12px;
+  border-radius: var(--radius-lg);
+  margin: 8px 0;
+}
+
+.reply-node__avatar {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: 50%;
+  background: var(--color-primary-container);
+  color: var(--color-on-primary-container);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: var(--font-label-md);
+  font-size: 13px;
+  text-transform: uppercase;
+}
+
+.reply-node--ai .reply-node__avatar {
+  background: linear-gradient(135deg, var(--muc), var(--muc));
+  color: white;
+}
+
+.reply-node__content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.reply-node__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.reply-node__author {
+  font: var(--font-label-md);
+  color: var(--color-on-surface);
+}
+
+.reply-node__dot {
+  color: var(--color-outline);
+  font-size: 10px;
+}
+
+.reply-node__time {
+  font: var(--font-label-sm);
+  color: var(--color-on-surface-variant);
+}
+
+.reply-node__body {
+  font: var(--font-body-md);
+  color: var(--color-on-surface);
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+
+/* Replies are Markdown, same as post bodies. */
+.reply-node__body > :first-child { margin-top: 0; }
+.reply-node__body > :last-child { margin-bottom: 0; }
+
+.reply-node__body p {
+  margin: 0 0 8px;
+}
+
+.reply-node__body ul,
+.reply-node__body ol {
+  margin: 0 0 8px;
+  padding-left: 22px;
+}
+
+.reply-node__body blockquote {
+  margin: 0 0 8px;
+  padding: 8px 12px;
+  border-left: 3px solid var(--color-outline-variant);
+  background: var(--color-surface-container-low);
+  border-radius: var(--radius-md);
+  color: var(--color-on-surface-variant);
+}
+
+.reply-node__body code {
+  padding: 2px 5px;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-container-high);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9em;
+}
+
+.reply-node__body pre {
+  margin: 0 0 8px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-container-high);
+  overflow-x: auto;
+}
+
+.reply-node__body pre code {
+  padding: 0;
+  background: none;
+}
+
+.reply-node__body a {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.reply-node__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.reply-node__action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font: var(--font-label-md);
+  color: var(--color-on-surface-variant);
+  background: none;
+  border: none;
+  padding: 4px 8px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.reply-node__action-btn:hover {
+  background: var(--color-surface-container);
+  color: var(--color-on-surface);
+}
+
+.reply-node__action-btn--accept {
+  color: var(--ws-ok-ink);
+}
+
+.reply-node__action-btn--accept:hover {
+  background: var(--ws-ok-bg);
+  color: var(--ws-ok-ink);
+}
+
+.reply-node--accepted {
+  background: var(--nen);
+  padding: 12px;
+  border-radius: var(--radius-lg);
+  margin: 8px 0;
+}
+
+.reply-node__accepted-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font: var(--font-label-sm);
+  font-size: 10px;
+  background: var(--ws-ok-bg);
+  color: var(--ws-ok-ink);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-left: 8px;
+}
+
+.reply-node__nested-form {
+  margin-top: 8px;
+}
+
+/* ---------- Search within the group ---------- */
+.disc-list__search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 9px 16px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-container-lowest);
+  color: var(--color-on-surface-variant);
+}
+
+.disc-list__search:focus-within {
+  border-color: var(--color-primary);
+}
+
+.disc-list__search input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font: var(--font-body-md);
+  color: var(--color-on-surface);
+}
+
+</style><style type="text/css" data-vite-dev-id="D:/DoAnTotNghiep/unichat/frontend/src/features/community/components/collapsible-body.css">.foldable {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.foldable__body {
+  width: 100%;
+}
+
+/* Tall enough to judge whether the answer is the one being looked for, short
+   enough that the next reply stays on screen. */
+.foldable__body--folded {
+  position: relative;
+  max-height: 200px;
+  overflow: hidden;
+}
+
+/* Fades the cut edge rather than slicing a line of text in half, which reads
+   as a rendering fault. */
+.foldable__body--folded::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 64px;
+  background: linear-gradient(
+    to bottom,
+    rgb(255 255 255 / 0%),
+    var(--color-surface-container-lowest, var(--nen)) 92%
+  );
+  pointer-events: none;
+}
+
+.foldable__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  padding: 4px 10px 4px 6px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-container-high);
+  color: var(--color-primary);
+  font: var(--font-label-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.foldable__toggle:hover {
+  background: var(--color-surface-container-highest);
+}
+
+/* Inside the assistant's tinted panel the fade has to end on that panel's own
+   colour. The token is --color-ai-bubble, the one .reply-node--ai uses;
+   --color-tertiary-container looks related but resolves to a dark brown and
+   painted a muddy band across the cut. */
+.reply-node--ai .foldable__body--folded::after {
+  background: linear-gradient(
+    to bottom,
+    rgb(236 254 255 / 0%),
+    var(--color-ai-bubble, var(--nen)) 92%
+  );
+}
+
+.reply-node--ai .foldable__toggle {
+  background: rgb(255 255 255 / 70%);
+}
+
+.reply-node--ai .foldable__toggle:hover {
+  background: rgb(255 255 255 / 92%);
+}
+</style><style type="text/css" data-vite-dev-id="D:/DoAnTotNghiep/unichat/frontend/src/features/community/components/mention-text.css">/* A member named in a post or reply. */
+.mention {
+  padding: 1px 5px;
+  border-radius: var(--radius-sm);
+  background: var(--color-primary-fixed);
+  color: var(--color-on-primary-fixed-variant);
+  font-weight: 600;
+  white-space: nowrap;
+}
+</style><style type="text/css" data-vite-dev-id="D:/DoAnTotNghiep/unichat/frontend/src/features/community/components/reply-citations.css">.reply-citations {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-container-low);
+}
+
+.reply-citations__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-on-surface-variant);
+  font: var(--font-label-sm);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.reply-citations__list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.reply-citations__chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-default);
+  background: var(--color-surface-container);
+  color: var(--color-on-surface);
+  font: var(--font-label-md);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.reply-citations__chip:hover {
+  border-color: var(--color-outline-variant);
+  background: var(--color-surface-container-high);
+}
+
+.reply-citations__index {
+  flex-shrink: 0;
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+/* The file name is the part worth reading, so it takes the slack and truncates
+   before the locator does. */
+.reply-citations__file {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.reply-citations__locator {
+  flex-shrink: 0;
+  color: var(--color-on-surface-variant);
+  font: var(--font-label-sm);
+}
+
+.reply-citations__excerpt {
+  margin: 6px 0 2px;
+  padding: 8px 10px;
+  border-left: 3px solid var(--color-primary-fixed);
+  border-radius: 0 var(--radius-default) var(--radius-default) 0;
+  background: var(--color-surface-container);
+  color: var(--color-on-surface-variant);
+  font: var(--font-body-md);
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+</style><style type="text/css" data-vite-dev-id="D:/DoAnTotNghiep/unichat/frontend/src/features/community/components/inline-comments.css">.inline-comments {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 14px;
+  border-top: 1px solid var(--ws-line, var(--color-outline-variant));
+}
+
+.inline-comments__list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.inline-comments__state {
+  margin: 2px 0;
+  font: var(--font-label-md);
+  color: var(--color-on-surface-variant);
+}
+
+.inline-comments__error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font: var(--font-label-md);
+  color: var(--color-error);
+}
+
+.inline-comments__waiting {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font: var(--font-label-md);
+  color: var(--color-primary);
+}
+
+/* The thread is nested inside a card here, not a page, so it gives back the
+   page-level indentation the detail view can afford. */
+.inline-comments .reply-thread {
+  margin-left: 0;
+}
+
+.inline-comments .reply-form__input {
+  min-height: 62px;
+}
+</style><style type="text/css" data-vite-dev-id="D:/DoAnTotNghiep/unichat/frontend/src/features/community/components/feed-card.css">/* Feed card — a white surface lifted off the canvas, with the group and the
+   resolution state in the header and the actions along the foot. */
+
+.feed-card {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  padding: 18px 20px;
+  border-radius: var(--radius-2xl);
+  background: var(--ws-card);
+  box-shadow: var(--ws-card-shadow);
+  transition: box-shadow var(--transition-fast);
+}
+
+.feed-card:hover {
+  box-shadow: var(--ws-card-shadow-hover);
+}
+
+/* ── Header ─────────────────────────────────────────────── */
+
+.feed-card__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.feed-card__ws {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.feed-card__ws-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.feed-card__ws-name {
+  overflow: hidden;
+  color: var(--ws-ink);
+  font: var(--font-label-md);
+  font-weight: 700;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.feed-card__ws:hover .feed-card__ws-name {
+  color: var(--ws-accent);
+}
+
+.feed-card__byline {
+  flex-shrink: 0;
+  color: var(--ws-ink-muted);
+  font: var(--font-label-sm);
+}
+
+/* The author's name opens their profile; the group avatar beside it opens the
+   group, so the two targets are kept separate rather than nested. */
+.feed-card__author {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--ws-ink-soft);
+  font: var(--font-label-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.feed-card__author:hover {
+  color: var(--ws-accent);
+  text-decoration: underline;
+}
+
+/* The one place a reader looks to decide whether to open the post. Pushed
+   right by auto margin, since neither name beside it should stretch. */
+.feed-card__status {
+  display: inline-flex;
+  flex-shrink: 0;
+  margin-left: auto;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  border-radius: var(--radius-lg);
+  font: var(--font-label-sm);
+  font-weight: 700;
+}
+
+.feed-card__status--resolved {
+  background: var(--ws-ok-bg);
+  color: var(--ws-ok-ink);
+}
+
+.feed-card__status--discussing {
+  background: var(--ws-warn-bg);
+  color: var(--ws-warn-ink);
+}
+
+.feed-card__status--unanswered {
+  background: var(--ws-accent-soft);
+  color: var(--ws-accent);
+}
+
+.feed-card__status--announcement {
+  background: var(--ws-chip);
+  color: var(--ws-ink-soft);
+}
+
+/* ── Body ───────────────────────────────────────────────── */
+
+.feed-card__title-btn {
+  padding: 0;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.feed-card__title {
+  margin: 0;
+  color: var(--ws-ink);
+  font-family: var(--font-family);
+  font-size: 17.5px;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: -0.012em;
+}
+
+.feed-card__title-btn:hover .feed-card__title {
+  color: var(--ws-accent);
+}
+
+.feed-card__preview {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 0;
+  color: var(--ws-ink-soft);
+  font: var(--font-body-md);
+  line-height: 1.6;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+/* ── Footer ─────────────────────────────────────────────── */
+
+.feed-card__foot {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-top: 2px;
+  padding-top: 12px;
+  border-top: 1px solid var(--ws-line);
+}
+
+.feed-card__replies {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--ws-ink-muted);
+  font: var(--font-label-md);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.feed-card__replies:hover {
+  color: var(--ws-accent);
+}
+
+.feed-card__save {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  margin-left: auto;
+  border: none;
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--ws-ink-muted);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.feed-card__save:hover {
+  background: var(--ws-chip);
+  color: var(--ws-ink);
+}
+
+.feed-card__save--on {
+  color: var(--ws-accent);
+}
+
+@media (max-width: 720px) {
+  .feed-card {
+    padding: 15px 16px;
+  }
+
+  .feed-card__title {
+    font-size: 16.5px;
+  }
+}
+
+/* ── Pinned (group list only) ───────────────────────────── */
+
+.feed-card--pinned {
+  border-left: 3px solid var(--color-primary, var(--muc));
+}
+
+.feed-card__pin {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary-fixed, var(--be-mat));
+  color: var(--color-primary, var(--muc));
+  font: var(--font-label-sm);
+  font-weight: 700;
+}
+</style><style type="text/css" data-vite-dev-id="D:/DoAnTotNghiep/unichat/frontend/src/features/community/components/feed-sidebar.css">.feed-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  position: sticky;
+  top: 22px;
+  align-self: start;
+}
+
+/* Unanswered count leads the sidebar: it is the one number worth acting on. */
+.feed-sidebar__cta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 16px;
+  border: none;
+  border-radius: var(--radius-2xl);
+  background: var(--ws-warn-bg);
+  color: var(--ws-warn-ink);
+  font: var(--font-body-md);
+  text-align: left;
+  cursor: pointer;
+  transition: filter var(--transition-fast);
+}
+
+.feed-sidebar__cta:hover {
+  filter: brightness(0.97);
+}
+
+.feed-sidebar__cta-icon {
+  display: inline-flex;
+}
+
+.feed-sidebar__cta-text {
+  flex: 1;
+  line-height: 1.35;
+}
+
+.feed-sidebar__cta-text strong {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.feed-sidebar__card {
+  padding: 16px 18px;
+  border-radius: var(--radius-2xl);
+  background: var(--ws-card);
+  box-shadow: var(--ws-card-shadow);
+}
+
+.feed-sidebar__card--muted {
+  background: var(--ws-card);
+}
+
+.feed-sidebar__heading {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 12px;
+  color: var(--ws-ink-muted);
+  font: var(--font-label-sm);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.feed-sidebar__body {
+  margin: 0 0 12px;
+  font: var(--font-body-md);
+  line-height: 1.6;
+  color: var(--ws-ink-soft);
+}
+
+.feed-sidebar__empty {
+  margin: 0;
+  font: var(--font-body-md);
+  color: var(--ws-ink-muted);
+}
+
+.feed-sidebar__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: none;
+  background: none;
+  font: var(--font-label-md);
+  font-weight: 700;
+  color: var(--ws-accent);
+  cursor: pointer;
+}
+
+.feed-sidebar__link:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 1180px) {
+  .feed-sidebar {
+    display: none;
+  }
+}
+</style><style type="text/css" data-vite-dev-id="D:/DoAnTotNghiep/unichat/frontend/src/features/community/components/search-results.css">.search-results {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.search-results__state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 36px 16px;
+  color: var(--ws-ink-muted);
+  font: var(--font-body-md);
+  text-align: center;
+}
+
+.search-results__section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.search-results__heading {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  color: var(--ws-ink-muted);
+  font: var(--font-label-sm);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.search-results__row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  padding: 14px 18px;
+  border: none;
+  border-radius: var(--radius-2xl);
+  background: var(--ws-card);
+  box-shadow: var(--ws-card-shadow);
+  text-align: left;
+  cursor: pointer;
+  transition: box-shadow var(--transition-fast);
+}
+
+.search-results__row:hover {
+  box-shadow: var(--ws-card-shadow-hover);
+}
+
+.search-results__row-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ws-ink);
+  font: var(--font-label-md);
+  font-weight: 700;
+}
+
+/* The snippet identifies the post; it is not meant to be read in full here. */
+.search-results__row-snippet {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--ws-ink-soft);
+  font: var(--font-body-md);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.search-results__row-meta {
+  color: var(--ws-ink-muted);
+  font: var(--font-label-sm);
+}
+
+.search-results__badge,
+.search-results__readable {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--ws-accent);
+  font: var(--font-label-sm);
+  font-weight: 700;
+}
+
+@media (max-width: 640px) {
+  .search-results__row {
+    padding: 10px 12px;
+  }
+}
+</style><style type="text/css" data-vite-dev-id="D:/DoAnTotNghiep/unichat/frontend/src/features/community/feed-page.css">/* ==========================================================================
+   Feed — questions across the member's Knowledge Spaces.
+   Card and sidebar styles live in their own component files.
+   ========================================================================== */
+
+.feed-page {
+  min-height: 100%;
+  padding: 22px 24px 48px;
+  background: var(--ws-canvas);
+}
+
+.feed-page__layout {
+  display: grid;
+  grid-template-columns: 212px minmax(0, 1fr) 292px;
+  gap: 20px;
+  max-width: 1360px;
+  margin: 0 auto;
+  align-items: start;
+}
+
+/* ── Scope rail ─────────────────────────────────────────── */
+
+.feed-page__scopes {
+  position: sticky;
+  top: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 8px;
+  border-radius: var(--radius-2xl);
+  background: var(--ws-card);
+  box-shadow: var(--ws-card-shadow);
+}
+
+.feed-scope {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 13px;
+  border: none;
+  border-radius: var(--radius-lg);
+  background: transparent;
+  color: var(--ws-ink-muted);
+  font: var(--font-label-md);
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.feed-scope:hover {
+  background: var(--ws-chip);
+  color: var(--ws-ink);
+}
+
+.feed-scope--active {
+  background: var(--ws-accent-gradient);
+  color: var(--ws-accent-ink);
+  font-weight: 700;
+}
+
+/* ── Header ─────────────────────────────────────────────── */
+
+.feed-page__main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.feed-page__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.feed-page__search {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px 18px;
+  border: none;
+  border-radius: var(--radius-xl);
+  background: var(--ws-card);
+  box-shadow: var(--ws-card-shadow);
+  color: var(--ws-ink-muted);
+  transition: box-shadow var(--transition-fast);
+}
+
+.feed-page__search:focus-within {
+  box-shadow: 0 0 0 2px var(--ws-accent);
+}
+
+.feed-page__search input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font: var(--font-body-md);
+  color: var(--ws-ink);
+}
+
+.feed-page__ask {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+  padding: 12px 20px;
+  border: none;
+  border-radius: var(--radius-xl);
+  background: var(--ws-accent-gradient);
+  color: var(--ws-accent-ink);
+  font: var(--font-label-md);
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgb(30 58 138 / 30%);
+  transition: filter var(--transition-fast);
+}
+
+.feed-page__ask:hover {
+  filter: brightness(1.15);
+}
+
+/* ── View tabs ──────────────────────────────────────────── */
+/* Pills rather than an underline: they sit on the canvas without needing a
+   rule across the whole column to anchor them. */
+
+.feed-page__views {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.feed-view {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 15px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--ws-card);
+  box-shadow: var(--ws-card-shadow);
+  color: var(--ws-ink-soft);
+  font: var(--font-label-md);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.feed-view:hover {
+  color: var(--ws-ink);
+}
+
+.feed-view--active {
+  background: var(--ws-accent-gradient);
+  color: var(--ws-accent-ink);
+  font-weight: 700;
+  box-shadow: none;
+}
+
+.feed-view__count {
+  padding: 1px 7px;
+  border-radius: var(--radius-full);
+  background: var(--ws-warn-bg);
+  color: var(--ws-warn-ink);
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.feed-view--active .feed-view__count {
+  background: rgb(255 255 255 / 22%);
+  color: var(--ws-accent-ink);
+}
+
+/* ── List, states, pager ────────────────────────────────── */
+
+.feed-page__list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.feed-skeleton {
+  height: 132px;
+  border-radius: var(--radius-2xl);
+  background: linear-gradient(
+    90deg,
+    var(--ws-card) 25%,
+    var(--ws-chip) 50%,
+    var(--ws-card) 75%
+  );
+  background-size: 200% 100%;
+  animation: feed-skeleton-shimmer 1.4s infinite;
+}
+
+@keyframes feed-skeleton-shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+.feed-page__state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 56px 24px;
+  border-radius: var(--radius-2xl);
+  background: var(--ws-card);
+  box-shadow: var(--ws-card-shadow);
+  text-align: center;
+  color: var(--ws-ink-muted);
+}
+
+.feed-page__state h3 {
+  margin: 0;
+  color: var(--ws-ink);
+  font-family: var(--font-family);
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.feed-page__state p {
+  margin: 0 0 6px;
+  font: var(--font-body-md);
+}
+
+.feed-page__state--error {
+  color: var(--color-error);
+}
+
+.feed-page__pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding-top: 8px;
+  font: var(--font-label-sm);
+  color: var(--ws-ink-muted);
+}
+
+.feed-page__pager button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 9px 16px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--ws-card);
+  box-shadow: var(--ws-card-shadow);
+  color: var(--ws-ink);
+  font: var(--font-label-md);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.feed-page__pager button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ── Responsive ─────────────────────────────────────────── */
+
+@media (max-width: 1180px) {
+  .feed-page__layout {
+    grid-template-columns: 196px minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 860px) {
+  .feed-page {
+    padding: 16px 14px 40px;
+  }
+
+  .feed-page__layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .feed-page__scopes {
+    position: static;
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 6px;
+  }
+
+  .feed-scope span {
+    white-space: nowrap;
+  }
+
+  .feed-page__ask span {
+    display: none;
+  }
+}
+</style></head>
+  <body>
+    <div id="root"><div class="loading-provider__content"><div class="app-shell"><nav class="side-nav " aria-label="Thanh điều hướng chính"><div class="side-nav__header"><a class="side-nav__brand-link" title="UniChat AI Platform" href="http://127.0.0.1:5173/feed" data-discover="true"><div class="side-nav__avatar"><img alt="UniChat Logo" width="22" height="22" src="http://127.0.0.1:5173/src/assets/logo-white.png" style="object-fit: contain;"></div><div class="side-nav__brand-info"><h1 class="side-nav__title">UniChat</h1><p class="side-nav__subtitle">AI Platform</p></div></a></div><div class="side-nav__items"><a class="side-nav__item side-nav__item--active" title="Bảng tin" href="http://127.0.0.1:5173/feed" data-discover="true"><span class="material-symbols-rounded" aria-hidden="true" style="font-size: 20px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 500, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">dynamic_feed</span><span class="side-nav__label">Bảng tin</span></a><a class="side-nav__item " title="Tất cả nhóm" href="http://127.0.0.1:5173/workspaces" data-discover="true"><span class="material-symbols-rounded" aria-hidden="true" style="font-size: 20px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 500, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">workspaces</span><span class="side-nav__label">Tất cả nhóm</span></a><a class="side-nav__item " title="Tin nhắn" href="http://127.0.0.1:5173/work-chat" data-discover="true"><span class="material-symbols-rounded" aria-hidden="true" style="font-size: 20px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 500, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">forum</span><span class="side-nav__label">Tin nhắn</span></a><a class="side-nav__item " title="Tài khoản" href="http://127.0.0.1:5173/account" data-discover="true"><span class="material-symbols-rounded" aria-hidden="true" style="font-size: 20px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 500, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">person</span><span class="side-nav__label">Tài khoản</span></a><p class="side-nav__section">Nhóm</p><a class="side-nav__item" title="Vào nhóm Quản lý dự án" href="http://127.0.0.1:5173/workspaces/019fcac3-e788-77bc-8804-b1f5b6c0f1e2/chat" data-discover="true"><span class="group-mark" aria-hidden="true" style="width: 24px; height: 24px; background: rgb(207, 227, 231); font-size: 11px; border-radius: 7px;">Q</span><span class="side-nav__label">Quản lý dự án</span></a><a class="side-nav__item" title="Vào nhóm Trí tuệ nhân tạo" href="http://127.0.0.1:5173/workspaces/019f88b7-a7e6-70c0-ad22-c4edaa988e22/chat" data-discover="true"><span class="group-mark" aria-hidden="true" style="width: 24px; height: 24px; background: rgb(231, 207, 207); font-size: 11px; border-radius: 7px;">T</span><span class="side-nav__label">Trí tuệ nhân tạo</span></a><a class="side-nav__item" title="Vào nhóm Quy chế IUH" href="http://127.0.0.1:5173/workspaces/019ff5e1-e531-73e3-a79c-b09f41fc41a5/chat" data-discover="true"><span class="group-mark" aria-hidden="true" style="width: 24px; height: 24px; background: rgb(207, 221, 231); font-size: 11px; border-radius: 7px;">Q</span><span class="side-nav__label">Quy chế IUH</span></a><a class="side-nav__item" title="Vào nhóm OOP" href="http://127.0.0.1:5173/workspaces/01a1384c-8984-7ba3-ac02-69110fe83d3d/chat" data-discover="true"><span class="group-mark" aria-hidden="true" style="width: 24px; height: 24px; background: rgb(231, 219, 207); font-size: 11px; border-radius: 7px;">O</span><span class="side-nav__label">OOP</span></a><a class="side-nav__item" title="Vào nhóm Khoa học dữ liệu" href="http://127.0.0.1:5173/workspaces/019f88b8-99f5-7706-b8cc-cbd34c931093/chat" data-discover="true"><span class="group-mark" aria-hidden="true" style="width: 24px; height: 24px; background: rgb(210, 207, 231); font-size: 11px; border-radius: 7px;">K</span><span class="side-nav__label">Khoa học dữ liệu</span></a><a class="side-nav__item" title="Vào nhóm Lập trình hướng đối tượng" href="http://127.0.0.1:5173/workspaces/01a017f7-f724-7fc6-a579-08e9cf2f68a7/chat" data-discover="true"><span class="group-mark" aria-hidden="true" style="width: 24px; height: 24px; background: rgb(231, 222, 207); font-size: 11px; border-radius: 7px;">L</span><span class="side-nav__label">Lập trình hướng đối tượng</span></a><a class="side-nav__item" title="Vào nhóm Mongodb" href="http://127.0.0.1:5173/workspaces/01a079ca-ce20-768b-9714-6a2cd3fb58a0/chat" data-discover="true"><span class="group-mark" aria-hidden="true" style="width: 24px; height: 24px; background: rgb(231, 227, 207); font-size: 11px; border-radius: 7px;">M</span><span class="side-nav__label">Mongodb</span></a></div><div class="side-nav__footer"><div class="notification-bell"><button type="button" class="side-nav__item side-nav__btn " title="Thông báo" aria-label="Thông báo" aria-expanded="false"><span class="side-nav__icon-wrap"><span class="material-symbols-rounded" aria-hidden="true" style="font-size: 20px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 500, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">notifications</span></span><span class="side-nav__label">Thông báo</span></button></div><button type="button" class="side-nav__item side-nav__btn side-nav__item--danger" title="Đăng xuất" aria-label="Đăng xuất"><span class="side-nav__icon-wrap"><span class="material-symbols-rounded" aria-hidden="true" style="font-size: 20px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 500, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">logout</span></span><span class="side-nav__label">Đăng xuất</span></button></div></nav><main class="app-shell__main"><div class="feed-page"><div class="feed-page__layout"><nav class="feed-page__scopes" aria-label="Phạm vi bảng tin"><button type="button" class="feed-scope feed-scope--active"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 20px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">home</span><span>Không gian của tôi</span></button><button type="button" class="feed-scope "><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 20px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">public</span><span>Công khai</span></button><button type="button" class="feed-scope "><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 20px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">bookmark</span><span>Đã lưu</span></button></nav><main class="feed-page__main"><header class="feed-page__header"><div class="feed-page__search"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 19px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">search</span><input placeholder="Tìm câu hỏi, chủ đề..." aria-label="Tìm kiếm bài viết" type="search" value=""></div><button type="button" class="feed-page__ask"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 18px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">edit_square</span>Tạo bài viết</button></header><div class="feed-page__views" role="tablist"><button type="button" role="tab" aria-selected="true" class="feed-view feed-view--active"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 17px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">help</span>Chưa giải đáp<span class="feed-view__count">1</span></button><button type="button" role="tab" aria-selected="false" class="feed-view "><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 17px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">schedule</span>Mới nhất</button><button type="button" role="tab" aria-selected="false" class="feed-view "><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 17px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">person</span>Của tôi</button></div><div class="feed-page__list"><article class="feed-card "><header class="feed-card__head"><button type="button" class="feed-card__ws"><span class="group-mark" aria-hidden="true" style="width: 34px; height: 34px; background: rgb(231, 219, 207); font-size: 16px; border-radius: 10px;">O</span><span class="feed-card__ws-text"><span class="feed-card__ws-name">OOP</span></span></button><span class="feed-card__byline"><button type="button" class="feed-card__author">hungdz1372004</button><span aria-hidden="true"> · </span><time datetime="2026-10-19T20:11:49.398025Z">1 tuần trước</time></span><span class="feed-card__status feed-card__status--unanswered">Chưa có lời giải</span></header><button type="button" class="feed-card__title-btn"><h3 class="feed-card__title">Composition vs Inheritance, bao giờ mới chọn đúng đây</h3></button><p class="feed-card__preview">Đọc sách cứ bảo ưu tiên composition hơn inheritance, nhưng đọc xong vẫn mơ hồ lắm, có ai cho ví dụ dễ hiểu không?</p><footer class="feed-card__foot"><div class="reaction-bar reaction-bar--compact"><div class="reaction-bar__trigger-wrap"><button type="button" class="reaction-bar__trigger " aria-haspopup="menu" aria-expanded="false"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 15px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">add_reaction</span></button></div></div><button type="button" class="feed-card__replies " aria-expanded="false"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 16px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">chat_bubble_outline</span>0 bình luận</button><button type="button" class="feed-card__save " aria-pressed="false" aria-label="Lưu bài viết"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 17px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">bookmark_border</span></button></footer></article></div></main><aside class="feed-sidebar"><button type="button" class="feed-sidebar__cta"><span class="feed-sidebar__cta-icon"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 20px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">help</span></span><span class="feed-sidebar__cta-text"><strong>1</strong> câu hỏi chưa có lời giải</span><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 18px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">chevron_right</span></button><section class="feed-sidebar__card feed-sidebar__card--muted"><h3 class="feed-sidebar__heading"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 16px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">lightbulb</span>Cách hoạt động</h3><p class="feed-sidebar__body">Bảng tin gom bài viết từ các nhóm bạn tham gia. Khi tệp của nhóm chưa đủ căn cứ để trợ lý AI trả lời, bạn có thể đưa câu hỏi ra hỏi mọi người.</p><button type="button" class="feed-sidebar__link"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 16px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">workspaces</span>Tới Knowledge Space</button></section></aside></div></div></main></div><audio autoplay="" hidden=""></audio></div><div class="loading-screen loading-screen--fullscreen" role="status" aria-live="polite" aria-busy="false" aria-hidden="true" style="visibility: hidden;"><div class="loading-screen__emblem-container" aria-hidden="true"><div class="loading-screen__ring--outer"></div><div class="loading-screen__ring"></div><img alt="" class="loading-screen__logo-img" src="http://127.0.0.1:5173/src/assets/ai-avatar.png"></div><div class="loading-screen__content"><h2 class="loading-screen__brand">UniChat AI Platform</h2><p class="loading-screen__message"><span>Đang tải thông tin Workspace...</span><span class="loading-screen__dots" aria-hidden="true"><span class="loading-screen__dot"></span><span class="loading-screen__dot"></span><span class="loading-screen__dot"></span></span></p></div></div></div>
+    <script type="module" src="http://127.0.0.1:5173/src/main.tsx?t=1793431056360"></script>
+  
+</body></html>

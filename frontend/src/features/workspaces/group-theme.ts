@@ -32,63 +32,63 @@ export interface GroupTheme {
 const THEMES: readonly GroupTheme[] = [
   {
     // Violet → fuchsia
-    from: '#8b5cf6', via: '#d946ef', to: '#4c1d95',
-    blobA: 'rgb(240 171 252 / 62%)', blobB: 'rgb(34 211 238 / 38%)',
+    from: '#322c3f', via: '#322c3f', to: '#262131',
+    blobA: 'transparent', blobB: 'transparent',
   },
   {
     // Cyan → blue
-    from: '#22d3ee', via: '#3b82f6', to: '#1e3a8a',
-    blobA: 'rgb(165 243 252 / 58%)', blobB: 'rgb(167 139 250 / 40%)',
+    from: '#2c3d3f', via: '#2c3d3f', to: '#212f31',
+    blobA: 'transparent', blobB: 'transparent',
   },
   {
     // Coral: rose → orange
-    from: '#fb7185', via: '#f97316', to: '#881337',
-    blobA: 'rgb(253 230 138 / 58%)', blobB: 'rgb(244 114 182 / 42%)',
+    from: '#3f2c2f', via: '#3f2c2f', to: '#312123',
+    blobA: 'transparent', blobB: 'transparent',
   },
   {
     // Emerald → cyan
-    from: '#34d399', via: '#06b6d4', to: '#065f46',
-    blobA: 'rgb(190 242 100 / 48%)', blobB: 'rgb(103 232 249 / 44%)',
+    from: '#2c3f38', via: '#2c3f38', to: '#21312b',
+    blobA: 'transparent', blobB: 'transparent',
   },
   {
     // Electric: blue → violet
-    from: '#3b82f6', via: '#8b5cf6', to: '#312e81',
-    blobA: 'rgb(147 197 253 / 58%)', blobB: 'rgb(232 121 249 / 40%)',
+    from: '#2c333f', via: '#2c333f', to: '#212731',
+    blobA: 'transparent', blobB: 'transparent',
   },
   {
     // Sunset: amber → pink
-    from: '#fbbf24', via: '#ec4899', to: '#701a75',
-    blobA: 'rgb(254 215 170 / 58%)', blobB: 'rgb(192 132 252 / 42%)',
+    from: '#3f3a2c', via: '#3f3a2c', to: '#312c21',
+    blobA: 'transparent', blobB: 'transparent',
   },
   {
     // Lime → emerald
-    from: '#a3e635', via: '#10b981', to: '#14532d',
-    blobA: 'rgb(217 249 157 / 54%)', blobB: 'rgb(94 234 212 / 42%)',
+    from: '#383f2c', via: '#383f2c', to: '#2b3121',
+    blobA: 'transparent', blobB: 'transparent',
   },
   {
     // Sky → indigo
-    from: '#38bdf8', via: '#6366f1', to: '#1e1b4b',
-    blobA: 'rgb(186 230 253 / 56%)', blobB: 'rgb(216 180 254 / 40%)',
+    from: '#2c393f', via: '#2c393f', to: '#212c31',
+    blobA: 'transparent', blobB: 'transparent',
   },
   {
     // Pink → violet
-    from: '#f472b6', via: '#a855f7', to: '#581c87',
-    blobA: 'rgb(251 207 232 / 56%)', blobB: 'rgb(125 211 252 / 38%)',
+    from: '#3f2c36', via: '#3f2c36', to: '#312129',
+    blobA: 'transparent', blobB: 'transparent',
   },
   {
     // Teal → blue
-    from: '#2dd4bf', via: '#2563eb', to: '#134e4a',
-    blobA: 'rgb(153 246 228 / 54%)', blobB: 'rgb(165 180 252 / 42%)',
+    from: '#2c3f3d', via: '#2c3f3d', to: '#21312f',
+    blobA: 'transparent', blobB: 'transparent',
   },
   {
     // Ember: red → amber
-    from: '#f87171', via: '#f59e0b', to: '#7f1d1d',
-    blobA: 'rgb(254 240 138 / 56%)', blobB: 'rgb(252 165 165 / 44%)',
+    from: '#3f2c2c', via: '#3f2c2c', to: '#312121',
+    blobA: 'transparent', blobB: 'transparent',
   },
   {
     // Iris: indigo → cyan
-    from: '#818cf8', via: '#22d3ee', to: '#1e3a8a',
-    blobA: 'rgb(199 210 254 / 56%)', blobB: 'rgb(103 232 249 / 42%)',
+    from: '#2c2e3f', via: '#2c2e3f', to: '#212231',
+    blobA: 'transparent', blobB: 'transparent',
   },
 ];
 
@@ -108,13 +108,19 @@ export function groupThemeFor(workspaceId: string): GroupTheme {
 
 /** Full-bleed background for a card or banner. */
 export function coverBackground(theme: GroupTheme): string {
-  return `linear-gradient(155deg, ${theme.from} 0%, ${theme.via} 48%, ${theme.to} 100%)`;
+  // Một tông trầm, không phải một dải. Đây là thứ sơn trong khoảnh khắc ảnh
+  // chưa giải mã xong, và là thứ còn lại nếu ảnh không tải được — không phải
+  // một lớp trang trí.
+  return theme.to;
 }
 
-/** Overlapping blobs layered over {@link coverBackground} for depth. */
-export function coverMesh(theme: GroupTheme): string {
-  return (
-    `radial-gradient(56% 56% at 84% 10%, ${theme.blobA}, transparent 70%),`
-    + `radial-gradient(52% 52% at 8% 42%, ${theme.blobB}, transparent 72%)`
-  );
+/**
+ * Giữ lại cho các nơi gọi cũ, và cố ý trả về rỗng.
+ *
+ * Trước đây đây là hai vệt radial chồng lên nhau để tạo chiều sâu cho mảng
+ * nền. Giờ mảng nền nằm sau một bức ảnh thật, nên chiều sâu đã có sẵn trong
+ * ảnh; thêm vệt vào chỉ là trang trí trên thứ không ai nhìn thấy.
+ */
+export function coverMesh(_theme: GroupTheme): string {
+  return 'none';
 }

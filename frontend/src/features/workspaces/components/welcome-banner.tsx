@@ -42,7 +42,6 @@ export function WelcomeBanner() {
       <div className="welcome-banner__content">
         <h2 className="welcome-banner__greeting">
           {greeting}{displayName ? `, ${displayName}` : ''}
-          <span className="welcome-banner__emoji" aria-hidden="true">👋</span>
         </h2>
         <p className="welcome-banner__subtitle">
           Quản lý và khám phá các không gian tri thức của bạn
