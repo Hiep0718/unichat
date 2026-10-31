@@ -33,8 +33,8 @@
 }
 
 .topic-picker__count--full {
-  background: var(--color-primary, var(--dau));
-  color: var(--giay-noi);
+  background: var(--color-primary, var(--muc));
+  color: var(--nen);
 }
 
 .topic-picker__band {
@@ -65,9 +65,9 @@
   align-items: center;
   gap: 6px;
   padding: 7px 14px;
-  border: 1px solid var(--color-outline-variant, var(--ke-dam));
+  border: 1px solid var(--color-outline-variant, var(--dieu-khien));
   border-radius: var(--radius-full, 999px);
-  background: var(--color-surface, var(--giay-noi));
+  background: var(--color-surface, var(--nen));
   color: var(--color-on-surface, var(--muc));
   font: inherit;
   font-size: 0.8125rem;
@@ -80,12 +80,12 @@
 }
 
 .topic-picker__option:hover:not(:disabled) {
-  border-color: var(--color-primary, var(--dau));
-  background: var(--color-surface-container-low, var(--giay-sang));
+  border-color: var(--color-primary, var(--muc));
+  background: var(--color-surface-container-low, var(--nen));
 }
 
 .topic-picker__option:focus-visible {
-  outline: 2px solid var(--color-primary, var(--dau));
+  outline: 2px solid var(--color-primary, var(--muc));
   outline-offset: 2px;
 }
 
@@ -93,14 +93,14 @@
    pale background alone, which was easy to miss among a dozen chips. The icon
    also swaps to a check, so the state does not rest on colour by itself. */
 .topic-picker__option--picked {
-  border-color: var(--color-primary, var(--dau));
-  background: var(--color-primary, var(--dau));
-  color: var(--giay-noi);
+  border-color: var(--color-primary, var(--muc));
+  background: var(--color-primary, var(--muc));
+  color: var(--nen);
   font-weight: 600;
 }
 
 .topic-picker__option--picked:hover:not(:disabled) {
-  background: var(--color-primary, var(--dau));
+  background: var(--color-primary, var(--muc));
   filter: brightness(1.12);
 }
 

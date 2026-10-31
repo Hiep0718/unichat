@@ -10,7 +10,7 @@
 
 /* --- Toolbar Card --- */
 .ai-studio-toolbar {
-  background: var(--giay-noi);
+  background: var(--nen);
   border: 1px solid var(--ke);
   border-radius: 12px;
   padding: 20px 24px;
@@ -42,9 +42,9 @@
 }
 
 .ai-studio-tier-badge {
-  background: var(--giay-chim);
+  background: var(--color-surface-dim);
   color: var(--muc-nhat);
-  border: 1px solid var(--ke-dam);
+  border: 1px solid var(--dieu-khien);
   font-size: 0.75rem;
   font-weight: 700;
   padding: 3px 8px;
@@ -62,9 +62,9 @@
 
 .ai-studio-filter-select {
   padding: 8px 12px;
-  border: 1px solid var(--ke-dam);
+  border: 1px solid var(--dieu-khien);
   border-radius: 8px;
-  background-color: var(--giay-noi);
+  background-color: var(--nen);
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--muc);
@@ -74,7 +74,7 @@
 }
 
 .ai-studio-filter-select:focus {
-  border-color: var(--dau);
+  border-color: var(--muc);
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
 }
 
@@ -83,8 +83,8 @@
   align-items: center;
   gap: 6px;
   padding: 8px 14px;
-  background: var(--dau);
-  color: var(--giay-noi);
+  background: var(--muc);
+  color: var(--nen);
   border: none;
   border-radius: 8px;
   font-size: 0.875rem;
@@ -94,7 +94,7 @@
 }
 
 .ai-studio-btn-refresh:hover:not(:disabled) {
-  background: var(--dau);
+  background: var(--muc);
 }
 
 .ai-studio-btn-refresh:disabled {
@@ -110,7 +110,7 @@
 }
 
 .ai-kpi-card {
-  background: var(--giay-noi);
+  background: var(--nen);
   border: 1px solid var(--ke);
   border-radius: 12px;
   padding: 16px;
@@ -137,23 +137,23 @@
 }
 
 .ai-kpi-card__icon--blue {
-  background: var(--dau-nhat);
-  color: var(--dau);
+  background: var(--be-mat);
+  color: var(--muc);
 }
 
 .ai-kpi-card__icon--green {
-  background: var(--giay-sang);
+  background: var(--nen);
   color: var(--color-success);
 }
 
 .ai-kpi-card__icon--amber {
-  background: var(--giay-sang);
+  background: var(--nen);
   color: var(--ws-warn-ink);
 }
 
 .ai-kpi-card__icon--purple {
-  background: var(--giay-noi);
-  color: var(--dau-dam);
+  background: var(--nen);
+  color: var(--muc);
 }
 
 .ai-kpi-card__info {
@@ -236,7 +236,7 @@
 
 /* --- Chart Cards --- */
 .ai-chart-card {
-  background: var(--giay-noi);
+  background: var(--nen);
   border: 1px solid var(--ke);
   border-radius: 12px;
   padding: 20px;
@@ -296,17 +296,17 @@
 }
 
 .ai-chart-grid-line {
-  stroke: var(--giay-chim);
+  stroke: var(--color-surface-dim);
   stroke-dasharray: 3 3;
 }
 
 .ai-chart-bar-blue {
-  fill: var(--dau);
+  fill: var(--muc);
   transition: opacity 0.15s;
 }
 
 .ai-chart-bar-blue:hover {
-  fill: var(--dau);
+  fill: var(--muc);
 }
 
 .ai-chart-bar-amber {
@@ -327,7 +327,7 @@
 
 .ai-chart-dot-green {
   fill: var(--color-success);
-  stroke: var(--giay-noi);
+  stroke: var(--nen);
   stroke-width: 2;
   cursor: pointer;
   transition: r 0.15s;
@@ -339,7 +339,7 @@
 
 /* Interactive Crosshair & Floating Tooltip */
 .ai-chart-crosshair-line {
-  stroke: var(--ke-dam);
+  stroke: var(--dieu-khien);
   stroke-width: 1;
   stroke-dasharray: 3 3;
   pointer-events: none;
@@ -351,7 +351,7 @@
   transform: translateX(-50%);
   background: rgba(15, 23, 42, 0.92);
   backdrop-filter: blur(8px);
-  color: var(--giay-noi);
+  color: var(--nen);
   font-size: 0.75rem;
   padding: 8px 12px;
   border-radius: 8px;
@@ -366,7 +366,7 @@
 .ai-chart-tooltip__header {
   font-weight: 700;
   font-size: 0.8125rem;
-  color: var(--giay-sang);
+  color: var(--nen);
   margin-bottom: 6px;
   padding-bottom: 4px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
@@ -378,12 +378,12 @@
   gap: 6px;
   margin-top: 3px;
   font-size: 0.72rem;
-  color: var(--ke-dam);
+  color: var(--dieu-khien);
 }
 
 .ai-chart-tooltip__row strong {
   margin-left: auto;
-  color: var(--giay-noi);
+  color: var(--nen);
   font-weight: 600;
 }
 
@@ -396,7 +396,7 @@
 }
 
 .ai-chart-tooltip__badge--blue {
-  background-color: var(--dau);
+  background-color: var(--muc);
 }
 
 .ai-chart-tooltip__badge--green {
@@ -424,7 +424,7 @@
 
 .ai-chart-empty-state .material-symbols-outlined {
   font-size: 32px;
-  color: var(--ke-dam);
+  color: var(--dieu-khien);
 }
 
 .ai-chart-zero-indicator {
@@ -457,7 +457,7 @@
 .ai-key-table th {
   text-align: left;
   padding: 10px 14px;
-  background: var(--giay-sang);
+  background: var(--nen);
   color: var(--muc-nhat);
   font-weight: 600;
   border-bottom: 1px solid var(--ke);
@@ -465,13 +465,13 @@
 
 .ai-key-table td {
   padding: 12px 14px;
-  border-bottom: 1px solid var(--giay-chim);
+  border-bottom: 1px solid var(--color-surface-dim);
   color: var(--muc);
 }
 
 .ai-key-code {
   font-family: monospace;
-  background: var(--giay-chim);
+  background: var(--color-surface-dim);
   padding: 2px 6px;
   border-radius: 4px;
   color: var(--muc);
@@ -506,7 +506,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: var(--giay-sang);
+  background: var(--nen);
   color: var(--color-error);
   font-weight: 600;
   font-size: 0.75rem;
@@ -516,7 +516,7 @@
 
 .ai-btn-ping {
   padding: 6px 12px;
-  background: var(--giay-sang);
+  background: var(--nen);
   color: var(--ws-ok-ink);
   border: 1px solid var(--ws-ok-bg);
   border-radius: 6px;
@@ -549,21 +549,21 @@
 .ai-playground-input {
   flex: 1;
   padding: 10px 14px;
-  border: 1px solid var(--ke-dam);
+  border: 1px solid var(--dieu-khien);
   border-radius: 8px;
   font-size: 0.875rem;
   outline: none;
 }
 
 .ai-playground-input:focus {
-  border-color: var(--dau);
+  border-color: var(--muc);
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
 }
 
 .ai-playground-reply {
   margin-top: 12px;
   padding: 12px 16px;
-  background: var(--giay-sang);
+  background: var(--nen);
   border: 1px solid var(--ke);
   border-radius: 8px;
   font-size: 0.875rem;

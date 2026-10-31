@@ -49,7 +49,7 @@
 
 .overview-tab__stat-icon--members {
   color: var(--ws-ok-ink);
-  background: var(--giay-sang);
+  background: var(--nen);
 }
 
 .overview-tab__stat-icon--conversations {
@@ -162,13 +162,13 @@
 }
 
 .overview-tab__visibility--shared {
-  color: var(--dau);
-  background: var(--giay-sang);
-  border: 1px solid var(--dau);
+  color: var(--muc);
+  background: var(--nen);
+  border: 1px solid var(--muc);
 }
 
 .overview-tab__visibility--public {
   color: var(--ws-ok-ink);
-  background: var(--giay-sang);
+  background: var(--nen);
   border: 1px solid var(--ws-ok-bg);
 }

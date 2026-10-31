@@ -78,6 +78,6 @@
 }
 
 .conversation-item__delete:hover {
-  background: var(--giay-noi);
+  background: var(--nen);
   border-radius: 4px;
 }

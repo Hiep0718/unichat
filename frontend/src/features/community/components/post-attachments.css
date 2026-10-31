@@ -65,7 +65,7 @@
   padding: 3px 10px;
   border-radius: var(--radius-full);
   background: rgba(15, 23, 42, 0.72);
-  color: var(--giay-noi);
+  color: var(--nen);
   font: var(--font-label-sm);
   font-weight: 700;
 }

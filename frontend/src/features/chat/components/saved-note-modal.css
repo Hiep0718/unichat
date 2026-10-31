@@ -18,7 +18,7 @@
   width: 100%;
   max-width: 720px;
   max-height: 85vh;
-  background: var(--giay-noi);
+  background: var(--nen);
   border: 1px solid var(--ke);
   border-radius: 20px;
   box-shadow: 0 20px 48px -8px rgba(15, 23, 42, 0.22);
@@ -30,7 +30,7 @@
 
 .unichat-saved-note-modal__header {
   padding: 16px 20px;
-  background: linear-gradient(135deg, var(--giay-noi) 0%, var(--giay-sang) 100%);
+  background: linear-gradient(135deg, var(--nen) 0%, var(--nen) 100%);
   border-bottom: 1px solid var(--ke);
   display: flex;
   align-items: center;
@@ -45,11 +45,11 @@
 
 .unichat-saved-note-modal__icon {
   font-size: 22px;
-  color: var(--dau);
+  color: var(--muc);
   padding: 8px;
   border-radius: 10px;
-  background: var(--dau-nhat);
-  border: 1px solid var(--dau);
+  background: var(--be-mat);
+  border: 1px solid var(--muc);
 }
 
 .unichat-saved-note-modal__title {
@@ -78,7 +78,7 @@
 }
 
 .unichat-saved-note-modal__close:hover {
-  background: var(--giay-chim);
+  background: var(--color-surface-dim);
   color: var(--muc);
 }
 
@@ -103,7 +103,7 @@
 }
 
 .unichat-saved-note-content {
-  background: var(--giay-sang);
+  background: var(--nen);
   border: 1px solid var(--ke);
   border-radius: 12px;
   padding: 20px;
@@ -150,20 +150,20 @@
 .unichat-saved-note-content th,
 .unichat-saved-note-content td {
   padding: 8px 12px;
-  border: 1px solid var(--ke-dam);
+  border: 1px solid var(--dieu-khien);
   text-align: left;
 }
 
 .unichat-saved-note-content th {
-  background: var(--giay-chim);
+  background: var(--color-surface-dim);
   font-weight: 700;
 }
 
 .unichat-saved-note-content blockquote {
   margin: 12px 0;
   padding: 8px 14px;
-  background: var(--dau-nhat);
-  border-left: 4px solid var(--dau);
+  background: var(--be-mat);
+  border-left: 4px solid var(--muc);
   color: var(--muc);
   border-radius: 4px;
 }
@@ -180,7 +180,7 @@
 .unichat-saved-note-modal__footer {
   padding: 14px 20px;
   border-top: 1px solid var(--ke);
-  background: var(--giay-noi);
+  background: var(--nen);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -199,5 +199,5 @@
 }
 
 .unichat-btn--danger-ghost:hover {
-  background: var(--giay-noi);
+  background: var(--nen);
 }

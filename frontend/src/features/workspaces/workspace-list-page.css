@@ -111,8 +111,8 @@
   justify-content: center;
   gap: var(--stack-sm);
   padding: 11px 20px;
-  background: linear-gradient(120deg, var(--dau-dam) 0%, var(--dau) 60%, var(--dau) 100%);
-  color: var(--giay-noi);
+  background: linear-gradient(120deg, var(--muc) 0%, var(--muc) 60%, var(--muc) 100%);
+  color: var(--nen);
   font: var(--font-label-md);
   font-weight: 600;
   border: none;
@@ -165,7 +165,7 @@
 
 .workspace-search__input:focus {
   background: var(--color-surface-container-lowest);
-  border-color: var(--dau);
+  border-color: var(--muc);
   box-shadow: 0 0 0 3px rgb(99 102 241 / 16%);
 }
 
@@ -201,8 +201,8 @@
 }
 
 .workspace-filter--active {
-  background: linear-gradient(120deg, var(--dau) 0%, var(--dau) 100%);
-  color: var(--giay-noi);
+  background: linear-gradient(120deg, var(--muc) 0%, var(--muc) 100%);
+  color: var(--nen);
   box-shadow: 0 3px 10px rgb(79 70 229 / 28%);
 }
 

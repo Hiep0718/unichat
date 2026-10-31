@@ -57,9 +57,9 @@
   align-items: center;
   gap: 5px;
   padding: 7px 14px;
-  border: 1px solid var(--color-outline-variant, var(--ke-dam));
+  border: 1px solid var(--color-outline-variant, var(--dieu-khien));
   border-radius: var(--radius-full, 999px);
-  background: var(--color-surface, var(--giay-noi));
+  background: var(--color-surface, var(--nen));
   color: var(--color-on-surface, var(--muc));
   font: inherit;
   font-size: 0.8125rem;
@@ -68,13 +68,13 @@
 }
 
 .explore-topics__chip:hover {
-  border-color: var(--color-primary, var(--dau));
+  border-color: var(--color-primary, var(--muc));
 }
 
 .explore-topics__chip--active {
-  border-color: var(--color-primary, var(--dau));
-  background: var(--color-primary, var(--dau));
-  color: var(--giay-noi);
+  border-color: var(--color-primary, var(--muc));
+  background: var(--color-primary, var(--muc));
+  color: var(--nen);
   font-weight: 600;
 }
 
@@ -93,5 +93,5 @@
 
 .explore-topics__chip--active .explore-topics__count {
   background: rgba(255, 255, 255, 0.25);
-  color: var(--giay-noi);
+  color: var(--nen);
 }

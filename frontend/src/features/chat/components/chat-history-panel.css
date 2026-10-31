@@ -12,8 +12,8 @@
   flex: none;
   padding: 14px 12px;
   overflow-y: auto;
-  border-right: 1px solid var(--giay);
-  background: var(--ws-canvas, var(--giay));
+  border-right: 1px solid var(--be-mat);
+  background: var(--ws-canvas, var(--be-mat));
 }
 
 .chat-history__head {
@@ -44,7 +44,7 @@
 }
 
 .chat-history__icon-btn:hover {
-  background: var(--ws-chip, var(--giay-chim));
+  background: var(--ws-chip, var(--color-surface-dim));
   color: var(--ws-ink, var(--muc));
 }
 
@@ -57,7 +57,7 @@
   border: none;
   border-radius: 10px;
   background: var(--ws-accent-gradient);
-  color: var(--giay-noi);
+  color: var(--nen);
   font: inherit;
   font-size: 0.8125rem;
   font-weight: 600;
@@ -100,7 +100,7 @@
 }
 
 .chat-history__item:hover {
-  background: var(--giay-noi);
+  background: var(--nen);
   color: var(--ws-ink, var(--muc));
 }
 
@@ -108,7 +108,7 @@
    accent here would compete with the New button, which is the one thing in
    this column that performs an action rather than naming where you are. */
 .chat-history__item--current {
-  background: var(--giay-noi);
+  background: var(--nen);
   color: var(--ws-ink, var(--muc));
   font-weight: 700;
   box-shadow: 0 1px 3px rgb(15 23 42 / 8%);

@@ -25,7 +25,7 @@
 .pdf-split-modal {
   width: 100%;
   max-width: 560px;
-  background: var(--color-surface, var(--giay-noi));
+  background: var(--color-surface, var(--nen));
   border: 1px solid var(--color-outline-variant, var(--ke));
   border-radius: var(--radius-xl, 16px);
   padding: 24px;
@@ -76,7 +76,7 @@
   border: 1px solid var(--color-outline-variant, var(--ke));
   border-radius: var(--radius-md, 8px);
   padding: 8px 12px;
-  background: var(--color-surface-container-low, var(--giay-sang));
+  background: var(--color-surface-container-low, var(--nen));
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -106,7 +106,7 @@
 }
 
 .pdf-split-modal__warning-box {
-  background: var(--giay-sang);
+  background: var(--nen);
   border: 1px solid var(--ws-warn-bg);
   border-radius: var(--radius-md, 8px);
   padding: 12px 14px;
@@ -138,8 +138,8 @@
   gap: 8px;
   font: var(--font-label-md);
   font-size: 13px;
-  color: var(--color-primary, var(--dau));
-  background: var(--color-surface-container-low, var(--giay-sang));
+  color: var(--color-primary, var(--muc));
+  background: var(--color-surface-container-low, var(--nen));
   padding: 8px 12px;
   border-radius: var(--radius-md, 8px);
 }
@@ -176,22 +176,22 @@
 
 .pdf-split-modal__btn--cancel {
   background: transparent;
-  border: 1px solid var(--color-outline-variant, var(--ke-dam));
+  border: 1px solid var(--color-outline-variant, var(--dieu-khien));
   color: var(--color-on-surface-variant, var(--muc-nhat));
 }
 
 .pdf-split-modal__btn--cancel:hover:not(:disabled) {
-  background: var(--color-surface-container-high, var(--giay-chim));
+  background: var(--color-surface-container-high, var(--color-surface-dim));
 }
 
 .pdf-split-modal__btn--confirm {
-  background: var(--color-primary, var(--dau));
-  border: 1px solid var(--color-primary, var(--dau));
-  color: var(--giay-noi);
+  background: var(--color-primary, var(--muc));
+  border: 1px solid var(--color-primary, var(--muc));
+  color: var(--nen);
 }
 
 .pdf-split-modal__btn--confirm:hover:not(:disabled) {
-  background: var(--dau);
+  background: var(--muc);
 }
 
 .pdf-split-modal__btn:disabled {

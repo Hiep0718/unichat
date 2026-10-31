@@ -77,10 +77,12 @@ describe('topicCoverFor', () => {
 
   it('should carry the same accents the web does, so one group is one colour', async () => {
     // Spot-checked against frontend/src/features/workspaces/topic-covers.ts.
-    expect(topicCoverFor(['PROGRAMMING'])?.accent).toBe('#4b8edd');
-    expect(topicCoverFor(['DATABASE'])?.accent).toBe('#6b7280');
-    expect(topicCoverFor(['RESEARCH'])?.accent).toBe('#b84bdd');
-    expect(topicCoverFor(['OTHER'])?.accent).toBe('#4bdd77');
+    // These are identity tints, not data colours: pale by design, so a rail of
+    // them reads as a list of spaces rather than a row of alerts.
+    expect(topicCoverFor(['PROGRAMMING'])?.accent).toBe('#cfdae7');
+    expect(topicCoverFor(['DATABASE'])?.accent).toBe('#cfd7e7');
+    expect(topicCoverFor(['RESEARCH'])?.accent).toBe('#e1cfe7');
+    expect(topicCoverFor(['OTHER'])?.accent).toBe('#cfe7d6');
   });
 
   it('should give marks a colour that can be told apart from its neighbours', async () => {

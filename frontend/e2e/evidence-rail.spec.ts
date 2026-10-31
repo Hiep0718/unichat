@@ -56,7 +56,8 @@ test('should drop the rail below the answer when there is no margin left', async
 test('should carry the one saturated colour on the citation marks', async ({ page }) => {
   await page.goto(PREVIEW);
 
-  // The seal red is reserved for evidence; nothing else on the page may wear it.
+  // The accent is budgeted under 2% of the screen and spent on the one data
+  // element this product exists for: the citation that ties a claim to a page.
   await expect(page.locator('.evidence-rail__mark').first())
-    .toHaveCSS('background-color', 'rgb(163, 59, 31)');
+    .toHaveCSS('background-color', 'rgb(27, 110, 102)');
 });

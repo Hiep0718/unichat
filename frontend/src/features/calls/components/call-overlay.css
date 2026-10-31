@@ -12,7 +12,7 @@
   padding: 14px 18px;
   border-radius: 20px;
   background: var(--muc);
-  color: var(--giay-noi);
+  color: var(--nen);
   box-shadow: 0 24px 48px rgb(15 23 42 / 38%), 0 2px 8px rgb(15 23 42 / 24%);
   animation: call-overlay-in 200ms cubic-bezier(0.2, 0.8, 0.3, 1);
 }
@@ -69,7 +69,7 @@
   height: 44px;
   flex: none;
   border-radius: 999px;
-  background: linear-gradient(140deg, var(--dau), var(--dau-dam));
+  background: linear-gradient(140deg, var(--muc), var(--muc));
   font-size: 1.0625rem;
   font-weight: 700;
   letter-spacing: -0.01em;
@@ -172,7 +172,7 @@
   border: none;
   border-radius: 999px;
   background: rgb(255 255 255 / 14%);
-  color: var(--giay-noi);
+  color: var(--nen);
   font: inherit;
   font-size: 0.8125rem;
   font-weight: 600;
@@ -189,7 +189,7 @@
 }
 
 .call-overlay__button:focus-visible {
-  outline: 2px solid var(--giay-noi);
+  outline: 2px solid var(--nen);
   outline-offset: 2px;
 }
 
@@ -222,7 +222,7 @@
 
 /* Muted is a state, so the button stays lit rather than only changing icon. */
 .call-overlay__button--on {
-  background: var(--giay-noi);
+  background: var(--nen);
   color: var(--muc);
 }
 

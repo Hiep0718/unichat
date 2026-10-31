@@ -21,7 +21,7 @@
 
 .chat-welcome__title-ws {
   color: var(--muc);
-  background: linear-gradient(135deg, var(--muc) 0%, var(--dau) 100%);
+  background: linear-gradient(135deg, var(--muc) 0%, var(--muc) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -36,13 +36,13 @@
 }
 
 .chat-welcome__dot {
-  color: var(--ke-dam);
+  color: var(--dieu-khien);
 }
 
 .chat-welcome__overview {
   margin-bottom: 32px;
   padding: 20px 24px;
-  background: var(--giay-sang);
+  background: var(--nen);
   border: 1px solid var(--ke);
   border-radius: 14px;
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
@@ -71,5 +71,5 @@
 
 .chat-welcome__suggestions-label .material-symbols-outlined {
   font-size: 18px;
-  color: var(--dau);
+  color: var(--muc);
 }

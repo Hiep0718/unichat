@@ -23,7 +23,7 @@
   width: 100%;
   max-width: 860px;
   max-height: 88vh;
-  background: var(--color-surface, var(--giay-noi));
+  background: var(--color-surface, var(--nen));
   border: 1px solid var(--color-outline-variant, var(--ke));
   border-radius: var(--radius-2xl, 20px);
   box-shadow: 0 20px 48px -8px rgba(15, 23, 42, 0.22);
@@ -41,7 +41,7 @@
 .unichat-studio-modal__header {
   height: 48px;
   padding: 0 12px 0 16px;
-  background: var(--color-surface-container-lowest, var(--giay-sang));
+  background: var(--color-surface-container-lowest, var(--nen));
   border-bottom: 1px solid var(--color-outline-variant, var(--ke));
   display: flex;
   align-items: center;
@@ -58,7 +58,7 @@
 
 .unichat-studio-modal__icon {
   font-size: 20px;
-  color: var(--color-primary, var(--dau));
+  color: var(--color-primary, var(--muc));
   flex-shrink: 0;
 }
 
@@ -88,7 +88,7 @@
 }
 
 .unichat-studio-modal__close-btn:hover {
-  background: var(--giay-chim);
+  background: var(--color-surface-dim);
   color: var(--muc);
 }
 
@@ -143,7 +143,7 @@
   padding: 6px 14px;
   border: 1px solid var(--ke);
   border-radius: 9999px;
-  background: var(--giay-sang);
+  background: var(--nen);
   font-size: 12px;
   font-weight: 600;
   color: var(--muc-nhat);
@@ -153,20 +153,20 @@
 }
 
 .unichat-slides-pill:hover {
-  background: var(--giay-chim);
+  background: var(--color-surface-dim);
   color: var(--muc);
 }
 
 .unichat-slides-pill--active {
-  background: var(--dau);
-  color: var(--giay-noi);
-  border-color: var(--dau);
+  background: var(--muc);
+  color: var(--nen);
+  border-color: var(--muc);
   box-shadow: 0 2px 8px rgba(2, 132, 199, 0.25);
 }
 
 .unichat-slide-card {
-  background: linear-gradient(145deg, var(--giay-noi) 0%, var(--giay-sang) 100%);
-  border: 1px solid var(--ke-dam);
+  background: linear-gradient(145deg, var(--nen) 0%, var(--nen) 100%);
+  border: 1px solid var(--dieu-khien);
   border-radius: 16px;
   padding: 24px;
   box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
@@ -184,7 +184,7 @@
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.8px;
-  color: var(--dau);
+  color: var(--muc);
   text-transform: uppercase;
 }
 
@@ -227,14 +227,14 @@
 }
 
 .unichat-slide-card__bullet-item .material-symbols-outlined {
-  color: var(--dau);
+  color: var(--muc);
   font-size: 20px;
   flex-shrink: 0;
 }
 
 .unichat-speaker-notes {
-  background: var(--dau-nhat);
-  border: 1px dashed var(--dau);
+  background: var(--be-mat);
+  border: 1px dashed var(--muc);
   border-radius: 12px;
   padding: 12px 16px;
 }
@@ -245,7 +245,7 @@
   gap: 6px;
   font-size: 12px;
   font-weight: 700;
-  color: var(--dau-dam);
+  color: var(--muc);
   margin-bottom: 4px;
 }
 
@@ -279,8 +279,8 @@
   align-items: center;
   gap: 20px;
   padding: 20px 24px;
-  background: linear-gradient(135deg, var(--dau-nhat) 0%, var(--dau-nhat) 100%);
-  border: 1px solid var(--dau);
+  background: linear-gradient(135deg, var(--be-mat) 0%, var(--be-mat) 100%);
+  border: 1px solid var(--muc);
   border-radius: 16px;
 }
 
@@ -288,8 +288,8 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--dau), var(--dau));
-  color: var(--giay-noi);
+  background: linear-gradient(135deg, var(--muc), var(--muc));
+  color: var(--nen);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -314,26 +314,26 @@
 
 .unichat-modal-podcast__info p {
   font-size: 13px;
-  color: var(--dau-dam);
+  color: var(--muc);
   margin: 0 0 8px 0;
 }
 
 .unichat-podcast-progress-bar {
   width: 100%;
   height: 6px;
-  background: var(--dau);
+  background: var(--muc);
   border-radius: 9999px;
   overflow: hidden;
 }
 
 .unichat-podcast-progress-fill {
   height: 100%;
-  background: var(--dau);
+  background: var(--muc);
   transition: width 0.3s linear;
 }
 
 .unichat-podcast-transcript {
-  background: var(--giay-sang);
+  background: var(--nen);
   border: 1px solid var(--ke);
   border-radius: 14px;
   overflow: hidden;
@@ -344,7 +344,7 @@
   align-items: center;
   gap: 8px;
   padding: 12px 16px;
-  background: var(--giay-chim);
+  background: var(--color-surface-dim);
   border-bottom: 1px solid var(--ke);
   font-size: 13px;
   font-weight: 700;
@@ -366,14 +366,14 @@
   gap: 12px;
   padding: 10px 14px;
   border-radius: 12px;
-  background: var(--giay-noi);
+  background: var(--nen);
   border: 1px solid var(--ke);
   transition: all 0.2s ease;
 }
 
 .unichat-transcript-bubble--active {
-  background: var(--dau-nhat);
-  border-color: var(--dau);
+  background: var(--be-mat);
+  border-color: var(--muc);
   box-shadow: 0 2px 8px rgba(2, 132, 199, 0.12);
 }
 
@@ -381,8 +381,8 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: var(--dau-nhat);
-  color: var(--dau);
+  background: var(--be-mat);
+  color: var(--muc);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -396,7 +396,7 @@
 .unichat-transcript-bubble__host {
   font-size: 11px;
   font-weight: 800;
-  color: var(--dau-dam);
+  color: var(--muc);
   text-transform: uppercase;
   display: block;
   margin-bottom: 2px;
@@ -460,12 +460,12 @@
 }
 
 .unichat-modal-card-flip__front {
-  background: linear-gradient(145deg, var(--giay-noi) 0%, var(--dau-nhat) 100%);
-  border: 1px solid var(--dau);
+  background: linear-gradient(145deg, var(--nen) 0%, var(--be-mat) 100%);
+  border: 1px solid var(--muc);
 }
 
 .unichat-modal-card-flip__back {
-  background: linear-gradient(145deg, var(--giay-sang) 0%, var(--ws-ok-bg) 100%);
+  background: linear-gradient(145deg, var(--nen) 0%, var(--ws-ok-bg) 100%);
   border: 1px solid var(--ws-ok-ink);
   transform: rotateY(180deg);
 }
@@ -475,7 +475,7 @@
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.6px;
-  color: var(--dau-dam);
+  color: var(--muc);
 }
 
 .unichat-modal-card-flip__term {
@@ -497,7 +497,7 @@
 .unichat-modal-card-flip__code {
   font-family: monospace;
   font-size: 11px;
-  background: var(--giay-noi);
+  background: var(--nen);
   padding: 6px 12px;
   border-radius: 6px;
   color: var(--muc);
@@ -528,9 +528,9 @@
   align-items: center;
   gap: 6px;
   padding: 8px 16px;
-  border: 1px solid var(--ke-dam);
+  border: 1px solid var(--dieu-khien);
   border-radius: 10px;
-  background: var(--giay-noi);
+  background: var(--nen);
   font-size: 13px;
   font-weight: 600;
   color: var(--muc-nhat);
@@ -561,7 +561,7 @@
   padding: 6px 14px;
   border: 1px solid var(--ke);
   border-radius: 9999px;
-  background: var(--giay-sang);
+  background: var(--nen);
   font-size: 12px;
   font-weight: 600;
   color: var(--muc-nhat);
@@ -569,9 +569,9 @@
 }
 
 .unichat-quiz-pill--active {
-  background: var(--dau);
-  color: var(--giay-noi);
-  border-color: var(--dau);
+  background: var(--muc);
+  color: var(--nen);
+  border-color: var(--muc);
 }
 
 .unichat-quiz-pill--answered {
@@ -580,7 +580,7 @@
 
 .unichat-modal-quiz-card {
   padding: 20px;
-  background: var(--giay-sang);
+  background: var(--nen);
   border: 1px solid var(--ke);
   border-radius: 16px;
 }
@@ -642,7 +642,7 @@
   align-items: center;
   gap: 6px;
   padding: 8px 14px;
-  background: var(--color-surface-container-lowest, var(--giay-sang));
+  background: var(--color-surface-container-lowest, var(--nen));
   border: 1px solid var(--color-outline-variant, var(--ke));
   border-radius: var(--radius-lg, 10px);
   font-size: 13px;
@@ -653,7 +653,7 @@
 
 .unichat-mindmap-input__source-badge .material-symbols-outlined {
   font-size: 18px;
-  color: var(--color-primary, var(--dau));
+  color: var(--color-primary, var(--muc));
 }
 
 .unichat-mindmap-input__source-extra {
@@ -678,9 +678,9 @@
   width: 100%;
   min-height: 100px;
   padding: 12px 14px;
-  border: 1px solid var(--color-outline-variant, var(--ke-dam));
+  border: 1px solid var(--color-outline-variant, var(--dieu-khien));
   border-radius: var(--radius-lg, 10px);
-  background: var(--color-surface, var(--giay-noi));
+  background: var(--color-surface, var(--nen));
   font-size: 14px;
   line-height: 1.6;
   color: var(--color-on-surface, var(--muc));
@@ -695,7 +695,7 @@
 
 .unichat-mindmap-input__textarea:focus {
   outline: none;
-  border-color: var(--color-primary, var(--dau));
+  border-color: var(--color-primary, var(--muc));
   box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12);
 }
 
@@ -734,13 +734,13 @@
 
 .unichat-mindmap-input__suggestions-list li::before {
   content: '•  ';
-  color: var(--color-primary, var(--dau));
+  color: var(--color-primary, var(--muc));
   font-weight: 700;
 }
 
 .unichat-mindmap-input__suggestions-list li:hover {
-  background: var(--dau-nhat);
-  border-color: var(--color-primary, var(--dau));
+  background: var(--be-mat);
+  border-color: var(--color-primary, var(--muc));
   color: var(--color-on-surface, var(--muc));
 }
 
@@ -782,8 +782,8 @@
 }
 
 .unichat-report-paper {
-  background: var(--giay-noi);
-  border: 1px solid var(--ke-dam);
+  background: var(--nen);
+  border: 1px solid var(--dieu-khien);
   border-radius: 16px;
   padding: 28px;
   box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
@@ -793,7 +793,7 @@
 }
 
 .unichat-report-paper__cover {
-  border-bottom: 2px solid var(--dau);
+  border-bottom: 2px solid var(--muc);
   padding-bottom: 14px;
 }
 
@@ -801,7 +801,7 @@
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.8px;
-  color: var(--dau);
+  color: var(--muc);
   text-transform: uppercase;
 }
 
@@ -840,13 +840,13 @@
 }
 
 .unichat-report-callout--info {
-  background: var(--dau-nhat);
-  border-left: 4px solid var(--dau);
+  background: var(--be-mat);
+  border-left: 4px solid var(--muc);
   color: var(--muc);
 }
 
 .unichat-report-callout--success {
-  background: var(--giay-sang);
+  background: var(--nen);
   border-left: 4px solid var(--ws-ok-ink);
   color: var(--ws-ok-ink);
 }
@@ -866,7 +866,7 @@
 }
 
 .unichat-report-table th {
-  background: var(--giay-sang);
+  background: var(--nen);
   font-weight: 700;
   color: var(--muc);
 }

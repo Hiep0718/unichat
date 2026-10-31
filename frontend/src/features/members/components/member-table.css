@@ -12,7 +12,7 @@
   gap: 18px;
   padding: 24px;
   border-radius: var(--radius-2xl, 16px);
-  background: var(--ws-card, var(--giay-noi));
+  background: var(--ws-card, var(--nen));
   box-shadow: var(--ws-card-shadow, 0 1px 3px rgb(15 23 42 / 8%));
 }
 
@@ -41,7 +41,7 @@
   border: none;
   border-radius: 10px;
   background: var(--ws-accent-gradient);
-  color: var(--ws-accent-ink, var(--giay-noi));
+  color: var(--ws-accent-ink, var(--nen));
   font: inherit;
   font-size: 0.8125rem;
   font-weight: 600;
@@ -95,7 +95,7 @@
 }
 
 .member-table tbody tr:hover td {
-  background: var(--giay-noi);
+  background: var(--nen);
 }
 
 /* Email column carries the identity, so it is the one in full ink. */
@@ -111,8 +111,8 @@
   padding: 5px 11px;
   border: none;
   border-radius: 999px;
-  background: var(--ws-accent-soft, var(--dau-nhat));
-  color: var(--ws-accent, var(--dau));
+  background: var(--ws-accent-soft, var(--be-mat));
+  color: var(--ws-accent, var(--muc));
   font: inherit;
   font-size: 0.6875rem;
   font-weight: 700;
@@ -125,7 +125,7 @@
 }
 
 .member-table__role-select:focus-visible {
-  outline: 2px solid var(--ws-accent, var(--dau));
+  outline: 2px solid var(--ws-accent, var(--muc));
   outline-offset: 2px;
 }
 
@@ -159,7 +159,7 @@
   padding: 6px 12px;
   border: none;
   border-radius: 999px;
-  background: var(--giay-noi);
+  background: var(--nen);
   color: var(--color-error);
   font: inherit;
   font-size: 0.75rem;
@@ -169,7 +169,7 @@
 }
 
 .member-table__remove-btn:hover {
-  background: var(--giay-sang);
+  background: var(--nen);
   color: var(--color-error);
 }
 
@@ -224,7 +224,7 @@
   padding: 10px 14px;
   background: var(--color-surface-container-lowest);
   border: none;
-  background: var(--ws-chip, var(--giay-chim));
+  background: var(--ws-chip, var(--color-surface-dim));
   border-radius: var(--radius-md);
   font: var(--font-body-md);
   color: var(--color-on-surface);
@@ -241,7 +241,7 @@
   padding: 8px 16px;
   background: transparent;
   border: none;
-  background: var(--ws-chip, var(--giay-chim));
+  background: var(--ws-chip, var(--color-surface-dim));
   border-radius: var(--radius-md);
   font: var(--font-label-md);
   color: var(--color-on-surface-variant);
@@ -265,13 +265,13 @@
   margin: 0;
   padding: 12px 16px;
   border-radius: 12px;
-  background: var(--ws-accent-soft, var(--dau-nhat));
+  background: var(--ws-accent-soft, var(--be-mat));
   color: var(--ws-ink-soft, var(--muc-nhat));
   font-size: 0.8125rem;
   line-height: 1.55;
 }
 
 .member-management__private-notice a {
-  color: var(--color-primary, var(--dau));
+  color: var(--color-primary, var(--muc));
   font-weight: 600;
 }

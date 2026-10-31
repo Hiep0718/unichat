@@ -214,7 +214,7 @@
 /* ── Pinned (group list only) ───────────────────────────── */
 
 .feed-card--pinned {
-  border-left: 3px solid var(--color-primary, var(--dau-dam));
+  border-left: 3px solid var(--color-primary, var(--muc));
 }
 
 .feed-card__pin {
@@ -223,8 +223,8 @@
   gap: 4px;
   padding: 3px 9px;
   border-radius: var(--radius-full);
-  background: var(--color-primary-fixed, var(--giay));
-  color: var(--color-primary, var(--dau-dam));
+  background: var(--color-primary-fixed, var(--be-mat));
+  color: var(--color-primary, var(--muc));
   font: var(--font-label-sm);
   font-weight: 700;
 }

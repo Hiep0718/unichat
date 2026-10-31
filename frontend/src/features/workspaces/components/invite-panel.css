@@ -30,11 +30,11 @@
 .invite-panel__field select,
 .invite-panel__field input {
   padding: 8px 10px;
-  border: 1px solid var(--color-outline-variant, var(--ke-dam));
+  border: 1px solid var(--color-outline-variant, var(--dieu-khien));
   border-radius: var(--radius-md, 6px);
   font: inherit;
   color: var(--color-on-surface, var(--muc));
-  background: var(--color-surface, var(--giay-noi));
+  background: var(--color-surface, var(--nen));
 }
 
 .invite-panel__field input {
@@ -45,8 +45,8 @@
   padding: 9px 18px;
   border: none;
   border-radius: var(--radius-md, 6px);
-  background: var(--color-primary, var(--dau));
-  color: var(--giay-noi);
+  background: var(--color-primary, var(--muc));
+  color: var(--nen);
   font: inherit;
   font-weight: 600;
   cursor: pointer;
@@ -62,7 +62,7 @@
   padding: 12px 14px;
   border: 1px solid var(--ws-warn-ink);
   border-radius: var(--radius-md, 8px);
-  background: var(--giay-sang);
+  background: var(--nen);
 }
 
 .invite-panel__fresh-note {
@@ -83,18 +83,18 @@
   flex: 1;
   min-width: 0;
   padding: 8px 10px;
-  border: 1px solid var(--color-outline-variant, var(--ke-dam));
+  border: 1px solid var(--color-outline-variant, var(--dieu-khien));
   border-radius: var(--radius-md, 6px);
   font-family: ui-monospace, monospace;
   font-size: 0.8125rem;
-  background: var(--giay-noi);
+  background: var(--nen);
 }
 
 .invite-panel__fresh-row button {
   padding: 8px 16px;
-  border: 1px solid var(--color-outline-variant, var(--ke-dam));
+  border: 1px solid var(--color-outline-variant, var(--dieu-khien));
   border-radius: var(--radius-md, 6px);
-  background: var(--giay-noi);
+  background: var(--nen);
   font: inherit;
   cursor: pointer;
 }
@@ -144,7 +144,7 @@
   margin: 0;
   padding: 9px 12px;
   border-radius: var(--radius-md, 6px);
-  background: var(--giay-noi);
+  background: var(--nen);
   color: var(--color-error);
   font-size: 0.875rem;
 }

@@ -2,240 +2,244 @@
 @import '@fontsource-variable/source-serif-4/index.css';
 
 /* ==========================================================================
-   UniChat Design System — Giấy, mực và dấu
+   UniChat Design System — Editorial greeting
 
-   UniChat không phải một ứng dụng chat. Nó là công cụ đọc và kiểm chứng:
-   người học hỏi, hệ thống trả lời dựa trên tài liệu của chính họ, kèm trích
-   dẫn lần ngược được. Thứ phân biệt nó với mọi chatbot là bằng chứng. Nên
-   ngôn ngữ thị giác ở đây lấy từ bộ máy học thuật — trích dẫn, chú giải bên
-   lề, bản in có ghi chú — chứ không phải từ dashboard SaaS.
+   Bộ này được rút từ thư viện của tasteskill cho loại màn hình "workspace"
+   (hub nhóm và trang cá nhân), và các giá trị dưới đây đo từ màn hình sản
+   phẩm thật chứ không phải ước chừng. Dùng đúng như được cho.
 
-   Trước đây có HAI hệ token chạy song song: thang Material 3 (navy #00236f,
-   bề mặt #f9f9ff) và thang "Workplace" (indigo #4f46e5 với gradient tím, nền
-   #f3f5f9). Cùng một nút cho ra hai màu tùy màn hình nào vẽ nó. File này gộp
-   chúng lại: tên biến giữ nguyên để 2.258 chỗ dùng var() không phải sửa, chỉ
-   giá trị trỏ về một bảng màu duy nhất khai báo ngay bên dưới.
+   Lần trước ở đây là bảng "giấy, mực, dấu triện" do tôi tự dựng. Nó hỏng ở
+   một điểm đo được: màu bão hòa lẽ ra chỉ dành cho bằng chứng lại bị lượt
+   quét tự động gom cả ba màu nhấn cũ vào, nên đỏ gạch phủ 236 chỗ trong 35
+   file không liên quan gì tới bằng chứng — nút, pill, icon, ô nav. Bộ nghiên
+   cứu nói thẳng hai điều về chuyện đó:
+
+     "Màu đi vào dữ liệu, không đi vào khung. Trung vị của màn hình thật là
+      khoảng 3% pixel có màu; 12 trong 23 màn hình không có nút tô màu nào."
+
+     "Đỏ làm accent: trong thử nghiệm nó đánh dấu một tuần kỷ lục mà đọc ra
+      như báo động. Đỏ chỉ dành cho sự kiện hỏng."
+
+   Nên accent giờ là teal đậm với ngân sách dưới 2% diện tích, và đỏ lui về
+   đúng vai trò báo lỗi.
+
+   Mặt chữ là chỗ duy nhất tôi lệch khỏi bộ được rút. Bộ cho Instrument Sans
+   và Instrument Serif; cả hai chỉ phục vụ latin và latin-ext, không có bộ
+   ký tự tiếng Việt — kiểm chứng bằng chính CSS mà Google Fonts trả về. Một
+   mặt chữ không dựng được ngôn ngữ của giao diện thì không dùng được, nên
+   giữ IBM Plex Sans ở vai grotesque và Source Serif 4 ở vai serif cho lời
+   chào. Cả hai đều có subset vietnamese.
+
+   Tên biến giữ nguyên để 2.258 chỗ dùng var() không phải sửa.
    ========================================================================== */
 
 :root {
-  /* ---------- Bảng màu gốc ----------
-     Sáu giá trị, và đúng MỘT màu bão hòa. Mọi token khác là bí danh của
-     chúng, nên không thể có màu thứ hai lọt vào qua một màn hình nào đó. */
+  /* ---------- Lớp màu gốc, lấy nguyên từ bộ được rút ---------- */
+  --nen: #ffffff;        /* ground: tờ giấy trắng mà nội dung nằm trên */
+  --be-mat: #f9f9f9;     /* surface: panel có sắc độ, một bậc lệch khỏi trắng */
+  --khung: #f6f6f6;      /* chrome: nền thanh bên và thanh trên, khung chữ L */
+  --noi: #ffffff;        /* raised: thẻ trắng bên trong panel, dùng đúng một lần */
+  --vien: #eaeaea;       /* border */
+  --ke: #f3f3f3;         /* rule: nét kẻ mảnh hơn viền */
+  --dieu-khien: #d9d9d6; /* control */
 
-  /* Giấy: hơi ngả xám-lục. Không phải #f9f9ff ngả lam của Material, cũng
-     không phải sắc kem mà phần lớn trang do AI dựng đều rơi vào. */
-  --giay: #eef0ea;
-  --giay-chim: #e0e4dc;
-  --giay-sang: #f6f7f3;
-  --giay-noi: #ffffff;
+  --muc: #1f201d;        /* text */
+  --muc-nhat: #636361;   /* muted */
+  --muc-mo: #8c8c88;     /* chart-3, cũng dùng cho chữ mờ nhất */
 
-  /* Mực: đen ấm. Tránh #0b0b0b hay #111 — kiểu "gần đen có ám sắc" là một
-     trong những dấu vết rõ nhất của giao diện sinh tự động. */
-  --muc: #171a16;
-  --muc-nhat: #5a6158;
-  --muc-mo: #868c84;
+  /* Accent: teal đậm, ngân sách dưới 2% diện tích. Nó đánh dấu phần tử dữ
+     liệu chính của màn hình, không đánh dấu khung. */
+  --nhan: #1b6e66;
+  --nhan-nhat: #e8f1f0;
 
-  /* Nét kẻ. Thẻ được tách bằng kẻ, không bằng bóng đổ. */
-  --ke: #d5d9cf;
-  --ke-dam: #b9c0b3;
+  --tot: #2e7d32;
+  --hong: #b42318;
+  --canh-bao: #92400e;
 
-  /* Đỏ dấu triện — màu bão hòa duy nhất, DÀNH RIÊNG cho bằng chứng: ký hiệu
-     trích dẫn, rãnh nguồn, hành động chính. Dùng nó để trang trí là tiêu mất
-     thứ duy nhất đang mang nghĩa trong bảng màu này. */
-  --dau: #a33b1f;
-  --dau-dam: #7a2b16;
-  --dau-nhat: #f6e8e3;
+  /* Pill trạng thái, lấy nguyên từ bộ. */
+  --pill-tot-nen: #dcfae5;
+  --pill-tot-muc: #04250e;
+  --pill-hong-nen: #fdecea;
+  --pill-hong-muc: #7a1d14;
+  --pill-canh-nen: #fffbeb;
+  --pill-canh-muc: #92400e;
+  --pill-trung-nen: #f3f3f3;
+  --pill-trung-muc: #3d3d3a;
 
-  /* Chiều rộng cột đọc. Quá 68 ký tự thì mắt lạc hàng khi xuống dòng, mà
-     nội dung cốt lõi ở đây là văn bản dài cần đọc kỹ và đối chiếu. */
+  /* Chiều rộng cột đọc. Câu trả lời của trợ lý là văn bản dài cần đối chiếu
+     với nguồn, nên nó vẫn bị giữ trong một đo chữ đọc được. */
   --measure: 68ch;
 
   /* ---------- Primary: hành động ----------
-     Nút chính là mực đặc, không gradient. */
+     Bộ nghiên cứu: 12 trong 23 màn hình thật không có nút tô màu nào. Nút
+     chính ở đây là mực đặc, không phải accent. */
   --color-primary: var(--muc);
-  --color-on-primary: var(--giay-noi);
-  --color-primary-container: #dde2d8;
+  --color-on-primary: var(--nen);
+  --color-primary-container: var(--be-mat);
   --color-on-primary-container: var(--muc);
-  --color-inverse-primary: #c9cfc6;
-  --color-primary-fixed: #dde2d8;
-  --color-primary-fixed-dim: #c9cfc6;
+  --color-inverse-primary: #c9c9c5;
+  --color-primary-fixed: var(--be-mat);
+  --color-primary-fixed-dim: #ededed;
   --color-on-primary-fixed: var(--muc);
   --color-on-primary-fixed-variant: var(--muc-nhat);
 
-  /* ---------- Secondary: giữ im lặng ----------
-     Màu bão hòa đã dành cho bằng chứng, nên lớp thứ hai là mực nhạt. */
+  /* ---------- Secondary: nền xám của nút phụ ---------- */
   --color-secondary: var(--muc-nhat);
-  --color-on-secondary: var(--giay-noi);
-  --color-secondary-container: #e4e7df;
+  --color-on-secondary: var(--nen);
+  --color-secondary-container: #e5e5e5;
   --color-on-secondary-container: var(--muc);
-  --color-secondary-fixed: #e4e7df;
-  --color-secondary-fixed-dim: #ced4c7;
+  --color-secondary-fixed: #e5e5e5;
+  --color-secondary-fixed-dim: #d9d9d6;
   --color-on-secondary-fixed: var(--muc);
   --color-on-secondary-fixed-variant: var(--muc-nhat);
 
-  /* ---------- Tertiary: nơi đỏ dấu triện sống ---------- */
-  --color-tertiary: var(--dau);
-  --color-on-tertiary: var(--giay-noi);
-  --color-tertiary-container: var(--dau-nhat);
-  --color-on-tertiary-container: var(--dau-dam);
-  --color-tertiary-fixed: var(--dau-nhat);
-  --color-tertiary-fixed-dim: #e8c4b8;
-  --color-on-tertiary-fixed: var(--dau-dam);
-  --color-on-tertiary-fixed-variant: var(--dau);
+  /* ---------- Tertiary: nơi accent sống ---------- */
+  --color-tertiary: var(--muc);
+  --color-on-tertiary: var(--nen);
+  --color-tertiary-container: var(--be-mat);
+  --color-on-tertiary-container: var(--muc);
+  --color-tertiary-fixed: var(--be-mat);
+  --color-tertiary-fixed-dim: #c9e0dd;
+  --color-on-tertiary-fixed: var(--muc);
+  --color-on-tertiary-fixed-variant: var(--muc-nhat);
 
-  /* ---------- Lỗi ----------
-     Đỏ lạnh, tách khỏi đỏ dấu triện ngả cam. Nếu hai thứ cùng sắc thì một
-     trích dẫn và một thông báo lỗi trông như nhau. */
-  --color-error: #8e1b1b;
-  --color-on-error: var(--giay-noi);
-  --color-error-container: #f7e0e0;
-  --color-on-error-container: #6b1212;
+  /* ---------- Lỗi ---------- */
+  --color-error: var(--hong);
+  --color-on-error: var(--nen);
+  --color-error-container: var(--pill-hong-nen);
+  --color-on-error-container: var(--pill-hong-muc);
 
-  /* ---------- Bề mặt: thang giấy ---------- */
-  --color-surface: var(--giay);
-  --color-surface-dim: var(--giay-chim);
-  --color-surface-bright: var(--giay-sang);
-  --color-surface-container-lowest: var(--giay-noi);
-  --color-surface-container-low: #f4f6f1;
-  --color-surface-container: #eaede6;
-  --color-surface-container-high: #e4e8df;
-  --color-surface-container-highest: #dee2d9;
+  /* ---------- Bề mặt ---------- */
+  --color-surface: var(--be-mat);
+  --color-surface-dim: #f0f0f0;
+  --color-surface-bright: var(--nen);
+  --color-surface-container-lowest: var(--nen);
+  --color-surface-container-low: #fbfbfb;
+  --color-surface-container: var(--be-mat);
+  --color-surface-container-high: #f3f3f3;
+  --color-surface-container-highest: #ededed;
   --color-on-surface: var(--muc);
   --color-on-surface-variant: var(--muc-nhat);
-  --color-surface-variant: #e4e8df;
+  --color-surface-variant: #f3f3f3;
   --color-surface-tint: var(--muc);
-  --color-inverse-surface: #2b2f29;
-  --color-inverse-on-surface: var(--giay);
+  --color-inverse-surface: #2b2c29;
+  --color-inverse-on-surface: var(--be-mat);
 
   /* ---------- Đường viền ---------- */
-  --color-outline: #9ba298;
-  --color-outline-variant: var(--ke);
+  --color-outline: #b4b4b0;
+  --color-outline-variant: var(--vien);
 
   /* ---------- Nền ---------- */
-  --color-background: var(--giay);
+  --color-background: var(--be-mat);
   --color-on-background: var(--muc);
 
-  /* ---------- Trạng thái ----------
-     Giảm bão hòa để không cạnh tranh với đỏ dấu triện. */
-  --color-success: #3f6b4a;
-  --color-warning: #96650f;
-
-  /* Bong bóng trả lời của AI chính là cột đọc: giấy nổi, tách bằng kẻ. */
-  --color-ai-bubble: var(--giay-noi);
-  --color-ai-bubble-border: var(--ke);
+  /* ---------- Trạng thái ---------- */
+  --color-success: var(--tot);
+  --color-warning: var(--canh-bao);
+  --color-ai-bubble: var(--nen);
+  --color-ai-bubble-border: var(--vien);
 
   /* ---------- Chữ ----------
-     Hai họ, vai trò tách bạch. Ràng buộc cứng của dự án: phải đủ dấu tiếng
-     Việt, điều này loại phần lớn font display.
-
-     Source Serif 4 cho nội dung đọc và tiêu đề trang — lựa chọn này đến từ
-     chủ thể, vì việc người dùng thực sự làm ở đây là đọc và đối chiếu văn
-     bản dài. IBM Plex Sans cho khung giao diện: nhãn, nút, điều hướng, số
-     liệu. Bỏ Inter, vốn là font mặc định mà mọi dự án đều với tới. */
-  --font-family: 'IBM Plex Sans Variable', system-ui, -apple-system, sans-serif;
-  --font-doc: 'Source Serif 4 Variable', Georgia, 'Times New Roman', serif;
+     Mọi con số đặt ở weight 400: bộ nghiên cứu thấy KPI là chữ, không phải
+     thẻ, và không màn hình nào đặt icon trong ô tròn có màu lên một KPI. */
+  --font-family: 'IBM Plex Sans Variable', Inter, system-ui, sans-serif;
+  --font-doc: 'Source Serif 4 Variable', Georgia, serif;
   --font-mono: ui-monospace, 'Cascadia Mono', Consolas, monospace;
 
-  --font-headline-xl: 600 34px/42px var(--font-doc);
-  --font-headline-lg: 600 25px/33px var(--font-doc);
-  --font-headline-lg-mobile: 600 21px/29px var(--font-doc);
-  --font-headline-md: 600 19px/27px var(--font-doc);
-  /* Thân bài trong cột đọc: serif, giãn dòng rộng hơn sans cùng cỡ. */
+  /* Lời chào là h1 serif 48px. Mọi tiêu đề khác nhỏ hơn hẳn: bộ nghiên cứu
+     thấy 9 trong 23 màn hình không có tiêu đề nào quá 16px. */
+  --font-headline-xl: 400 48px/56px var(--font-doc);
+  --font-headline-lg: 600 24px/32px var(--font-family);
+  --font-headline-lg-mobile: 600 20px/28px var(--font-family);
+  --font-headline-md: 600 16px/24px var(--font-family);
+  /* Thân câu trả lời vẫn là mặt chữ đọc: nó là văn bản tài liệu, không phải
+     chữ của giao diện. */
   --font-body-lg: 400 17px/28px var(--font-doc);
-  /* Chữ của giao diện vẫn là sans — serif ở mật độ này sẽ nặng. */
   --font-body-md: 400 14px/21px var(--font-family);
-  --font-label-md: 500 13px/18px var(--font-family);
-  --font-label-sm: 500 12px/16px var(--font-family);
+  --font-label-md: 500 14px/20px var(--font-family);
+  --font-label-sm: 400 12px/16px var(--font-family);
   --font-code-sm: 400 13px/20px var(--font-mono);
 
   --letter-spacing-headline-xl: -0.015em;
-  --letter-spacing-headline-lg: -0.01em;
+  --letter-spacing-headline-lg: -0.005em;
 
-  /* ---------- Khoảng cách ---------- */
-  --container-max: 1440px;
-  --sidebar-width: 68px;
-  --gutter: 24px;
+  /* ---------- Lưới và khoảng cách ----------
+     Mật độ thưa, đúng một giá trị gap cho cả ngang lẫn dọc. */
+  --container-max: 1100px;
+  --sidebar-width: 224px;
+  --gutter: 16px;
   --margin-mobile: 16px;
   --stack-sm: 8px;
   --stack-md: 16px;
   --stack-lg: 24px;
+  --gap: 16px;
+  --pad: 20px;
+  --row-height: 63px;
+  --control-height: 38px;
 
   /* ---------- Bo góc ----------
-     Nén lại gần phẳng, nhưng không về 0: bo góc bằng 0 cộng kẻ hairline là
-     khuôn mẫu "báo in" mà giao diện sinh tự động cũng hay rơi vào. Vài pixel
-     là một lựa chọn; 0 là rơi sang một khuôn mẫu khác. */
-  --radius-sm: 2px;
-  --radius-default: 3px;
-  --radius-md: 3px;
-  --radius-lg: 4px;
-  --radius-xl: 5px;
-  --radius-2xl: 6px;
-  --radius-3xl: 8px;
-  --radius-full: 9999px;
+     Thẻ 22px, điều khiển bo tròn hẳn. Đây là "nước đi" của style, giữ nguyên. */
+  --radius-sm: 6px;
+  --radius-default: 8px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 22px;
+  --radius-3xl: 22px;
+  --radius-full: 999px;
 
   /* ---------- Độ nổi ----------
-     Thẻ tách bằng VÒNG KẺ chứ không bằng bóng. Đổi ở token nên mọi thẻ trong
-     104 file CSS chuyển cùng lúc, không phải sửa từng nơi. Riêng shadow-xl
-     giữ chiều sâu thật, vì hộp thoại và popover thực sự nổi lên trên mặt
-     phẳng của trang. */
-  --shadow-sm: 0 0 0 1px rgb(23 26 22 / 7%);
-  --shadow-md: 0 0 0 1px rgb(23 26 22 / 9%);
-  --shadow-lg: 0 1px 2px rgb(23 26 22 / 5%), 0 0 0 1px rgb(23 26 22 / 8%);
-  --shadow-xl: 0 10px 28px rgb(23 26 22 / 10%), 0 0 0 1px rgb(23 26 22 / 9%);
+     Không bóng đổ trên bất cứ thứ gì ở trạng thái nghỉ. Phân tách bằng một
+     nét kẻ hoặc một bậc sắc độ. Chỉ hộp thoại nổi thật mới có bóng. */
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: 0 0 0 1px var(--vien);
+  --shadow-xl: 0 12px 32px rgb(31 32 29 / 12%), 0 0 0 1px var(--vien);
 
-  /* ---------- Chuyển động ----------
-     Chuyển động không do người dùng kích hoạt dùng rất dè dặt. Hiệu ứng
-     trôi-lên cho từng khối và transition hover trên mọi thẻ là mặc định, và
-     đọc ra ngay là giao diện sinh tự động. */
   --transition-fast: 120ms ease;
   --transition-normal: 180ms ease;
   --transition-slow: 260ms ease;
   --transition-transform: 320ms ease;
 
-  /* ---------- Thang Workplace ----------
-     Giữ tên để các màn hình đã chuyển sang thang này không phải sửa, nhưng
-     giá trị giờ trỏ về cùng bảng màu trên. Đây là chỗ hai hệ thống thôi đánh
-     nhau. */
-  --ws-canvas: var(--giay);
-  --ws-card: var(--giay-noi);
-  --ws-card-shadow: 0 0 0 1px var(--ke);
-  --ws-card-shadow-hover: 0 0 0 1px var(--ke-dam);
+  /* ---------- Thang Workplace ---------- */
+  --ws-canvas: var(--be-mat);
+  --ws-card: var(--nen);
+  --ws-card-shadow: 0 0 0 1px var(--vien);
+  --ws-card-shadow-hover: 0 0 0 1px var(--dieu-khien);
   --ws-line: var(--ke);
-  --ws-chip: #e4e8df;
+  --ws-chip: var(--pill-trung-nen);
 
   --ws-ink: var(--muc);
   --ws-ink-soft: var(--muc-nhat);
   --ws-ink-muted: var(--muc-mo);
 
-  --ws-accent: var(--dau);
-  /* Gradient cũ (#4f46e5 → #7c3aed) là một trong những dấu vết rõ nhất. Giữ
-     tên biến, trả về màu phẳng, thế là gradient biến mất khắp nơi cùng lúc. */
-  --ws-accent-gradient: var(--dau);
-  --ws-accent-ink: var(--giay-noi);
-  --ws-accent-soft: var(--dau-nhat);
+  /* Khung không mang accent: nút chính là mực đặc. Accent được tiêu ở
+     citation-panel.css, trên ký hiệu trích dẫn, và không ở đâu khác. */
+  --ws-accent: var(--muc);
+  --ws-accent-gradient: var(--muc);
+  --ws-accent-ink: var(--nen);
+  --ws-accent-soft: var(--be-mat);
 
-  --ws-ok-bg: #e2ebe2;
-  --ws-ok-ink: #2f5a3a;
-  --ws-warn-bg: #f3ebd8;
-  --ws-warn-ink: #7a5410;
-  --ws-alert: var(--color-error);
+  --ws-ok-bg: var(--pill-tot-nen);
+  --ws-ok-ink: var(--pill-tot-muc);
+  --ws-warn-bg: var(--pill-canh-nen);
+  --ws-warn-ink: var(--pill-canh-muc);
+  --ws-alert: var(--hong);
 
-  /* ---------- Token bị tham chiếu mà chưa từng được khai báo ----------
-     Mười cái tên dưới đây đã nằm rải rác trong các stylesheet nhưng không
-     chỗ nào định nghĩa, nên trình duyệt bỏ qua nguyên khai báo chứa chúng và
-     phần tử âm thầm kế thừa giá trị khác. Riêng --font-body-sm được dùng
-     mười ba lần. Khai báo ở đây vì đây là lúc gộp tầng token, chứ không phải
-     thêm token mới: chúng vốn đã được dùng như thể có thật. */
-  --color-danger: var(--color-error);
+  /* ---------- Token từng bị tham chiếu mà chưa khai báo ---------- */
+  --color-danger: var(--hong);
   --color-text-primary: var(--muc);
   --color-text-secondary: var(--muc-nhat);
   --font-primary: var(--font-family);
   --font-body-sm: 400 13px/19px var(--font-family);
-  --font-headline-sm: 600 17px/25px var(--font-doc);
-  --font-title-lg: 600 17px/24px var(--font-family);
-  --font-title-md: 600 15px/22px var(--font-family);
-  --font-title-sm: 600 13px/18px var(--font-family);
+  --font-headline-sm: 600 15px/22px var(--font-family);
+  --font-title-lg: 500 16px/24px var(--font-family);
+  --font-title-md: 500 14px/21px var(--font-family);
+  --font-title-sm: 500 13px/18px var(--font-family);
   --transition-medium: var(--transition-normal);
+
+  /* Mọi con số canh thẳng cột, kể cả khi đổi giá trị. */
+  font-variant-numeric: tabular-nums;
 }
 
 /* ==========================================================================

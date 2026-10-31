@@ -7,7 +7,7 @@
   max-height: 100vh;
   overflow-y: auto;
   overflow-x: hidden;
-  background-color: var(--color-surface, var(--giay));
+  background-color: var(--color-surface, var(--be-mat));
   color: var(--color-on-surface, var(--muc));
   display: flex;
   flex-direction: column;
@@ -23,7 +23,7 @@
 }
 
 .admin-shell::-webkit-scrollbar-thumb {
-  background: var(--ke-dam);
+  background: var(--dieu-khien);
   border-radius: 4px;
 }
 
@@ -32,7 +32,7 @@
 }
 
 .admin-shell__header {
-  background: var(--color-surface-container-lowest, var(--giay-noi));
+  background: var(--color-surface-container-lowest, var(--nen));
   border-bottom: 1px solid var(--color-outline-variant, var(--ke));
   position: sticky;
   top: 0;
@@ -59,9 +59,9 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: var(--giay-sang);
-  color: var(--dau);
-  border: 1px solid var(--dau);
+  background: var(--nen);
+  color: var(--muc);
+  border: 1px solid var(--muc);
   padding: 4px 10px;
   border-radius: 9999px;
   font-size: 0.8125rem;
@@ -88,9 +88,9 @@
   align-items: center;
   gap: 6px;
   padding: 8px 14px;
-  background: var(--color-surface-container-low, var(--giay-chim));
+  background: var(--color-surface-container-low, var(--color-surface-dim));
   color: var(--color-on-surface, var(--muc-nhat));
-  border: 1px solid var(--color-outline-variant, var(--ke-dam));
+  border: 1px solid var(--color-outline-variant, var(--dieu-khien));
   border-radius: 8px;
   font-size: 0.875rem;
   font-weight: 600;
@@ -133,12 +133,12 @@
 }
 
 .admin-shell__tab:hover {
-  color: var(--dau-dam);
+  color: var(--muc);
 }
 
 .admin-shell__tab--active {
-  color: var(--dau);
-  border-bottom-color: var(--dau);
+  color: var(--muc);
+  border-bottom-color: var(--muc);
 }
 
 .admin-shell__tab-indicator {

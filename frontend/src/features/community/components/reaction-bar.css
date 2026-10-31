@@ -102,7 +102,7 @@
   padding: 3px 8px;
   border-radius: var(--radius-full);
   background: var(--color-inverse-surface, var(--muc));
-  color: var(--color-inverse-on-surface, var(--giay-noi));
+  color: var(--color-inverse-on-surface, var(--nen));
   font: var(--font-label-sm);
   font-size: 11px;
   white-space: nowrap;

@@ -13,11 +13,11 @@
 .admin-management__header { align-items: end; }
 .admin-management__title { margin: 0; color: var(--muc); font-size: 1.35rem; }
 .admin-search-wrapper { display: flex; flex-direction: column; gap: 6px; color: var(--muc-nhat); font-size: .82rem; font-weight: 600; }
-.admin-refresh-btn { align-self: flex-start; padding: 8px 14px; border: 1px solid var(--ke-dam); border-radius: 8px; background: var(--giay-noi); color: var(--dau-dam); font-weight: 650; cursor: pointer; }
-.admin-refresh-btn:hover:not(:disabled) { background: var(--giay-sang); }
+.admin-refresh-btn { align-self: flex-start; padding: 8px 14px; border: 1px solid var(--dieu-khien); border-radius: 8px; background: var(--nen); color: var(--muc); font-weight: 650; cursor: pointer; }
+.admin-refresh-btn:hover:not(:disabled) { background: var(--nen); }
 .admin-refresh-btn:disabled { opacity: .6; cursor: not-allowed; }
 .admin-pagination { display: flex; align-items: center; justify-content: flex-end; gap: 12px; color: var(--muc-nhat); font-size: .875rem; }
-.admin-pagination button { padding: 7px 12px; border: 1px solid var(--ke-dam); border-radius: 7px; background: var(--giay-noi); color: var(--muc-nhat); cursor: pointer; }
+.admin-pagination button { padding: 7px 12px; border: 1px solid var(--dieu-khien); border-radius: 7px; background: var(--nen); color: var(--muc-nhat); cursor: pointer; }
 .admin-pagination button:disabled { opacity: .5; cursor: not-allowed; }
 
 /* KPI Cards Grid */
@@ -28,7 +28,7 @@
 }
 
 .admin-user-kpi-card {
-  background: var(--giay-noi);
+  background: var(--nen);
   border: 1px solid var(--ke);
   border-radius: 12px;
   padding: 18px 20px;
@@ -71,12 +71,12 @@
 }
 
 .admin-user-kpi-value--admin {
-  color: var(--dau);
+  color: var(--muc);
 }
 
 /* Table Container Box */
 .admin-management__box {
-  background: var(--giay-noi);
+  background: var(--nen);
   border: 1px solid var(--ke);
   border-radius: 12px;
   overflow: hidden;
@@ -91,7 +91,7 @@
   gap: 16px;
   padding: 20px 24px;
   border-bottom: 1px solid var(--ke);
-  background: var(--giay-noi);
+  background: var(--nen);
 }
 
 .admin-management__title {
@@ -109,8 +109,8 @@
 
 .admin-search-input {
   padding: 8px 36px 8px 14px;
-  background: var(--giay-noi);
-  border: 1px solid var(--ke-dam);
+  background: var(--nen);
+  border: 1px solid var(--dieu-khien);
   border-radius: 8px;
   font-size: 0.875rem;
   color: var(--muc);
@@ -120,7 +120,7 @@
 }
 
 .admin-search-input:focus {
-  border-color: var(--dau);
+  border-color: var(--muc);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
@@ -144,7 +144,7 @@
 .admin-error-banner {
   margin: 16px 24px;
   padding: 12px 16px;
-  background: var(--giay-noi);
+  background: var(--nen);
   border: 1px solid var(--color-error-container);
   border-radius: 8px;
   display: flex;
@@ -156,7 +156,7 @@
 }
 
 .admin-retry-btn {
-  background: var(--giay-noi);
+  background: var(--nen);
   border: 1px solid var(--color-error);
   color: var(--color-error);
   padding: 4px 12px;
@@ -168,7 +168,7 @@
 }
 
 .admin-retry-btn:hover {
-  background: var(--giay-sang);
+  background: var(--nen);
 }
 
 /* Table */
@@ -185,7 +185,7 @@
 
 .admin-table th {
   padding: 12px 20px;
-  background: var(--giay-sang);
+  background: var(--nen);
   color: var(--muc-nhat);
   font-size: 0.75rem;
   font-weight: 700;
@@ -196,13 +196,13 @@
 
 .admin-table td {
   padding: 14px 20px;
-  border-bottom: 1px solid var(--giay-chim);
+  border-bottom: 1px solid var(--color-surface-dim);
   color: var(--muc);
   vertical-align: middle;
 }
 
 .admin-table tbody tr:hover {
-  background: var(--giay-sang);
+  background: var(--nen);
 }
 
 .admin-user-cell {
@@ -215,8 +215,8 @@
   width: 36px;
   height: 36px;
   border-radius: 9999px;
-  background: var(--giay-sang);
-  color: var(--dau);
+  background: var(--nen);
+  color: var(--muc);
   font-weight: 700;
   font-size: 0.875rem;
   display: flex;
@@ -260,19 +260,19 @@
 }
 
 .admin-badge--locked {
-  background: var(--giay-sang);
+  background: var(--nen);
   color: var(--color-error);
   border: 1px solid var(--color-error-container);
 }
 
 .admin-badge--role-admin {
-  background: var(--giay-sang);
-  color: var(--dau);
-  border: 1px solid var(--dau);
+  background: var(--nen);
+  color: var(--muc);
+  border: 1px solid var(--muc);
 }
 
 .admin-badge--role-user {
-  background: var(--giay-chim);
+  background: var(--color-surface-dim);
   color: var(--muc-nhat);
   border: 1px solid var(--ke);
 }
@@ -295,18 +295,18 @@
 }
 
 .admin-action-btn--lock {
-  background: var(--giay-noi);
+  background: var(--nen);
   color: var(--color-error);
-  border: 1px solid var(--giay);
+  border: 1px solid var(--be-mat);
 }
 
 .admin-action-btn--lock:hover {
-  background: var(--giay-sang);
+  background: var(--nen);
   border-color: var(--color-error);
 }
 
 .admin-action-btn--unlock {
-  background: var(--giay-sang);
+  background: var(--nen);
   color: var(--ws-ok-ink);
   border: 1px solid var(--ws-ok-bg);
 }
@@ -317,34 +317,34 @@
 }
 
 .admin-action-btn--role-toggle {
-  background: var(--giay-sang);
+  background: var(--nen);
   color: var(--muc-nhat);
-  border: 1px solid var(--ke-dam);
+  border: 1px solid var(--dieu-khien);
 }
 
 .admin-action-btn--role-toggle:hover {
-  background: var(--giay-chim);
+  background: var(--color-surface-dim);
   color: var(--muc);
 }
 
 .admin-action-btn--promote {
-  background: var(--giay-sang);
-  color: var(--dau);
-  border: 1px solid var(--dau);
+  background: var(--nen);
+  color: var(--muc);
+  border: 1px solid var(--muc);
 }
 
 .admin-action-btn--promote:hover {
-  background: var(--giay);
+  background: var(--be-mat);
 }
 
 .admin-action-btn--demote {
-  background: var(--giay-sang);
+  background: var(--nen);
   color: var(--ws-warn-ink);
-  border: 1px solid var(--giay);
+  border: 1px solid var(--be-mat);
 }
 
 .admin-action-btn--demote:hover {
-  background: var(--giay);
+  background: var(--be-mat);
 }
 
 .admin-empty-state {

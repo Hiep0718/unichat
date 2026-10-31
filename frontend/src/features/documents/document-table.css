@@ -149,7 +149,7 @@
 }
 
 .doc-table__file-icon--docx {
-  color: var(--dau);
+  color: var(--muc);
 }
 
 .doc-table__file-icon--txt {
@@ -183,7 +183,7 @@
 }
 
 .doc-table__status--success {
-  background: var(--giay-sang);
+  background: var(--nen);
   color: var(--ws-ok-ink);
 }
 
@@ -192,7 +192,7 @@
 }
 
 .doc-table__status--warning {
-  background: var(--giay-sang);
+  background: var(--nen);
   color: var(--ws-warn-ink);
 }
 
@@ -215,7 +215,7 @@
 }
 
 .doc-table__status--error {
-  background: var(--giay-noi);
+  background: var(--nen);
   color: var(--color-error);
 }
 
@@ -345,23 +345,23 @@
 .document-progress-bar-container {
   width: 100%;
   height: 6px;
-  background: var(--ke-dam);
+  background: var(--dieu-khien);
   border-radius: 9999px;
   overflow: hidden;
 }
 
 .document-progress-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--dau) 0%, var(--dau) 50%, var(--dau) 100%);
+  background: linear-gradient(90deg, var(--muc) 0%, var(--muc) 50%, var(--muc) 100%);
   border-radius: 9999px;
   transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 0 8px rgba(37, 99, 235, 0.5);
 }
 
 .document-badge--uploading {
-  background: var(--giay-sang) !important;
-  color: var(--dau) !important;
-  border: 1px solid var(--dau);
+  background: var(--nen) !important;
+  color: var(--muc) !important;
+  border: 1px solid var(--muc);
   font-weight: 600;
 }
 
@@ -378,7 +378,7 @@
   min-width: 320px !important;
   max-width: 440px !important;
   padding: 16px 18px !important;
-  background: var(--giay-noi) !important;
+  background: var(--nen) !important;
   border-radius: 12px !important;
   box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.16), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
   border: 1px solid var(--ke) !important;
@@ -422,7 +422,7 @@
 }
 
 .doc-toast__icon--error {
-  background: var(--giay-sang) !important;
+  background: var(--nen) !important;
   color: var(--color-error) !important;
 }
 

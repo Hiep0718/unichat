@@ -4,7 +4,7 @@
    ========================================================================== */
 
 .post-detail {
-  background-color: var(--color-background, var(--giay));
+  background-color: var(--color-background, var(--be-mat));
   min-height: 100vh;
   padding: 24px 0;
 }
@@ -501,7 +501,7 @@
   border: 1px solid var(--ws-ok-ink);
   border-left: 4px solid var(--ws-ok-ink);
   border-radius: var(--radius-xl);
-  background: var(--giay-sang);
+  background: var(--nen);
 }
 
 .accepted-answer__header {

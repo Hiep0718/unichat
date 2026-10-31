@@ -12,7 +12,7 @@
 .admin-page__header h2 { margin: 0; font-size: 1.45rem; letter-spacing: -.025em; }
 .admin-page__header p,
 .admin-page__meta { margin: 0; color: var(--muc-nhat); }
-.admin-page__toolbar { display: flex; align-items: end; flex-wrap: wrap; gap: 14px; padding: 18px; border: 1px solid var(--ke); border-radius: 12px; background: var(--giay-noi); }
+.admin-page__toolbar { display: flex; align-items: end; flex-wrap: wrap; gap: 14px; padding: 18px; border: 1px solid var(--ke); border-radius: 12px; background: var(--nen); }
 .admin-page__toolbar label,
 .admin-page__field { display: flex; flex-direction: column; gap: 6px; color: var(--muc-nhat); font-size: .82rem; font-weight: 650; }
 .admin-page__toolbar select,
@@ -21,42 +21,42 @@
 .admin-page__field textarea {
   min-height: 40px;
   padding: 8px 11px;
-  border: 1px solid var(--ke-dam);
+  border: 1px solid var(--dieu-khien);
   border-radius: 8px;
-  background: var(--giay-noi);
+  background: var(--nen);
   color: var(--muc);
   font: inherit;
 }
 .admin-page__toolbar select:focus,
 .admin-page__field input:focus,
-.admin-page__field textarea:focus { outline: 3px solid rgb(37 99 235 / 16%); border-color: var(--dau); }
+.admin-page__field textarea:focus { outline: 3px solid rgb(37 99 235 / 16%); border-color: var(--muc); }
 .admin-page__toolbar button,
-.admin-page__button { min-height: 40px; padding: 8px 14px; border: 0; border-radius: 8px; background: var(--dau-dam); color: var(--giay-noi); font-weight: 650; cursor: pointer; }
+.admin-page__button { min-height: 40px; padding: 8px 14px; border: 0; border-radius: 8px; background: var(--muc); color: var(--nen); font-weight: 650; cursor: pointer; }
 .admin-page__toolbar button:disabled,
 .admin-page__button:disabled { opacity: .55; cursor: not-allowed; }
-.admin-page__card { overflow-x: auto; padding: 18px; border: 1px solid var(--ke); border-radius: 12px; background: var(--giay-noi); box-shadow: 0 1px 3px rgb(15 23 42 / 4%); }
+.admin-page__card { overflow-x: auto; padding: 18px; border: 1px solid var(--ke); border-radius: 12px; background: var(--nen); box-shadow: 0 1px 3px rgb(15 23 42 / 4%); }
 .admin-page__card h3 { margin: 0 0 14px; font-size: 1rem; }
 .admin-page__card table { width: 100%; border-collapse: collapse; text-align: left; }
-.admin-page__card th { padding: 12px; background: var(--giay-sang); color: var(--muc-nhat); font-size: .75rem; letter-spacing: .04em; text-transform: uppercase; }
-.admin-page__card td { padding: 12px; border-top: 1px solid var(--giay-sang); color: var(--muc-nhat); vertical-align: top; }
+.admin-page__card th { padding: 12px; background: var(--nen); color: var(--muc-nhat); font-size: .75rem; letter-spacing: .04em; text-transform: uppercase; }
+.admin-page__card td { padding: 12px; border-top: 1px solid var(--nen); color: var(--muc-nhat); vertical-align: top; }
 .admin-page__card dl { display: grid; grid-template-columns: minmax(210px, .7fr) 1fr; gap: 0; margin: 0; }
 .admin-page__card dt,
-.admin-page__card dd { margin: 0; padding: 13px 10px; border-bottom: 1px solid var(--giay-sang); }
+.admin-page__card dd { margin: 0; padding: 13px 10px; border-bottom: 1px solid var(--nen); }
 .admin-page__card dt { color: var(--muc-nhat); }
 .admin-page__card dd { color: var(--muc); font-weight: 650; }
 .admin-page__notice,
 .admin-page__error { padding: 13px 16px; border-radius: 9px; }
-.admin-page__notice { background: var(--giay-sang); color: var(--dau); }
-.admin-page__error { background: var(--giay-noi); color: var(--color-error); }
+.admin-page__notice { background: var(--nen); color: var(--muc); }
+.admin-page__error { background: var(--nen); color: var(--color-error); }
 .ai-studio-page > header { display: flex; flex-direction: column; gap: 16px; }
 .ai-studio-toolbar__filters > label { display: flex; flex-direction: column; gap: 6px; color: var(--muc-nhat); font-size: .8rem; font-weight: 650; }
 .ai-studio-page > p { color: var(--muc-nhat); }
-.ai-studio-page > section { padding: 20px; border: 1px solid var(--ke); border-radius: 12px; background: var(--giay-noi); }
+.ai-studio-page > section { padding: 20px; border: 1px solid var(--ke); border-radius: 12px; background: var(--nen); }
 .ai-studio-page > section h3 { margin: 0 0 12px; }
 .ai-studio-page > section label { display: flex; flex-direction: column; gap: 6px; margin: 14px 0; color: var(--muc-nhat); font-weight: 600; }
 .ai-studio-page > section input,
-.ai-studio-page > section textarea { width: 100%; min-height: 42px; padding: 9px 12px; border: 1px solid var(--ke-dam); border-radius: 8px; background: var(--giay-noi); color: var(--muc); }
+.ai-studio-page > section textarea { width: 100%; min-height: 42px; padding: 9px 12px; border: 1px solid var(--dieu-khien); border-radius: 8px; background: var(--nen); color: var(--muc); }
 .ai-studio-page > section textarea { min-height: 100px; resize: vertical; }
-.ai-studio-page > section button { margin: 5px; padding: 8px 12px; border: 1px solid var(--dau); border-radius: 7px; background: var(--giay-sang); color: var(--dau); font-weight: 600; cursor: pointer; }
+.ai-studio-page > section button { margin: 5px; padding: 8px 12px; border: 1px solid var(--muc); border-radius: 7px; background: var(--nen); color: var(--muc); font-weight: 600; cursor: pointer; }
 .ai-studio-page > section button:disabled { opacity: .55; cursor: not-allowed; }
 @media (max-width: 640px) { .admin-page__card dl { grid-template-columns: 1fr; } .admin-page__card dd { padding-top: 0; } }

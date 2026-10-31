@@ -20,7 +20,7 @@
   padding: 32px 36px;
   background: linear-gradient(135deg, var(--muc) 0%, var(--muc) 100%);
   border-radius: var(--radius-2xl, 20px);
-  color: var(--giay-noi);
+  color: var(--nen);
   box-shadow: 0 12px 32px -8px rgba(11, 25, 44, 0.35);
   overflow: hidden;
 }
@@ -48,8 +48,8 @@
   width: 60px;
   height: 60px;
   border-radius: var(--radius-xl, 16px);
-  background: linear-gradient(135deg, var(--muc) 0%, var(--dau) 100%);
-  color: var(--giay-noi);
+  background: linear-gradient(135deg, var(--muc) 0%, var(--muc) 100%);
+  color: var(--nen);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -74,7 +74,7 @@
   font: var(--font-headline-lg);
   font-size: 26px;
   font-weight: 800;
-  color: var(--giay-noi);
+  color: var(--nen);
   margin: 0;
   letter-spacing: -0.4px;
 }
@@ -92,7 +92,7 @@
 
 .ws-overview-badge--public {
   background: rgba(56, 189, 248, 0.16);
-  color: var(--dau);
+  color: var(--muc);
   border: 1px solid rgba(56, 189, 248, 0.3);
 }
 
@@ -104,13 +104,13 @@
 
 .ws-overview-badge--private {
   background: rgba(148, 163, 184, 0.16);
-  color: var(--ke-dam);
+  color: var(--dieu-khien);
   border: 1px solid rgba(148, 163, 184, 0.3);
 }
 
 .ws-overview-badge--role {
   background: rgba(255, 255, 255, 0.1);
-  color: var(--giay-chim);
+  color: var(--color-surface-dim);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: var(--radius-md, 8px);
 }
@@ -129,7 +129,7 @@
   gap: 8px;
   padding: 10px 18px;
   background: rgba(255, 255, 255, 0.1);
-  color: var(--giay-noi);
+  color: var(--nen);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: var(--radius-lg, 12px);
   font: var(--font-label-md);
@@ -159,7 +159,7 @@
   align-items: center;
   gap: 14px;
   padding: 16px 20px;
-  background: var(--giay-noi);
+  background: var(--nen);
   border: 1.5px solid var(--color-outline-variant, var(--ke));
   border-radius: var(--radius-xl, 14px);
   box-shadow: 0 2px 10px -2px rgba(15, 23, 42, 0.04);
@@ -169,8 +169,8 @@
   width: 42px;
   height: 42px;
   border-radius: var(--radius-lg, 12px);
-  background: var(--color-surface-container-low, var(--giay-chim));
-  color: var(--color-secondary, var(--dau));
+  background: var(--color-surface-container-low, var(--color-surface-dim));
+  color: var(--color-secondary, var(--muc));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -216,8 +216,8 @@
 
 /* Primary AI Hub Card */
 .ws-hub-card--primary {
-  background: linear-gradient(135deg, var(--muc) 0%, var(--dau) 100%);
-  color: var(--giay-noi);
+  background: linear-gradient(135deg, var(--muc) 0%, var(--muc) 100%);
+  color: var(--nen);
   box-shadow: 0 8px 24px -4px rgba(0, 104, 122, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
@@ -229,14 +229,14 @@
 
 /* Secondary Hub Cards */
 .ws-hub-card--secondary {
-  background: var(--giay-noi);
+  background: var(--nen);
   border: 1.5px solid var(--color-outline-variant, var(--ke));
   color: var(--color-on-surface, var(--muc));
   box-shadow: 0 4px 16px -4px rgba(15, 23, 42, 0.05);
 }
 
 .ws-hub-card--secondary:hover {
-  border-color: var(--color-secondary, var(--dau));
+  border-color: var(--color-secondary, var(--muc));
   transform: translateY(-4px);
   box-shadow: 0 12px 28px -4px rgba(2, 132, 199, 0.14);
 }
@@ -259,12 +259,12 @@
 
 .ws-hub-card--primary .ws-hub-card__icon-box {
   background: rgba(255, 255, 255, 0.2);
-  color: var(--giay-noi);
+  color: var(--nen);
 }
 
 .ws-hub-card--secondary .ws-hub-card__icon-box {
-  background: var(--dau-nhat);
-  color: var(--dau);
+  background: var(--be-mat);
+  color: var(--muc);
 }
 
 .ws-hub-card__title {
@@ -276,7 +276,7 @@
 }
 
 .ws-hub-card--primary .ws-hub-card__title {
-  color: var(--giay-noi);
+  color: var(--nen);
 }
 
 .ws-hub-card--secondary .ws-hub-card__title {
@@ -319,16 +319,16 @@
 }
 
 .ws-hub-card--primary .ws-hub-card__action-text {
-  color: var(--giay-noi);
+  color: var(--nen);
 }
 
 .ws-hub-card--secondary .ws-hub-card__action-text {
-  color: var(--dau);
+  color: var(--muc);
 }
 
 /* ── Security & Policy Section ── */
 .ws-overview-security-card {
-  background: var(--giay-noi);
+  background: var(--nen);
   border: 1.5px solid var(--color-outline-variant, var(--ke));
   border-radius: var(--radius-2xl, 18px);
   padding: 28px 32px;
@@ -348,7 +348,7 @@
   width: 40px;
   height: 40px;
   border-radius: var(--radius-lg, 12px);
-  background: var(--giay-sang);
+  background: var(--nen);
   color: var(--ws-ok-ink);
   display: flex;
   align-items: center;
@@ -373,7 +373,7 @@
   align-items: flex-start;
   gap: 10px;
   padding: 14px 16px;
-  background: var(--color-surface-container-low, var(--giay-sang));
+  background: var(--color-surface-container-low, var(--nen));
   border: 1px solid var(--color-outline-variant, var(--ke));
   border-radius: var(--radius-lg, 12px);
 }

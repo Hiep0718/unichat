@@ -29,7 +29,7 @@
 }
 
 .side-nav__item--active .notification-bell__badge {
-  box-shadow: 0 0 0 2px var(--dau);
+  box-shadow: 0 0 0 2px var(--muc);
 }
 
 @keyframes badgePop {
@@ -124,13 +124,13 @@
 }
 
 .notification-item__icon--reply {
-  background: var(--giay);
-  color: var(--dau);
+  background: var(--be-mat);
+  color: var(--muc);
 }
 
 .notification-item__icon--ai {
-  background: var(--giay);
-  color: var(--dau);
+  background: var(--be-mat);
+  color: var(--muc);
 }
 
 .notification-item__icon--approval {

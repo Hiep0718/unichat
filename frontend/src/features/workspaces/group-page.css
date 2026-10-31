@@ -39,7 +39,7 @@
 .group-page__header--under-cover .group-mark {
   align-self: flex-start;
   margin-top: -40px;
-  box-shadow: 0 0 0 4px var(--color-surface, var(--giay-noi)), 0 4px 14px rgb(15 23 42 / 18%);
+  box-shadow: 0 0 0 4px var(--color-surface, var(--nen)), 0 4px 14px rgb(15 23 42 / 18%);
 }
 
 .group-page__identity {
@@ -192,8 +192,8 @@
 
 /* Matches the filled buttons' accent rather than the old navy primary. */
 .group-tab--active {
-  color: var(--ws-accent, var(--dau));
-  border-bottom-color: var(--ws-accent, var(--dau));
+  color: var(--ws-accent, var(--muc));
+  border-bottom-color: var(--ws-accent, var(--muc));
 }
 
 /* One geometry for every tab. The posts tab capped itself at 900px while

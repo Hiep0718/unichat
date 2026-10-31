@@ -30,8 +30,8 @@
   width: 52px;
   height: 52px;
   border-radius: var(--radius-xl, 16px);
-  background: linear-gradient(135deg, var(--muc) 0%, var(--dau) 100%);
-  color: var(--giay-noi);
+  background: linear-gradient(135deg, var(--muc) 0%, var(--muc) 100%);
+  color: var(--nen);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -66,8 +66,8 @@
   align-items: center;
   gap: 8px;
   padding: 12px 22px;
-  background: linear-gradient(135deg, var(--muc) 0%, var(--dau) 100%);
-  color: var(--giay-noi);
+  background: linear-gradient(135deg, var(--muc) 0%, var(--muc) 100%);
+  color: var(--nen);
   border: none;
   border-radius: var(--radius-lg, 12px);
   font: var(--font-label-md);
@@ -111,8 +111,8 @@
 .conv-list-search__input {
   width: 100%;
   padding: 10px 16px 10px 44px;
-  background: var(--giay-noi);
-  border: 1.5px solid var(--color-outline-variant, var(--ke-dam));
+  background: var(--nen);
+  border: 1.5px solid var(--color-outline-variant, var(--dieu-khien));
   border-radius: var(--radius-lg, 12px);
   font: var(--font-body-md);
   font-size: 14px;
@@ -122,7 +122,7 @@
 }
 
 .conv-list-search__input:focus {
-  border-color: var(--color-secondary, var(--dau));
+  border-color: var(--color-secondary, var(--muc));
   box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.12);
 }
 
@@ -131,7 +131,7 @@
   align-items: center;
   gap: 6px;
   padding: 8px 16px;
-  background: var(--color-surface-container-low, var(--giay-chim));
+  background: var(--color-surface-container-low, var(--color-surface-dim));
   border: 1px solid var(--color-outline-variant, var(--ke));
   border-radius: var(--radius-full, 9999px);
   font: var(--font-label-sm);
@@ -153,7 +153,7 @@
   justify-content: space-between;
   gap: 20px;
   padding: 18px 24px;
-  background: var(--giay-noi);
+  background: var(--nen);
   border: 1.5px solid var(--color-outline-variant, var(--ke));
   border-radius: var(--radius-xl, 14px);
   text-decoration: none;
@@ -164,7 +164,7 @@
 }
 
 .conv-card:hover {
-  border-color: var(--color-secondary, var(--dau));
+  border-color: var(--color-secondary, var(--muc));
   transform: translateY(-2px);
   box-shadow: 0 10px 24px -4px rgba(2, 132, 199, 0.14);
 }
@@ -180,8 +180,8 @@
   width: 44px;
   height: 44px;
   border-radius: var(--radius-lg, 12px);
-  background: var(--color-secondary-container, var(--dau-nhat));
-  color: var(--color-secondary, var(--dau));
+  background: var(--color-secondary-container, var(--be-mat));
+  color: var(--color-secondary, var(--muc));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -190,8 +190,8 @@
 }
 
 .conv-card:hover .conv-card__icon-box {
-  background: var(--color-secondary, var(--dau));
-  color: var(--giay-noi);
+  background: var(--color-secondary, var(--muc));
+  color: var(--nen);
 }
 
 .conv-card__details {
@@ -239,8 +239,8 @@
   align-items: center;
   gap: 6px;
   padding: 8px 16px;
-  background: var(--color-surface-container-low, var(--giay-chim));
-  color: var(--color-secondary, var(--dau));
+  background: var(--color-surface-container-low, var(--color-surface-dim));
+  color: var(--color-secondary, var(--muc));
   border: 1px solid var(--color-outline-variant, var(--ke));
   border-radius: var(--radius-md, 8px);
   font: var(--font-label-md);
@@ -250,9 +250,9 @@
 }
 
 .conv-card:hover .conv-card__continue-btn {
-  background: var(--color-secondary, var(--dau));
-  color: var(--giay-noi);
-  border-color: var(--color-secondary, var(--dau));
+  background: var(--color-secondary, var(--muc));
+  color: var(--nen);
+  border-color: var(--color-secondary, var(--muc));
 }
 
 .conv-card__delete-btn {
@@ -269,7 +269,7 @@
 }
 
 .conv-card__delete-btn:hover {
-  background: var(--giay-sang);
+  background: var(--nen);
   color: var(--color-error);
 }
 
@@ -281,7 +281,7 @@
 
 .conv-list-skeleton-card {
   height: 80px;
-  background: var(--giay-noi);
+  background: var(--nen);
   border: 1px solid var(--ke);
   border-radius: 14px;
   padding: 18px 24px;
@@ -297,8 +297,8 @@
   align-items: center;
   justify-content: center;
   padding: 60px 24px;
-  background: var(--giay-noi);
-  border: 2px dashed var(--color-outline-variant, var(--ke-dam));
+  background: var(--nen);
+  border: 2px dashed var(--color-outline-variant, var(--dieu-khien));
   border-radius: var(--radius-xl, 16px);
   text-align: center;
   gap: 14px;
@@ -308,8 +308,8 @@
   width: 64px;
   height: 64px;
   border-radius: 20px;
-  background: var(--dau-nhat);
-  color: var(--dau);
+  background: var(--be-mat);
+  color: var(--muc);
   display: flex;
   align-items: center;
   justify-content: center;

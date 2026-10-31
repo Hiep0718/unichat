@@ -29,12 +29,12 @@
 .group-about__card {
   padding: 18px 20px;
   border-radius: var(--radius-2xl, 16px);
-  background: var(--ws-card, var(--giay-noi));
+  background: var(--ws-card, var(--nen));
   box-shadow: var(--ws-card-shadow, 0 1px 3px rgb(15 23 42 / 8%));
 }
 
 .group-about__card--quiet {
-  background: var(--ws-chip, var(--giay-chim));
+  background: var(--ws-chip, var(--color-surface-dim));
   box-shadow: none;
 }
 
@@ -42,7 +42,7 @@
    carries colour. Soft rather than saturated: the button inside it is the
    thing to press, and two saturated surfaces would compete. */
 .group-about__card--ai {
-  background: var(--ws-accent-soft, var(--giay-sang));
+  background: var(--ws-accent-soft, var(--nen));
   box-shadow: none;
 }
 
@@ -77,8 +77,8 @@
 .group-about__badge {
   padding: 3px 9px;
   border-radius: 999px;
-  background: var(--ws-accent, var(--dau-dam));
-  color: var(--ws-accent-ink, var(--giay-noi));
+  background: var(--ws-accent, var(--muc));
+  color: var(--ws-accent-ink, var(--nen));
   font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -102,7 +102,7 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  color: var(--ws-accent, var(--dau-dam));
+  color: var(--ws-accent, var(--muc));
   font-size: 0.8125rem;
   font-weight: 600;
   text-decoration: none;
@@ -134,7 +134,7 @@
 
 .group-about__points .material-symbols-outlined {
   flex: none;
-  color: var(--ws-accent, var(--dau-dam));
+  color: var(--ws-accent, var(--muc));
 }
 
 .group-about__cta {
@@ -144,7 +144,7 @@
   padding: 11px 18px;
   border-radius: 12px;
   background: var(--ws-accent-gradient);
-  color: var(--ws-accent-ink, var(--giay-noi));
+  color: var(--ws-accent-ink, var(--nen));
   font-size: 0.875rem;
   font-weight: 700;
   text-decoration: none;
@@ -205,14 +205,14 @@
 .group-about__role {
   padding: 3px 10px;
   border-radius: 999px;
-  background: var(--ws-accent-soft, var(--giay-sang));
-  color: var(--ws-accent, var(--dau-dam));
+  background: var(--ws-accent-soft, var(--nen));
+  color: var(--ws-accent, var(--muc));
   font-size: 0.75rem;
   font-weight: 700;
 }
 
 .group-about__jump {
-  color: var(--ws-accent, var(--dau-dam));
+  color: var(--ws-accent, var(--muc));
   font-size: 0.75rem;
   font-weight: 600;
   text-decoration: none;

@@ -6,7 +6,7 @@
   overflow-x: hidden;
   overflow-y: auto;
   padding: clamp(24px, 5vw, 72px);
-  background: var(--giay-sang);
+  background: var(--nen);
 }
 
 /* Ba vệt gradient mờ từng nằm sau biểu mẫu đã được bỏ. Trang đứng trên

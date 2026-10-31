@@ -15,11 +15,11 @@
 
 .call-button:hover:not(:disabled) {
   background: var(--color-surface-container-high, var(--ke));
-  color: var(--color-primary, var(--dau));
+  color: var(--color-primary, var(--muc));
 }
 
 .call-button:focus-visible {
-  outline: 2px solid var(--color-primary, var(--dau));
+  outline: 2px solid var(--color-primary, var(--muc));
   outline-offset: 2px;
 }
 

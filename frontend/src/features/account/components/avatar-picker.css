@@ -32,8 +32,8 @@
   padding: 10px 18px;
   border: none;
   border-radius: var(--radius-full);
-  background: linear-gradient(120deg, var(--dau-dam) 0%, var(--dau) 60%, var(--dau) 100%);
-  color: var(--giay-noi);
+  background: linear-gradient(120deg, var(--muc) 0%, var(--muc) 60%, var(--muc) 100%);
+  color: var(--nen);
   font: var(--font-label-md);
   font-weight: 600;
   cursor: pointer;
@@ -121,10 +121,10 @@
    wherever the app asks for one. */
 .avatar-picker__swatch--on {
   box-shadow: 0 0 0 2px var(--color-surface-container-lowest),
-    0 0 0 4px var(--dau), 0 1px 3px rgb(15 23 42 / 16%);
+    0 0 0 4px var(--muc), 0 1px 3px rgb(15 23 42 / 16%);
 }
 
-.avatar-picker__swatch--navy { background: var(--dau-dam); }
+.avatar-picker__swatch--navy { background: var(--muc); }
 .avatar-picker__swatch--teal { background: var(--muc); }
 .avatar-picker__swatch--plum { background: var(--muc); }
 .avatar-picker__swatch--moss { background: var(--ws-ok-ink); }

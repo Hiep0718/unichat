@@ -4,7 +4,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--stack-md);
-  background: var(--ws-card, var(--giay-noi));
+  background: var(--ws-card, var(--nen));
   border-radius: var(--radius-2xl, 16px);
   box-shadow: var(--ws-card-shadow, 0 1px 3px rgb(15 23 42 / 8%));
   padding: 24px;
@@ -35,7 +35,7 @@
   align-items: center;
   gap: 6px;
   padding: 8px 14px;
-  background: var(--ws-chip, var(--giay-chim));
+  background: var(--ws-chip, var(--color-surface-dim));
   border: none;
   border-radius: 10px;
   font: var(--font-label-md);
@@ -70,7 +70,7 @@
 }
 
 .document-upload-zone {
-  border: 1.5px dashed var(--ke-dam);
+  border: 1.5px dashed var(--dieu-khien);
   border-radius: var(--radius-lg);
   padding: 32px 24px;
   text-align: center;
@@ -135,7 +135,7 @@
 }
 
 .document-table tbody tr:hover td {
-  background: var(--giay-noi);
+  background: var(--nen);
 }
 
 /* The file name is what the row is, so it carries the weight. */
@@ -165,7 +165,7 @@
 }
 
 .document-badge--failed {
-  background: var(--giay-sang);
+  background: var(--nen);
   color: var(--color-error);
 }
 
@@ -186,7 +186,7 @@
   padding: 6px 12px;
   border: none;
   border-radius: 999px;
-  background: var(--giay-noi);
+  background: var(--nen);
   color: var(--color-error);
   font: var(--font-label-sm);
   font-weight: 700;
@@ -195,7 +195,7 @@
 }
 
 .document-delete-btn:hover {
-  background: var(--giay-sang);
+  background: var(--nen);
   color: var(--color-error);
 }
 
@@ -211,7 +211,7 @@
   min-width: 320px;
   max-width: 440px;
   padding: 14px 18px;
-  background: var(--giay-noi);
+  background: var(--nen);
   border-radius: var(--radius-2xl, 16px);
   box-shadow: 0 12px 28px -4px rgba(15, 23, 42, 0.18), 0 4px 10px -2px rgba(15, 23, 42, 0.08);
   animation: toast-slide-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);
@@ -255,7 +255,7 @@
 }
 
 .doc-toast__icon--error {
-  background: var(--giay-sang);
+  background: var(--nen);
   color: var(--color-error);
 }
 
@@ -320,7 +320,7 @@
   padding: 4px 8px;
   border: none;
   border-radius: 10px;
-  background: var(--ws-chip, var(--giay-chim));
+  background: var(--ws-chip, var(--color-surface-dim));
   font-size: 13px;
   color: var(--color-on-surface);
   cursor: pointer;
@@ -341,7 +341,7 @@
   padding: 0 8px;
   border: none;
   border-radius: 10px;
-  background: var(--ws-chip, var(--giay-chim));
+  background: var(--ws-chip, var(--color-surface-dim));
   color: var(--color-on-surface);
   font-size: 13px;
   font-weight: 500;

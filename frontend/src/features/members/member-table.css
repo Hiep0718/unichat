@@ -57,7 +57,7 @@
 .member-table__wrapper {
   overflow-x: auto;
   border-radius: var(--radius-2xl, 16px);
-  background: var(--ws-card, var(--giay-noi));
+  background: var(--ws-card, var(--nen));
   box-shadow: var(--ws-card-shadow, 0 1px 3px rgb(15 23 42 / 8%));
 }
 
@@ -149,7 +149,7 @@
 
 .member-table__role--editor {
   color: var(--ws-ok-ink);
-  background: var(--giay-sang);
+  background: var(--nen);
 }
 
 .member-table__role--viewer {
@@ -163,7 +163,7 @@
   padding: 4px 8px;
   font: var(--font-label-sm);
   color: var(--color-on-surface);
-  background: var(--ws-chip, var(--giay-chim));
+  background: var(--ws-chip, var(--color-surface-dim));
   border: none;
   border-radius: 10px;
   cursor: pointer;
@@ -288,7 +288,7 @@
   width: 100%;
   max-width: 28rem;
   padding: var(--gutter);
-  background: var(--ws-card, var(--giay-noi));
+  background: var(--ws-card, var(--nen));
   border-radius: var(--radius-2xl, 16px);
   box-shadow: 0 8px 28px rgb(15 23 42 / 12%);
   animation: invite-slide-up var(--transition-normal) ease;
@@ -353,7 +353,7 @@
   padding: 10px 12px;
   font: var(--font-body-md);
   color: var(--color-on-surface);
-  background: var(--ws-chip, var(--giay-chim));
+  background: var(--ws-chip, var(--color-surface-dim));
   border: none;
   border-radius: 10px;
   outline: none;
@@ -373,7 +373,7 @@
   padding: 10px 12px;
   font: var(--font-body-md);
   color: var(--color-on-surface);
-  background: var(--ws-chip, var(--giay-chim));
+  background: var(--ws-chip, var(--color-surface-dim));
   border: none;
   border-radius: 10px;
   outline: none;
@@ -403,7 +403,7 @@
   padding: 8px 16px;
   font: var(--font-label-md);
   color: var(--color-on-surface);
-  background: var(--ws-chip, var(--giay-chim));
+  background: var(--ws-chip, var(--color-surface-dim));
   border: none;
   border-radius: 10px;
   cursor: pointer;

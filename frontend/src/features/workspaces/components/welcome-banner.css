@@ -10,7 +10,7 @@
      là thứ ồn nhất trên một màn hình mà chủ thể thật — các không gian của
      người dùng — lại nằm yên lặng bên dưới. Bức ảnh cũng không nói gì về
      người này hay nhóm của họ, nên nó là trang trí thuần túy. */
-  background: var(--giay-noi);
+  background: var(--nen);
   box-shadow: 0 0 0 1px var(--ke);
   border-radius: var(--radius-xl);
   color: var(--muc);
@@ -67,6 +67,6 @@
   .welcome-banner__greeting {
     font: var(--font-headline-lg-mobile);
     font-weight: 700;
-    color: var(--giay-noi);
+    color: var(--nen);
   }
 }

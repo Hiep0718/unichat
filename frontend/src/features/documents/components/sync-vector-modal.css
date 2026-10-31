@@ -10,7 +10,7 @@
 }
 
 .sync-modal {
-  background: var(--giay-noi);
+  background: var(--nen);
   border-radius: 1rem;
   box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.35);
   width: 100%;
@@ -35,7 +35,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 1.25rem 1.5rem;
-  background: var(--giay-sang);
+  background: var(--nen);
   border-bottom: 1px solid var(--ke);
 }
 
@@ -50,7 +50,7 @@
 }
 
 .sync-modal .modal-header h2 span {
-  color: var(--dau);
+  color: var(--muc);
 }
 
 .sync-modal__body {
@@ -72,7 +72,7 @@
 
 .sync-modal__loading span.spinning {
   font-size: 2rem;
-  color: var(--dau);
+  color: var(--muc);
   animation: spin 1s linear infinite;
 }
 
@@ -96,13 +96,13 @@
 }
 
 .sync-modal__status-banner--ready {
-  background: var(--giay-sang);
+  background: var(--nen);
   border: 1px solid var(--ws-ok-bg);
   color: var(--ws-ok-ink);
 }
 
 .sync-modal__status-banner--warning {
-  background: var(--giay-sang);
+  background: var(--nen);
   border: 1px solid var(--ws-warn-bg);
   color: var(--ws-warn-ink);
 }
@@ -144,7 +144,7 @@
   align-items: flex-start;
   gap: 0.75rem;
   padding: 0.875rem 1rem;
-  background: var(--giay-sang);
+  background: var(--nen);
   border: 1px solid var(--ke);
   border-radius: 0.625rem;
   color: var(--muc-nhat);
@@ -186,7 +186,7 @@
   justify-content: flex-end;
   gap: 0.75rem;
   padding-top: 0.875rem;
-  border-top: 1px solid var(--giay-chim);
+  border-top: 1px solid var(--color-surface-dim);
   margin-top: 0.25rem;
 }
 
@@ -215,14 +215,14 @@
 }
 
 .sync-modal .btn--secondary {
-  background: var(--giay-noi);
+  background: var(--nen);
   color: var(--muc-nhat);
-  border: 1px solid var(--ke-dam);
+  border: 1px solid var(--dieu-khien);
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
 }
 
 .sync-modal .btn--secondary:hover {
-  background: var(--giay-sang);
+  background: var(--nen);
   color: var(--muc);
   border-color: var(--muc-mo);
 }
@@ -233,7 +233,7 @@
 
 .sync-modal .btn--warning {
   background: linear-gradient(135deg, var(--color-warning) 0%, var(--ws-warn-ink) 100%);
-  color: var(--giay-noi);
+  color: var(--nen);
   border: none;
   box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35);
 }
@@ -249,14 +249,14 @@
 }
 
 .sync-modal .btn--primary {
-  background: linear-gradient(135deg, var(--dau) 0%, var(--dau) 100%);
-  color: var(--giay-noi);
+  background: linear-gradient(135deg, var(--muc) 0%, var(--muc) 100%);
+  color: var(--nen);
   border: none;
   box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
 }
 
 .sync-modal .btn--primary:hover {
-  background: linear-gradient(135deg, var(--dau) 0%, var(--dau) 100%);
+  background: linear-gradient(135deg, var(--muc) 0%, var(--muc) 100%);
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.45);
   transform: translateY(-1px);
 }
@@ -283,7 +283,7 @@
 .sync-modal__percent-text {
   font-size: 1.125rem;
   font-weight: 700;
-  color: var(--dau);
+  color: var(--muc);
 }
 
 .sync-modal__progress-bar-bg {
@@ -296,7 +296,7 @@
 
 .sync-modal__progress-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--dau), var(--dau));
+  background: linear-gradient(90deg, var(--muc), var(--muc));
   border-radius: 9999px;
   transition: width 0.3s ease;
 }
@@ -306,9 +306,9 @@
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
   padding: 0.875rem 1rem;
-  background: var(--giay-sang);
+  background: var(--nen);
   border-radius: 0.625rem;
-  border: 1px solid var(--giay-chim);
+  border: 1px solid var(--color-surface-dim);
 }
 
 .sync-modal__meta-item {
@@ -336,21 +336,21 @@
   gap: 0.5rem;
   font-size: 0.875rem;
   color: var(--muc-nhat);
-  background: var(--giay-sang);
+  background: var(--nen);
   padding: 0.625rem 0.875rem;
   border-radius: 0.5rem;
-  border: 1px solid var(--giay);
+  border: 1px solid var(--be-mat);
 }
 
 .sync-modal__current-file code {
-  color: var(--dau);
+  color: var(--muc);
   font-weight: 600;
   font-family: monospace;
 }
 
 .sync-modal__info-notice {
   padding: 0.75rem 1rem;
-  background: var(--giay-sang);
+  background: var(--nen);
   border: 1px solid var(--ws-warn-ink);
   border-radius: 0.5rem;
   color: var(--ws-warn-ink);
@@ -378,7 +378,7 @@
   align-items: center;
   gap: 0.75rem;
   padding: 1rem;
-  background: var(--giay-noi);
+  background: var(--nen);
   border: 1px solid var(--color-error-container);
   border-radius: 0.625rem;
   color: var(--color-error);

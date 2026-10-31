@@ -9,7 +9,7 @@
   margin: 2px 0;
   padding: 7px 14px 7px 9px;
   border-radius: 999px;
-  background: var(--ws-chip, var(--giay-chim));
+  background: var(--ws-chip, var(--color-surface-dim));
   color: var(--ws-ink-soft, var(--muc-nhat));
   font-size: 0.8125rem;
 }
@@ -21,7 +21,7 @@
   height: 26px;
   flex: none;
   border-radius: 999px;
-  background: var(--giay-noi);
+  background: var(--nen);
   color: var(--ws-ink-muted, var(--muc-nhat));
 }
 
@@ -55,7 +55,7 @@
    and needs nothing from the reader, so colouring it would spend attention
    on a line that is pure history. */
 .call-log--missed {
-  background: var(--giay-noi);
+  background: var(--nen);
   color: var(--color-error);
 }
 

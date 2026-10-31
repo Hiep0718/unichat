@@ -14,9 +14,9 @@ describe('defaultCoverFor', () => {
     // the web's own slotFor, so a drift in the hash, the list or its order
     // fails here rather than showing a member a different group colour on
     // their phone than on their laptop.
-    expect(defaultCoverFor('0193a1f0-aaaa-7000-8000-00000000000a').accent).toBe('#8549df');
-    expect(defaultCoverFor('0193a1f0-dddd-7000-8000-00000000000d').accent).toBe('#78716a');
-    expect(defaultCoverFor('0193a1f0-ffff-7000-8000-00000000000f').accent).toBe('#49dfc6');
+    expect(defaultCoverFor('0193a1f0-aaaa-7000-8000-00000000000a').accent).toBe('#d9cfe7');
+    expect(defaultCoverFor('0193a1f0-dddd-7000-8000-00000000000d').accent).toBe('#e7dbcf');
+    expect(defaultCoverFor('0193a1f0-ffff-7000-8000-00000000000f').accent).toBe('#cfe7e3');
   });
 
   it('should give a group the same picture every time it is asked', async () => {

@@ -6,7 +6,7 @@
   justify-content: center;
   min-height: 100vh;
   padding: 24px 16px;
-  background: var(--color-surface-variant, var(--giay-chim));
+  background: var(--color-surface-variant, var(--color-surface-dim));
 }
 
 .invite-page__card {
@@ -19,7 +19,7 @@
   padding: 36px 28px;
   border: 1px solid var(--color-outline-variant, var(--ke));
   border-radius: var(--radius-lg, 12px);
-  background: var(--color-surface, var(--giay-noi));
+  background: var(--color-surface, var(--nen));
   text-align: center;
 }
 
@@ -53,8 +53,8 @@
   padding: 11px 20px;
   border: none;
   border-radius: var(--radius-md, 8px);
-  background: var(--color-primary, var(--dau));
-  color: var(--giay-noi);
+  background: var(--color-primary, var(--muc));
+  color: var(--nen);
   font: inherit;
   font-weight: 600;
   text-align: center;
@@ -68,7 +68,7 @@
 }
 
 .invite-page__secondary {
-  color: var(--color-primary, var(--dau));
+  color: var(--color-primary, var(--muc));
   font-size: 0.875rem;
   text-decoration: none;
 }
@@ -82,7 +82,7 @@
   width: 100%;
   padding: 10px 12px;
   border-radius: var(--radius-md, 8px);
-  background: var(--giay-noi);
+  background: var(--nen);
   color: var(--color-error);
   font-size: 0.875rem;
 }
