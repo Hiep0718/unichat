@@ -1,11 +1,11 @@
 {
  "version": 1,
  "kind": "app",
- "at": "2026-10-31T07:10:23.550Z",
- "seed": 2117722807,
+ "at": "2026-10-31T07:25:11.621Z",
+ "seed": 1980962259,
  "input": {
   "kind": "workspace",
-  "brief": "Nen tang tri thuc",
+  "brief": "Nen tang tri thuc cho sinh vien dai hoc: tai lieu mon hoc trong cac khong gian nhom, hoi dap bang AI voi trich dan lan nguoc ve tai lieu goc",
   "theme": "light",
   "screens": [
    "home",
