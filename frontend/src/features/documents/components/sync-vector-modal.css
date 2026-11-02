@@ -239,7 +239,7 @@
 }
 
 .sync-modal .btn--warning:hover {
-  background: linear-gradient(135deg, var(--ws-warn-ink) 0%, var(--ws-warn-ink) 100%);
+  background: var(--ws-warn-ink);
   box-shadow: 0 4px 12px rgba(245, 158, 11, 0.45);
   transform: translateY(-1px);
 }
@@ -249,14 +249,14 @@
 }
 
 .sync-modal .btn--primary {
-  background: linear-gradient(135deg, var(--muc) 0%, var(--muc) 100%);
-  color: var(--nen);
+  background: var(--nhan);
+  color: var(--nhan-muc);
   border: none;
   box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
 }
 
 .sync-modal .btn--primary:hover {
-  background: linear-gradient(135deg, var(--muc) 0%, var(--muc) 100%);
+  background: var(--nhan);
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.45);
   transform: translateY(-1px);
 }
@@ -296,7 +296,7 @@
 
 .sync-modal__progress-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--muc), var(--muc));
+  background: var(--muc);
   border-radius: 9999px;
   transition: width 0.3s ease;
 }

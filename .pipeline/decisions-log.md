@@ -2758,3 +2758,986 @@
 - Resolution of a group's several topics: the earliest topic in the vocabulary, not the first array element. The API does not promise an order for `workspace_topics` rows, and taking the first element would let a card change picture because the rows came back differently.
 - Verification: frontend `tsc --noEmit` clean on both projects, ESLint clean at `--max-warnings 0`, Vitest 57 files and 409 tests (up from 56/400 — nine new). Mobile `tsc --noEmit` clean, ESLint clean, Jest 28 suites and 131 tests (up from 27/122 — nine new). The new suites assert the mapping is total against the vocabulary, that every web path exists on disk, that an unknown topic falls back instead of throwing, that ordering does not change the answer, and that the two clients carry the same accents.
 - Boundary: No commit, no push. No Core API or database change was needed — the topics were already served; mobile simply had to start reading them.
+
+## 2026-10-31 — Two grounds instead of one, after the palette read as washed out
+
+- Request: keep improving the UI, and specifically "màu nền trắng đen này bị chìm quá" — the black-and-white ground looks washed out.
+- Diagnosis, and it was structural rather than chromatic: `--khung`, the token for the chrome's own field, was declared in the previous pass and then used **zero** times. Every surface in the app drew from one ground. A comment already sitting in `side-nav-bar.css` had spotted the symptom — "its own var(--be-mat) beside the assistant's var(--be-mat) column is a difference of nothing" — and answered it with a 1px border, which is precisely the move the colour reference says a field change replaces. The reference also records that top-scored sites change the page's field colour between sections, a median of two grounds against one.
+- Decision: give the L-frame chrome a ground of its own (`#e5e3dc`, a putty at 14.8% saturation, 12 lightness points below the sheet) and keep the page white, with panels at `#f6f6f3`, 4.3 points from white and inside the 2–6 point panel rule. The ink moved from a neutral near-black to a green-black (`#171f1a`), because warm off-white grounds in the study pair almost always with a dark or green ink, and because it ties the text to the teal the citations already wear without adding a second accent.
+- A real conflict in the rules, resolved by measurement rather than by taste: "saturation under about 15%" and "a panel 2–6 lightness points from the ground" cannot both hold on a visibly warm panel. At 96% lightness the HSL saturation denominator is tiny, so any perceptible warmth measures over 20% — my first attempt landed at 22.6% while looking almost neutral. Stone, bone and putty are not 4%-off-white; they are darker sheets. So the warmth went to the chrome, which is a section ground and not bound by the panel rule, and the panel stayed near-neutral.
+- Every candidate was checked numerically before being written: ground saturation, the bg→panel lightness step, and all twelve ink-on-ground contrast pairs. The worst pair is 4.70:1, so WCAG AA holds on all three surfaces. A side effect: `--muc-nhat` and `--muc-mo` had been 1.20:1 apart, which is one ink role written twice — the "do not add greys between the roles" case — and two of their pairings fell under the inspector's own 2.6:1 floor. They were collapsed, and size and weight now carry that hierarchy.
+- Residue from the earlier muting sweep, found by the inspector and then by a codebase-wide scan: 41 `linear-gradient` declarations whose stops were all the same colour (a gradient drawing no gradient) and 11 indigo `rgb(79 70 229)` glows, across 17 files. The earlier sweep had changed the fills and never touched the `box-shadow`s. Also 3 `text-shadow`s over photographs that the scrim already handled.
+- Regression found in my own shipped work: commit `fcc3184` deleted 13 lines of refusal-card styles when it rewrote `citation-panel.css` for the evidence rail. The refusal surface — a P0 feature of this product — had been rendering unstyled ever since, with the policy link in the same ink as the text around it, so nothing marked it as clickable. The rules now live in `refusal-card.css`, a file of their own, so the next rewrite of some other file cannot carry them off. A grounded refusal is no longer painted with `--color-error`: an evidence-backed refusal is the product working, not an error.
+- Corrections to my own reading, both caught by measuring instead of looking: I read the chat screen's policy text off a PNG as accent-coloured and it is `rgb(23,31,26)`, plain ink; and the inspector's first run scored a stale snapshot, because Git Bash rewrote the `/workspaces` argument into a Windows path and the file was saved under a mangled name.
+- Inspector findings accepted and acted on, in my own new work: a 48px figure (the study runs 16–40px on app screens; dropped to 40), `#eeece6` read as yellow cream rather than stone (chroma halved on the light tones), and a 1px ring drawn as a `box-shadow` that the detector could only see as a floating panel (made a real border). The screen's `h1` was the sidebar brand mark on every screen, so no screen named itself and the heading collapsed to 0×0 at 390px; the greeting is now the `h1`.
+- Three inspector FAILs remain and are deliberate: `.workspace-card__scrim` is the one gradient the rules explicitly permit, a neutral scrim over a photo for legibility; the broken `blob:` images exist only in the saved snapshot, because blob URLs do not survive being written to a file and reopened in another browser; and the dealt face, Instrument Sans, has no Vietnamese subset, which this project's standards make non-negotiable, so IBM Plex Sans stays.
+- Dependency note for review: `@types/node` was added to `frontend/package.json` at `26.6.6`, the version already resolved on disk as a transitive dependency of Vite. Nothing was downloaded; an implicit dependency was made explicit, because a new test reads a stylesheet from disk and relying on hoisting for types is what broke mobile's ESLint earlier in this work.
+- Verification: `tsc --noEmit` clean, ESLint clean at `--max-warnings 0`, Vitest 59 files and 421 tests (up from 57/409 — twelve new, none lost), production build clean. Inspector on the workspaces screen went from 7 FAIL to 3.
+- Boundary: No commit, no push — awaiting explicit approval. No database was touched. The dev server on 5173 belongs to the user's own session and was used, not restarted. Test credentials were passed through the environment only and written to no file.
+
+## 2026-10-31 — The rail was neither narrow nor wide, and the content cap hid why
+
+- Request: the sidebar looks wrong on every screen that carries it. Collapsed, the screen reads empty on both sides; left as it is, it looks odd.
+- Measured before proposing anything: the rail is 224px wide at rest, and its labels sit at `opacity: 0` while still occupying their 56px of layout. So 224px of screen was reserved to show 24px icons, with the text that would justify that width rendered invisible. That is not a narrow rail and not a wide one.
+- The code already recorded the intent. A comment in `app-shell.css` still reads "The rail is fixed and widens from 68px to 260px on hover", so 224px was drift away from the design rather than a choice anyone made.
+- The second half of the complaint turned out to be the same defect. With `--container-max` fixed at 1100px, width reclaimed from the rail lands in the margin and never reaches the content: at 1920px, narrowing the rail from 224px to 68px moves each side margin from 298px to 376px. Collapsing the rail makes the screen emptier, exactly as the user described.
+- Decision (user chose both, against a 224px rail with labels always shown, and against a pinnable hybrid): rail back to 68px with the hover expansion to 260px kept, and `--container-max` raised to 1280px. Long prose is still held by `--measure: 68ch`, so widening the canvas does not loosen the reading column. Measured after: the workspaces canvas went from 1100px to 1280px, and the feed's three-column layout is no longer squeezed.
+- Found while verifying: `.feed-sidebar__cta` painted "1 câu hỏi chưa có lời giải" with `--ws-warn-bg` (`#fffbeb`, a yellow cream). An unanswered question is an invitation into the product's main loop, not a warning — the same misreading as painting a grounded refusal red. It now uses the pale accent, with ink text.
+- Also converted `--ws-card-shadow` (`0 0 0 1px`) to a real `border` at its 13 use sites across 7 files. The rules permit a quiet 1px border, but a ring drawn as a `box-shadow` is indistinguishable to the inspector from a floating panel. `box-sizing: border-box` is global, so no box changed size.
+- Two of my own errors, both caught by measuring: the first probe read the rail as 260px at rest on the second viewport, because Playwright leaves the pointer where it last was and the rail expands on hover; and the new metrics test built its pattern with a template literal, lost its backslashes in transit, and failed with "token not found" while the token was plainly there. The test now splits lines instead of matching a pattern.
+- Verification: `tsc --noEmit` clean, ESLint clean at `--max-warnings 0`, Vitest 60 files and 424 tests (up from 59/421 — three new, none lost), production build clean.
+- Boundary: No commit, no push. No database was touched. The dev server on 5173 belongs to the user's session and was used, not restarted.
+
+## 2026-10-31 — The chat empty state, and a token that was never used for what it is named
+
+- Request: make the chat screen stand out and have a focal point.
+- Measured first: the title was 24px sans, the block 800px inside a 1372px canvas, and 243px of empty space sat above it. The screen had no focal point because nothing on it was allowed to be the biggest thing.
+- Found while reading the code, not from the screenshot: `.chat-welcome` was styled in two files at once — `chat-welcome.css` and a 133-line block in `chat-page.css` — so which rules won depended on import order and one of the two was always dead code without anyone knowing which. The duplicate block is gone and the rules now live beside the component.
+- Decision on the focal point: set the knowledge base's name in Source Serif 4 at 34px. The serif was already being downloaded on every page load and referenced exactly twice in the whole stylesheet, so visitors paid for a face that never appeared. One serif line against an otherwise grotesque screen is the distinction, and it costs no new bytes. Measured after: the serif is 21% of the type on the screen, and `document.fonts.check` confirms the face covers Vietnamese including the full tone marks, once it is actually loaded.
+- Also on that screen: the four prompts lost their icons-in-tinted-squares and gained a short label each ("Giải thích", "So sánh", …), because an icon cannot say how "compare" differs from "summarise". The boxed, centred paragraph became a left-aligned statement of the product's actual contract — evidence, or a refusal — since that is the distinguishing idea and it was being presented as a disclaimer. A leftover emoji went. Two hard-coded glows, one teal and one blue, went with them.
+- Two mobile defects this exposed, both pre-existing: the conversation-history panel narrows to 220px below 900px but never closes, so on a 375px screen it took 220px and left the conversation column 155px; and `.chat-page__messages-body` kept 48px of side padding at every width, taking 96px more. Together they squeezed the welcome block to 59px and wrapped a four-word title onto four lines. The panel now hides below 767px (the toolbar's "Lịch sử" button still opens it) and the padding is `clamp(16px, 4vw, 48px)`.
+- A systemic accessibility defect, found because the inspector flagged one instance: `--color-outline` (`#a7a99f`) was used as a text colour in 26 places across 15 files, measuring 1.85–2.38:1 depending on the ground — under WCAG AA's 4.5:1 and under the inspector's own 2.6:1 floor. They now use `--muc-nhat`, which measures 5.00:1 on the darkest ground. Worth recording: the token named "outline" was never used for an outline at all — 26 uses as text, 2 as a background.
+- My own error, caught by the build: the sweep's pattern did not handle nested `var()`, so `var(--color-outline, var(--muc-mo))` became `var(--muc-nhat))` with a stray parenthesis, breaking 13 declarations across 5 files. Repaired, and every stylesheet is now parsed with the build's own engine (lightningcss) in one pass rather than discovered one build failure at a time — 104 files, 0 syntax errors.
+- Vitest was reporting "Worker exited unexpectedly" with the file count changing between runs (53, 56, 58 of 61). No test was failing; workers were being killed under memory pressure, and a dead worker's files simply go uncounted. `maxWorkers: '50%'` is now set. Worth recording as a correction: I assumed the 21 Chromium processes on the machine were orphans from my own screenshot runs and was about to end them — they were the user's own Chrome, and every browser I had opened had closed correctly.
+- Verification: `tsc --noEmit` clean, ESLint clean at `--max-warnings 0`, Vitest 61 files and 431 tests (up from 60/424 — seven new for the rewritten screen, none lost), production build clean, all 104 stylesheets parse.
+- Not verified: the two mobile fixes were confirmed present in the production CSS but not seen running, because the dev server and the Core API on 8081 were both stopped partway through and signing in was no longer possible.
+- Boundary: No commit, no push. No database was touched. No process belonging to the user was stopped.
+
+## 2026-10-31 — A dark theme, and a cornflower of its own
+
+- Request: the interface looks washed out and gloomy, nothing special; the user wants younger, more modern colour, and wants it striking.
+- What I said back before building anything: for app screens the research cuts the other way. The median of the 23 product screens studied carries about 3% coloured pixels, 17 of 23 stay at or under 5%, and 12 have no filled primary button at all. The flatness the user feels is what well-made product UI looks like, and spreading colour over the chrome would put back exactly the generated look this work has been removing. What was genuinely missing is that UniChat had no identity colour and no dark theme at all — `prefers-color-scheme` appeared zero times in 104 stylesheets.
+- Decision (user chose both options offered): a cornflower accent and a full dark theme.
+- The accent is one hue in two values, because one value cannot serve both grounds: the library's `#5a9bfc` measures 2.79:1 on white, which is unreadable. Light mode uses `#045cdf` (4.54–5.83:1 across the three light grounds), dark mode keeps `#5a9bfc` (5.76–6.97:1 across the three dark ones). The budget goes from 2% to 5%, still inside what the study records, and still on data rather than chrome.
+- The dark theme redefines only the primitives. Seven tokens that merely repeated a primitive's value were first routed through `var()`, which left 23 primitives plus 6 oddments to define; the other 59 tokens follow on their own. That is what the token layer was built to buy.
+- Dark grounds invert the stack: the sheet is the darkest surface and panels rise above it, because in a dark room the nearer thing catches more light. Steps measured 4.7 and 4.1 lightness points, inside the 2–6 panel rule, and all 12 ink-on-ground pairs pass AA with 5.31:1 the worst.
+- 102 panel shadows were removed and 43 overlay shadows kept. One change, two reasons: the app-screen rules say surfaces are flat (17 of 23 screens give cards no shadow), and every one of these was a dark tint, which paints nothing visible on a dark ground. Menus, dialogs, popovers and drawers may float, so they kept theirs.
+- Five frosted-glass panels (translucent white plus `backdrop-filter`) became flat token fills. Hard-coded white does not follow the theme, so on the dark ground the sign-in card rendered as a near-white slab carrying light text.
+- A correction to my own instrument, which matters more than the bug it hid: my contrast probe treated any alpha under 0.95 as fully transparent and walked past it, so it compared the sign-in card's light text against the dark page *behind* the card and reported the screen as passing. The screenshot showed otherwise. The probe now composites translucent layers; with it fixed, both themes return zero text blocks under AA. A second blind spot in the same sweep: my search matched `rgba(255, 255, 255, 0.88)` but not `rgb(255 255 255 / 88%)`, and 25 declarations use the newer syntax.
+- The theme control replaced a placeholder in account settings that read "Tính năng tùy chỉnh giao diện đang được phát triển". Three states, not two: system-follows is the default and a real choice. An inline script in `index.html` applies the saved theme before first paint, since a bundle only runs after the browser has drawn its first frame and a dark-mode user would otherwise see a white flash on every load; its logic is deliberately duplicated from `src/lib/theme.ts` and only the storage key is shared.
+- Verification: `tsc --noEmit` clean, ESLint clean at `--max-warnings 0`, Vitest 63 files and 450 tests (up from 61/431 — nineteen new for the theme module and its control, none lost), production build clean, 105 stylesheets parse, and both themes measured off the production build rather than the dev server.
+- Not verified: only the signed-out screens were photographed in dark mode, because the Core API was down for this stretch and signing in was not possible. The signed-in screens share the same token layer but have not been seen.
+- Boundary: No commit, no push. No database was touched. The preview server started for this check was stopped; the dev server on 5173 belongs to the user.
+
+## 2026-10-31 — A toggle in the chrome, beside the three-way choice in settings
+
+- Request: the toggle for switching between the two states was missing.
+- Fair point, and the gap was mine: the previous entry put a three-way control (light, dark, follow-the-system) in account settings and stopped there. That is where someone decides; it is not where someone switches mid-task. The quick toggle now sits in the sidebar footer beside the notification bell and sign-out, so every screen carries it.
+- Two controls, deliberately different. The toggle has two states because that is what a toggle is, and the three-state choice stays in settings. Pressing the toggle always lands on an explicit choice rather than returning to "follow the system", because someone who just pressed it has said what they want.
+- One subtlety worth recording, because getting it wrong flips the switch the wrong way: the toggle reads the theme *in effect*, not the theme *stored*. A user on "follow the system" whose machine is dark has nothing stored, so a toggle that read storage would offer to switch to dark — the mode they are already in. `resolveTheme()` consults `matchMedia` for that case, and a test covers it.
+- Found while testing: jsdom does not implement `window.matchMedia` at all, so `vi.spyOn(window, 'matchMedia')` fails with "can only spy on a function". The tests assign it with `vi.stubGlobal` instead, and the gap confirms the `try/catch` around that call was load-bearing rather than defensive padding.
+- Verified end to end against the running stack: the button is present in the chrome, its label flips from "Chuyển sang nền tối" to "Chuyển sang nền sáng", `data-theme` goes from absent to `dark`, `--nen` from `#ffffff` to `#0a0d14`, and the choice survives a page reload.
+- A false alarm from my own instrument, recorded because it nearly caused a wrong fix: the contrast probe reported 14 failing text blocks per theme on the workspaces screen, all of them card titles and badges at around 1.1:1. They sit in white over a photograph behind a scrim, and the probe walks the DOM for a background *colour*, which an image does not provide, so it was comparing the text against the page ground. Sampling the actual rendered pixels under the title gives 20.23:1. No defect; the instrument cannot see images, and that limit is now known.
+- Verification: `tsc --noEmit` clean, ESLint clean at `--max-warnings 0`, Vitest 64 files and 463 tests (up from 63/450 — thirteen new, none lost), production build clean.
+- Boundary: No commit, no push. No database was touched. The user's own dev server and Core API were used, not restarted.
+
+## 2026-10-31 — The accent that was changed and never applied
+
+- Request: "you said the light theme would get a younger colour — why can't I see it?"
+- They were right, and it was my failure. The previous pass changed `--nhan` from teal to cornflower, wrote a comment saying the budget went from 2% to 5%, and then never spent it. Measured: `var(--nhan)` appeared in 4 places across 2 files, and `var(--nhan-nhat)` in 2, out of 105 stylesheets. The colour existed in the token layer and essentially nowhere on screen.
+- Where it went, following the app-screen rules that colour marks the screen's action and its current selection: 22 rules that filled with `var(--muc)` and whose selectors are primary actions (17) or active states (5). The other 31 ink fills — avatars, brand marks, progress bars, the user's own message bubble — stayed ink, because they are neither.
+- A second alias family turned out to be the bigger lever: `--ws-accent`, `--ws-accent-gradient`, `--ws-accent-ink` and `--ws-accent-soft` were all named "accent" and all pointed at ink, the same mis-naming as `--color-outline`, which had never once been used for an outline. Redirecting those four lines lit up 19 uses across 14 files — the primary buttons and active states of the chat and feed screens, which was why those two had been left at 0.15%.
+- New token `--nhan-muc` for text on an accent fill, because it must flip: the dark theme's accent is a light blue, so white on it measures 2.79:1 while dark ink measures 6.97:1. A fixed white would have been unreadable on every primary button in dark mode.
+- Budget measured per screen rather than guessed, by summing the area of elements whose computed fill is the accent: workspaces 0.87%, chat 1.44%, feed 1.76%. All inside the 5% the study records. A first attempt counted blue pixels in a screenshot and returned 11.8%, which was measuring the cover photographs — they are screenshots of code, and code is blue.
+- Two real contrast defects surfaced by applying the colour and then sweeping both themes:
+  - `.group-mark`, the workspace initial chips, drew their letter in white on a pale identity tint — 1.26:1 at worst across the 37 tints, a letter nobody could read. It came from the earlier paling pass, which changed the grounds and left the text. Fixed with `--mark-muc`, a token that deliberately does **not** flip with the theme, because those 37 tints are fixed pale constants: `--muc` would turn the letter light in dark mode and lose it on the same grounds. Worst case is now 10.33:1.
+  - The feed's active count badge laid a 22% white wash over the accent fill, lightening the ground under its own white text to 3.88:1. Inverted to a solid chip, which lands at 5.83:1 light and 6.97:1 dark.
+- Contrast after, both themes: feed 0 blocks under AA, chat 2 (a decorative "/" separator and the disabled send button), workspaces 14 — and those 14 are the probe's known blind spot, card titles in white over photographs, which sample at 20.23:1 from the rendered pixels.
+- Verification: `tsc --noEmit` clean, ESLint clean at `--max-warnings 0`, Vitest 64 files and 463 tests, production build clean, 105 stylesheets parse, and both themes photographed signed-in against the user's running stack.
+- Boundary: No commit, no push. No database was touched. The user's dev server and Core API were used, not restarted.
+
+## 2026-10-31 — Three temperatures in one palette
+
+- Request: the colours do not go together; the screen does not feel of a piece.
+- Measured rather than discussed, and the instinct was exactly right. The palette was carrying three temperature families at once: grounds at hue 45–60 (warm, red-minus-blue +3 to +9), ink at hue 143 (green), accent at hue 216 (cold, red-minus-blue −219). Warm ground under a cold mark is the specific thing that reads as two palettes stuck together.
+- How it happened, recorded because it was a consequence of an earlier decision rather than carelessness: the warm putty ground and green-black ink were chosen when the accent was the teal `#1b6e66` at hue 174. Teal sits between warm and cold, so it bridged them. Replacing it with cornflower removed the bridge and left the two ends side by side with nothing in common.
+- The dark theme built earlier is already on hue 220, so the light theme was the piece out of family, not the accent. Moving it to hue 218 puts the light grounds, the dark grounds and the accent into one family, and the cover photographs — screenshots of code, which are blue — fall into it as well.
+- Only hue and a trace of chroma moved. The lightness steps verified earlier were kept, so the panel sits 2.9 points from the sheet (inside the 2–6 rule) and the chrome 6.5 points below the panel as its own section ground. All 12 ink-on-ground pairs still pass AA, worst 4.66:1.
+- Fourteen values changed in the token layer, the six `--color-*` oddments among them, since those were warm or green and would otherwise have been the only warm things left on screen.
+- Verification: `tsc --noEmit` clean, ESLint clean at `--max-warnings 0`, Vitest 64 files and 463 tests, production build clean, 105 stylesheets parse. Contrast swept over three screens in both themes: feed 0 under AA, chat 2 (a decorative separator and the disabled send button), workspaces 14 — the probe's known blind spot, white titles over photographs, which sample at 20.23:1 from rendered pixels.
+- Boundary: No commit, no push. No database was touched. The user's dev server and Core API were used, not restarted.
+
+## 2026-10-31 — Four to five cards a row, and a greeting with something in it
+
+- Two requests: show 4–5 workspaces per row instead of 3, and fill the greeting banner, which reads as empty.
+- **The grid.** Fixed breakpoints (2 columns at 1024px, 3 at 1440px) cannot know how wide the content column actually is, since that depends on the rail and on `--container-max`. Replaced with `repeat(auto-fill, minmax(240px, 1fr))`, which counts from the space there is. The 240px floor is not arbitrary: the card is `aspect-ratio: 16/11`, so below it the cover drops under 165px and the group name laid over it starts wrapping.
+- That gave 4 columns at every width, because five columns need 5×240 + 4×24 = 1296px and the content was capped at 1280 — short by 16px. Rather than shrink the floor and squeeze the cards, the room came from the margin: `--container-max` rises to 1480px above 1600px viewport, which also spends the 293px-a-side margin that was the subject of an earlier complaint. Measured after: 4 columns at 1280 and 1440 (cards 273–294px), 5 at 1600 and 1920 (cards 270px).
+- **The banner.** Under the greeting sat "Quản lý và khám phá các không gian tri thức của bạn", true of every account at every moment and therefore saying nothing. The app-screen chapter names this failure directly: "There was nothing to do. No control for the job the screen exists for."
+- Decision (user chose it over merging the KPI row into the banner, and over dropping the banner entirely): the line becomes a short list of what is waiting, each entry a link. Unanswered questions first, because that is the product's P0 loop and the only item that needs a person; then groups with posts this week; then the group that moved most recently.
+- Built from data already on the page — `recentPostCount` and `updatedAt` come with the workspace list, and `unansweredCount` from the existing feed-stats endpoint — so no backend change. A count of zero is left out rather than printed, since "0 câu hỏi chưa có lời giải" is a line nobody needs that pushes the useful ones down, and an account with nothing waiting gets one quiet sentence instead of an empty frame. A failed stats fetch drops that one line and leaves the rest.
+- Marked up as a real `<ul>`, so a screen reader announces how many items there are before reading them. The accent goes on the marker and the link, not the whole line, because colour follows data.
+- My own bug, caught in the screenshot: the list marker was written as `content: 'a'` through a Python script, where `` is an octal escape, so the file received U+0083 followed by the letter "a" and the page rendered a tofu box. Written as the literal character now. Same backslash-through-layers family as two earlier slips this session.
+- Verification: `tsc --noEmit` clean, ESLint clean at `--max-warnings 0`, Vitest 66 files and 475 tests (up from 64/463 — twelve new, none lost), production build clean, 105 stylesheets parse, column counts measured at four viewport widths.
+- Boundary: No commit, no push. No database was touched. The user's dev server and Core API were used, not restarted.
+
+## 2026-10-31 — Building the mockup, and the three places it asked for something the system has not got
+
+- Request: implement the supplied mockup; ask if anything is a problem.
+- Three things were checked against the code before asking, so the questions were about real gaps rather than guesses:
+  - **The ask box.** The mockup's field reads "ask about documents across your workspaces", but `ChatController` is mapped at `/api/v1/workspaces/{workspaceId}/questions` — every ask is scoped to one workspace, and a cross-workspace ask would mean gathering permitted documents from several groups, which is an authorization change in the Core API. The user chose a workspace picker inside the field: same number of actions, and the product does not promise what it cannot do.
+  - **The covers.** The mockup replaces the photographs with flat coloured letter tiles. The user chose to keep the photographs, so the 21 topic images and their five test files stay and only the rest of the mockup was applied.
+  - **The role line.** The mockup prints "sinh viên" under the member's name, but `SessionUser` carries only `systemRole: 'USER' | 'ADMIN'` — there is no student concept to read. The user chose the email, which is real and also tells two accounts apart.
+- **The rail** is now a solid navy field, always open with labels, 224px. This reverses the narrow-rail decision from earlier today, and that is the user's call via the mockup. Worth recording: the earlier 224px was a different thing entirely — that rail was 224px wide while hiding its labels at `opacity: 0`, which is the defect that was fixed. The regression test was rewritten to assert the actual invariant (a rail over 96px must not hide its labels) rather than a px range, which only encoded one day's design.
+- Two rules in the rail were written for a state that no longer exists and so applied permanently once hover was removed: the labels' `opacity: 0`, and a rule collapsing the section heading to a 1px line with `font-size: 0`, which made "NHÓM CỦA BẠN" vanish entirely. Both gone.
+- **The hero** is a filled field carrying the greeting, the ask box and the three counts, which moved in from the separate `QuickStats` row. Every text-on-colour pair was measured before being written: white on the blue 6.33:1, the muted line 4.66:1, the count tiles at 12% white fill 4.98:1, the chips 4.76:1. A first attempt at the muted line came out at 1.81:1 and a 20% fill at 4.22:1; both were moved before any of it reached a stylesheet.
+- Recorded deliberately: this hero and the rail are two large coloured fields, so the screen is now well over the ~5% colour budget the app-screen research records. That is the owner's choice through the mockup, and it is written here so a later reader knows it was a decision and not an oversight.
+- The prefilled question travels as `?q=` and is sent once, then stripped from the URL with `replace`. Left in place, a page reload would call the AI again, and that costs real money.
+- **Dropped, and the user should know:** the "what is waiting for you" list built an hour earlier is gone, because the mockup fills that space with the ask box and the counts instead. Its most useful line survives — the unanswered-questions link is still there. `attention-items.ts` and its six tests were deleted rather than left as dead code.
+- Two test failures were the redesign showing up where it should: the sidebar's logout is now icon-only inside the user row, so its assertion moved from visible text to accessible name (a better check), and "Tài khoản" appeared twice until the user-row fallback stopped using that word.
+- Verification: `tsc --noEmit` clean, ESLint clean at `--max-warnings 0`, Vitest 65 files and 470 tests, production build clean, 105 stylesheets parse, contrast swept in both themes.
+- Boundary: No commit, no push. No database was touched, and no Core API change was made. The user's dev server and Core API were used, not restarted.
+
+## 2026-10-31 — Giving the rail a way back, and the hero its focal point
+
+Three faults reported against the mockup build.
+
+- **The rail could no longer be collapsed.** Fair, and it was a consequence I did not think through: the old rail widened on hover, which was a mechanism with no button anywhere. Turning it into an always-open rail removed the only way it had ever narrowed. There is now a real control on its edge, and the choice is remembered in `unichat.rail`. Collapsed is 68px — an icon cell plus its padding — and the labels are removed with `display: none` rather than `opacity: 0`, which is the exact trap that produced the original defect: invisible text still holding its width while the rail stayed 224px to show 24px icons.
+  - `.app-shell__main` now follows the rail's real width. The rail is `position: fixed`, so it pushes nothing; without that rule, collapsing it would have left a 156px gap instead of giving the space to the content.
+- **The hero needed the mockup's focal point.** Added the concentric rings at the top right, drawn as a stroked SVG rather than a `repeating-radial-gradient`: the house rules ban decorative gradients, the inspector tells the two apart, and at 14% opacity none of the measured contrast pairs move. It sits on `::after`, so it never enters the accessibility tree.
+  - The suggestion chips from the mockup are now there too, generated from the member's own groups. Each names a different group and a different kind of job, because three chips pointing at one group are one chip written three times, and a group with no documents is skipped — inviting someone to summarise an empty shelf is inviting them into a "not enough evidence" answer.
+  - The ask button went from the accent to a dark ink: it sits on a white field that sits on the blue band, so an accent-coloured button there was blue on blue on blue.
+- **Quick access now uses larger cards than the list below**, a 320px floor against 240px, which gives three across where the full grid gives four or five. That size difference is how the section says it matters more: three things you just opened, large enough to recognise, against a catalogue you scan.
+- Verification: `tsc --noEmit` clean, ESLint clean at `--max-warnings 0`, Vitest 67 files and 481 tests (up from 65/470 — eleven new for the rail state and the prompt generator), production build clean, 105 stylesheets parse. The collapse was driven end to end against the running app: 224px to 68px, labels gone, content margin following, and the choice surviving a reload.
+- One more limit of my own contrast probe, recorded so it is not mistaken for a defect later: it now also flags `.sr-only` text at 1:1. That text is deliberately invisible and exists only for screen readers.
+- Boundary: No commit, no push. No database was touched. The user's dev server and Core API were used, not restarted.
+
+## 2026-11-01 — A control a first-time user can find, a shorter greeting, four columns
+
+Three faults reported.
+
+- **The collapse control was unfindable.** The complaint was precise: a new member would not know what pressing it does. It was a 22px circle straddling the rail's edge, a shape that belongs to no category — not a nav item, not a button in a toolbar. It is now an ordinary labelled row in the rail's footer beside "Nền tối" and "Thông báo", reading "Thu gọn". Standing in that company it reads as something you can do, and the label says which thing. The icon also changed to `left_panel_close`, which draws the action rather than a bare chevron.
+- **The greeting band took too much of the screen.** Shortened: the greeting is one line instead of two, 27px instead of 38px, and the paddings and gaps all came down. Nothing that does work was removed — the ask box, the chips and the three counts all stay.
+- **The unanswered-questions line is gone**, by request. Removing it also removed the only reason the banner called `fetchFeedStats`, so that request, its state, its effect and its error branch went with it, along with three tests that covered them. Worth noting what this means: the dashboard no longer surfaces the knowledge-gap loop at all. It is still reachable from the feed.
+- **The workspace grid is fixed at four columns** above 1100px, written out rather than computed. `auto-fill` counts from available space and so produced five on a wide screen; the number of columns here is a layout decision, not an arithmetic result. The 1600px rule that widened `--container-max` was removed with it, since its only purpose was to make room for a fifth column. Measured after: four columns at 1280, 1440, 1600 and 1920, with the cards growing from 234px to 294px rather than the count changing.
+- Verification: `tsc --noEmit` clean, ESLint clean at `--max-warnings 0`, Vitest 67 files and 478 tests, production build clean, 105 stylesheets parse. The collapse was driven end to end again after being moved: 224px to 68px, labels gone, content margin following, choice surviving a reload.
+- Boundary: No commit, no push. No database was touched. The user's dev server and Core API were used, not restarted.
+
+## 2026-11-01 — The sign-in screen, built from the supplied mockup
+
+- Request: rebuild the sign-in screen to the mockup, with the supplied illustration.
+- **The illustration could not ship as given.** It arrived at 3200×4000 and 11.85 MB, which on a sign-in page is a page-load failure rather than a design choice. No image tooling was installed — and `/c/Windows/system32/convert` is Windows' FAT-to-NTFS converter, not ImageMagick, so it was left alone. Resized to 1100×1375 and encoded as JPEG at quality 86 with .NET's System.Drawing: 118 KB, a hundredfold reduction, and still sharp enough for a panel about 740px wide on a HiDPI screen.
+- The layout is two halves: a dark field carrying the illustration and the pitch, and a paper pane carrying the form. Both keep their colours in either theme, because this is the page someone sees before signing in, not a surface they work on for hours.
+- The left half is not decoration. It replays what the product does — a question, an answer, and the sources that answer rests on — so a visitor who has never signed in can see what they are about to use. The source row is the part that matters: it is what separates this from any chat box.
+- The one gradient on the page is a neutral scrim over the photograph so the text stays readable, which is the single exception the house rules allow.
+- **A regression I caused, found before shipping but after the fact:** `forgot-password-page.tsx` borrowed eight classes from the old sign-in stylesheet — `login-page__bg`, `__blob`, `__main`, `__logo`, `__badge` and others. Rewriting that stylesheet deleted all eight, and the page rendered unstyled with no test failing and no compile error. This is the second time in this project the same shape of fault has occurred; the first was the refusal card losing its rules when `citation-panel.css` was rewritten.
+  - Fixed by moving the page onto the new shell, which also makes the two auth screens consistent.
+  - A test now reads each auth page's markup, follows its CSS imports, and fails when a class is rendered that no stylesheet declares. It immediately found a real gap of its own — `.login-story__pitch` had no rule — which is the kind of dead class this work has been clearing all along.
+- Verification: `tsc --noEmit` clean, ESLint clean at `--max-warnings 0`, Vitest 68 files and 480 tests, production build clean with the illustration at 118 KB in the bundle, 105 stylesheets parse, the sign-in page measures zero text blocks under AA, and signing in still works end to end against the running API.
+- Boundary: No commit, no push. No database was touched. The user's dev server and Core API were used, not restarted.
+
+## 2026-11-01 — The sign-up screen, and a consent box that consented to nothing
+
+- Request: build the sign-up screen to the mockup. It shares the sign-in shell; only the left half's content and the form differ.
+- **The defect that mattered was not visual.** The terms checkbox had `name="terms"` and nothing else: no `required`, no link to the submit button. Anyone could create an account without agreeing to anything, and the agreement the product claims to have obtained would not exist. The checkbox now gates the button, and the disabled state says so rather than looking merely dim. Four tests cover it, including that un-ticking locks the button again.
+- Also added while in there: an icon per field, a show/hide control on the password, and deliberately none on the confirmation field — that field exists to catch a typo, so revealing it removes the reason it is there. A test holds that line.
+- **The terms links have nowhere to go.** They are `href="#"`, and there is no `/terms` or `/privacy` route in the router. A consent box whose terms cannot be read is a real problem rather than a cosmetic one, so it is recorded here and reported to the owner rather than quietly shipped. Nothing was invented to fill the gap.
+- **A duplicate-stylesheet conflict, found by looking rather than by luck.** `register-form.css` already existed and my page styles redefined twelve of the same classes, so which set applied depended on import order and one was always dead. This is the third instance of that shape in this project — after `.chat-welcome` and the refusal card — and the rules now sit beside the component that renders them, with the page keeping only its own.
+- The style test written for the sign-in screens now covers sign-up too, and it immediately earned its place twice: `.login-story__pitch` and `.register-card__header` were both rendered with no rule behind them. The first got the rule it needed; the second was a wrapper doing nothing and was removed.
+- One layout bug caught in the screenshot: the "Miễn phí cho sinh viên" pill stretched the full width, because its parent is a flex column and `inline-block` does not survive the default `align-items: stretch`.
+- Verification: `tsc --noEmit` clean, ESLint clean at `--max-warnings 0`, Vitest 69 files and 488 tests, production build clean, 105 stylesheets parse, and the sign-up page measures zero text blocks under AA.
+- Boundary: No commit, no push. No database was touched. The user's dev server and Core API were used, not restarted.
+
+## 2026-11-01 — Phone layout on the web, and the Expo app brought back into line
+
+- Request: "update trên mobile", with phone mockups for sign-in and sign-up and a portrait illustration.
+- The request was genuinely ambiguous and the two readings are different bodies of work, so it was put to the owner: the web's phone breakpoint, or the Expo app. They chose both. Worth recording why it had to be asked: the Expo app exists, has its own auth screens, and had been untouched since `34267ac` — nineteen screens still on the palette from two revisions ago.
+- **Web phone layout.** One column: the dark art band 300px tall, the white sheet pulled up 28px over it with a large top radius. Measured rather than assumed: the email field lands at y=421 on sign-in and y=528 on sign-up, both inside an 844px phone's first view, which is what the 300px band was chosen for.
+  - A `<picture>` swaps in a portrait crop below 1024px. The landscape art puts its bright centre out of frame when cropped to a short band, and the portrait file is 50 KB against 118 KB, so small phones do not download what they cannot use.
+  - Both cards drop their own border and padding at phone width — the white sheet already is the card, and keeping both was a card inside a card.
+- **Two source images, neither shippable as given.** 11.85 MB and 2.24 MB. No image tooling is installed, and `/c/Windows/system32/convert` is Windows' filesystem converter rather than ImageMagick, so it was left alone. Resized through .NET's System.Drawing to 118 KB, 50 KB and 52 KB.
+- **The Expo palette now matches the web's.** Nineteen colours changed. The file's own header claimed the tokens were "mirrored 1:1 from frontend/src/styles/index.css", which had stopped being true several revisions ago; the comment now says what is actually the case, including that React Native has no custom properties so this is a copy that has to be updated by hand.
+- Both Expo auth screens were rebuilt to the same shape as the web's phone layout. The glass cards, animated background and sparkle badges went with them.
+- **A hardcoded credential removed.** The Expo sign-in screen carried a "fill demo account" button holding `alice.expert@unichat.test` / `Password123!` in source — which means in every shipped binary. The project's own standards say secrets live in the environment and are never hardcoded.
+- **A bug I introduced an hour earlier, found by reading the Expo schema.** Core API's `RegisterRequest` sets `@Size(min = 12)`; the Expo client checks 12; the web checked nothing, and I had just set its placeholder to "Ít nhất 8 ký tự" because that is what the mockup said. The web was telling people eight characters would do while the server would refuse. Fixed to 12 and given a client-side check so the failure is immediate and attached to the field rather than arriving as a server error a round-trip later.
+- **Reported, not fixed:** the web sign-up form collects "Họ và tên" and never sends it — `handleSubmit` reads only email, password and confirmation, and `RegisterRequest` has no name field at all. Storing a name needs a Core API change and a migration, so it is the owner's call.
+- Verification — web: `tsc --noEmit` clean, ESLint clean, Vitest 69 files and 488 tests, build clean. Mobile: `tsc --noEmit` clean, ESLint clean, Jest 28 suites and 131 tests.
+- Boundary: No commit, no push. No database or Core API change was made. The user's dev server and Core API were used, not restarted. The Expo screens were typechecked, linted and tested but not run on a device.
+
+## 2026-11-01 — Verifying the Expo change reached the bundle, and three bad measurements on the way
+
+- Question: had the Expo interface actually been updated? The owner was not seeing any change.
+- Answer: yes, and it was proven by building the bundle and looking inside it rather than by asserting it. `Chào mừng trở lại`, `Tham gia UniChat`, `Tạo tài khoản`, `Ít nhất 12 ký tự`, `045CDF` and `auth-hero` are all present; `alice.expert@unichat.test`, `Password123` and `Điền tài khoản thử` are all gone. On disk: 419 lines changed in the sign-in screen, 374 in sign-up, 49 in the tokens, plus the 53 KB illustration.
+- So the device is running a stale bundle. Their Metro on 8081 is healthy (`packager-status:running`) and nothing in the project is at fault.
+- **Three measurement errors on the way there, each of which nearly became a false report to the owner:**
+  - Fetching `/index.bundle` returned `UnableToResolveError` rooted at the monorepo, and I was ready to say Metro was misconfigured. It is not: `metro.config.js` sets `watchFolders` to the monorepo root, which makes Metro's server root the monorepo root, and the real bundle path comes from the manifest — `/mobile/node_modules/expo-router/entry.bundle`. The URL I guessed was wrong, not the config.
+  - With the real bundle in hand I grepped for Vietnamese strings, found none from the sign-in screen, and concluded that screen was missing from the build. Every string I had found was ASCII and every string I had not had diacritics; the pattern was in my instrument, not in the code.
+  - I then assumed the escaping was the four-digit `\uXXXX` form. The bundle actually writes `\xF4` for a character under 256 and the four-digit form above it. Reading the bytes around a string I *had* found settled it, and with the check corrected every new string is present.
+- A fourth slip of the same family: a backslash escape was swallowed twice more passing through bash and Python heredocs — the fourth and fifth time this session. Writing the script with the file tool instead of a heredoc fixed it.
+- Found while checking, reported but not changed: `#00236F`, the old primary, is still hardcoded in 34 places across the Expo app, nearly all of them `shadowColor`, plus `ambientNavy` in the tokens. Shadows, so largely invisible, but they are the old palette and they do not go through a token.
+- A spare Metro was started on 8089 to prove this without touching the owner's, and has been stopped. Their Metro, the Core API and the web dev server were left running.
+- Boundary: No commit, no push, and no code change in this step — it was verification only.
+
+## 2026-11-01 — The sheet was cutting the headline on a notched phone
+
+- Report, with a device screenshot: the Expo sign-in screen is running the new code — the new title, the new fields, the accent button, the security line are all there — but the white sheet sits too high and cuts the second line of the headline and the feature line beneath it.
+- Cause, and it was mine: the sheet was pulled up with `marginTop: -72` measured against a `SafeAreaView` that sized itself to its content. That height includes the top safe-area inset, which is about 59px on a notched phone and roughly 20px without one, so the sheet landed in a different place on every device. It was written and checked on neither.
+- Fix: the hero content now sits inside a block of fixed `HERO_HEIGHT`, and the sheet overlaps it by 28px — the same as its own corner radius. The offset no longer depends on the device.
+- Checked by arithmetic rather than by eye, since the screens cannot be rendered here: with the largest common inset the sign-in hero needs 235px of its 300, and sign-up 247. Both fit with room left.
+- **The gear button in the top-right corner is not from this app.** Searched the whole of `app/` and `src/` for a settings, tune, cog or gear icon and for any floating overlay, and read the root and auth layouts: there is nothing. `app.json` adds only `expo-router` and `expo-splash-screen`. It will be Expo Go's own dev overlay or an iOS accessibility button; reported as such rather than guessed at.
+- Verification: `tsc --noEmit` clean, ESLint clean at `--max-warnings 0`, Jest 28 suites and 131 tests. Not yet seen on a device — the owner reloads to confirm.
+- Boundary: No commit, no push. No process of the owner's was stopped.
+
+## 2026-11-01 — The art was right; the crop was not
+
+- Report: the cover art on the Expo sign-in and sign-up screens does not look like the mockup.
+- Checked the obvious thing first: the file sent is byte-for-byte identical to the one already embedded, so the picture was never the problem.
+- Cause, and it was a fix I made on the web and failed to carry across: React Native has no `object-position`, so `resizeMode="cover"` always centres. The glow sits at about 15% of the picture's height while the band is only 300px tall, so centring showed the dark middle and cropped the glow away. The web version of this screen already carries `object-position: center 18%` for exactly this reason; the React Native screens never got the equivalent.
+- Fix: the image sits in a clipping view of fixed height with `width: '100%'` and `aspectRatio: 780 / 1688`, which makes it taller than the band and anchors it to the top, so the band shows the first 300px.
+- Checked by arithmetic across three common phone widths rather than by eye, since these screens cannot be rendered here. At 390, 414 and 430px the rendered art is 844, 896 and 931px tall and the glow lands at y=125, 133 and 138. Centring would have shown 272–572, 298–598 and 316–616 — missing the glow on all three. Top-anchored shows 0–300, which contains it on all three.
+- The scrim was left at 0.52 deliberately. It could come down now that the glow is in frame, but the result cannot be seen from here and guessing at it risks the white headline instead.
+- Verification: `tsc --noEmit` clean, ESLint clean at `--max-warnings 0`, Jest 28 suites and 131 tests.
+- Boundary: No commit, no push. Not yet seen on a device.
+
+## 2026-11-01 — The landing page, and a user count nobody can stand behind
+
+- Request: rebuild the public landing page to the supplied mockup.
+- Built: a dark hero carrying the illustration, the pitch and a browser window that replays a real question with its citations; a bento grid of features whose lead card is the only one on a dark ground, because it carries the thing that distinguishes the product; a three-step section; a closing call to action; and a transparent header over the hero.
+- **The claim I would not re-author.** The mockup reads "Hơn 5.000 sinh viên & nghiên cứu sinh tin dùng". That is a specific factual claim about how many people use this product, on a public page, and nothing in the system supports it — the owner's own account holds seven workspaces and fourteen members. The line already existed in the old code as "Hơn 5,000+", so it is not new, but writing it out again would be actively re-authoring a false number. It now reads "Mọi câu trả lời đều dẫn lại nguồn trong tài liệu của bạn", which is true and says something about the product. If the owner has a real figure, or wants the original line back as a deliberate choice, it goes back in one edit.
+- **Four dead anchors in the header**, all pre-existing: `#features` and `#how-it-works` matched nothing because the sections had no such ids, and `#demo` and `#docs` had no target anywhere on the site. Three now point at real sections. "Tài liệu" was removed, because there is no documentation page in the router to point it at and a nav item that does nothing when pressed is worse than one item fewer. It goes back the moment there is a page.
+- **An accessibility defect found by a failing test, not by looking.** `App.test.tsx` timed out, and the heading's accessible name turned out to be "Hỏi đáp trên chínhtài liệu học tậpcủa bạn." — `<br />` contributes no whitespace, so a screen reader reads the words run together. Fixed with explicit spaces around the breaks; the eye could never have caught this, since the rendered page looks identical either way.
+- The nav links measured 1.06:1 in the contrast probe and are fine: the header is transparent over the dark hero, so the probe resolved the ground to the white page behind it. Sampling the rendered pixels gives 12.41:1. Same blind spot as the card titles over photographs.
+- Verification: `tsc --noEmit` clean, ESLint clean at `--max-warnings 0`, Vitest 69 files and 488 tests, production build clean, 105 stylesheets parse.
+- Boundary: No commit, no push. No database or Core API change.
+
+## 2026-11-01 — The lower half of the landing page, and a page nobody could scroll
+
+- Report: the sections below the hero were missing from what I had shown.
+- They existed, but two faults meant they could not be judged, and one of them meant visitors could not see them at all.
+- **The landing page could not be scrolled.** `styles/index.css` pins `html`, `body` and `#root` at `height: 100vh` with `overflow: hidden !important`, so the app shell can manage its own scrolling. The landing page is not in that shell, so its 2399px of content sat clipped inside a 900px box with no way down: a visitor saw the hero and nothing else. Measured, not guessed — `#root` reported `scrollHeight 2399 / clientHeight 900` with `overflowY: hidden`.
+  - Not mine: `git log -S` dates the rule to `571f69b`, 23 August 2026. The public page has been a single screen for months.
+  - Fixed at the landing page rather than by relaxing the global rule, which is what keeps the signed-in screens from growing a second scrollbar inside the first. The page now carries its own full-height scroll container, and scrolling with the wheel reaches the footer.
+- **The header disappeared on scroll.** Making it transparent for the hero was right; leaving it `position: fixed` was not, because white text then floated over the white sections below. It is `position: absolute` now, so it scrolls away with the dark band that is the only ground it has contrast against.
+- **The feature grid was wrong.** The lead card had `grid-row: span 2`, which pushed the second row out of line and left a hole in the top right. In the mockup it is simply taller than its neighbours, so the span is gone and the grid uses `align-items: start`.
+- **The footer** was rebuilt to the mockup's three parts. Its copyright read "© 2024" in November 2026; it now comes from the clock, so it cannot go stale again.
+- **Six dead links, all pre-existing, reported and not silently kept quiet about:** the footer's `#about`, `#terms`, `#privacy` and `#contact` have no target anywhere on the site, and the sign-up form's terms and privacy links are `href="#"`. The footer four were kept because the mockup calls for them and a footer without links reads as unfinished, but every one needs a real page before this goes anywhere public — and a consent checkbox whose terms cannot be read is the worst of the six.
+- Verification: `tsc --noEmit` clean, ESLint clean at `--max-warnings 0`, Vitest 69 files and 488 tests, production build clean, 106 stylesheets parse, and scrolling to the footer confirmed in a real browser.
+- Boundary: No commit, no push.
+
+## 2026-11-01 — The Expo workspace screen, to the mockup, with the tab bar left alone
+
+- Request: build the mobile workspace screen to the mockup and leave the existing bottom tab bar untouched.
+- Untouched, and checked rather than asserted: `git status` shows no change to `uc-liquid-glass-tab-bar.tsx` or `app/(tabs)/_layout.tsx`.
+- Built: a filled hero carrying the date, greeting, a quick-ask row and three count pills; a two-tab segment; a horizontal "Truy cập nhanh" row of cards with flat colour covers; the full list with its count, search and create button. All the screen's existing logic — loading, the two tabs, search, join, the create modal, and the error state that distinguishes a failed request from an empty account — was kept as it was.
+- The concentric rings are three bordered `View`s rather than a background image, because React Native has no `background-image`. They are drawn, not fetched.
+- Card colours come from `groupThemeFor(id)`, so a group keeps the same colour every time it is opened. Dealt at random the cards would lose the only thing they are for, which is being recognised at a glance.
+- The quick-access row is ordered by `updatedAt` and the first card carries "Mới nhất". Array order says nothing about recency; the timestamp does.
+- **A gap in the test setup, fixed at the cause.** `jest.setup.js` mocks `react-native-safe-area-context` but never exported `SafeAreaView`, so any screen using it rendered `undefined` and failed with "Element type is invalid" — an error that says nothing about why. The mock now returns a real `View`. Three auth screens already used `SafeAreaView` and would have hit the same wall.
+- Two test updates that were the design showing up: a workspace now appears twice on this screen, in the quick row and in the list, so the integration test asks for all matches rather than one; and the empty state now reads "Chưa có workspace nào", matching the "Tất cả Workspace" heading right above it instead of the old mid-sentence capital in "Chưa có Không gian nào".
+- A careless edit of my own, caught by the suite: a blanket find-and-replace changed `chat-header.test.tsx` too, where the title genuinely appears once. Reverted.
+- Verification: `tsc --noEmit` clean, ESLint clean at `--max-warnings 0`, Jest 28 suites and 131 tests.
+- Boundary: No commit, no push. Not yet seen on a device.
+
+## 2026-11-01 — A stale Metro transform, not a missing import
+
+- Report from the device: `ReferenceError: Property 'WorkspaceQuickCard' doesn't exist`.
+- The code is correct: the import is on line 22, the component is exported, and `tsc --noEmit` is clean. The error's wording is the clue — Hermes says "Property X doesn't exist" for an unresolved *identifier*, which is what happens when the import statement is absent from the transformed module, not when a module resolves to undefined.
+- Verified rather than asserted, since I have misread this class of fault twice already: a Metro started with `--clear` on a spare port produced a bundle containing `WorkspaceQuickCard` eight times and the module path twice. The owner's Metro was serving a transform of `index.tsx` cached from before that import existed.
+- This is the third time in this session a Windows file watcher has missed a change — twice with Vite's dev server, once with Metro. Each time the fix was to force a re-read, and each time the first instinct was to look for a fault in the code.
+- The spare Metro on 8089 has been stopped; the owner's Metro, the Core API and the web dev server were left running.
+- Noted from the Expo log, not acted on: an update from 58.0.21 to 58.0.22 is available and `expo install --check` reports three other packages. Changing dependencies needs the owner's say-so.
+- Boundary: No commit, no push, and no code change in this step — it was verification only.
+
+## 2026-11-01 — Covers that did not fit, and covers that could not decode
+
+- Report: the cover pictures on mobile do not fit, and some do not show a real picture at all. Two separate faults, both found by measuring the files rather than by looking at the screen.
+- **The fit.** Every bundled cover is 1200x400 — a 3:1 band. The list card's frame is the card's full width by 124 tall, which on a 390px phone is 2.89:1, so it was always close to right. The quick-access card I had just built was 232 by 124, a ratio of 1.87, so `resizeMode="cover"` cropped away a third of every picture's width. Its frame now derives its height from the card's width and the pictures' own ratio, so nothing is cropped.
+- **The missing pictures.** That card drew a flat colour and a letter rather than a photograph — faithful to the mockup, but it meant one group looked like two different groups depending on where it appeared. It now uses the same `WorkspaceCover` as the list, so a group wears one picture everywhere.
+- **All forty covers were progressive JPEGs.** React Native's decoder, on Android especially, can refuse progressive files; the component's `onError` then falls back to the group's initial, which looks exactly like a card that has no picture. Re-encoded to baseline with System.Drawing: dimensions unchanged at 1200x400, total weight 2.56 MB to 2.63 MB, nothing over 300 KB. The three images created earlier in this session were checked too and were already baseline.
+  - Worth recording for whoever adds a cover next: a progressive JPEG looks perfect in every browser and in every image viewer, and fails only on the device. Nothing in the repo would have caught it.
+- The bottom tab bar is still untouched: `git status` shows no change to `uc-liquid-glass-tab-bar.tsx` or `app/(tabs)/_layout.tsx`.
+- Verification: `tsc --noEmit` clean, ESLint clean at `--max-warnings 0`, Jest 28 suites and 131 tests.
+- Boundary: No commit, no push. Not yet seen on a device.
+
+## 2026-11-02 — The picture behind the whole card, and how much of it survives
+
+- Request: make the picture fill the card as it does on the web, scale it down so the whole picture shows, and rename "Vào học" to "Truy cập".
+- Measured first, because the complaint and the reference pointed at different things. Every cover is 1200x400, a 3:1 band. Under `cover`:
+  - the web card at 16/11 shows **48%** of the picture — that is the "only shows a corner",
+  - the mobile list card at 2.89:1 shows 96%,
+  - the mobile quick card at 3:1 shows 100%.
+- The mobile list card now carries the picture as a full-card background with the text over a scrim, matching the web's arrangement rather than a 124px band beside the text.
+- It uses `contain`, not `cover`, so the whole picture is visible. A 3:1 picture in a near-square card cannot both fill it and be seen whole; the remainder shows the group's own colour layer, which `WorkspaceCover` already paints underneath. `fit` is a prop with a default of `cover`, so nothing else that uses the component changed.
+- Everything in the card body that used to sit on paper now sits on a dark scrim, so the two stat icons, the stat text, the divider rule and the chip moved to light values. The join and access pills kept their colours because each paints its own solid ground.
+- "Vào học" became "Truy cập" in the component and in the two tests that assert it.
+- The bottom tab bar is still untouched, checked with `git status`.
+- **Reported, not changed: the web still shows 48% of each cover.** Fixing it there means either the same `contain` treatment, which would leave about half of a 16/11 card as flat colour, or covers cut to a squarer shape. That is a design decision for the owner rather than something to pick quietly.
+- Verification: `tsc --noEmit` clean, ESLint clean at `--max-warnings 0` across `app`, `src` and `__tests__`, Jest 28 suites and 131 tests.
+- Boundary: No commit, no push. Not yet seen on a device.
+
+
+## 2026-11-02 — Ảnh nền chìm cho dải chào, và một lỗi tương phản có sẵn lộ ra theo
+
+**Yêu cầu.** Dùng bức ảnh banner người dùng gửi làm nền chìm cho dải chào xanh
+ở trang Workspace trên web.
+
+**Đã làm.**
+
+- Nén ảnh: 2400×820, 1.929 KB → 1600×547, 55 KB, lưu ở
+  `frontend/src/assets/greeting-band.jpg`. Bản build phát ra đúng 55 KB.
+- Thêm `<img class="welcome-banner__art" alt="" aria-hidden="true">` làm con
+  đầu tiên của dải, phủ `inset: 0`, `object-fit: cover`, độ mờ 38%. Dải rộng
+  1169×260 (tỷ lệ 4,50) còn ảnh là 2,93, nên `cover` cắt theo chiều dọc và
+  giữ khúc giữa. `.welcome-banner` vốn đã có `position: relative` và
+  `overflow: hidden`, nội dung vốn đã có `z-index: 1`, nên không phải đổi
+  tầng lớp nào.
+
+**Lỗi có sẵn phát hiện được nhờ phép đo.** Đo tương phản bằng pixel thật của
+ảnh chụp — không đi cây DOM, vì không công cụ DOM nào đọc được màu nằm dưới
+một bức ảnh — cho thấy nhãn ô KPI chỉ 4,03:1, dưới AA cho chữ nhỏ. Truy ngược
+thì nguyên nhân không phải bức ảnh: nền ô KPI là `rgb(255 255 255 / 12%)`,
+tức sáng hơn dải, và `--dai-muc-nhat` (#d5dcf9) trên nền ấy chỉ đạt **3,66:1**.
+Chú thích trong CSS ghi 4,66:1 — đó là con số đo trên mảng xanh phẳng
+`#2f4fe0`, không phải trên ô. Nhãn ô KPI **đã dưới ngưỡng AA từ trước khi có
+ảnh**; bức ảnh chỉ làm tôi nhìn vào đúng chỗ đó.
+
+**Cách sửa và vì sao chọn nó.**
+
+- *Không* chọn lớp phủ màu dải giữa ảnh và nội dung: phủ màu nền lên một ảnh
+  nằm trên chính màu nền ấy tương đương về mặt toán học với việc hạ độ mờ ảnh,
+  nên nó thêm một tầng mà không đổi được gì.
+- *Không* chọn làm mực sáng lên. Thử `#f5f7fe` (tính ra 4,65:1) thì đo thật
+  chỉ được 4,49:1: chữ nhỏ không bao giờ đạt đúng màu khai báo vì khử răng
+  cưa. Nâng mực là chạy sát mép ngưỡng.
+- Chọn làm **nền ô KPI đặc và tối hơn dải**: `--dai-o` từ trắng-12%-trong-suốt
+  thành `#2844c1` (đen 14% trên `#2f4fe0`), `--dai-o-vien` thành `#5369cd`.
+  Đặc, nên vùng sáng của ảnh không xuyên qua và nền ô lại đoán được. Tối hơn,
+  nên nâng cả con số lẫn nhãn cùng lúc và giữ nguyên hai tông thứ bậc — không
+  phải thêm token mực nào. Một mảng tối nằm trên ảnh cũng đọc ra là một tấm
+  panel có chủ ý. `--dai-o` chỉ được dùng đúng một chỗ nên đổi nó không lan ra
+  đâu khác.
+
+**Đo lại sau khi sửa** (pixel thật, 1440×900, cả hai chế độ): lời chào 11,16:1,
+ngày tháng 10,92:1, mô tả 8,20:1, chip gợi ý 10,85:1, con số 7,82:1, nhãn con
+số 5,48:1. Thấp nhất 5,48:1, tất cả đạt AA. Chú thích đầu
+`welcome-banner.css` đã sửa lại theo đúng số đo này thay vì số cũ.
+
+**Cổng.** typecheck sạch, eslint 0 cảnh báo, 106 file CSS 0 lỗi cú pháp,
+vitest 488/488 trên 69 file, `npm run build` thành công.
+
+**Ranh giới.** Chỉ chạm dải chào trên web. Dải chào trên Expo
+(`workspace-hero.tsx`) vẫn là mảng màu đặc với ba vòng tròn vẽ tay —
+React Native không có `background-image`, và người dùng chưa yêu cầu đổi nó.
+Chưa commit gì.
+
+## 2026-11-02 — Cắt lại bộ 40 ảnh bìa sang 16/11
+
+**Yêu cầu.** Thẻ workspace trên web chỉ hiện 48% mỗi bức ảnh. Người dùng chọn
+phương án cắt lại bộ ảnh sang dáng vuông hơn (thay vì dùng `contain`).
+
+**Chặn đầu tiên, và cách gỡ.** Không cắt được từ chính các tệp đang có. Chúng
+là 1200×400; muốn ra 16/11 thì phải giữ chiều cao 400 và bỏ bớt chiều ngang
+còn 582 — tức cho ra **đúng những pixel mà thẻ vốn đã hiển thị**, không được
+gì cả, mà lại làm hỏng mobile. Cần ảnh gốc ở dáng vuông hơn, không phải một
+phép cắt khác trên tệp đã cắt. `frontend/public/covers/README.md` ghi đủ ID
+ảnh Unsplash của cả 41 tấm, nên tải lại được từ nguồn ở khung cắt mới.
+
+**Đã làm.**
+
+- Tải lại 40 ảnh từ CDN Unsplash ở `w=1000&h=688&fit=crop` (16/11), q=92, rồi
+  mã hoá lại tại chỗ thành JPEG **baseline** q=72. Bước mã hoá lại là bắt
+  buộc: CDN trả về progressive kể cả khi yêu cầu `fm=jpg`, và trình giải mã
+  React Native có thể từ chối progressive — đúng con bug từng làm ảnh mobile
+  không hiện. Kiểm lại: 40/40 baseline, 1000×688.
+- Bộ mới **2,20 MB**, nhỏ hơn bộ cũ 2,56 MB, dù mỗi ảnh nhiều hơn 43% pixel.
+- `banner-dashboard.jpg` giữ nguyên 10:1: nó phục vụ dải chào, không phải thẻ.
+
+**Đo lại toàn bộ, vì cắt lại làm mọi số cũ vô hiệu.** Cắt khác tỉ lệ đổi hẳn
+vùng pixel nằm dưới dòng chữ trắng, nên ngưỡng `đáy < 110, rối < 70` của
+README phải đo lại cả 40 chứ không suy ra được. Hai tấm trượt:
+
+- `cover-dawn.jpg` đáy 182. Đo bộ **đang chạy** bằng đúng công cụ: đáy 189,
+  rối 78 — **nó đã trượt từ trước**, lỗi có sẵn chứ không do đổi tỉ lệ.
+- `topics/topic-entrepreneurship.jpg` đáy 119, so với 69 ở bản 3:1. Đây là
+  lỗi do việc cắt lại gây ra.
+
+Thử sáu điểm neo cắt (`top`, `bottom`, `left`, `right`, `edges`, `entropy`):
+cả sáu cho kết quả y hệt, vì ảnh gốc vốn đã gần 16/11 nên không còn gì để
+chọn — bản 3:1 cũ đã rút một dải tối từ bên trong nó. Giải pháp: hạ sáng ngay
+tại CDN bằng `bri` (−40 và −30), giữ nguyên bức ảnh đã được chọn thay vì thay
+ảnh khác. Kết quả 84 và 55; **40/40 đạt ngưỡng**, tốt hơn bộ đang chạy (39/40).
+
+**Sửa các khung tiêu thụ — nếu quên thì lỗi 48% chỉ đổi chỗ.**
+
+- `mobile/.../workspace-quick-card.tsx`: `COVER_HEIGHT` từ `CARD_WIDTH / 3`
+  thành `CARD_WIDTH × 11/16` (100 → 206). Phép chia cũ hằng theo bộ ảnh 3:1;
+  giữ nguyên thì thẻ này tụt xuống đúng 48%.
+- `mobile/.../workspace-card.tsx`: `fit="contain"` trở về `cover`. Bản trước
+  buộc phải dùng `contain` vì ảnh 3:1 trong thẻ gần vuông, đổi lại hai mép lộ
+  mảng màu phẳng. Thẻ này ~328×214, tức ~1,5, nên bộ ảnh 16/11 cho `cover`
+  lấp kín thẻ **và** vẫn giữ ~95% bức ảnh — đánh đổi cũ biến mất.
+- `mobile/.../workspace-cover.tsx`: bỏ prop `fit`, giờ không còn ai dùng.
+
+**Đo sau khi sửa.**
+
+| Bề mặt | trước | sau |
+| --- | --- | --- |
+| `.workspace-card` (web) | 48% | **99,9%** |
+| `.explore-card` (web) | 48% | **99,9%** |
+| `workspace-quick-card` (mobile) | 100% | 100% |
+| `workspace-card` (mobile) | 100% (`contain`, có mảng phẳng) | ~95%, lấp kín |
+| `.cover-banner` (web chi tiết) | 43% | ~23%, dải texture |
+
+Tương phản chữ trắng đo bằng pixel thật trên 10 thẻ có trên trang: thấp nhất
+**18,95:1**. Phép đo này bắt được vệt sáng cục bộ mà trung bình `đáy` bỏ sót.
+
+**Cổng.** Web: typecheck sạch, eslint 0 cảnh báo, vitest 488/488, build thành
+công, 41 ảnh vào `dist/covers`. Mobile: typecheck sạch, eslint 0 cảnh báo,
+jest 131/131 trên 28 bộ.
+
+**Còn nợ, đã ghi vào README.** `topic-entrepreneurship.jpg` chụp bảng phấn đầy
+chữ tiếng Anh cỡ lớn. Tiêu chí trong README loại đúng loại ảnh này vì nó đụng
+với chữ của chính thẻ; bản 3:1 cũ chỉ lộ một phần bảng, khung vuông lộ gần
+hết. Hạ sáng làm chữ phấn chìm bớt nhưng không chữa gốc — chủ đề "Khởi nghiệp"
+cần một bức ảnh khác. Chưa commit gì.
+
+## 2026-11-02 — Dựng lại trang Cài đặt tài khoản theo mockup
+
+**Yêu cầu.** Người dùng gửi một ảnh màn Cài đặt tài khoản với dải hồ sơ ở đầu,
+cột khu vực dọc bên trái và các thẻ Hồ sơ / Bảo mật / Giao diện / Đăng xuất.
+Ảnh không khớp mã đang chạy (4 tab ngang, mỗi lần một tab), nên đây là bản
+thiết kế lại cần dựng.
+
+**Luật áp dụng.** Đây là màn hình ứng dụng trong một app đã có art direction
+(commit 34267ac), nên theo `taste-skill` tôi **không rút style mới** mà khớp
+với xung quanh, và dùng `references/app-screens.md` làm bộ luật.
+
+**Một chỗ cố ý làm khác mockup.** Mockup xếp cả bốn thẻ cùng lúc bên cạnh một
+cột điều hướng. §8.2 ("One view per area") và §3.2 nói ngược lại, và nói rõ đó
+là kết luận từ thử nghiệm: *"a sidebar that scroll-spies one long page was
+marked down twice"*. Ảnh mockup cũng cho thấy hệ quả — cột trái mang ba mục
+rồi để trống ~1100px, đúng cái void mà §8.2 gắn cờ. Nên mỗi mục mở một khung
+riêng (giữ nguyên hành vi của mã cũ, chỉ đổi tab ngang thành cột dọc), và khối
+Đăng xuất đặt dưới cột trái: nó thuộc về cả tài khoản, và nó lấp chỗ trống đó
+bằng một thứ có thật.
+
+**Hai lỗi có thật sửa kèm.**
+
+1. *Bộ chọn màu avatar không nói được nó làm gì.* `avatar-picker.css` khai màu
+   riêng, và `--navy`, `--teal`, `--plum` **cùng trỏ vào `var(--muc)`** — ba ô
+   đen giống hệt nhau, và không ô nào trong sáu ô mang màu nó sẽ đặt.
+   `EntityAvatar` có sẵn bảng màu thật mà bộ chọn bỏ qua hoàn toàn. Đã tách
+   bảng ra `components/avatar-colours.ts` làm nguồn duy nhất; ô màu tô nội
+   tuyến từ đó, nên hai chỗ không lệch được nữa. Có test khóa lại: sáu ô phải
+   ra sáu màu khác nhau và khớp đúng bảng.
+2. *Danh sách thiết bị bịa.* Khu vực Bảo mật liệt kê "MacBook Pro - Chrome" và
+   "iPhone 13 - Safari" ở "Hà Nội, Việt Nam", kèm nút đăng xuất từng máy. Tất
+   cả viết cứng trong mã, không hỏi máy chủ, nút không nối vào đâu. Một màn
+   bảo mật bịa thông tin về chính bảo mật của người dùng thì tệ hơn là không
+   có màn đó. Đã gỡ; dựng lại khi Core API có endpoint phiên đăng nhập. Có
+   test khóa lại.
+
+**Giữ lại thứ mockup bỏ sót.** Mockup chỉ vẽ hai ô giao diện (Sáng, Tối). Lựa
+chọn thứ ba — theo hệ thống — vẫn giữ: nó là mặc định của tài khoản chưa chọn
+gì, là thứ đoạn script chạy-trước-khi-vẽ trong `index.html` đọc, và chữ "Luôn"
+trong nhãn hai ô kia chỉ có nghĩa khi ô này tồn tại. Cả ba ô nay có ô xem
+trước vẽ bằng khối màu; ô "theo hệ thống" cắt chéo làm đôi.
+
+**Ba lỗi phát hiện khi đo bản vừa dựng.**
+
+- Mục đang mở tô bằng `--be-mat`, mà nền vỏ ứng dụng đúng là `#f6f7f9` — cùng
+  một màu, nên không nhìn ra mục nào đang mở. Khối Đăng xuất cũng vậy. Một bậc
+  nền chỉ là một bậc khi nó khác thứ nằm dưới. Cả hai lên màu giấy.
+- Các ô mật khẩu rộng 180px trong thẻ rộng 828px, để lại dải chết 600px bên
+  phải mỗi ô. `flex: 1` chỉ có tác dụng khi ô cha là flex; ô tên hiển thị nằm
+  trong một hàng flex nên đúng, còn ô mật khẩu nằm thẳng trong một div thường
+  nên co về bề rộng mặc định. Thêm `inline-size: 100%`; đo lại còn 778px, lề
+  phải 25px đúng bằng padding của thẻ.
+- `box-shadow` dùng làm vòng chọn bị máy đo gắn cờ. Ô giao diện đổi sang viền
+  2px cố định chỉ đổi màu — sạch hơn và không nhảy khi chọn. Vòng quanh ô màu
+  giữ nguyên kèm lý do: làm bằng viền thì phải ăn vào trong 28px của ô và thu
+  nhỏ chính mảng màu nó đang trưng ra.
+
+**Đo.** Tương phản cả ba khung × hai chế độ: 0 chỗ dưới ngưỡng, thấp nhất
+**4,75:1** (nút "Lưu" khi vô hiệu — §8.1 yêu cầu nút disabled vẫn đọc được).
+Tên và email trên dải hồ sơ đo bằng pixel vì có ảnh nền: 18,02:1 và 8,81:1.
+Khổ hẹp: cột khu vực gập thành một hàng cao 40px, thẻ bắt đầu ở y=284 (390px)
+và y=310 (768px), không tràn ngang.
+
+**Cổng.** `lint.mjs --app`: 0 FAIL, 0 WARN. typecheck sạch, eslint 0 cảnh báo,
+107 file CSS 0 lỗi cú pháp, vitest **497/497 trên 71 file** (thêm 9 test mới
+cho trang này — trước đó trang không có test nào), build thành công.
+`settings-page.tsx` từ 465 dòng xuống 124; mọi tệp dưới 300 dòng trừ bảng kiểu
+429 dòng, nằm trong mức 500 mà AGENTS.md cho phép với UI phức tạp.
+
+**Chưa chạy được.** `inspect.mjs` của skill không đăng nhập được (không có
+tham số phiên), nên trang sau đăng nhập không đưa qua máy đo ấy được. Mọi số
+ở trên là tự đo bằng Playwright có đăng nhập.
+
+**Còn nợ.** Chủ đề "Khởi nghiệp" vẫn cần ảnh khác (ghi ở mục trước). Chưa
+commit gì.
+
+## 2026-11-02 — Ảnh nền cho dải chào trên Expo, và thẻ truy cập nhanh
+
+**Yêu cầu.** Ba việc: (1) đổi nền dải chào trên mobile sang bức ảnh người dùng
+gửi, (2) ảnh đang không hiển thị hết, (3) thẻ "Truy cập nhanh" không giống các
+thẻ bên dưới.
+
+**Một điều kiểm được trước khi làm.** Ảnh chụp người dùng gửi có sẵn vầng sáng
+và các trang tài liệu ở dải đầu, nhưng `workspace-hero.tsx` không có `Image`
+nào và màn Workspace chỉ dựng từ đúng một hero. Vậy ảnh thứ hai là mockup,
+không phải trạng thái đang chạy.
+
+**(1) và (2) — ảnh nền.**
+
+- Ảnh gốc 1170×2532 PNG 2,2 MB. Nội dung (vầng sáng, các trang tài liệu) nằm
+  gọn trong ~745px đầu; phần dưới gần như đen. Cắt lấy 1170×1200, mã hoá JPEG
+  **baseline** q=88 → **80 KB**, lưu ở `mobile/assets/images/workspace-hero.jpg`.
+- *Không* dùng `resizeMode="cover"` trên cả dải: ảnh rất cao còn dải rộng và
+  thấp, nên `cover` canh giữa và cắt mất đúng khúc trên — chính là "không hiển
+  thị hết". Thay bằng một `<Image>` tuyệt đối lấy trọn bề ngang với
+  `aspectRatio: 1170/1200`, nằm trong một khung `overflow: 'hidden'`, nên mép
+  trên của ảnh luôn trùng mép trên của dải.
+- Ba vòng tròn đồng tâm vẽ tay đã bỏ: ảnh mang hoa văn của riêng nó, chồng cả
+  hai lên nhau thì thành hai lớp trang trí đánh nhau.
+
+**Phép đo lật ngược giả định đầu tiên.** Tôi định dùng một lớp phủ chuyển
+ngang (tối bên trái, nơi có chữ). Lấy mẫu pixel theo đúng vùng từng dòng chữ
+sẽ nằm cho thấy vầng sáng đạt **99%** độ sáng ngay dưới dòng chào, và các tia
+sáng ngang kéo cả sang trái — lớp phủ ngang để lại 2,04:1. Ảnh này không cõng
+nổi chữ trắng ở cường độ đầy.
+
+Dò độ mờ trên nền navy `#151F42` (đúng màu dải chào trên web, nên hai client
+đọc ra là một sản phẩm):
+
+| độ mờ | thương hiệu | ngày | lời chào | ô hỏi | ô số liệu |
+| --- | --- | --- | --- | --- | --- |
+| 0,34 | 6,17 | 11,55 | **5,31** | 5,39 | 5,81 |
+| 0,40 | 5,20 | 10,83 | **4,39** | 4,46 | 4,85 |
+
+Chọn **0,34**: thấp nhất 5,31:1. Từ 0,40 lời chào đã tụt dưới AA.
+
+**Ô số liệu làm đặc.** Nền `rgba(255,255,255,0.16)` để vùng sáng của ảnh xuyên
+qua, nên nền ô đổi theo từng điểm trên ảnh và không đo được — đúng lỗi đã gặp
+ở dải chào trên web hôm nay. Thay bằng `#3A4360` (trắng 16% phủ trên `#151F42`,
+nên hình dáng không đổi): chữ trắng 9,76:1, chữ phụ 7,17:1. Nút biểu tượng ở
+hàng trên cùng xử lý y hệt.
+
+**(3) — thẻ truy cập nhanh.** Khác biệt thật nằm ở cấu trúc, không phải ở ảnh:
+thẻ trong danh sách để ảnh tràn kín cả thẻ, phủ một lớp tối rồi viết chữ đè
+lên; thẻ truy cập nhanh tách ảnh thành một dải 206px rồi thêm một chân trắng
+mang tên và số liệu. Hai hàng thẻ trên cùng một màn hình vì thế đọc ra là hai
+thành phần khác nhau. Đã dựng lại thẻ truy cập nhanh theo đúng khuôn thẻ dưới:
+300×206 (giữ tỷ lệ 16/11 của bộ ảnh), ảnh tràn kín, scrim
+`rgba(8,12,24,0.52)`, nhãn quyền riêng tư và "Mới nhất" ở hàng trên, tên và số
+liệu ở đáy, tất cả viết đè lên ảnh.
+
+**Test.** Hai component này trước đây **không có test nào**, nên một `require`
+sai đường dẫn hay một ô mất chữ không ai bắt được. Thêm 9 test ở
+`__tests__/workspaces/`. Ba lần thử sai trước khi khớp khuôn của dự án: jest ở
+đây chỉ nhận `**/__tests__/**`, các test hiện có dùng `import React` và
+`await render(...)`, và bản `@testing-library/react-native` này không có
+`UNSAFE_getAllByType` — đổi sang duyệt cây `toJSON()`.
+
+**Cổng.** typecheck sạch, eslint 0 cảnh báo, jest **140/140 trên 30 bộ**
+(trước 131/28).
+
+**Lưu ý khi chạy.** Hôm nay bộ ảnh bìa đã bị ghi đè tại chỗ và thêm một ảnh
+mới. Metro lưu đệm bảng tài sản theo hash, nên phải khởi động lại với
+`npx expo start --clear`; nếu không, ảnh cũ hoặc ảnh hỏng sẽ được phục vụ và
+`WorkspaceCover` rơi về chữ cái. Đã kiểm 40 tệp trong `mobile/assets/covers`:
+baseline, 1000×688, không tệp nào lỗi. Chưa commit gì.
+
+## 2026-11-02 — Màn hình Tài khoản trên Expo theo mockup, không đụng thanh tab
+
+**Yêu cầu.** Dựng lại `app/(tabs)/account.tsx` theo ảnh mockup: dải đầu nền
+tối mang tiêu đề, ba thẻ HỒ SƠ / GIAO DIỆN / BẢO MẬT. Người dùng dặn rõ **giữ
+nguyên thanh điều hướng dưới**, nên `UCLiquidGlassTabBar` và prop `tabBar`
+trong `(tabs)/_layout.tsx` không bị chạm tới. Mockup vẽ 5 ô tab và một nút
+tròn ở giữa, khác 4 tab hiện tại — đã bỏ qua phần đó đúng theo lời dặn.
+
+**Header của trình điều hướng phải tắt.** Dải đầu tự mang chữ "Tài khoản";
+để `headerShown` bật nữa thì tiêu đề hiện hai lần chồng nhau. Đã đặt
+`headerShown: false` **chỉ trên `Tabs.Screen name="account"`**, không đổi
+`screenOptions` dùng chung. Đây là header trên, không phải thanh tab dưới.
+
+**Thanh trạng thái.** `app/_layout.tsx` đặt `barStyle="dark-content"` toàn
+cục; trên dải đầu tối thì giờ và pin biến mất. Không dùng component
+`StatusBar` lồng trong màn hình: các tab vẫn nằm trong bộ nhớ sau lần ghé đầu,
+nên nó sẽ không trả lại kiểu cũ khi chuyển tab. Dùng `useFocusEffect` của
+expo-router, đặt khi màn hình được hiện và trả lại khi rời đi.
+
+**Không tự nghĩ ra endpoint.** Core API đã có sẵn đủ: `PATCH /users/me`,
+`PUT|DELETE /users/me/avatar`, `PATCH /users/me/avatar-color`,
+`GET /users/{id}/avatar`. Bảng sáu màu lấy theo enum `AvatarColor`
+(navy, teal, plum, moss, clay, slate) chứ không bịa hex theo ảnh mockup; ô đen
+cuối hàng là "màu tự động", tức `color` rỗng, giống nút "Tự động" trên web.
+
+**Chọn ảnh bằng `expo-document-picker`.** `expo-image-picker` chưa có trong
+`package.json` và AGENTS.md cấm thêm gói chưa duyệt, nên lọc theo
+`image/png|jpeg|webp` bằng bộ chọn tệp đã có. Chặn trước mốc 2 MiB của
+`SquareImageEncoder` để không tốn một lượt tải lên chắc chắn bị từ chối.
+
+**Ảnh đại diện cần Authorization.** Endpoint không mở, nên `<Image>` nhận
+header Bearer; thêm `?v=` tăng dần vì máy chủ trả `private, max-age=300` và
+thiếu nó thì ảnh cũ còn hiện năm phút sau khi vừa đổi.
+
+**Ô "Tối" chưa đổi được, và nói thẳng ra.** Bản di động không có hệ chủ đề:
+mọi màn hình khai màu cố định. Dựng nửa vời chế độ tối sẽ làm hỏng những màn
+còn lại, nên ô vẫn hiện đúng mockup nhưng kèm một dòng nói rõ đang hoàn thiện,
+và chạm vào thì giải thích thay vì đổi trạng thái rồi không làm gì.
+
+**Đăng xuất giữ lại.** Mockup cắt ngang ở thẻ BẢO MẬT nên không thấy nút đăng
+xuất của bản cũ. Bỏ hẳn thì người dùng không còn đường thoát phiên, nên nó
+thành một dòng trong thẻ BẢO MẬT, vẫn hỏi xác nhận như trước.
+
+**Tách tệp.** Màn hình cũ là một tệp 251 dòng gồm cả bố cục lẫn style. Bản mới
+chia theo `src/features/account/`: `account-api.ts`, `avatar-colours.ts`,
+`components/` (hero, section, avatar-picker, member-avatar), `sections/`
+(profile, appearance, security). Tệp lớn nhất 181 dòng.
+
+**Một mock của jest bị thiếu.** `jest.setup.js` giả lập `expo-router` nhưng
+không có `useFocusEffect`, nên màn nào dùng hook này cũng đổ. Đã thêm.
+
+**Test.** 7 bộ mới, 38 test ở `__tests__/features/account/`.
+
+**Cổng.** `tsc --noEmit` sạch, `eslint .` 0 cảnh báo, jest **178/178 trên 37
+bộ** (trước 140/30). Cảnh báo "worker force exited" chỉ hiện khi chạy song
+song nhiều bộ; `--detectOpenHandles` (chạy tuần tự) không tìm ra handle nào —
+cùng họ với ghi chú bộ nhớ sẵn có trong `jest.config.js`. Một lần chạy **không
+gồm** các bộ mới cũng đã OOM một worker, nên nguyên nhân không nằm ở chúng.
+Chưa commit gì.
+
+## 2026-11-02 — Ảnh nền mới cho dải chào Workspace, và bỏ header "Không gian làm việc"
+
+**Hai việc.** Thay ảnh nền dải chào ở màn Workspace bằng ảnh người dùng đưa,
+và bỏ thanh tiêu đề "Không gian làm việc" phía trên. Thanh tab dưới không bị
+chạm tới, đúng như lần trước.
+
+**Header, không phải thanh tab.** `Tabs.Screen name="index"` nay mang
+`headerShown: false`. Dải chào đã có thương hiệu, ngày và lời chào, và nó dùng
+`SafeAreaView edges={['top']}` tức là vốn được viết để nằm sát mép trên; một
+thanh tiêu đề nữa chỉ chen vào giữa. `screenOptions` dùng chung giữ nguyên,
+nên hai tab Hội thoại và Bảng tin vẫn còn header của chúng.
+
+**Thanh trạng thái.** Bỏ header thì nền tối chạy lên dưới thanh trạng thái, mà
+`app/_layout.tsx` đặt `dark-content` toàn cục — giờ và pin biến mất. Dùng lại
+cách đã làm ở màn Tài khoản: `useFocusEffect` đặt `light-content` khi màn được
+hiện và trả lại khi rời đi, chứ không lồng component `StatusBar`, vì các tab
+vẫn nằm trong bộ nhớ sau lần ghé đầu nên nó sẽ không tự trả lại.
+
+**Ảnh: cắt chứ không thu nhỏ.** Ảnh gốc 1170×2532 (2,29 MB PNG), nhưng khoảng
+65% phía dưới gần như đen tuyền và dải chào không bao giờ hiện tới đó. Cắt lấy
+1170×1200 — đúng tỉ lệ ảnh cũ, nên `aspectRatio: 1170 / 1200` trong
+`workspace-hero.tsx` không phải đổi một chữ nào — rồi mã hoá JPEG chất lượng
+88: **113 KB**. Vùng nhìn thấy không đổi: ở bề ngang 390pt, ảnh cao 400pt và
+dải chào cao ~295pt, tức hiện tới y≈885 của ảnh gốc; cả vầng sáng lẫn toàn bộ
+chồng tài liệu đều nằm trong đó.
+
+**Không có công cụ ảnh nào trên máy.** Không Pillow, không ImageMagick
+(`/c/Windows/system32/convert` là lệnh định dạng ổ đĩa của Windows, không phải
+ImageMagick), không sharp. Dùng `jimp-compact` vốn đã nằm sẵn trong
+`mobile/node_modules` theo chuỗi phụ thuộc của Expo, chạy bằng một script để
+trong thư mục nháp. Không cài thêm gói nào.
+
+**Độ mờ giữ nguyên 0,34.** Ảnh mới sáng hơn ảnh cũ ở nửa phải (vầng sáng và
+các trang trắng), nên không có lý do để tăng. Phép đo ngày 2026-11-02 đã ghi:
+từ 0,40 lời chào tụt xuống 4,39:1, dưới AA. Chữ nằm ở nửa trái, nơi ảnh gần
+như đen; ô số liệu và nút chuông vẫn là nền đặc `#3A4360` nên ảnh phía sau
+không ảnh hưởng gì tới chúng.
+
+**Ảnh cũ chưa từng được commit.** `git status` báo `?? workspace-hero.jpg`:
+tệp hôm nay được tạo lúc 02:06 và chưa vào chỉ mục, nên không có bản cũ trong
+lịch sử để quay lại.
+
+**Cổng.** `tsc --noEmit` sạch, `eslint .` 0 cảnh báo, jest **178/178 trên 37
+bộ** với `--maxWorkers=2`. Ở mức `maxWorkers: '50%'` mà `jest.config.js` đang
+đặt, 8 bộ **không chạy nổi** vì worker chết ("4 child process exceptions") —
+không bộ test nào sai, chỉ là worker hết bộ nhớ, đúng họ với ghi chú sẵn có
+trong tệp cấu hình đó. Chưa đổi cấu hình: đó là lựa chọn ảnh hưởng tới CI.
+
+**Lưu ý khi chạy.** Metro lưu đệm tài sản theo hash, nên phải khởi động lại
+bằng `npx expo start --clear`; không thì ảnh cũ vẫn được phục vụ. Chưa commit.
+
+## 2026-11-02 — Metro chết vì máy hết commit memory, không phải vì code
+
+`npm run dev` ở `mobile` thoát với mã `3221226505` = `0xC0000409`
+(`STATUS_STACK_BUFFER_OVERRUN`), một crash tầng native của Node. Nhật ký dựng
+lại được:
+
+```
+Starting Metro Bundler
+<--- Last few GCs --->
+[39816] 83 ms: Scavenge 5.7 (7.3) -> 5.4 (10.0) MB ...
+FATAL ERROR: Zone Allocation failed - process out of memory
+```
+
+**Chẩn đoán.** "Out of memory" trong khi heap chỉ 5,4 MB thì không phải tràn
+heap của V8: hệ điều hành từ chối cấp vùng nhớ. Đo lúc đó:
+`FreePhysicalMemory` **347 MB** trên 14.188 MB, `FreeVirtualMemory` (hạn mức
+commit) **1.579 MB** trên 30.572 MB. Metro chết ngay khi dựng zone đầu tiên
+của V8, trước khi đọc bất kỳ tệp nguồn nào — nên không liên quan tới các thay
+đổi ảnh nền hay header của hôm nay.
+
+**Thủ phạm nằm ngoài dự án.** MariaDB (`mysqld.exe`, dịch vụ auto-start) giữ
+**2.137 MB** commit với working set chỉ 1 MB — nằm im hoàn toàn nhưng vẫn
+chiếm đúng phần hạn mức Metro cần; cộng 4 thể hiện SQL Server Express
+(`SQLEXPRESS` đến `SQLEXPRESS03`) **1.690 MB**. Grep toàn bộ `*.yml`, `*.xml`,
+`*.properties`, `.env` của repo: **không một dòng nào** nhắc mysql hay mssql.
+Dự án dùng PostgreSQL.
+
+**Việc đã làm, sau khi người dùng chọn.** Dừng 5 dịch vụ đó và đặt `StartType`
+về `Manual` để không tái diễn sau mỗi lần khởi động máy. Cần quyền admin, nên
+chạy qua UAC bằng script trong thư mục nháp. **Không xoá, không gỡ, không
+chạm vào dữ liệu của chúng** — chỉ dừng tiến trình và đổi chế độ khởi động.
+Kết quả: free physical 347 MB → **4.951 MB**, free commit 1.579 MB →
+**9.858 MB** (nhiều hơn 3,8 GB dự tính, vì Windows nhân đó thả cả phần nén và
+cache).
+
+**Sửa lại một kết luận trước đó.** Mục trên có ghi 8 bộ jest "không chạy nổi"
+ở `maxWorkers: '50%'` và quy cho ghi chú bộ nhớ trong `jest.config.js`. Cùng
+một nguyên nhân gốc: hạn mức commit của máy, không phải cấu hình jest. Vậy
+**không nên** hạ `maxWorkers` trong `jest.config.js` — làm thế là chữa triệu
+chứng trên máy này và đổi lấy việc CI chạy chậm hơn. Cấu hình giữ nguyên.
+
+## 2026-11-02 — Trang nhóm theo mockup, và hai trường mới ở Core API
+
+Người dùng đưa mockup trang nhóm và yêu cầu dựng theo, **giữ nguyên ảnh bìa
+đang hiển thị**. Sidebar trong mockup trùng khớp `side-nav-bar.tsx` hiện có
+(cùng nhãn, cùng phụ đề, cùng "Tải tài liệu mới" và "Đổi Workspace") nên không
+đụng tới. Khác biệt nằm trọn ở cột chính.
+
+**Hai chi tiết trong mockup không có dữ liệu đứng sau, đã hỏi trước khi làm.**
+
+1. Dải "Trợ lý AI đã trả lời dựa trên tài liệu hiện có": bảng
+   `discussion_replies` có `is_ai_answer` và có `AiReplyService`, nhưng
+   `DiscussionResponse` không trả cờ nào. Người dùng chọn **thêm vào Core API**.
+2. "Trả lời dựa trên 5 tệp đã sẵn sàng": chỉ có `documentCount` (tổng), không
+   có số tệp READY. Người dùng chọn **bỏ con số**. Thẻ ghi "Trả lời dựa trên
+   tài liệu của nhóm, kèm trích dẫn nguồn." Lý do kỹ thuật ủng hộ lựa chọn này:
+   tệp chưa ăn xong thì trợ lý không đọc được, nên một con số có thể sai sẽ tự
+   phá chính lời hứa "có căn cứ" của thẻ.
+
+**`hasAiAnswer` không có giá trị mặc định ngầm.** Cả hai factory của
+`DiscussionResponse` đều nhận nó như tham số bắt buộc. Một factory tự điền
+`false` sẽ khiến mọi chỗ gọi lặng lẽ nói dối; năm chỗ gọi nay mỗi chỗ mang giá
+trị đúng của nó — `createDiscussion` là `false` **theo cấu trúc** (bài vừa tạo
+chưa có reply nào, không cần truy vấn), các đường một-bài hỏi
+`hasAiAnswer(id)`, danh sách gom `findIdsWithAiAnswer` **một truy vấn cho cả
+trang** vì dấu này vẽ trên mọi thẻ.
+
+**`postCount` thay vì dùng `recentPostCount` cho huy hiệu tab.**
+`recentPostCount` chỉ đếm bài trong một tuần, nên nhóm 200 bài mà tuần qua im
+ắng sẽ hiện "Bài viết 0". Thêm `countGroupedByWorkspaceIds` vào
+`DiscussionRepository` và `postCount` vào `WorkspaceCardStats`. Rẻ: loader đã
+gom một truy vấn nhóm cho mỗi thống kê trên **cả trang**, nên đây là một truy
+vấn nữa cho cả trang chứ không phải mỗi thẻ — cùng hình dạng chi phí với ba
+thống kê sẵn có. Tab "Giới thiệu" không có số: mô tả thì có hoặc không, và
+"Giới thiệu 1" nói ít hơn chính chữ đó. Số 0 không hiện.
+
+**Cột phải thuộc về tab Bài viết, không phải cả trang.** Tab Thành viên mà bên
+cạnh lại có thẻ "THÀNH VIÊN" thì nói cùng một chuyện hai lần. Nên
+`discussion-page` tự sở hữu lưới hai cột; Tệp/Thành viên/Giới thiệu giữ nguyên
+bề ngang đầy đủ mà không cần điều kiện nào trong khung trang. Dưới 1100px cột
+phải xuống dưới. Rail đọc cùng mục cache react-query mà group-page đã lấp nên
+không tốn thêm request.
+
+**Thẻ trợ lý dùng cặp token nghịch đảo.** `--color-inverse-surface` /
+`--color-inverse-on-surface` tự lật ở nền tối, nên thẻ vẫn là "nghịch với
+trang" ở cả hai chế độ thay vì chìm vào nền. Không đóng cứng màu tối. Dải trợ
+lý trên thẻ bài viết cũng không mang màu nhấn mới: khối token trong
+`styles/index.css` ghi rõ accent được giữ khan hiếm, nên dải dùng đúng nền nhạt
+mà pill "chưa có lời giải" đang dùng.
+
+**"Xem" mở bình luận tại chỗ, không điều hướng đi.** Câu trả lời của trợ lý
+chính là một trong các reply nằm ngay đó; đẩy người đọc sang trang khác để xem
+một reply mà thẻ này vẽ được sẽ làm mất chỗ họ đang đứng trong danh sách.
+
+**Đã làm lộ một lỗi có sẵn, không im lặng vá cũng không im lặng giữ.** Kiểu TS
+`DiscussionResponse` khai `hasAcceptedAnswer` và `isBookmarked` mà server chưa
+từng gửi. `hasAcceptedAnswer` không chỗ nào đọc — đã bỏ. `isBookmarked` thì
+nút "Lưu" ở `post-detail-page.tsx` đang đọc, nên nút đó **không bao giờ phản
+ánh đúng trạng thái**; để kiểu là tuỳ chọn cho đúng sự thật và báo lại người
+dùng, vì sửa thật cần server trả trường đó chứ không phải sửa ở client. Pill
+"Đã có lời giải" suy từ `acceptedReplyId`, trường server có gửi thật.
+
+**Giữ nguyên ảnh bìa như người dùng dặn.** `CoverBanner`/`WorkspaceCover` không
+đổi; chỉ nâng chiều cao dải 168→220px (640px trở xuống: 124→150px) và dấu nhóm
+52→72px cho đúng tỉ lệ mockup. Hàng danh tính vẫn nằm trên nền trắng đè lên mép
+dưới của bìa, **không** đặt chữ lên chính ảnh: bìa ở đây là ảnh chụp theo chủ
+đề, và chữ sẫm trên một ảnh bất kỳ thì không đọc được. Đây là chỗ duy nhất
+không theo sát nghĩa đen của mockup, và đã nói rõ với người dùng.
+
+**Cổng.** Core API `test`: **489 test xanh** (gồm 5 test mới cho `hasAiAnswer`
+và 2 test mới cho `postCount`). Frontend: `tsc --noEmit` sạch, `eslint .` 0 lỗi,
+`vitest run` **75 tệp / 520 test xanh** (gồm 17 test mới).
+
+**Chưa chứng minh được.** JPQL mới chỉ được Spring Data phân tích lúc khởi động
+ứng dụng, mà dự án **không có `@SpringBootTest` nào** và Docker không chạy nên
+`*PostgresIT` cũng không thực thi được. Test đơn vị mock repository nên không
+chạm tới JPQL. Tiến trình core-api đang chạy (pid 4764, cổng 8082) mang code cũ
+và health báo **DOWN** từ trước — RabbitMQ 5672, ChromaDB 8000 và Ollama 11434
+đều đóng. Việc xác minh JPQL cần một lần khởi động lại core-api, chưa làm vì
+`AGENTS.md` yêu cầu phê duyệt trước khi khởi động lại trên database dùng chung.
+
+## 2026-11-02 — Ba tab còn lại của trang nhóm, và một lỗi màu avatar có sẵn
+
+### Lỗi có sẵn, chưa từng bị bắt
+
+`User.avatarColor` dùng `@Enumerated(EnumType.STRING)` nên JPA ghi **tên enum
+chữ hoa** `"NAVY"`, trong khi `chk_users_avatar_color` ở migration **V24** chỉ
+nhận `('navy','teal','plum','moss','clay','slate')` — **chữ thường**. Mọi lần
+chọn màu avatar đều vi phạm constraint, nên avatar chữ cái ở mọi nơi âm thầm
+rơi về màu suy từ tên. Không test nào chạm tới nhánh này (grep toàn bộ
+`core-api/src/test`: `AvatarServiceTest` không có một dòng nào về màu).
+
+Sửa bằng `AvatarColorConverter` chứ **không** bằng migration: JavaDoc của
+`AvatarColor.key()` vốn đã ghi chữ thường là dạng lưu trong DB, và **không có
+dòng nào cần viết lại** vì constraint đã từ chối sạch mọi giá trị chữ hoa.
+Chiều đọc chấp nhận cả hai dạng, để một dòng lạc loài không làm hỏng cả truy
+vấn. Ghi chú về `AttributeConverter` trong `DiscussionReply` chỉ áp cho `jsonb`;
+`avatar_color` là `VARCHAR(16)` nên converter hợp lệ ở đây.
+
+### Thành viên — nối dây bản dựng mồ côi
+
+Repo **đã có sẵn** `member-table.tsx`, `invite-form.tsx`, `member-hooks.ts` và
+`ROLE_LABELS` ("Chủ sở hữu", "Biên tập viên", "Người xem") khớp đúng từng chữ
+mockup, nhưng `index.ts` lại export bản cũ dạng `<table>` in thẳng `OWNER`,
+`VIEWER` và báo lỗi bằng `alert()`. Người dùng chọn nối dây bản mới và xoá bản
+cũ.
+
+Đã làm: `member-list.tsx` (danh sách thay vì bảng — ba dữ kiện mỗi dòng thì một
+hàng tiêu đề chỉ tốn chỗ để gọi tên thứ mà mỗi dòng đã tự nói), `member-panel.tsx`
+(container: hooks + modal mời + lỗi inline). **Chuyển sang bản mới** hành vi mà
+chỉ bản cũ có: workspace RIÊNG TƯ thì thay nút mời bằng đường dẫn đổi sang Chia
+sẻ — kèm đúng 4 test của bản cũ.
+
+Xoá: `components/member-table.{tsx,css,test.tsx}` và `member-table.tsx` ở gốc.
+**Sao lưu trước khi xoá** vào thư mục nháp vì `components/member-table.css` có
+thay đổi chưa commit (chỉ 1 dòng bị xoá, nhưng không có bản nào trong lịch sử).
+
+`MemberPanel` cần auth context cho nhãn "Bạn" mà bản cũ thì không, nên
+`workspace-shell.test.tsx` vỡ: nó mock đúng đường dẫn module vừa bị xoá, mock
+thành vô hiệu và component thật được render. Đã trỏ mock sang module mới.
+
+### Cùng một kiểu trùng lặp ở documents
+
+`documents/document-table.{tsx,css}` và `document-schema.ts` ở gốc **hoàn toàn
+không ai tham chiếu** — `document-page.tsx` dùng `./components/document-table`.
+`document-schema.ts` còn khai một `DocumentStatus` thứ hai cạnh tranh với
+`document-api.ts`. Đã xoá cả ba theo đúng tiêu chí người dùng vừa chọn cho
+member-table, có sao lưu.
+
+### Tệp — nhãn trạng thái và tách trách nhiệm
+
+Tách `document-status.ts` làm logic thuần: `presentStatus` (bảy trạng thái, mỗi
+cái giữ câu trả lời riêng — tệp lỗi **không** phải tệp đang chạy), `countReady`,
+`duplicatedNames`, `fileKind`. Đếm "x/y tệp đã sẵn sàng" ở client chứ không hỏi
+server: danh sách đã nạp sẵn, và tệp chưa ăn xong thì trợ lý không đọc được nên
+tổng số sẽ nói quá. Badge trùng tên cũng suy ở client — hai tệp cùng tên là
+chuyện bình thường (tải lại), nhưng người chọn xoá cái nào thì không phân biệt
+được.
+
+Bỏ "Định dạng" khỏi cột riêng: một từ ngắn chỉ có nghĩa khi đứng cạnh tên tệp.
+Phân trang chỉ hiện khi có hơn một trang — thanh luôn ghi "Trang 1 / 1" là chrome
+tự báo cáo về chính nó.
+
+`document-table.tsx` **605 → 431** dòng sau khi bóc ra `document-upload-zone`,
+`document-rows`, `document-pagination`, `document-toast` (mỗi cái kèm CSS riêng)
+và `document-status.ts`. 431 nằm trong ngưỡng 500 mà AGENTS.md cho phép với UI
+phức tạp, và container này đúng là phức tạp thật. **Dừng tách ở đây**: bước tiếp
+theo là bóc phần điều phối tải lên (`uploadBatchFiles`/`processFiles`/
+`handleConfirmSplit`, ~145 dòng) thành hook, nhưng luồng đó chưa có test nào bao,
+nên refactor nó lúc này là đánh đổi rủi ro lấy con số.
+
+Thay hai `alert()` còn lại ở đường xoá tệp bằng lỗi inline. Frontend web
+**không có hệ thống toast** nào (thứ mình nhớ là của app mobile), nên lỗi hiện
+ngay trong thẻ; riêng xoá vẫn giữ `confirm()` vì đó là hành động không hoàn tác
+được và biểu tượng thùng rác không tự nói lên điều đó.
+
+### Giới thiệu
+
+Thẻ trợ lý đổi sang cặp token nghịch đảo, cùng bộ với thẻ ở cột phải — cùng một
+lời mời ở hai chỗ thì không nên trông như hai thứ khác nhau. Bỏ badge "RAG": nó
+gọi tên kỹ thuật chứ không gọi tên thứ người đọc nhận được. Mô tả trống giờ mời
+chủ nhóm viết dòng đầu tiên thay vì chỉ thông báo là chưa có; nút cũng đổi theo
+("Thêm mô tả" / "Chỉnh sửa"). Hình các trang tài liệu được **vẽ bằng CSS** chứ
+không kèm ảnh: nó là ba hình chữ nhật, sắc nét ở mọi mật độ điểm ảnh và không
+tốn request.
+
+### Cổng
+
+Core API `mvnw test`: **503 test xanh** (12 test mới: 6 cho converter màu, 6 cho
+avatar thành viên). Frontend: `tsc` sạch, `eslint .` 0 lỗi, `vitest run`
+**79 tệp / 565 test xanh**, `vite build` thành công.
+
+Lần chạy đầu có 1 bộ không khởi động nổi vì worker hết bộ nhớ — Metro mình bật
+ở lượt trước vẫn đang chạy và giữ ~3 GB. Dừng nó xong free commit 2.205 →
+5.234 MB và cả bộ chạy sạch. Cùng nguyên nhân đã ghi ở mục ngày 2026-11-02 về
+`0xC0000409`.
+
+## 2026-11-02 — Màn hình nhóm trên di động theo mockup
+
+### Lỗi có sẵn thứ hai, cùng họ với lỗi màu avatar
+
+`document-list.tsx` so khớp `case 'COMPLETED'`, một trạng thái **Core API chưa
+bao giờ gửi**; nó gửi `PROCESSED`. Nên mọi tệp đã xử lý xong đều rơi vào nhánh
+`default` và hiện **"Đang chờ"**: tệp sẵn sàng lại đọc ra là còn phải đợi, và
+dòng "5/6 tệp sẵn sàng" trong mockup không thể đúng. Kiểu `DocumentItem` cũng
+khai đúng giá trị ma đó (`'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED'`
+thay vì bảy trạng thái thật), và một fixture test đã mã hoá nó.
+
+**Sửa kiểu trước là thứ làm lộ cả hai chỗ gọi.** Một kiểu nói dối thì trình
+biên dịch không giúp được gì; sửa nó xong thì `tsc` chỉ thẳng vào nhánh badge
+và vào fixture. Cũng sửa luôn `userRole` vốn khai `'ADMIN' | 'MEMBER'` — hai
+vai trò Core API không có.
+
+### Màn hình nhóm: dựng lại chứ không phải chỉnh
+
+Trước đây là một thẻ navy ba ô số liệu + ba thẻ "Chức năng chính" dẫn sang các
+màn riêng. Không có tab, không có dải bìa; **Tệp** nằm ở màn riêng, **Thành
+viên** và **Giới thiệu** không tồn tại trên di động, và mobile **chưa có API**
+cho thành viên lẫn bài viết của nhóm.
+
+Người dùng chọn: làm trọn bốn tab, đưa các lối cũ vào menu "...", và dùng lại
+`DiscussionCard` của bảng tin thay vì viết thẻ riêng.
+
+**Số đếm dùng dấu chấm giữa, không dùng pill như bản web.** Trên màn hẹp bốn
+pill cùng lúc biến hàng tab thành một dãy đốm tranh nhau chú ý với chính cái tên
+chúng đang đếm. Số 0 không hiện, và "Giới thiệu" không bao giờ có số.
+
+**Dải bìa giữ ảnh thật của nhóm, không vẽ lại nền phẳng như mockup.** Mockup vẽ
+nền xanh phẳng kèm chữ "M" mờ, nhưng `WorkspaceCover` trên di động phục vụ ảnh
+theo chủ đề — đó là thứ app thật sự hiện, và lượt trước người dùng đã dặn giữ
+ảnh đang hiển thị. Vì bìa là ảnh chụp, nút quay lại và menu **tự mang nền mờ
+riêng** và chữ nằm trên một lớp tối phủ: một biểu tượng trắng trên một tấm ảnh
+bất kỳ thì có lúc đọc được, có lúc không.
+
+**Danh sách thành viên chỉ nạp khi mở đúng mục đó.** Core API từ chối danh sách
+này với mọi vai trò khác chủ sở hữu, nên hỏi trước là chuốc lấy một lỗi; và với
+người không phải chủ, tab nói thẳng lý do thay vì hiện danh sách rỗng trông như
+nhóm không có ai.
+
+**Hai vùng cuộn không lồng nhau.** Giới thiệu và Thành viên nằm trong một
+`ScrollView`; Bài viết và Tệp tự cuộn bằng `FlatList` của chúng và nhận dải bìa
+làm `ListHeaderComponent`. Bọc `FlatList` trong `ScrollView` thì không vùng nào
+cuộn đúng.
+
+**Ba việc chưa có trên di động được nói thẳng chứ không giả vờ.** Sửa mô tả,
+mời thành viên và viết bài hiện chỉ có trên bản web; nút vẫn ở đúng chỗ mockup
+vẽ nhưng báo rõ điều đó qua toast, thay vì im lặng không làm gì.
+
+### Dọn theo
+
+`app/workspace/[id]/documents.tsx` bị thay bằng tab, và không còn gì điều hướng
+tới nó — xoá route cùng mục khai báo trong stack. `workspace-quick-action.tsx`
+chết theo khi ba thẻ "Chức năng chính" biến mất; xoá cùng test của nó, lần này
+**không có hành vi nào để chuyển sang** (test chỉ kiểm tra việc hiện tiêu đề và
+phụ đề), khác với trường hợp member-table ở web. Tất cả đều sao lưu vào thư mục
+nháp trước khi xoá.
+
+### Tách để giữ ngân sách dòng
+
+Thêm `hideGroup`, `pinned` và dải trợ lý đẩy `discussion-card.tsx` từ 296 lên
+379 dòng, và phần JSX của hàm vẽ lên **123 dòng** — vượt hẳn trần 100 của
+AGENTS.md. Tách `post-presentation.ts` (các bảng chữ/màu và `usedReactions`:
+dữ liệu thuần, không cần nhìn thấy gì để đúng) và nâng `PostCardHead` thành
+component riêng. Kết quả: hàm vẽ chính còn **79 dòng JSX**, `PostCardHead` 46
+dòng. Tệp còn 370 dòng nhưng **162 trong số đó là `StyleSheet`**, thứ mà
+AGENTS.md xếp vào nhóm config/schema được phép tới 500.
+
+### Cổng
+
+Mobile: `tsc --noEmit` sạch, `eslint .` 0 lỗi 0 cảnh báo, `jest --maxWorkers=2`
+**43 bộ / 236 test xanh** (trước lượt này 37/178; +6 bộ, +58 test ròng sau khi
+xoá test của component đã chết). Vẫn phải chạy `--maxWorkers=2` vì lý do bộ nhớ
+đã ghi ở mục `0xC0000409`.

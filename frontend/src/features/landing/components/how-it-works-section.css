@@ -1,110 +1,231 @@
-/* How It Works Section */
+/* Khối "Ba bước" và dải kêu gọi khép lại trang. */
 
-.how-it-works {
-  padding: 96px 0;
-  background: var(--color-surface);
+.steps {
+  background: var(--be-mat);
+  padding-block: 0 88px;
 }
 
-.how-it-works__inner {
-  max-width: var(--container-max);
+.steps__inner,
+.closing__inner {
+  max-inline-size: var(--container-max);
   margin: 0 auto;
-  padding: 0 var(--gutter);
+  padding-inline: var(--gutter);
 }
 
-.how-it-works__title {
-  font: var(--font-headline-lg);
-  font-weight: 700;
-  color: var(--color-on-surface);
-  text-align: center;
-  margin-bottom: 64px;
-}
-
-.how-it-works__steps {
+.steps__head {
   display: grid;
-  gap: 32px;
-  position: relative;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
+  align-items: end;
+  gap: 40px;
+  margin-bottom: 36px;
 }
 
-.step-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
-.step-card__icon-box {
-  position: relative;
-  width: 96px;
-  height: 96px;
-  background: var(--color-surface-container-lowest);
-  border: 1px solid var(--color-outline-variant);
-  border-radius: var(--radius-2xl);
-  box-shadow: var(--shadow-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: var(--stack-lg);
-  transition: border-color var(--transition-normal);
-}
-
-.step-card:hover .step-card__icon-box {
-  border-color: var(--color-primary);
-}
-
-.step-card:hover .step-card__icon {
-  transform: scale(1.1);
-}
-
-.step-card__icon {
-  transition: transform var(--transition-normal);
-}
-
-.step-card__number {
-  position: absolute;
-  top: -12px;
-  left: -12px;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-full);
-  color: white;
-  font: var(--font-label-md);
-}
-
-.step-card__title {
-  font: var(--font-headline-md);
-  font-size: 16px;
+.steps__eyebrow {
+  margin: 0;
+  font: var(--font-label-sm);
   font-weight: 700;
-  color: var(--color-on-surface);
-  margin-bottom: var(--stack-sm);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--nhan);
 }
 
-.step-card__desc {
+.steps__title {
+  margin: 12px 0 0;
+  font-family: var(--font-doc);
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: 700;
+  line-height: 1.16;
+  letter-spacing: -0.015em;
+  color: var(--muc);
+}
+
+.steps__note {
+  margin: 0;
+  font: var(--font-body-sm);
+  line-height: 1.65;
+  color: var(--muc-nhat);
+}
+
+.steps__list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: none;
+}
+
+.step {
+  padding: 28px 26px;
+  border-radius: var(--radius-2xl);
+  background: var(--nen);
+}
+
+/* Bước cuối trên nền tối: nó là kết quả, và là chỗ chuỗi ba bước dừng lại. */
+.step--last {
+  background: var(--muc);
+  color: var(--nen);
+}
+
+.step__no {
+  margin: 0;
+  font-family: var(--font-doc);
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--nhan);
+}
+
+.step--last .step__no {
+  color: #5a9bfc;
+}
+
+.step__title {
+  margin: 18px 0 0;
+  font: var(--font-headline-sm);
+  font-weight: 700;
+}
+
+.step__body {
+  margin: 9px 0 0;
+  font: var(--font-body-sm);
+  line-height: 1.6;
+  color: var(--muc-nhat);
+}
+
+.step--last .step__body {
+  color: rgb(255 255 255 / 76%);
+}
+
+/* ---------- Dải kêu gọi ---------- */
+
+.closing {
+  background: var(--be-mat);
+  padding-block: 0 88px;
+}
+
+.closing__inner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 36px;
+  overflow: hidden;
+  padding: 56px 48px;
+  border-radius: var(--radius-2xl);
+  background: #070b1a;
+  color: #ffffff;
+}
+
+.closing__art {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  object-position: center 30%;
+}
+
+.closing__scrim {
+  position: absolute;
+  inset: 0;
+  background: rgb(7 11 26 / 72%);
+}
+
+.closing__copy,
+.closing__actions {
+  position: relative;
+  z-index: 1;
+}
+
+.closing__title {
+  margin: 0;
+  max-inline-size: 16ch;
+  font-family: var(--font-doc);
+  font-size: clamp(24px, 2.6vw, 34px);
+  font-weight: 700;
+  line-height: 1.18;
+}
+
+.closing__body {
+  margin: 12px 0 0;
   font: var(--font-body-md);
-  color: var(--color-on-surface-variant);
-  font-size: 14px;
+  color: rgb(255 255 255 / 80%);
 }
 
-@media (min-width: 768px) {
-  .how-it-works__steps {
-    grid-template-columns: repeat(4, 1fr);
+.closing__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.closing__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 22px;
+  border-radius: var(--radius-full);
+  background: #ffffff;
+  color: #0a0d14;
+  font: var(--font-label-md);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.closing__alt {
+  padding: 12px 22px;
+  border-radius: var(--radius-full);
+  border: 1px solid rgb(255 255 255 / 30%);
+  font: var(--font-label-md);
+  font-weight: 600;
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.closing__cta:focus-visible,
+.closing__alt:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 3px;
+}
+
+/* ---------- Khổ hẹp ---------- */
+
+@media (max-width: 1023px) {
+  .steps,
+  .closing {
+    padding-block-end: 64px;
   }
 
-  /* Connecting line behind the step icons */
-  .how-it-works__steps::before {
-    content: '';
-    position: absolute;
-    top: 48px;
-    left: 10%;
-    right: 10%;
-    height: 2px;
-    background: var(--color-outline-variant);
-    z-index: 0;
+  .steps__head {
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 16px;
   }
 
-  .step-card__icon-box {
-    z-index: 1;
+  .steps__list {
+    grid-template-columns: 1fr;
+  }
+
+  .closing__inner {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 40px 28px;
+  }
+}
+
+@media (max-width: 599px) {
+  .closing__actions {
+    flex-direction: column;
+    align-items: stretch;
+    inline-size: 100%;
+  }
+
+  .closing__cta,
+  .closing__alt {
+    justify-content: center;
+    text-align: center;
   }
 }

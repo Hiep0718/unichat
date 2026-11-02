@@ -131,17 +131,17 @@
 
 .btn-primary {
   padding: 0.625rem 1.25rem;
-  background: var(--muc);
+  background: var(--nhan);
   border: none;
   border-radius: 0.375rem;
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--nen);
+  color: var(--nhan-muc);
   cursor: pointer;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: var(--muc);
+  background: var(--nhan);
 }
 
 .btn-primary:disabled {

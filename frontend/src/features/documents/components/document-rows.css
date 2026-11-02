@@ -1,0 +1,207 @@
+/* ==========================================================================
+   Document rows — the group's files, one row each.
+   ========================================================================== */
+
+.doc-rows {
+  margin-top: 18px;
+}
+
+/* One grid for the heading and every row, so the columns cannot drift apart
+   the way two separate layouts would. */
+.doc-rows__head,
+.doc-row {
+  display: grid;
+  align-items: center;
+  grid-template-columns: minmax(0, 1fr) 110px 150px 36px;
+  gap: 16px;
+}
+
+.doc-rows__head {
+  padding: 0 4px 10px;
+  border-bottom: 1px solid var(--ws-line);
+  color: var(--ws-ink-muted);
+  font: var(--font-label-sm);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.doc-rows__head-size,
+.doc-rows__head-status {
+  text-align: left;
+}
+
+.doc-rows__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.doc-row {
+  position: relative;
+  padding: 14px 4px;
+  border-bottom: 1px solid var(--ws-line);
+}
+
+.doc-row:last-child {
+  border-bottom: none;
+}
+
+/* ---------- Name ---------- */
+
+.doc-row__name {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+/* The kind belongs beside the name, not in a column of its own: it is one
+   short word that only means anything next to the file it describes. */
+.doc-row__kind {
+  flex-shrink: 0;
+  padding: 3px 7px;
+  border-radius: var(--radius-sm);
+  background: var(--ws-warn-bg);
+  color: var(--ws-warn-ink);
+  font: var(--font-label-sm);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.doc-row__name-text {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.doc-row__name-line {
+  overflow: hidden;
+  color: var(--ws-ink);
+  font: var(--font-label-md);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.doc-row__dupe {
+  align-self: flex-start;
+  padding: 2px 7px;
+  border-radius: var(--radius-sm);
+  background: var(--ws-warn-bg);
+  color: var(--ws-warn-ink);
+  font: var(--font-label-sm);
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+
+/* ---------- Size and status ---------- */
+
+.doc-row__size {
+  color: var(--ws-ink-soft);
+  font: var(--font-label-md);
+  font-variant-numeric: tabular-nums;
+}
+
+.doc-row__status {
+  min-width: 0;
+}
+
+.doc-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 11px;
+  border-radius: var(--radius-full);
+  font: var(--font-label-sm);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.doc-pill__dot {
+  width: 6px;
+  height: 6px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: currentcolor;
+}
+
+.doc-pill--ready {
+  background: var(--ws-ok-bg);
+  color: var(--ws-ok-ink);
+}
+
+.doc-pill--working {
+  background: var(--ws-warn-bg);
+  color: var(--ws-warn-ink);
+}
+
+/* Needs attention rather than patience, so it does not share the amber of a
+   file that is merely still working. */
+.doc-pill--blocked {
+  background: var(--ws-warn-bg);
+  color: var(--ws-alert);
+}
+
+/* ---------- Action ---------- */
+
+.doc-row__action {
+  display: inline-flex;
+  justify-content: center;
+}
+
+.doc-row__delete {
+  display: inline-flex;
+  padding: 5px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--ws-ink-muted);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.doc-row__delete:hover {
+  background: var(--ws-warn-bg);
+  color: var(--ws-alert);
+}
+
+.doc-row__delete:focus-visible {
+  outline: 2px solid var(--ws-ink);
+  outline-offset: 2px;
+}
+
+/* ---------- Upload progress ---------- */
+
+/* Drawn along the row's own bottom edge rather than as a bar in the name
+   cell, so an uploading row keeps the same geometry as a settled one. */
+.doc-row__progress {
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  height: 2px;
+  background: var(--ws-accent);
+  transition: width var(--transition-normal);
+}
+
+.doc-row--uploading .doc-row__name-line {
+  color: var(--ws-ink-soft);
+}
+
+@media (max-width: 720px) {
+  .doc-rows__head {
+    display: none;
+  }
+
+  .doc-row {
+    grid-template-columns: minmax(0, 1fr) 36px;
+    gap: 8px 12px;
+  }
+
+  .doc-row__size,
+  .doc-row__status {
+    grid-column: 1;
+  }
+}

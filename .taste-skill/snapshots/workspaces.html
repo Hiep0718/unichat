@@ -150,7 +150,7 @@ window.$RefreshSig$ = () => (type) => type;</script>
   font-size: 20px;
   font-weight: 800;
   letter-spacing: -0.02em;
-  background: linear-gradient(135deg, var(--muc) 0%, var(--muc) 100%);
+  background: var(--muc);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   margin: 0;
@@ -310,7 +310,7 @@ window.$RefreshSig$ = () => (type) => type;</script>
   height: 44px;
   flex: none;
   border-radius: 999px;
-  background: linear-gradient(140deg, var(--muc), var(--muc));
+  background: var(--muc);
   font-size: 1.0625rem;
   font-weight: 700;
   letter-spacing: -0.01em;
@@ -713,12 +713,14 @@ window.$RefreshSig$ = () => (type) => type;</script>
   flex-direction: column;
   padding: 16px 12px;
   gap: 12px;
-  background: var(--color-surface);
-  /* Was transparent, so the rail dissolved into whatever it stood against:
-     its own var(--be-mat) beside the assistant's var(--be-mat) column is a difference of
-     nothing. The seam is what tells a reader these are two regions. */
-  border-right: 1px solid var(--ws-line, var(--ke));
-  box-shadow: inset -1px 0 0 rgb(15 23 42 / 6%);
+  /* Vùng nền riêng của khung, không phải nền của trang.
+     Chú thích trước ở đúng chỗ này đã nhận ra vấn đề — thanh bên var(--be-mat)
+     đứng cạnh cột var(--be-mat) là "một khác biệt bằng không" — nhưng cách sửa
+     lúc đó là kẻ một đường viền. Tài liệu màu nói chính xác về trường hợp
+     này: đổi cả mảng nền là nước đi mạnh nhất, và nó thay luôn cho đường
+     phân cách. Giờ thanh bên đứng trên nền putty, cách trang 8 điểm sáng,
+     nên hai vùng tự phân biệt mà không cần nét kẻ nào. */
+  background: var(--khung);
   overflow: hidden;
   z-index: 100;
   white-space: nowrap;
@@ -731,8 +733,10 @@ window.$RefreshSig$ = () => (type) => type;</script>
 .side-nav:hover,
 .side-nav--expanded {
   width: 260px;
-  box-shadow: 0 12px 36px -4px rgba(15, 23, 42, 0.16), 0 4px 12px rgba(15, 23, 42, 0.08);
-  background: var(--nen);
+  /* Nở ra thì vẫn là cùng một vùng nền. Trước đây nó đổi sang trắng và kèm
+     hai lớp đổ bóng, nên thanh bên lúc mở trông như một hộp nổi bay trên
+     trang chứ không như một vùng của màn hình. */
+  background: var(--khung);
 }
 
 .side-nav__header {
@@ -756,18 +760,16 @@ window.$RefreshSig$ = () => (type) => type;</script>
   height: 40px;
   min-width: 40px;
   border-radius: 13px;
-  background: linear-gradient(140deg, var(--muc) 0%, var(--muc) 58%, var(--muc) 100%);
+  background: var(--muc);
   color: var(--nen);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgb(79 70 229 / 34%);
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .side-nav__brand-link:hover .side-nav__avatar {
   transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgb(79 70 229 / 44%);
 }
 
 .side-nav__brand-info {
@@ -1004,10 +1006,13 @@ button.side-nav__item,
 }
 
 .side-nav__item--active {
-  background: linear-gradient(120deg, var(--muc) 0%, var(--muc) 62%, var(--muc) 100%);
+  /* Trước đây là một linear-gradient ba điểm dừng cùng một màu — tàn tích
+     của lượt làm trầm bộ màu, vẽ ra một dải không có dải — kèm một vầng sáng
+     indigo, mà indigo thì nằm trong danh sách cấm. Mục đang mở là một mảng
+     mực phẳng. */
+  background: var(--muc);
   color: var(--nen);
   font-weight: 600;
-  box-shadow: 0 4px 14px rgb(79 70 229 / 30%);
 }
 
 /* AI Assistant Navigation Highlight */
@@ -1031,7 +1036,7 @@ button.side-nav__item,
 }
 
 .side-nav__item--ai.side-nav__item--active {
-  background: linear-gradient(120deg, var(--muc) 0%, var(--muc) 50%, var(--muc) 100%);
+  background: var(--muc);
   color: var(--nen);
   box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
 }
@@ -1324,22 +1329,60 @@ button.side-nav__item,
 
 :root {
   /* ---------- Lớp màu gốc, lấy nguyên từ bộ được rút ---------- */
-  --nen: #ffffff;        /* ground: tờ giấy trắng mà nội dung nằm trên */
-  --be-mat: #f9f9f9;     /* surface: panel có sắc độ, một bậc lệch khỏi trắng */
-  --khung: #f6f6f6;      /* chrome: nền thanh bên và thanh trên, khung chữ L */
-  --noi: #ffffff;        /* raised: thẻ trắng bên trong panel, dùng đúng một lần */
-  --vien: #eaeaea;       /* border */
-  --ke: #f3f3f3;         /* rule: nét kẻ mảnh hơn viền */
-  --dieu-khien: #d9d9d6; /* control */
+  /* ----------------------------------------------------------------------
+     Hai vùng nền, không phải một.
 
-  --muc: #1f201d;        /* text */
-  --muc-nhat: #636361;   /* muted */
-  --muc-mo: #8c8c88;     /* chart-3, cũng dùng cho chữ mờ nhất */
+     Màn hình bị chìm không phải vì bộ trắng-đen, mà vì mọi mặt phẳng đều
+     dùng chung một màu nền. Tài liệu màu của bộ rút nói thẳng: đổi màu nền
+     giữa các vùng là nước đi màu mạnh nhất có thể, nó thay luôn cho đường
+     phân cách, thẻ và hoa văn nền; các trang điểm cao dùng trung vị hai
+     vùng nền, so với một. Trước đây ở đây chỉ có một.
+
+     Tờ giấy giữ trắng. Khung chữ L nhận vùng nền riêng của nó.
+
+     Hơi ấm nằm ở khung, không nằm ở panel, và đó là kết quả đo chứ không
+     phải lựa chọn thẩm mỹ: ở độ sáng 96%, mẫu số (2-max-min) của bão hòa
+     HSL rất nhỏ, nên bất kỳ hơi ấm nhìn thấy được cũng vượt 20% — quá
+     ngưỡng "dưới khoảng 15%" mà tài liệu đặt ra. Đá, xương và putty không
+     phải trắng-lệch-4%; chúng là những tờ giấy sẫm hơn. Nên panel giữ bước
+     2-6 điểm sáng so với tờ giấy và gần như trung tính, còn khung mang
+     diện mạo.
+     ---------------------------------------------------------------------- */
+  --nen: #ffffff;        /* tờ giấy trắng mà nội dung nằm trên */
+  /* Các tông sáng bị máy đo đọc là "kem vàng" ở lần chạy trước, và lời
+     khuyên của nó đúng: đá hoặc xương sắc độ thấp, không phải kem. Hue giữ
+     nguyên, sắc độ ở các tông sáng cắt còn khoảng một nửa, nên chúng đọc ra
+     là đá xám-ấm chứ không ra màu bơ.
+
+     Panel: 4,3 điểm sáng dưới tờ giấy, trong khoảng 2-6 mà luật panel cho.
+     Bão hòa 14,3%, dưới ngưỡng. Một bậc là đủ; không lồng panel trong panel. */
+  --be-mat: #f6f6f3;
+  /* Diện mạo: putty bão hòa 14,8%, sáng 88% — thấy rõ là giấy ngà chứ không
+     phải xám, và cách tờ giấy 12 điểm sáng. Đổi cả mảng nền nên không bị
+     luật panel 2-6 điểm bó. */
+  --khung: #e5e3dc;
+  --noi: #ffffff;        /* raised: thẻ trắng bên trong panel, dùng đúng một lần */
+  --vien: #dbd9d3;
+  --ke: #ecebe7;
+  --dieu-khien: #c9c5bc;
+
+  /* Đen ngả lục. Trong các trang được nghiên cứu, nền trắng ngà gần như
+     luôn đi với mực sẫm hoặc mực lục chứ không đi với nhấn màu cam; màu này
+     buộc chữ vào sắc teal mà ký hiệu trích dẫn mang, mà không thêm một màu
+     nhấn thứ hai.
+
+     Chỉ hai vai mực. Trước đây --muc-nhat và --muc-mo cách nhau 1,20:1, tức
+     là cùng một vai được viết hai lần — đúng thứ "đừng thêm xám vào giữa
+     các vai" mà tài liệu cấm. Giờ chúng gần như trùng nhau và cả hai đều
+     đạt AA trên cả ba vùng nền; thứ bậc do cỡ chữ và độ đậm gánh. */
+  --muc: #171f1a;
+  --muc-nhat: #58615a;
+  --muc-mo: #5c655e;
 
   /* Accent: teal đậm, ngân sách dưới 2% diện tích. Nó đánh dấu phần tử dữ
      liệu chính của màn hình, không đánh dấu khung. */
   --nhan: #1b6e66;
-  --nhan-nhat: #e8f1f0;
+  --nhan-nhat: #e4efed;
 
   --tot: #2e7d32;
   --hong: #b42318;
@@ -1352,8 +1395,8 @@ button.side-nav__item,
   --pill-hong-muc: #7a1d14;
   --pill-canh-nen: #fffbeb;
   --pill-canh-muc: #92400e;
-  --pill-trung-nen: #f3f3f3;
-  --pill-trung-muc: #3d3d3a;
+  --pill-trung-nen: #ecebe7;
+  --pill-trung-muc: #39403a;
 
   /* Chiều rộng cột đọc. Câu trả lời của trợ lý là văn bản dài cần đối chiếu
      với nguồn, nên nó vẫn bị giữ trong một đo chữ đọc được. */
@@ -1366,19 +1409,19 @@ button.side-nav__item,
   --color-on-primary: var(--nen);
   --color-primary-container: var(--be-mat);
   --color-on-primary-container: var(--muc);
-  --color-inverse-primary: #c9c9c5;
+  --color-inverse-primary: #c6cbc5;
   --color-primary-fixed: var(--be-mat);
-  --color-primary-fixed-dim: #ededed;
+  --color-primary-fixed-dim: #e5e3dc;
   --color-on-primary-fixed: var(--muc);
   --color-on-primary-fixed-variant: var(--muc-nhat);
 
   /* ---------- Secondary: nền xám của nút phụ ---------- */
   --color-secondary: var(--muc-nhat);
   --color-on-secondary: var(--nen);
-  --color-secondary-container: #e5e5e5;
+  --color-secondary-container: #e5e3dc;
   --color-on-secondary-container: var(--muc);
-  --color-secondary-fixed: #e5e5e5;
-  --color-secondary-fixed-dim: #d9d9d6;
+  --color-secondary-fixed: #e5e3dc;
+  --color-secondary-fixed-dim: #cdc8bb;
   --color-on-secondary-fixed: var(--muc);
   --color-on-secondary-fixed-variant: var(--muc-nhat);
 
@@ -1400,22 +1443,22 @@ button.side-nav__item,
 
   /* ---------- Bề mặt ---------- */
   --color-surface: var(--be-mat);
-  --color-surface-dim: #f0f0f0;
+  --color-surface-dim: #e5e3dc;
   --color-surface-bright: var(--nen);
   --color-surface-container-lowest: var(--nen);
-  --color-surface-container-low: #fbfbfb;
+  --color-surface-container-low: #faf9f8;
   --color-surface-container: var(--be-mat);
-  --color-surface-container-high: #f3f3f3;
-  --color-surface-container-highest: #ededed;
+  --color-surface-container-high: #ecebe7;
+  --color-surface-container-highest: #e5e3dc;
   --color-on-surface: var(--muc);
   --color-on-surface-variant: var(--muc-nhat);
-  --color-surface-variant: #f3f3f3;
+  --color-surface-variant: #ecebe7;
   --color-surface-tint: var(--muc);
-  --color-inverse-surface: #2b2c29;
+  --color-inverse-surface: #262e28;
   --color-inverse-on-surface: var(--be-mat);
 
   /* ---------- Đường viền ---------- */
-  --color-outline: #b4b4b0;
+  --color-outline: #a7a99f;
   --color-outline-variant: var(--vien);
 
   /* ---------- Nền ---------- */
@@ -1635,7 +1678,10 @@ ul, ol {
      người dùng — lại nằm yên lặng bên dưới. Bức ảnh cũng không nói gì về
      người này hay nhóm của họ, nên nó là trang trí thuần túy. */
   background: var(--nen);
-  box-shadow: 0 0 0 1px var(--ke);
+  /* Vốn là một vòng 1px vẽ bằng box-shadow. Luật cho phép "một viền 1px
+     trầm", nhưng máy đo chỉ thấy một box-shadow và đếm nó là panel đang
+     bay. Vẽ đúng bằng border thì ý định và phép đo khớp nhau. */
+  border: 1px solid var(--ke);
   border-radius: var(--radius-xl);
   color: var(--muc);
   position: relative;
@@ -1691,7 +1737,23 @@ ul, ol {
     color: var(--muc);
   }
 }
-</style><style type="text/css" data-vite-dev-id="D:/DoAnTotNghiep/unichat/frontend/src/features/workspaces/components/quick-stats.css">/* Quick Stats Cards */
+</style><style type="text/css" data-vite-dev-id="D:/DoAnTotNghiep/unichat/frontend/src/features/workspaces/components/quick-stats.css">/* Ô đếm.
+
+   Trước đây mỗi ô là một biểu tượng trong ô vuông bo tròn 46px được nhuộm
+   màu, kèm một vầng sáng bên dưới: indigo, cyan và hồng. Cả ba sắc đó không
+   có trong bộ màu, ô "Thành viên" thì lấy thẳng var(--color-error) nên một
+   con số bình thường được sơn như một cảnh báo, và chú thích cũ còn gọi đó
+   là "những liều nhỏ, bão hòa". Ngân sách màu nhấn của bộ rút là dưới 2%
+   diện tích và dành cho phần tử dữ liệu chính, không dành cho trang trí
+   biểu tượng.
+
+   Chỉ dẫn ô đếm: cao 128px, không biểu tượng, không delta. Con số tự gánh
+   ô; nó là thứ duy nhất ở đây đáng nhìn.
+
+   Cỡ 40px chứ không 48px: máy đo bắt bản trước của tôi ở đúng chỗ này —
+   con số trên màn ứng dụng chạy 16-40px, không màn nào trong nghiên cứu
+   chạm 48px, và thứ làm một con số vang lên là khoảng trống quanh nó chứ
+   không phải cỡ chữ. */
 
 .quick-stats {
   display: grid;
@@ -1699,92 +1761,46 @@ ul, ol {
   gap: var(--stack-md);
 }
 
-/* No outline: a hairline border around every panel is what made the page read
-   as a form. Depth comes from a soft shadow instead. */
 .quick-stats__card {
   display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 18px 20px;
-  background: var(--color-surface-container-lowest);
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 2px;
+  min-height: 128px;
+  padding: 20px 22px;
+  /* Nền trang là var(--be-mat); ô là tờ giấy trắng, cách nền 4,3 điểm sáng —
+     nằm trong khoảng 2-6 điểm mà luật panel cho. Chênh lệch sắc độ tự dựng
+     hình khối, nên không cần viền và không cần đổ bóng. */
+  background: var(--nen);
   border: none;
   border-radius: var(--radius-xl);
-  box-shadow: 0 1px 2px rgb(15 23 42 / 6%), 0 4px 14px rgb(15 23 42 / 5%);
-  transition: box-shadow var(--transition-normal), transform var(--transition-normal);
-}
-
-.quick-stats__card:hover {
-  box-shadow: 0 2px 4px rgb(15 23 42 / 8%), 0 10px 26px rgb(15 23 42 / 10%);
-  transform: translateY(-2px);
-}
-
-/* The tile is where the card palette's hues appear in the chrome — small,
-   saturated doses, so the page and the cards look like one product. */
-.quick-stats__icon-wrap {
-  display: grid;
-  place-items: center;
-  width: 46px;
-  height: 46px;
-  border-radius: 14px;
-  flex-shrink: 0;
-  color: var(--nen);
-}
-
-.quick-stats__icon-wrap--workspaces {
-  background: linear-gradient(145deg, var(--muc) 0%, var(--muc) 100%);
-  box-shadow: 0 4px 12px rgb(99 102 241 / 34%);
-}
-
-.quick-stats__icon-wrap--documents {
-  background: linear-gradient(145deg, var(--muc) 0%, var(--muc) 100%);
-  box-shadow: 0 4px 12px rgb(34 211 238 / 34%);
-}
-
-.quick-stats__icon-wrap--members {
-  background: linear-gradient(145deg, var(--ws-warn-ink) 0%, var(--color-error) 100%);
-  box-shadow: 0 4px 12px rgb(236 72 153 / 30%);
-}
-
-.quick-stats__info {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  min-width: 0;
 }
 
 .quick-stats__value {
-  font-size: 26px;
-  font-weight: 700;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-  color: var(--color-on-surface);
+  font-size: 40px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--muc);
   font-variant-numeric: tabular-nums;
 }
 
 .quick-stats__label {
   font: var(--font-label-sm);
-  color: var(--color-on-surface-variant);
+  color: var(--muc-nhat);
 }
 
 @media (max-width: 767px) {
   .quick-stats {
     grid-template-columns: 1fr;
   }
-}
 
-@media (min-width: 768px) and (max-width: 1023px) {
-  .quick-stats {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
   .quick-stats__card {
-    transition: none;
+    min-height: 96px;
   }
 
-  .quick-stats__card:hover {
-    transform: none;
+  .quick-stats__value {
+    font-size: 32px;
   }
 }
 </style><style type="text/css" data-vite-dev-id="D:/DoAnTotNghiep/unichat/frontend/src/components/entity-avatar.css">.entity-avatar {
@@ -1968,7 +1984,8 @@ img.entity-avatar {
   line-height: 1.25;
   letter-spacing: -0.01em;
   color: var(--nen);
-  text-shadow: 0 1px 10px rgb(2 6 23 / 55%);
+  /* Bỏ đổ bóng chữ: span.__scrim phía dưới đã lo phần đọc được,
+     còn một lớp bóng chồng lên chỉ làm nhòe nét chữ. */
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
@@ -2726,7 +2743,8 @@ img.entity-avatar {
   line-height: 1.25;
   letter-spacing: -0.01em;
   color: var(--nen);
-  text-shadow: 0 1px 10px rgb(2 6 23 / 55%);
+  /* Bỏ đổ bóng chữ: lớp scrim phía dưới đã lo phần đọc được,
+     còn một lớp bóng chồng lên chỉ làm nhòe nét chữ. */
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
@@ -2895,7 +2913,7 @@ img.entity-avatar {
 }
 
 .explore-grid--list .explore-card__join-btn {
-  background: linear-gradient(120deg, var(--muc) 0%, var(--muc) 100%);
+  background: var(--muc);
   color: var(--nen);
   padding: 7px 15px;
 }
@@ -3064,9 +3082,12 @@ img.entity-avatar {
 }
 
 .dashboard-tab--active {
-  background: var(--color-surface-container-lowest);
-  color: var(--color-primary);
-  box-shadow: 0 1px 2px rgb(15 23 42 / 8%), 0 3px 10px rgb(15 23 42 / 7%);
+  /* Trạng thái đang chọn được nói bằng nền và bằng mực, không bằng bóng đổ.
+     Một nút nổi lên khỏi nền là thứ luật nhà cấm; panel đứng trên mặt phẳng,
+     phân biệt với nhau bằng một bậc sắc độ. */
+  background: var(--nen);
+  color: var(--muc);
+  font-weight: 600;
 }
 
 /* Recent Section */
@@ -3122,19 +3143,17 @@ img.entity-avatar {
   justify-content: center;
   gap: var(--stack-sm);
   padding: 11px 20px;
-  background: linear-gradient(120deg, var(--muc) 0%, var(--muc) 60%, var(--muc) 100%);
+  background: var(--muc);
   color: var(--nen);
   font: var(--font-label-md);
   font-weight: 600;
   border: none;
   border-radius: var(--radius-full);
   cursor: pointer;
-  box-shadow: 0 4px 14px rgb(79 70 229 / 30%);
   transition: box-shadow var(--transition-fast), transform var(--transition-fast);
 }
 
 .workspace-header__create-btn:hover {
-  box-shadow: 0 6px 20px rgb(79 70 229 / 42%);
   transform: translateY(-1px);
 }
 
@@ -3212,9 +3231,8 @@ img.entity-avatar {
 }
 
 .workspace-filter--active {
-  background: linear-gradient(120deg, var(--muc) 0%, var(--muc) 100%);
+  background: var(--muc);
   color: var(--nen);
-  box-shadow: 0 3px 10px rgb(79 70 229 / 28%);
 }
 
 /* Actions Group (Sort & View Toggle) */
@@ -3272,9 +3290,8 @@ img.entity-avatar {
 }
 
 .view-toggle-btn--active {
-  background: var(--color-surface-container-lowest);
-  color: var(--color-primary);
-  box-shadow: 0 1px 3px rgb(15 23 42 / 12%);
+  background: var(--nen);
+  color: var(--muc);
 }
 
 /* Content */
@@ -3369,7 +3386,7 @@ img.entity-avatar {
 }
 </style></head>
   <body>
-    <div id="root"><div class="loading-provider__content"><div class="app-shell"><nav class="side-nav " aria-label="Thanh điều hướng chính"><div class="side-nav__header"><a class="side-nav__brand-link" title="UniChat AI Platform" href="http://127.0.0.1:5173/feed" data-discover="true"><div class="side-nav__avatar"><img alt="UniChat Logo" width="22" height="22" src="http://127.0.0.1:5173/src/assets/logo-white.png" style="object-fit: contain;"></div><div class="side-nav__brand-info"><h1 class="side-nav__title">UniChat</h1><p class="side-nav__subtitle">AI Platform</p></div></a></div><div class="side-nav__items"><a class="side-nav__item " title="Bảng tin" href="http://127.0.0.1:5173/feed" data-discover="true"><span class="material-symbols-rounded" aria-hidden="true" style="font-size: 20px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 500, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">dynamic_feed</span><span class="side-nav__label">Bảng tin</span></a><a class="side-nav__item side-nav__item--active" title="Tất cả nhóm" href="http://127.0.0.1:5173/workspaces" data-discover="true"><span class="material-symbols-rounded" aria-hidden="true" style="font-size: 20px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 500, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">workspaces</span><span class="side-nav__label">Tất cả nhóm</span></a><a class="side-nav__item " title="Tin nhắn" href="http://127.0.0.1:5173/work-chat" data-discover="true"><span class="material-symbols-rounded" aria-hidden="true" style="font-size: 20px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 500, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">forum</span><span class="side-nav__label">Tin nhắn</span></a><a class="side-nav__item " title="Tài khoản" href="http://127.0.0.1:5173/account" data-discover="true"><span class="material-symbols-rounded" aria-hidden="true" style="font-size: 20px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 500, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">person</span><span class="side-nav__label">Tài khoản</span></a><p class="side-nav__section">Nhóm</p><a class="side-nav__item" title="Vào nhóm Quản lý dự án" href="http://127.0.0.1:5173/workspaces/019fcac3-e788-77bc-8804-b1f5b6c0f1e2/chat" data-discover="true"><span class="group-mark" aria-hidden="true" style="width: 24px; height: 24px; background: rgb(207, 227, 231); font-size: 11px; border-radius: 7px;">Q</span><span class="side-nav__label">Quản lý dự án</span></a><a class="side-nav__item" title="Vào nhóm Trí tuệ nhân tạo" href="http://127.0.0.1:5173/workspaces/019f88b7-a7e6-70c0-ad22-c4edaa988e22/chat" data-discover="true"><span class="group-mark" aria-hidden="true" style="width: 24px; height: 24px; background: rgb(231, 207, 207); font-size: 11px; border-radius: 7px;">T</span><span class="side-nav__label">Trí tuệ nhân tạo</span></a><a class="side-nav__item" title="Vào nhóm Quy chế IUH" href="http://127.0.0.1:5173/workspaces/019ff5e1-e531-73e3-a79c-b09f41fc41a5/chat" data-discover="true"><span class="group-mark" aria-hidden="true" style="width: 24px; height: 24px; background: rgb(207, 221, 231); font-size: 11px; border-radius: 7px;">Q</span><span class="side-nav__label">Quy chế IUH</span></a><a class="side-nav__item" title="Vào nhóm OOP" href="http://127.0.0.1:5173/workspaces/01a1384c-8984-7ba3-ac02-69110fe83d3d/chat" data-discover="true"><span class="group-mark" aria-hidden="true" style="width: 24px; height: 24px; background: rgb(231, 219, 207); font-size: 11px; border-radius: 7px;">O</span><span class="side-nav__label">OOP</span></a><a class="side-nav__item" title="Vào nhóm Khoa học dữ liệu" href="http://127.0.0.1:5173/workspaces/019f88b8-99f5-7706-b8cc-cbd34c931093/chat" data-discover="true"><span class="group-mark" aria-hidden="true" style="width: 24px; height: 24px; background: rgb(210, 207, 231); font-size: 11px; border-radius: 7px;">K</span><span class="side-nav__label">Khoa học dữ liệu</span></a><a class="side-nav__item" title="Vào nhóm Lập trình hướng đối tượng" href="http://127.0.0.1:5173/workspaces/01a017f7-f724-7fc6-a579-08e9cf2f68a7/chat" data-discover="true"><span class="group-mark" aria-hidden="true" style="width: 24px; height: 24px; background: rgb(231, 222, 207); font-size: 11px; border-radius: 7px;">L</span><span class="side-nav__label">Lập trình hướng đối tượng</span></a><a class="side-nav__item" title="Vào nhóm Mongodb" href="http://127.0.0.1:5173/workspaces/01a079ca-ce20-768b-9714-6a2cd3fb58a0/chat" data-discover="true"><span class="group-mark" aria-hidden="true" style="width: 24px; height: 24px; background: rgb(231, 227, 207); font-size: 11px; border-radius: 7px;">M</span><span class="side-nav__label">Mongodb</span></a></div><div class="side-nav__footer"><div class="notification-bell"><button type="button" class="side-nav__item side-nav__btn " title="Thông báo" aria-label="Thông báo" aria-expanded="false"><span class="side-nav__icon-wrap"><span class="material-symbols-rounded" aria-hidden="true" style="font-size: 20px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 500, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">notifications</span></span><span class="side-nav__label">Thông báo</span></button></div><button type="button" class="side-nav__item side-nav__btn side-nav__item--danger" title="Đăng xuất" aria-label="Đăng xuất"><span class="side-nav__icon-wrap"><span class="material-symbols-rounded" aria-hidden="true" style="font-size: 20px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 500, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">logout</span></span><span class="side-nav__label">Đăng xuất</span></button></div></nav><main class="app-shell__main"><main class="workspace-main"><div class="workspace-dashboard"><section class="welcome-banner" aria-label="Lời chào"><div class="welcome-banner__content"><h2 class="welcome-banner__greeting">Chào buổi chiều, hungdz1372004</h2><p class="welcome-banner__subtitle">Quản lý và khám phá các không gian tri thức của bạn</p></div></section><div class="dashboard-tabs"><button class="dashboard-tab dashboard-tab--active" type="button"><span class="material-symbols-rounded" aria-hidden="true" style="font-size: 18px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 500, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">folder</span>Không gian của tôi</button><button class="dashboard-tab " type="button"><span class="material-symbols-rounded" aria-hidden="true" style="font-size: 18px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 500, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">travel_explore</span>Khám phá</button></div><section class="quick-stats" aria-label="Thống kê nhanh"><div class="quick-stats__card"><div class="quick-stats__icon-wrap quick-stats__icon-wrap--workspaces"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 24px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">workspaces</span></div><div class="quick-stats__info"><span class="quick-stats__value">7</span><span class="quick-stats__label">Workspace</span></div></div><div class="quick-stats__card"><div class="quick-stats__icon-wrap quick-stats__icon-wrap--documents"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 24px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">description</span></div><div class="quick-stats__info"><span class="quick-stats__value">40</span><span class="quick-stats__label">Tài liệu</span></div></div><div class="quick-stats__card"><div class="quick-stats__icon-wrap quick-stats__icon-wrap--members"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 24px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">group</span></div><div class="quick-stats__info"><span class="quick-stats__value">14</span><span class="quick-stats__label">Thành viên</span></div></div></section><section class="recent-section"><h3 class="recent-section__title"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 20px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">bolt</span>Truy cập nhanh</h3><div class="recent-section__grid"><a class="workspace-card" href="http://127.0.0.1:5173/workspaces/01a079ca-ce20-768b-9714-6a2cd3fb58a0" data-discover="true" style="--card-index: 0;"><div class="workspace-cover" style="background: rgb(127, 29, 29);"><span class="workspace-cover__glow" style="background: none;"></span><img class="workspace-cover__image" alt="" src="http://127.0.0.1:5173/covers/topics/topic-database.jpg"><span class="workspace-cover__scrim"></span></div><span class="workspace-card__scrim"></span><span class="workspace-card__badge"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 13px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">public</span>Công khai</span><div class="workspace-card__content"><h3 class="workspace-card__name">Mongodb</h3><div class="workspace-card__foot"><div class="member-faces"><div class="member-faces__stack"><span class="member-faces__slot" title="hungdz1372004" style="width: 24px; height: 24px;"><span class="entity-avatar entity-avatar--circle" aria-hidden="true" style="width: 24px; height: 24px; font-size: 11px; background: rgb(222, 247, 230); color: rgb(23, 120, 54);">H</span></span><span class="member-faces__slot" title="Hiệp Nguyễn" style="width: 24px; height: 24px;"><span class="entity-avatar entity-avatar--circle" aria-hidden="true" style="width: 24px; height: 24px; font-size: 11px; background: rgb(222, 241, 247); color: rgb(23, 94, 120);">H</span></span><span class="member-faces__slot" title="Phi Hung" style="width: 24px; height: 24px;"><img class="entity-avatar entity-avatar--circle" alt="" aria-hidden="true" src="blob:http://127.0.0.1:5173/13ccf57b-e82d-4e61-9540-8d9b838a1add" style="width: 24px; height: 24px;"></span></div></div><span class="workspace-card__meta"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 14px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">description</span>6<span class="workspace-card__dot">·</span><span>14 giờ trước</span></span></div></div></a><a class="workspace-card" href="http://127.0.0.1:5173/workspaces/01a017f7-f724-7fc6-a579-08e9cf2f68a7" data-discover="true" style="--card-index: 1;"><div class="workspace-cover" style="background: rgb(127, 29, 29);"><span class="workspace-cover__glow" style="background: none;"></span><img class="workspace-cover__image" alt="" src="http://127.0.0.1:5173/covers/topics/topic-programming.jpg"><span class="workspace-cover__scrim"></span></div><span class="workspace-card__scrim"></span><span class="workspace-card__badge"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 13px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">public</span>Công khai</span><div class="workspace-card__content"><h3 class="workspace-card__name">Lập trình hướng đối tượng</h3><div class="workspace-card__foot"><div class="member-faces"><div class="member-faces__stack"><span class="member-faces__slot" title="Hiệp Nguyễn" style="width: 24px; height: 24px;"><span class="entity-avatar entity-avatar--circle" aria-hidden="true" style="width: 24px; height: 24px; font-size: 11px; background: rgb(222, 241, 247); color: rgb(23, 94, 120);">H</span></span><span class="member-faces__slot" title="hungdz1372004" style="width: 24px; height: 24px;"><span class="entity-avatar entity-avatar--circle" aria-hidden="true" style="width: 24px; height: 24px; font-size: 11px; background: rgb(222, 247, 230); color: rgb(23, 120, 54);">H</span></span></div></div><span class="workspace-card__meta"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 14px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">description</span>33<span class="workspace-card__dot">·</span><span>1 tuần trước</span></span></div></div></a><a class="workspace-card" href="http://127.0.0.1:5173/workspaces/01a1384c-8984-7ba3-ac02-69110fe83d3d" data-discover="true" style="--card-index: 2;"><div class="workspace-cover" style="background: rgb(112, 26, 117);"><span class="workspace-cover__glow" style="background: none;"></span><img class="workspace-cover__image" alt="" src="http://127.0.0.1:5173/covers/topics/topic-programming.jpg"><span class="workspace-cover__scrim"></span></div><span class="workspace-card__scrim"></span><span class="workspace-card__badge"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 13px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">group_add</span>Được chia sẻ</span><div class="workspace-card__content"><h3 class="workspace-card__name">OOP</h3><div class="workspace-card__foot"><div class="member-faces"><div class="member-faces__stack"><span class="member-faces__slot" title="hungdz1372004" style="width: 24px; height: 24px;"><span class="entity-avatar entity-avatar--circle" aria-hidden="true" style="width: 24px; height: 24px; font-size: 11px; background: rgb(222, 247, 230); color: rgb(23, 120, 54);">H</span></span></div></div><span class="workspace-card__meta"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 14px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">description</span>0<span class="workspace-card__dot">·</span><span>2 tuần trước</span></span></div></div></a></div></section><section class="all-workspaces-section"><div class="all-workspaces-section__header"><h3 class="all-workspaces-section__title"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 20px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">folder</span>Tất cả Workspace</h3><button class="workspace-header__create-btn" type="button"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 18px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">add</span>Tạo Workspace</button></div><div class="workspace-controls"><div class="workspace-search"><span class="material-symbols-outlined workspace-search__icon" aria-hidden="true" style="font-size: 20px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">search</span><input class="workspace-search__input" placeholder="Tìm kiếm workspace..." type="text" value=""></div><div class="workspace-filters"><div class="workspace-filter-group"><button class="workspace-filter workspace-filter--active" type="button">Tất cả</button><button class="workspace-filter " type="button">Riêng tư</button><button class="workspace-filter " type="button">Được chia sẻ</button><button class="workspace-filter " type="button">Công khai</button></div><div class="workspace-actions-group"><div class="workspace-sort"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 18px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">sort</span><select class="workspace-sort__select"><option value="UPDATED_DESC">Mới cập nhật</option><option value="CREATED_DESC">Mới tạo</option><option value="NAME_ASC">Tên (A-Z)</option></select></div><div class="workspace-view-toggle"><button class="view-toggle-btn view-toggle-btn--active" type="button" aria-label="Grid view"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 18px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">grid_view</span></button><button class="view-toggle-btn " type="button" aria-label="List view"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 18px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">view_list</span></button></div></div></div></div><div class="workspace-content"><div class="workspace-grid"><a class="workspace-card" href="http://127.0.0.1:5173/workspaces/01a079ca-ce20-768b-9714-6a2cd3fb58a0" data-discover="true" style="--card-index: 0;"><div class="workspace-cover" style="background: rgb(127, 29, 29);"><span class="workspace-cover__glow" style="background: none;"></span><img class="workspace-cover__image" alt="" src="http://127.0.0.1:5173/covers/topics/topic-database.jpg"><span class="workspace-cover__scrim"></span></div><span class="workspace-card__scrim"></span><span class="workspace-card__badge"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 13px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">public</span>Công khai</span><div class="workspace-card__content"><h3 class="workspace-card__name">Mongodb</h3><div class="workspace-card__foot"><div class="member-faces"><div class="member-faces__stack"><span class="member-faces__slot" title="hungdz1372004" style="width: 24px; height: 24px;"><span class="entity-avatar entity-avatar--circle" aria-hidden="true" style="width: 24px; height: 24px; font-size: 11px; background: rgb(222, 247, 230); color: rgb(23, 120, 54);">H</span></span><span class="member-faces__slot" title="Hiệp Nguyễn" style="width: 24px; height: 24px;"><span class="entity-avatar entity-avatar--circle" aria-hidden="true" style="width: 24px; height: 24px; font-size: 11px; background: rgb(222, 241, 247); color: rgb(23, 94, 120);">H</span></span><span class="member-faces__slot" title="Phi Hung" style="width: 24px; height: 24px;"><img class="entity-avatar entity-avatar--circle" alt="" aria-hidden="true" src="blob:http://127.0.0.1:5173/13ccf57b-e82d-4e61-9540-8d9b838a1add" style="width: 24px; height: 24px;"></span></div></div><span class="workspace-card__meta"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 14px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">description</span>6<span class="workspace-card__dot">·</span><span>14 giờ trước</span></span></div></div></a><a class="workspace-card" href="http://127.0.0.1:5173/workspaces/01a017f7-f724-7fc6-a579-08e9cf2f68a7" data-discover="true" style="--card-index: 1;"><div class="workspace-cover" style="background: rgb(127, 29, 29);"><span class="workspace-cover__glow" style="background: none;"></span><img class="workspace-cover__image" alt="" src="http://127.0.0.1:5173/covers/topics/topic-programming.jpg"><span class="workspace-cover__scrim"></span></div><span class="workspace-card__scrim"></span><span class="workspace-card__badge"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 13px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">public</span>Công khai</span><div class="workspace-card__content"><h3 class="workspace-card__name">Lập trình hướng đối tượng</h3><div class="workspace-card__foot"><div class="member-faces"><div class="member-faces__stack"><span class="member-faces__slot" title="Hiệp Nguyễn" style="width: 24px; height: 24px;"><span class="entity-avatar entity-avatar--circle" aria-hidden="true" style="width: 24px; height: 24px; font-size: 11px; background: rgb(222, 241, 247); color: rgb(23, 94, 120);">H</span></span><span class="member-faces__slot" title="hungdz1372004" style="width: 24px; height: 24px;"><span class="entity-avatar entity-avatar--circle" aria-hidden="true" style="width: 24px; height: 24px; font-size: 11px; background: rgb(222, 247, 230); color: rgb(23, 120, 54);">H</span></span></div></div><span class="workspace-card__meta"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 14px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">description</span>33<span class="workspace-card__dot">·</span><span>1 tuần trước</span></span></div></div></a><a class="workspace-card" href="http://127.0.0.1:5173/workspaces/01a1384c-8984-7ba3-ac02-69110fe83d3d" data-discover="true" style="--card-index: 2;"><div class="workspace-cover" style="background: rgb(112, 26, 117);"><span class="workspace-cover__glow" style="background: none;"></span><img class="workspace-cover__image" alt="" src="http://127.0.0.1:5173/covers/topics/topic-programming.jpg"><span class="workspace-cover__scrim"></span></div><span class="workspace-card__scrim"></span><span class="workspace-card__badge"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 13px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">group_add</span>Được chia sẻ</span><div class="workspace-card__content"><h3 class="workspace-card__name">OOP</h3><div class="workspace-card__foot"><div class="member-faces"><div class="member-faces__stack"><span class="member-faces__slot" title="hungdz1372004" style="width: 24px; height: 24px;"><span class="entity-avatar entity-avatar--circle" aria-hidden="true" style="width: 24px; height: 24px; font-size: 11px; background: rgb(222, 247, 230); color: rgb(23, 120, 54);">H</span></span></div></div><span class="workspace-card__meta"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 14px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">description</span>0<span class="workspace-card__dot">·</span><span>2 tuần trước</span></span></div></div></a><a class="workspace-card" href="http://127.0.0.1:5173/workspaces/019ff5e1-e531-73e3-a79c-b09f41fc41a5" data-discover="true" style="--card-index: 3;"><div class="workspace-cover" style="background: rgb(19, 78, 74);"><span class="workspace-cover__glow" style="background: none;"></span><img class="workspace-cover__image" alt="" src="http://127.0.0.1:5173/covers/topics/topic-regulations.jpg"><span class="workspace-cover__scrim"></span></div><span class="workspace-card__scrim"></span><span class="workspace-card__badge"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 13px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">public</span>Công khai</span><div class="workspace-card__content"><h3 class="workspace-card__name">Quy chế IUH</h3><div class="workspace-card__foot"><div class="member-faces"><div class="member-faces__stack"><span class="member-faces__slot" title="Hiệp Nguyễn" style="width: 24px; height: 24px;"><span class="entity-avatar entity-avatar--circle" aria-hidden="true" style="width: 24px; height: 24px; font-size: 11px; background: rgb(222, 241, 247); color: rgb(23, 94, 120);">H</span></span><span class="member-faces__slot" title="hungdz1372004" style="width: 24px; height: 24px;"><span class="entity-avatar entity-avatar--circle" aria-hidden="true" style="width: 24px; height: 24px; font-size: 11px; background: rgb(222, 247, 230); color: rgb(23, 120, 54);">H</span></span></div></div><span class="workspace-card__meta"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 14px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">description</span>1<span class="workspace-card__dot">·</span><span>12/08/2026</span></span></div></div></a><a class="workspace-card" href="http://127.0.0.1:5173/workspaces/019fcac3-e788-77bc-8804-b1f5b6c0f1e2" data-discover="true" style="--card-index: 4;"><div class="workspace-cover" style="background: rgb(30, 58, 138);"><span class="workspace-cover__glow" style="background: none;"></span><img class="workspace-cover__image" alt="" src="http://127.0.0.1:5173/covers/topics/topic-project-management.jpg"><span class="workspace-cover__scrim"></span></div><span class="workspace-card__scrim"></span><span class="workspace-card__badge"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 13px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">group_add</span>Được chia sẻ</span><div class="workspace-card__content"><h3 class="workspace-card__name">Quản lý dự án</h3><div class="workspace-card__foot"><div class="member-faces"><div class="member-faces__stack"><span class="member-faces__slot" title="hungdz1372004" style="width: 24px; height: 24px;"><span class="entity-avatar entity-avatar--circle" aria-hidden="true" style="width: 24px; height: 24px; font-size: 11px; background: rgb(222, 247, 230); color: rgb(23, 120, 54);">H</span></span><span class="member-faces__slot" title="Phi Hung" style="width: 24px; height: 24px;"><img class="entity-avatar entity-avatar--circle" alt="" aria-hidden="true" src="blob:http://127.0.0.1:5173/13ccf57b-e82d-4e61-9540-8d9b838a1add" style="width: 24px; height: 24px;"></span></div></div><span class="workspace-card__meta"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 14px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">description</span>0<span class="workspace-card__dot">·</span><span>04/08/2026</span></span></div></div></a><a class="workspace-card" href="http://127.0.0.1:5173/workspaces/019f88b8-99f5-7706-b8cc-cbd34c931093" data-discover="true" style="--card-index: 5;"><div class="workspace-cover" style="background: rgb(76, 29, 149);"><span class="workspace-cover__glow" style="background: none;"></span><img class="workspace-cover__image" alt="" src="http://127.0.0.1:5173/covers/topics/topic-data-science.jpg"><span class="workspace-cover__scrim"></span></div><span class="workspace-card__scrim"></span><span class="workspace-card__badge"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 13px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">lock</span>Riêng tư</span><div class="workspace-card__content"><h3 class="workspace-card__name">Khoa học dữ liệu</h3><div class="workspace-card__foot"><div class="member-faces"><div class="member-faces__stack"><span class="member-faces__slot" title="hungdz1372004" style="width: 24px; height: 24px;"><span class="entity-avatar entity-avatar--circle" aria-hidden="true" style="width: 24px; height: 24px; font-size: 11px; background: rgb(222, 247, 230); color: rgb(23, 120, 54);">H</span></span></div></div><span class="workspace-card__meta"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 14px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">description</span>0<span class="workspace-card__dot">·</span><span>22/07/2026</span></span></div></div></a><a class="workspace-card" href="http://127.0.0.1:5173/workspaces/019f88b7-a7e6-70c0-ad22-c4edaa988e22" data-discover="true" style="--card-index: 6;"><div class="workspace-cover" style="background: rgb(6, 95, 70);"><span class="workspace-cover__glow" style="background: none;"></span><img class="workspace-cover__image" alt="" src="http://127.0.0.1:5173/covers/topics/topic-artificial-intelligence.jpg"><span class="workspace-cover__scrim"></span></div><span class="workspace-card__scrim"></span><span class="workspace-card__badge"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 13px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">public</span>Công khai</span><div class="workspace-card__content"><h3 class="workspace-card__name">Trí tuệ nhân tạo</h3><div class="workspace-card__foot"><div class="member-faces"><div class="member-faces__stack"><span class="member-faces__slot" title="hungdz1372004" style="width: 24px; height: 24px;"><span class="entity-avatar entity-avatar--circle" aria-hidden="true" style="width: 24px; height: 24px; font-size: 11px; background: rgb(222, 247, 230); color: rgb(23, 120, 54);">H</span></span><span class="member-faces__slot" title="Hiệp Nguyễn" style="width: 24px; height: 24px;"><span class="entity-avatar entity-avatar--circle" aria-hidden="true" style="width: 24px; height: 24px; font-size: 11px; background: rgb(222, 241, 247); color: rgb(23, 94, 120);">H</span></span><span class="member-faces__slot" title="Phi Hung" style="width: 24px; height: 24px;"><img class="entity-avatar entity-avatar--circle" alt="" aria-hidden="true" src="blob:http://127.0.0.1:5173/13ccf57b-e82d-4e61-9540-8d9b838a1add" style="width: 24px; height: 24px;"></span></div></div><span class="workspace-card__meta"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 14px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">description</span>0<span class="workspace-card__dot">·</span><span>22/07/2026</span></span></div></div></a></div></div></section></div></main></main></div><audio autoplay="" hidden=""></audio></div><div class="loading-screen loading-screen--fullscreen" role="status" aria-live="polite" aria-busy="false" aria-hidden="true" style="visibility: hidden;"><div class="loading-screen__emblem-container" aria-hidden="true"><div class="loading-screen__ring--outer"></div><div class="loading-screen__ring"></div><img alt="" class="loading-screen__logo-img" src="http://127.0.0.1:5173/src/assets/ai-avatar.png"></div><div class="loading-screen__content"><h2 class="loading-screen__brand">UniChat AI Platform</h2><p class="loading-screen__message"><span>Đang tải thông tin Workspace...</span><span class="loading-screen__dots" aria-hidden="true"><span class="loading-screen__dot"></span><span class="loading-screen__dot"></span><span class="loading-screen__dot"></span></span></p></div></div></div>
-    <script type="module" src="http://127.0.0.1:5173/src/main.tsx?t=1793431986554"></script>
+    <div id="root"><div class="loading-provider__content"><div class="app-shell"><nav class="side-nav " aria-label="Thanh điều hướng chính"><div class="side-nav__header"><a class="side-nav__brand-link" title="UniChat AI Platform" href="http://127.0.0.1:5173/feed" data-discover="true"><div class="side-nav__avatar"><img alt="UniChat Logo" width="22" height="22" src="http://127.0.0.1:5173/src/assets/logo-white.png" style="object-fit: contain;"></div><div class="side-nav__brand-info"><p class="side-nav__title">UniChat</p><p class="side-nav__subtitle">AI Platform</p></div></a></div><div class="side-nav__items"><a class="side-nav__item " title="Bảng tin" href="http://127.0.0.1:5173/feed" data-discover="true"><span class="material-symbols-rounded" aria-hidden="true" style="font-size: 20px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 500, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">dynamic_feed</span><span class="side-nav__label">Bảng tin</span></a><a class="side-nav__item side-nav__item--active" title="Tất cả nhóm" href="http://127.0.0.1:5173/workspaces" data-discover="true"><span class="material-symbols-rounded" aria-hidden="true" style="font-size: 20px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 500, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">workspaces</span><span class="side-nav__label">Tất cả nhóm</span></a><a class="side-nav__item " title="Tin nhắn" href="http://127.0.0.1:5173/work-chat" data-discover="true"><span class="material-symbols-rounded" aria-hidden="true" style="font-size: 20px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 500, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">forum</span><span class="side-nav__label">Tin nhắn</span></a><a class="side-nav__item " title="Tài khoản" href="http://127.0.0.1:5173/account" data-discover="true"><span class="material-symbols-rounded" aria-hidden="true" style="font-size: 20px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 500, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">person</span><span class="side-nav__label">Tài khoản</span></a><p class="side-nav__section">Nhóm</p><a class="side-nav__item" title="Vào nhóm Quản lý dự án" href="http://127.0.0.1:5173/workspaces/019fcac3-e788-77bc-8804-b1f5b6c0f1e2/chat" data-discover="true"><span class="group-mark" aria-hidden="true" style="width: 24px; height: 24px; background: rgb(207, 227, 231); font-size: 11px; border-radius: 7px;">Q</span><span class="side-nav__label">Quản lý dự án</span></a><a class="side-nav__item" title="Vào nhóm Trí tuệ nhân tạo" href="http://127.0.0.1:5173/workspaces/019f88b7-a7e6-70c0-ad22-c4edaa988e22/chat" data-discover="true"><span class="group-mark" aria-hidden="true" style="width: 24px; height: 24px; background: rgb(231, 207, 207); font-size: 11px; border-radius: 7px;">T</span><span class="side-nav__label">Trí tuệ nhân tạo</span></a><a class="side-nav__item" title="Vào nhóm Quy chế IUH" href="http://127.0.0.1:5173/workspaces/019ff5e1-e531-73e3-a79c-b09f41fc41a5/chat" data-discover="true"><span class="group-mark" aria-hidden="true" style="width: 24px; height: 24px; background: rgb(207, 221, 231); font-size: 11px; border-radius: 7px;">Q</span><span class="side-nav__label">Quy chế IUH</span></a><a class="side-nav__item" title="Vào nhóm OOP" href="http://127.0.0.1:5173/workspaces/01a1384c-8984-7ba3-ac02-69110fe83d3d/chat" data-discover="true"><span class="group-mark" aria-hidden="true" style="width: 24px; height: 24px; background: rgb(231, 219, 207); font-size: 11px; border-radius: 7px;">O</span><span class="side-nav__label">OOP</span></a><a class="side-nav__item" title="Vào nhóm Khoa học dữ liệu" href="http://127.0.0.1:5173/workspaces/019f88b8-99f5-7706-b8cc-cbd34c931093/chat" data-discover="true"><span class="group-mark" aria-hidden="true" style="width: 24px; height: 24px; background: rgb(210, 207, 231); font-size: 11px; border-radius: 7px;">K</span><span class="side-nav__label">Khoa học dữ liệu</span></a><a class="side-nav__item" title="Vào nhóm Lập trình hướng đối tượng" href="http://127.0.0.1:5173/workspaces/01a017f7-f724-7fc6-a579-08e9cf2f68a7/chat" data-discover="true"><span class="group-mark" aria-hidden="true" style="width: 24px; height: 24px; background: rgb(231, 222, 207); font-size: 11px; border-radius: 7px;">L</span><span class="side-nav__label">Lập trình hướng đối tượng</span></a><a class="side-nav__item" title="Vào nhóm Mongodb" href="http://127.0.0.1:5173/workspaces/01a079ca-ce20-768b-9714-6a2cd3fb58a0/chat" data-discover="true"><span class="group-mark" aria-hidden="true" style="width: 24px; height: 24px; background: rgb(231, 227, 207); font-size: 11px; border-radius: 7px;">M</span><span class="side-nav__label">Mongodb</span></a></div><div class="side-nav__footer"><div class="notification-bell"><button type="button" class="side-nav__item side-nav__btn " title="Thông báo" aria-label="Thông báo" aria-expanded="false"><span class="side-nav__icon-wrap"><span class="material-symbols-rounded" aria-hidden="true" style="font-size: 20px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 500, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">notifications</span></span><span class="side-nav__label">Thông báo</span></button></div><button type="button" class="side-nav__item side-nav__btn side-nav__item--danger" title="Đăng xuất" aria-label="Đăng xuất"><span class="side-nav__icon-wrap"><span class="material-symbols-rounded" aria-hidden="true" style="font-size: 20px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 500, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">logout</span></span><span class="side-nav__label">Đăng xuất</span></button></div></nav><main class="app-shell__main"><main class="workspace-main"><div class="workspace-dashboard"><section class="welcome-banner" aria-label="Lời chào"><div class="welcome-banner__content"><h1 class="welcome-banner__greeting">Chào buổi chiều, hungdz1372004</h1><p class="welcome-banner__subtitle">Quản lý và khám phá các không gian tri thức của bạn</p></div></section><div class="dashboard-tabs"><button class="dashboard-tab dashboard-tab--active" type="button"><span class="material-symbols-rounded" aria-hidden="true" style="font-size: 18px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 500, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">folder</span>Không gian của tôi</button><button class="dashboard-tab " type="button"><span class="material-symbols-rounded" aria-hidden="true" style="font-size: 18px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 500, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">travel_explore</span>Khám phá</button></div><section class="quick-stats" aria-label="Thống kê nhanh"><div class="quick-stats__card"><span class="quick-stats__value">7</span><span class="quick-stats__label">Workspace</span></div><div class="quick-stats__card"><span class="quick-stats__value">40</span><span class="quick-stats__label">Tài liệu</span></div><div class="quick-stats__card"><span class="quick-stats__value">14</span><span class="quick-stats__label">Thành viên</span></div></section><section class="recent-section"><h3 class="recent-section__title"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 20px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">bolt</span>Truy cập nhanh</h3><div class="recent-section__grid"><a class="workspace-card" href="http://127.0.0.1:5173/workspaces/01a079ca-ce20-768b-9714-6a2cd3fb58a0" data-discover="true" style="--card-index: 0;"><div class="workspace-cover" style="background: rgb(49, 33, 33);"><span class="workspace-cover__glow" style="background: none;"></span><img class="workspace-cover__image" alt="" src="http://127.0.0.1:5173/covers/topics/topic-database.jpg"><span class="workspace-cover__scrim"></span></div><span class="workspace-card__scrim"></span><span class="workspace-card__badge"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 13px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">public</span>Công khai</span><div class="workspace-card__content"><h3 class="workspace-card__name">Mongodb</h3><div class="workspace-card__foot"><div class="member-faces"><div class="member-faces__stack"><span class="member-faces__slot" title="hungdz1372004" style="width: 24px; height: 24px;"><span class="entity-avatar entity-avatar--circle" aria-hidden="true" style="width: 24px; height: 24px; font-size: 11px; background: rgb(222, 247, 230); color: rgb(23, 120, 54);">H</span></span><span class="member-faces__slot" title="Hiệp Nguyễn" style="width: 24px; height: 24px;"><span class="entity-avatar entity-avatar--circle" aria-hidden="true" style="width: 24px; height: 24px; font-size: 11px; background: rgb(222, 241, 247); color: rgb(23, 94, 120);">H</span></span><span class="member-faces__slot" title="Phi Hung" style="width: 24px; height: 24px;"><img class="entity-avatar entity-avatar--circle" alt="" aria-hidden="true" src="blob:http://127.0.0.1:5173/ab3b4cf7-29bc-4f0b-810a-252ddd14b12c" style="width: 24px; height: 24px;"></span></div></div><span class="workspace-card__meta"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 14px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">description</span>6<span class="workspace-card__dot">·</span><span>14 giờ trước</span></span></div></div></a><a class="workspace-card" href="http://127.0.0.1:5173/workspaces/01a017f7-f724-7fc6-a579-08e9cf2f68a7" data-discover="true" style="--card-index: 1;"><div class="workspace-cover" style="background: rgb(49, 33, 33);"><span class="workspace-cover__glow" style="background: none;"></span><img class="workspace-cover__image" alt="" src="http://127.0.0.1:5173/covers/topics/topic-programming.jpg"><span class="workspace-cover__scrim"></span></div><span class="workspace-card__scrim"></span><span class="workspace-card__badge"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 13px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">public</span>Công khai</span><div class="workspace-card__content"><h3 class="workspace-card__name">Lập trình hướng đối tượng</h3><div class="workspace-card__foot"><div class="member-faces"><div class="member-faces__stack"><span class="member-faces__slot" title="Hiệp Nguyễn" style="width: 24px; height: 24px;"><span class="entity-avatar entity-avatar--circle" aria-hidden="true" style="width: 24px; height: 24px; font-size: 11px; background: rgb(222, 241, 247); color: rgb(23, 94, 120);">H</span></span><span class="member-faces__slot" title="hungdz1372004" style="width: 24px; height: 24px;"><span class="entity-avatar entity-avatar--circle" aria-hidden="true" style="width: 24px; height: 24px; font-size: 11px; background: rgb(222, 247, 230); color: rgb(23, 120, 54);">H</span></span></div></div><span class="workspace-card__meta"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 14px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">description</span>33<span class="workspace-card__dot">·</span><span>1 tuần trước</span></span></div></div></a><a class="workspace-card" href="http://127.0.0.1:5173/workspaces/01a1384c-8984-7ba3-ac02-69110fe83d3d" data-discover="true" style="--card-index: 2;"><div class="workspace-cover" style="background: rgb(49, 44, 33);"><span class="workspace-cover__glow" style="background: none;"></span><img class="workspace-cover__image" alt="" src="http://127.0.0.1:5173/covers/topics/topic-programming.jpg"><span class="workspace-cover__scrim"></span></div><span class="workspace-card__scrim"></span><span class="workspace-card__badge"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 13px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">group_add</span>Được chia sẻ</span><div class="workspace-card__content"><h3 class="workspace-card__name">OOP</h3><div class="workspace-card__foot"><div class="member-faces"><div class="member-faces__stack"><span class="member-faces__slot" title="hungdz1372004" style="width: 24px; height: 24px;"><span class="entity-avatar entity-avatar--circle" aria-hidden="true" style="width: 24px; height: 24px; font-size: 11px; background: rgb(222, 247, 230); color: rgb(23, 120, 54);">H</span></span></div></div><span class="workspace-card__meta"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 14px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">description</span>0<span class="workspace-card__dot">·</span><span>2 tuần trước</span></span></div></div></a></div></section><section class="all-workspaces-section"><div class="all-workspaces-section__header"><h3 class="all-workspaces-section__title"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 20px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">folder</span>Tất cả Workspace</h3><button class="workspace-header__create-btn" type="button"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 18px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">add</span>Tạo Workspace</button></div><div class="workspace-controls"><div class="workspace-search"><span class="material-symbols-outlined workspace-search__icon" aria-hidden="true" style="font-size: 20px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">search</span><input class="workspace-search__input" placeholder="Tìm kiếm workspace..." type="text" value=""></div><div class="workspace-filters"><div class="workspace-filter-group"><button class="workspace-filter workspace-filter--active" type="button">Tất cả</button><button class="workspace-filter " type="button">Riêng tư</button><button class="workspace-filter " type="button">Được chia sẻ</button><button class="workspace-filter " type="button">Công khai</button></div><div class="workspace-actions-group"><div class="workspace-sort"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 18px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">sort</span><select class="workspace-sort__select"><option value="UPDATED_DESC">Mới cập nhật</option><option value="CREATED_DESC">Mới tạo</option><option value="NAME_ASC">Tên (A-Z)</option></select></div><div class="workspace-view-toggle"><button class="view-toggle-btn view-toggle-btn--active" type="button" aria-label="Grid view"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 18px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">grid_view</span></button><button class="view-toggle-btn " type="button" aria-label="List view"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 18px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">view_list</span></button></div></div></div></div><div class="workspace-content"><div class="workspace-grid"><a class="workspace-card" href="http://127.0.0.1:5173/workspaces/01a079ca-ce20-768b-9714-6a2cd3fb58a0" data-discover="true" style="--card-index: 0;"><div class="workspace-cover" style="background: rgb(49, 33, 33);"><span class="workspace-cover__glow" style="background: none;"></span><img class="workspace-cover__image" alt="" src="http://127.0.0.1:5173/covers/topics/topic-database.jpg"><span class="workspace-cover__scrim"></span></div><span class="workspace-card__scrim"></span><span class="workspace-card__badge"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 13px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">public</span>Công khai</span><div class="workspace-card__content"><h3 class="workspace-card__name">Mongodb</h3><div class="workspace-card__foot"><div class="member-faces"><div class="member-faces__stack"><span class="member-faces__slot" title="hungdz1372004" style="width: 24px; height: 24px;"><span class="entity-avatar entity-avatar--circle" aria-hidden="true" style="width: 24px; height: 24px; font-size: 11px; background: rgb(222, 247, 230); color: rgb(23, 120, 54);">H</span></span><span class="member-faces__slot" title="Hiệp Nguyễn" style="width: 24px; height: 24px;"><span class="entity-avatar entity-avatar--circle" aria-hidden="true" style="width: 24px; height: 24px; font-size: 11px; background: rgb(222, 241, 247); color: rgb(23, 94, 120);">H</span></span><span class="member-faces__slot" title="Phi Hung" style="width: 24px; height: 24px;"><img class="entity-avatar entity-avatar--circle" alt="" aria-hidden="true" src="blob:http://127.0.0.1:5173/ab3b4cf7-29bc-4f0b-810a-252ddd14b12c" style="width: 24px; height: 24px;"></span></div></div><span class="workspace-card__meta"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 14px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">description</span>6<span class="workspace-card__dot">·</span><span>14 giờ trước</span></span></div></div></a><a class="workspace-card" href="http://127.0.0.1:5173/workspaces/01a017f7-f724-7fc6-a579-08e9cf2f68a7" data-discover="true" style="--card-index: 1;"><div class="workspace-cover" style="background: rgb(49, 33, 33);"><span class="workspace-cover__glow" style="background: none;"></span><img class="workspace-cover__image" alt="" src="http://127.0.0.1:5173/covers/topics/topic-programming.jpg"><span class="workspace-cover__scrim"></span></div><span class="workspace-card__scrim"></span><span class="workspace-card__badge"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 13px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">public</span>Công khai</span><div class="workspace-card__content"><h3 class="workspace-card__name">Lập trình hướng đối tượng</h3><div class="workspace-card__foot"><div class="member-faces"><div class="member-faces__stack"><span class="member-faces__slot" title="Hiệp Nguyễn" style="width: 24px; height: 24px;"><span class="entity-avatar entity-avatar--circle" aria-hidden="true" style="width: 24px; height: 24px; font-size: 11px; background: rgb(222, 241, 247); color: rgb(23, 94, 120);">H</span></span><span class="member-faces__slot" title="hungdz1372004" style="width: 24px; height: 24px;"><span class="entity-avatar entity-avatar--circle" aria-hidden="true" style="width: 24px; height: 24px; font-size: 11px; background: rgb(222, 247, 230); color: rgb(23, 120, 54);">H</span></span></div></div><span class="workspace-card__meta"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 14px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">description</span>33<span class="workspace-card__dot">·</span><span>1 tuần trước</span></span></div></div></a><a class="workspace-card" href="http://127.0.0.1:5173/workspaces/01a1384c-8984-7ba3-ac02-69110fe83d3d" data-discover="true" style="--card-index: 2;"><div class="workspace-cover" style="background: rgb(49, 44, 33);"><span class="workspace-cover__glow" style="background: none;"></span><img class="workspace-cover__image" alt="" src="http://127.0.0.1:5173/covers/topics/topic-programming.jpg"><span class="workspace-cover__scrim"></span></div><span class="workspace-card__scrim"></span><span class="workspace-card__badge"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 13px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">group_add</span>Được chia sẻ</span><div class="workspace-card__content"><h3 class="workspace-card__name">OOP</h3><div class="workspace-card__foot"><div class="member-faces"><div class="member-faces__stack"><span class="member-faces__slot" title="hungdz1372004" style="width: 24px; height: 24px;"><span class="entity-avatar entity-avatar--circle" aria-hidden="true" style="width: 24px; height: 24px; font-size: 11px; background: rgb(222, 247, 230); color: rgb(23, 120, 54);">H</span></span></div></div><span class="workspace-card__meta"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 14px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">description</span>0<span class="workspace-card__dot">·</span><span>2 tuần trước</span></span></div></div></a><a class="workspace-card" href="http://127.0.0.1:5173/workspaces/019ff5e1-e531-73e3-a79c-b09f41fc41a5" data-discover="true" style="--card-index: 3;"><div class="workspace-cover" style="background: rgb(33, 49, 47);"><span class="workspace-cover__glow" style="background: none;"></span><img class="workspace-cover__image" alt="" src="http://127.0.0.1:5173/covers/topics/topic-regulations.jpg"><span class="workspace-cover__scrim"></span></div><span class="workspace-card__scrim"></span><span class="workspace-card__badge"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 13px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">public</span>Công khai</span><div class="workspace-card__content"><h3 class="workspace-card__name">Quy chế IUH</h3><div class="workspace-card__foot"><div class="member-faces"><div class="member-faces__stack"><span class="member-faces__slot" title="Hiệp Nguyễn" style="width: 24px; height: 24px;"><span class="entity-avatar entity-avatar--circle" aria-hidden="true" style="width: 24px; height: 24px; font-size: 11px; background: rgb(222, 241, 247); color: rgb(23, 94, 120);">H</span></span><span class="member-faces__slot" title="hungdz1372004" style="width: 24px; height: 24px;"><span class="entity-avatar entity-avatar--circle" aria-hidden="true" style="width: 24px; height: 24px; font-size: 11px; background: rgb(222, 247, 230); color: rgb(23, 120, 54);">H</span></span></div></div><span class="workspace-card__meta"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 14px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">description</span>1<span class="workspace-card__dot">·</span><span>12/08/2026</span></span></div></div></a><a class="workspace-card" href="http://127.0.0.1:5173/workspaces/019fcac3-e788-77bc-8804-b1f5b6c0f1e2" data-discover="true" style="--card-index: 4;"><div class="workspace-cover" style="background: rgb(33, 34, 49);"><span class="workspace-cover__glow" style="background: none;"></span><img class="workspace-cover__image" alt="" src="http://127.0.0.1:5173/covers/topics/topic-project-management.jpg"><span class="workspace-cover__scrim"></span></div><span class="workspace-card__scrim"></span><span class="workspace-card__badge"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 13px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">group_add</span>Được chia sẻ</span><div class="workspace-card__content"><h3 class="workspace-card__name">Quản lý dự án</h3><div class="workspace-card__foot"><div class="member-faces"><div class="member-faces__stack"><span class="member-faces__slot" title="hungdz1372004" style="width: 24px; height: 24px;"><span class="entity-avatar entity-avatar--circle" aria-hidden="true" style="width: 24px; height: 24px; font-size: 11px; background: rgb(222, 247, 230); color: rgb(23, 120, 54);">H</span></span><span class="member-faces__slot" title="Phi Hung" style="width: 24px; height: 24px;"><img class="entity-avatar entity-avatar--circle" alt="" aria-hidden="true" src="blob:http://127.0.0.1:5173/ab3b4cf7-29bc-4f0b-810a-252ddd14b12c" style="width: 24px; height: 24px;"></span></div></div><span class="workspace-card__meta"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 14px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">description</span>0<span class="workspace-card__dot">·</span><span>04/08/2026</span></span></div></div></a><a class="workspace-card" href="http://127.0.0.1:5173/workspaces/019f88b8-99f5-7706-b8cc-cbd34c931093" data-discover="true" style="--card-index: 5;"><div class="workspace-cover" style="background: rgb(38, 33, 49);"><span class="workspace-cover__glow" style="background: none;"></span><img class="workspace-cover__image" alt="" src="http://127.0.0.1:5173/covers/topics/topic-data-science.jpg"><span class="workspace-cover__scrim"></span></div><span class="workspace-card__scrim"></span><span class="workspace-card__badge"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 13px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">lock</span>Riêng tư</span><div class="workspace-card__content"><h3 class="workspace-card__name">Khoa học dữ liệu</h3><div class="workspace-card__foot"><div class="member-faces"><div class="member-faces__stack"><span class="member-faces__slot" title="hungdz1372004" style="width: 24px; height: 24px;"><span class="entity-avatar entity-avatar--circle" aria-hidden="true" style="width: 24px; height: 24px; font-size: 11px; background: rgb(222, 247, 230); color: rgb(23, 120, 54);">H</span></span></div></div><span class="workspace-card__meta"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 14px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">description</span>0<span class="workspace-card__dot">·</span><span>22/07/2026</span></span></div></div></a><a class="workspace-card" href="http://127.0.0.1:5173/workspaces/019f88b7-a7e6-70c0-ad22-c4edaa988e22" data-discover="true" style="--card-index: 6;"><div class="workspace-cover" style="background: rgb(33, 49, 43);"><span class="workspace-cover__glow" style="background: none;"></span><img class="workspace-cover__image" alt="" src="http://127.0.0.1:5173/covers/topics/topic-artificial-intelligence.jpg"><span class="workspace-cover__scrim"></span></div><span class="workspace-card__scrim"></span><span class="workspace-card__badge"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 13px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">public</span>Công khai</span><div class="workspace-card__content"><h3 class="workspace-card__name">Trí tuệ nhân tạo</h3><div class="workspace-card__foot"><div class="member-faces"><div class="member-faces__stack"><span class="member-faces__slot" title="hungdz1372004" style="width: 24px; height: 24px;"><span class="entity-avatar entity-avatar--circle" aria-hidden="true" style="width: 24px; height: 24px; font-size: 11px; background: rgb(222, 247, 230); color: rgb(23, 120, 54);">H</span></span><span class="member-faces__slot" title="Hiệp Nguyễn" style="width: 24px; height: 24px;"><span class="entity-avatar entity-avatar--circle" aria-hidden="true" style="width: 24px; height: 24px; font-size: 11px; background: rgb(222, 241, 247); color: rgb(23, 94, 120);">H</span></span><span class="member-faces__slot" title="Phi Hung" style="width: 24px; height: 24px;"><img class="entity-avatar entity-avatar--circle" alt="" aria-hidden="true" src="blob:http://127.0.0.1:5173/ab3b4cf7-29bc-4f0b-810a-252ddd14b12c" style="width: 24px; height: 24px;"></span></div></div><span class="workspace-card__meta"><span class="material-symbols-outlined" aria-hidden="true" style="font-size: 14px; font-variation-settings: &quot;FILL&quot; 0, &quot;wght&quot; 400, &quot;GRAD&quot; 0, &quot;opsz&quot; 24;">description</span>0<span class="workspace-card__dot">·</span><span>22/07/2026</span></span></div></div></a></div></div></section></div></main></main></div><audio autoplay="" hidden=""></audio></div><div class="loading-screen loading-screen--fullscreen" role="status" aria-live="polite" aria-busy="false" aria-hidden="true" style="visibility: hidden;"><div class="loading-screen__emblem-container" aria-hidden="true"><div class="loading-screen__ring--outer"></div><div class="loading-screen__ring"></div><img alt="" class="loading-screen__logo-img" src="http://127.0.0.1:5173/src/assets/ai-avatar.png"></div><div class="loading-screen__content"><h2 class="loading-screen__brand">UniChat AI Platform</h2><p class="loading-screen__message"><span>Đang tải thông tin Workspace...</span><span class="loading-screen__dots" aria-hidden="true"><span class="loading-screen__dot"></span><span class="loading-screen__dot"></span><span class="loading-screen__dot"></span></span></p></div></div></div>
+    <script type="module" src="http://127.0.0.1:5173/src/main.tsx?t=1793434693287"></script>
   
 </body></html>

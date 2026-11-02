@@ -1,0 +1,144 @@
+/* Chọn chế độ hiển thị.
+
+   Ba ô, mỗi ô mang một màn hình thu nhỏ vẽ bằng khối màu. Các màu trong ô
+   xem trước cố tình viết cứng chứ không dùng token: ô "Sáng" phải trông sáng
+   ngay cả khi đang ở nền tối, nếu không thì nó xem trước chính nó. */
+
+.theme-choice {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-block-start: 22px;
+}
+
+.theme-choice__option {
+  display: grid;
+  gap: 2px;
+  padding: 12px;
+  /* Viền 2px ở mọi trạng thái, chỉ đổi màu khi được chọn. Bản trước dùng
+     border 1px cộng một box-shadow inset để dày lên; cách này cho cùng hình
+     dáng mà không có bóng nào, và ô không nhảy khi đổi lựa chọn. */
+  border: 2px solid var(--vien);
+  border-radius: var(--radius-lg);
+  background: var(--noi);
+  text-align: start;
+  cursor: pointer;
+}
+
+.theme-choice__option:hover {
+  background: var(--ke);
+}
+
+.theme-choice__option--active,
+.theme-choice__option--active:hover {
+  border-color: var(--nhan);
+  background: var(--noi);
+}
+
+.theme-choice__option:focus-visible {
+  outline: 2px solid var(--nhan);
+  outline-offset: 2px;
+}
+
+.theme-choice__label {
+  margin-block-start: 10px;
+  font: var(--font-label-md);
+  font-weight: 600;
+  color: var(--muc);
+}
+
+.theme-choice__hint {
+  font: var(--font-label-sm);
+  line-height: 1.45;
+  color: var(--muc-nhat);
+}
+
+/* ---------- Ô xem trước ---------- */
+
+.theme-preview {
+  display: flex;
+  overflow: hidden;
+  block-size: 62px;
+  border-radius: var(--radius-md);
+}
+
+.theme-preview__rail {
+  flex: none;
+  inline-size: 26%;
+}
+
+.theme-preview__body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  flex: 1;
+  padding-inline: 8px;
+}
+
+.theme-preview__bar {
+  block-size: 6px;
+  inline-size: 56%;
+  border-radius: 3px;
+}
+
+.theme-preview__bar--wide {
+  inline-size: 84%;
+}
+
+.theme-preview--light {
+  background: #ffffff;
+}
+
+.theme-preview--light .theme-preview__rail {
+  background: #151f42;
+}
+
+.theme-preview--light .theme-preview__bar {
+  background: #d4d8e0;
+}
+
+.theme-preview--dark {
+  background: #0a0d14;
+}
+
+.theme-preview--dark .theme-preview__rail {
+  background: #1b2130;
+}
+
+.theme-preview--dark .theme-preview__bar {
+  background: #39404f;
+}
+
+/* "Theo hệ thống": nửa sáng nửa tối, cắt chéo, nên ô nói rằng kết quả có thể
+   là một trong hai. Hai lớp chồng nhau chứ không phải gradient. */
+.theme-preview--system {
+  position: relative;
+  background: #ffffff;
+}
+
+.theme-preview--system .theme-preview__rail {
+  background: #151f42;
+}
+
+.theme-preview--system .theme-preview__bar {
+  background: #d4d8e0;
+}
+
+.theme-preview--system::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #0a0d14;
+  clip-path: polygon(100% 0, 100% 100%, 42% 100%);
+}
+
+@media (max-width: 599px) {
+  .theme-choice {
+    grid-template-columns: 1fr;
+  }
+
+  .theme-preview {
+    block-size: 54px;
+  }
+}

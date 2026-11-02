@@ -41,7 +41,7 @@ describe('Integration Flow: Workspace to Chat Experience', () => {
       totalElements: 0,
     });
 
-    const { getByText, getByTestId } = await render(
+    const { getByText, getAllByText, getByTestId } = await render(
       <ToastProvider>
         <WorkspaceTabScreen />
       </ToastProvider>
@@ -49,11 +49,11 @@ describe('Integration Flow: Workspace to Chat Experience', () => {
 
     // Initial render and data fetch
     await waitFor(() => {
-      expect(getByText('Hệ thống Phân tán')).toBeTruthy();
+      expect(getAllByText('Hệ thống Phân tán')[0]).toBeTruthy();
       expect(getByText('Học phần nâng cao kỳ 1 năm 2026')).toBeTruthy();
       expect(getByText('3 tài liệu')).toBeTruthy();
       expect(getByText('42 thành viên')).toBeTruthy();
-      expect(getByText('Vào học')).toBeTruthy();
+      expect(getByText('Truy cập')).toBeTruthy();
     });
 
     // Card exists and can be tapped

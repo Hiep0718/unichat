@@ -13,20 +13,12 @@
 import { useEffect, useState } from 'react';
 
 import { loadAvatar } from './avatar-image-cache';
+import { AVATAR_COLOURS } from './avatar-colours';
+
+import type { AvatarColorKey } from './avatar-colours';
 import './entity-avatar.css';
 
-/** Must match the set the server accepts (AvatarColor). */
-export type AvatarColorKey = 'navy' | 'teal' | 'plum' | 'moss' | 'clay' | 'slate';
-
-/** Background and ink per chosen colour, both carrying text contrast. */
-const CHOSEN_COLOURS: Record<AvatarColorKey, { bg: string; ink: string }> = {
-  navy: { bg: '#dbe3f7', ink: '#1e3a8a' },
-  teal: { bg: '#cceef2', ink: '#115e64' },
-  plum: { bg: '#eedcf0', ink: '#6b2178' },
-  moss: { bg: '#dcecd6', ink: '#33612a' },
-  clay: { bg: '#f6e0d3', ink: '#8a4118' },
-  slate: { bg: '#dfe3e9', ink: '#33415c' },
-};
+export type { AvatarColorKey } from './avatar-colours';
 
 interface EntityAvatarProps {
   /** Name to derive both the letter and, absent a choice, the colour from. */
@@ -89,7 +81,7 @@ export function EntityAvatar({
 
   const trimmed = name.trim();
   const letter = trimmed ? trimmed.charAt(0).toUpperCase() : '?';
-  const chosen = avatarColor ? CHOSEN_COLOURS[avatarColor] : null;
+  const chosen = avatarColor ? AVATAR_COLOURS[avatarColor] : null;
   const hue = hueFromName(trimmed || '?');
 
   return (

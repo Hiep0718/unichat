@@ -1,0 +1,147 @@
+/* ==========================================================================
+   Discussion controls — search, compose, filter and order, above the list.
+   Moved out of discussion-page.css with the component that owns them.
+   ========================================================================== */
+
+/* Finding a post and writing one: the two reasons to be here, on one row. */
+.disc-list__top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+/* The filters and the ordering share a row, pushed to opposite ends. */
+.disc-list__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.disc-list__filters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* No `border` was ever set here, so the browser's own button border showed
+   through as a grey box around every chip — the boxed look that did not
+   match the mockup's borderless pills. */
+.disc-list__chip {
+  padding: 7px 16px;
+  border: 1px solid var(--ws-line);
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--ws-ink-soft);
+  font: var(--font-label-md);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.disc-list__chip:hover {
+  background: var(--ws-chip);
+  color: var(--ws-ink);
+}
+
+.disc-list__chip--active {
+  border-color: transparent;
+  background: var(--ws-accent-gradient);
+  color: var(--ws-accent-ink);
+}
+
+/* One control with two positions, not two buttons that sit together: the
+   track is the group, and the filled half is where the list currently is. */
+.disc-list__sort {
+  display: flex;
+  flex-shrink: 0;
+  margin-left: auto;
+  padding: 3px;
+  gap: 2px;
+  border-radius: var(--radius-full);
+  background: var(--ws-chip);
+}
+
+.disc-list__sort-btn {
+  padding: 5px 15px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: none;
+  color: var(--ws-ink-muted);
+  font: var(--font-label-md);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.disc-list__sort-btn:hover {
+  color: var(--ws-ink);
+}
+
+.disc-list__sort-btn--active {
+  background: var(--ws-card);
+  color: var(--ws-ink);
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+
+.disc-list__new-btn {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 18px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: var(--ws-accent-gradient);
+  color: var(--ws-accent-ink);
+  font: var(--font-label-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+}
+
+.disc-list__new-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+/* No margin of its own: it shares a row with the create button, and the row
+   owns the spacing below. */
+.disc-list__search {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border: 1px solid var(--ws-line);
+  border-radius: var(--radius-full);
+  background: var(--ws-card);
+  color: var(--ws-ink-muted);
+}
+
+.disc-list__search:focus-within {
+  border-color: var(--ws-ink);
+}
+
+.disc-list__search input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font: var(--font-body-md);
+  color: var(--color-on-surface);
+}
+
+.disc-list__chip:focus-visible,
+.disc-list__sort-btn:focus-visible,
+.disc-list__new-btn:focus-visible {
+  outline: 2px solid var(--ws-ink);
+  outline-offset: 2px;
+}

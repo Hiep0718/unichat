@@ -24,7 +24,10 @@ export function TopNavBar() {
           <a href="#features" className="top-nav__link">Tính năng</a>
           <a href="#how-it-works" className="top-nav__link">Cách hoạt động</a>
           <a href="#demo" className="top-nav__link">Demo</a>
-          <a href="#docs" className="top-nav__link">Tài liệu</a>
+          {/* Mục "Tài liệu" đã bỏ: nó trỏ tới #docs, mà không có phần nào
+              trên trang mang id đó và cũng không có trang tài liệu nào trong
+              router. Một mục điều hướng bấm vào không xảy ra gì thì tệ hơn là
+              một mục ít hơn. Đưa lại ngay khi có trang để trỏ tới. */}
         </nav>
 
         <div className="top-nav__actions">

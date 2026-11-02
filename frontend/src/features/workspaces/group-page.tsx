@@ -20,11 +20,22 @@ import { visibilityOption } from './workspace-visibility';
 
 import './group-page.css';
 
-/** Tabs rendered inside the group page, in reading order. */
-const TABS: readonly { path: string; label: string; icon: string }[] = [
-  { path: 'discussions', label: 'Bài viết', icon: 'forum' },
-  { path: 'documents', label: 'Tệp', icon: 'folder' },
-  { path: 'members', label: 'Thành viên', icon: 'group' },
+/**
+ * Tabs rendered inside the group page, in reading order.
+ *
+ * `count` names which group statistic belongs beside the label. "Giới thiệu"
+ * has none: a description is one thing or nothing, and "Giới thiệu 1" would
+ * say less than the word alone.
+ */
+const TABS: readonly {
+  path: string;
+  label: string;
+  icon: string;
+  count?: 'postCount' | 'documentCount' | 'memberCount';
+}[] = [
+  { path: 'discussions', label: 'Bài viết', icon: 'forum', count: 'postCount' },
+  { path: 'documents', label: 'Tệp', icon: 'folder', count: 'documentCount' },
+  { path: 'members', label: 'Thành viên', icon: 'group', count: 'memberCount' },
   { path: 'about', label: 'Giới thiệu', icon: 'info' },
 ];
 
@@ -53,7 +64,7 @@ export function GroupPage() {
 
       <header className="group-page__header group-page__header--under-cover">
         <div className="group-page__identity">
-          <GroupMark workspaceId={workspaceId} name={workspace.name} size={52} />
+          <GroupMark workspaceId={workspaceId} name={workspace.name} size={72} />
           <div className="group-page__titles">
             <h1 className="group-page__name">{workspace.name}</h1>
             <p className="group-page__sub">
@@ -131,6 +142,11 @@ export function GroupPage() {
           >
             <Icon name={tab.icon} size={17} rounded />
             {tab.label}
+            {/* Only once the group has loaded, and never a zero: "Tệp 0" is a
+                heavier way of saying what the empty tab already says. */}
+            {tab.count && details && details[tab.count] > 0 && (
+              <span className="group-tab__count">{details[tab.count]}</span>
+            )}
             {tab.path === 'documents' && <PendingApprovalBadge />}
           </NavLink>
         ))}

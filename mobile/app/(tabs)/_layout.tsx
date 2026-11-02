@@ -60,7 +60,10 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Workspace',
-          headerTitle: 'Không gian làm việc',
+          // Dải chào của màn này đã mang thương hiệu, ngày và lời chào, và nó
+          // chạy hẳn lên dưới thanh trạng thái. Một thanh "Không gian làm việc"
+          // nữa ở trên chỉ chen vào giữa, nên tắt riêng cho tab này.
+          headerShown: false,
         }}
       />
       <Tabs.Screen
@@ -83,6 +86,9 @@ export default function TabLayout() {
         options={{
           title: 'Tôi',
           headerTitle: 'Tài khoản',
+          // Màn hình này tự vẽ dải đầu mang tiêu đề; để header của trình điều
+          // hướng bật nữa thì chữ "Tài khoản" hiện hai lần chồng nhau.
+          headerShown: false,
         }}
       />
     </Tabs>

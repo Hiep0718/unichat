@@ -18,10 +18,9 @@
   justify-content: space-between;
   gap: 24px;
   padding: 32px 36px;
-  background: linear-gradient(135deg, var(--muc) 0%, var(--muc) 100%);
+  background: var(--muc);
   border-radius: var(--radius-2xl, 20px);
   color: var(--nen);
-  box-shadow: 0 12px 32px -8px rgba(11, 25, 44, 0.35);
   overflow: hidden;
 }
 
@@ -48,12 +47,11 @@
   width: 60px;
   height: 60px;
   border-radius: var(--radius-xl, 16px);
-  background: linear-gradient(135deg, var(--muc) 0%, var(--muc) 100%);
+  background: var(--muc);
   color: var(--nen);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8px 24px rgba(2, 132, 199, 0.3);
   flex-shrink: 0;
 }
 
@@ -162,7 +160,6 @@
   background: var(--nen);
   border: 1.5px solid var(--color-outline-variant, var(--ke));
   border-radius: var(--radius-xl, 14px);
-  box-shadow: 0 2px 10px -2px rgba(15, 23, 42, 0.04);
 }
 
 .ws-overview-stat-card__icon-box {
@@ -216,15 +213,13 @@
 
 /* Primary AI Hub Card */
 .ws-hub-card--primary {
-  background: linear-gradient(135deg, var(--muc) 0%, var(--muc) 100%);
-  color: var(--nen);
-  box-shadow: 0 8px 24px -4px rgba(0, 104, 122, 0.3);
+  background: var(--nhan);
+  color: var(--nhan-muc);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .ws-hub-card--primary:hover {
   transform: translateY(-4px);
-  box-shadow: 0 16px 36px -6px rgba(0, 104, 122, 0.45);
 }
 
 /* Secondary Hub Cards */
@@ -232,13 +227,11 @@
   background: var(--nen);
   border: 1.5px solid var(--color-outline-variant, var(--ke));
   color: var(--color-on-surface, var(--muc));
-  box-shadow: 0 4px 16px -4px rgba(15, 23, 42, 0.05);
 }
 
 .ws-hub-card--secondary:hover {
   border-color: var(--color-secondary, var(--muc));
   transform: translateY(-4px);
-  box-shadow: 0 12px 28px -4px rgba(2, 132, 199, 0.14);
 }
 
 .ws-hub-card__header {
@@ -332,7 +325,6 @@
   border: 1.5px solid var(--color-outline-variant, var(--ke));
   border-radius: var(--radius-2xl, 18px);
   padding: 28px 32px;
-  box-shadow: 0 4px 16px -4px rgba(15, 23, 42, 0.04);
   display: flex;
   flex-direction: column;
   gap: 20px;

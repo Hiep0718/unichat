@@ -101,7 +101,6 @@
   height: 64px;
   border-radius: 18px;
   object-fit: cover;
-  box-shadow: 0 8px 24px rgba(2, 132, 199, 0.25);
   border: 2px solid var(--nen);
   position: relative;
   z-index: 2;
@@ -130,7 +129,7 @@
   font-size: 20px;
   font-weight: 800;
   letter-spacing: -0.02em;
-  background: linear-gradient(135deg, var(--muc) 0%, var(--muc) 100%);
+  background: var(--muc);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   margin: 0;

@@ -191,7 +191,7 @@
 }
 
 .pdf-split-modal__btn--confirm:hover:not(:disabled) {
-  background: var(--muc);
+  background: var(--nhan);
 }
 
 .pdf-split-modal__btn:disabled {

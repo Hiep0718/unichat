@@ -15,6 +15,8 @@ import com.unichat.core.workspace.domain.WorkspaceTopic;
  * @param documentCount   non-deleted documents in the group's library
  * @param memberCount     active members
  * @param recentPostCount posts in the last week, so "quiet" is visible
+ * @param postCount       every live post, however old; the tab badge beside
+ *                        "Bài viết" claims this, not the recent count
  * @param faces           a few members to show, owners first
  * @param topics          what the group is about; empty for groups created
  *                        before topics existed, which is why nothing treats
@@ -24,13 +26,14 @@ public record WorkspaceCardStats(
         long documentCount,
         long memberCount,
         long recentPostCount,
+        long postCount,
         List<MemberFace> faces,
         List<WorkspaceTopic> topics
 ) {
 
     /** A group with nothing counted yet, used where no page context exists. */
     public static WorkspaceCardStats empty() {
-        return new WorkspaceCardStats(0, 0, 0, List.of(), List.of());
+        return new WorkspaceCardStats(0, 0, 0, 0, List.of(), List.of());
     }
 
     /**

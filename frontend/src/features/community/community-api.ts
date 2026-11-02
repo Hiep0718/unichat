@@ -91,8 +91,22 @@ export interface DiscussionResponse {
   /** Colour preset behind the post, null for an ordinary one. */
   backgroundKey: string | null;
   acceptedReplyId: string | null;
-  hasAcceptedAnswer: boolean;
-  isBookmarked: boolean;
+  /**
+   * Whether the group's assistant has replied to this post.
+   *
+   * <p>Drawn as a marker on the card, so a reader can tell an answered
+   * question from an open one without opening it.
+   */
+  hasAiAnswer: boolean;
+  /**
+   * Whether the caller bookmarked this post.
+   *
+   * Optional because the Core API does not send it on any discussion endpoint:
+   * bookmarks are a feed concept. The post detail page binds its "Lưu" button
+   * to this and therefore cannot reflect the real state — a pre-existing bug
+   * that needs the server to report the field, not a client fix.
+   */
+  isBookmarked?: boolean;
   attachments: PostAttachment[];
 }
 

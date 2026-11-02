@@ -30,7 +30,6 @@
   padding: 18px 20px;
   border-radius: var(--radius-2xl, 16px);
   background: var(--ws-card, var(--nen));
-  box-shadow: var(--ws-card-shadow, 0 1px 3px rgb(15 23 42 / 8%));
 }
 
 .group-about__card--quiet {
@@ -41,9 +40,95 @@
 /* The assistant is what this product is for, so its card is the one that
    carries colour. Soft rather than saturated: the button inside it is the
    thing to press, and two saturated surfaces would compete. */
+/* The inverse of the page, like the rail's assistant card: the same offer in
+   two places should not read as two different things. The token pair flips
+   under the dark theme, so this stays "not the page" in both. */
 .group-about__card--ai {
-  background: var(--ws-accent-soft, var(--nen));
+  position: relative;
+  overflow: hidden;
+  border: none;
+  background: var(--color-inverse-surface);
+  color: var(--color-inverse-on-surface);
   box-shadow: none;
+}
+
+.group-about__card--ai .group-about__heading {
+  color: var(--color-inverse-on-surface);
+}
+
+.group-about__card--ai .group-about__description,
+.group-about__card--ai .group-about__points li {
+  color: inherit;
+  opacity: 0.82;
+}
+
+.group-about__card--ai .group-about__cta {
+  background: var(--color-inverse-on-surface);
+  color: var(--color-inverse-surface);
+}
+
+.group-about__card--ai .group-about__cta:hover {
+  filter: none;
+  opacity: 0.88;
+}
+
+/* Keeps the prose off the sheets drifting behind it. */
+.group-about__card--ai > *:not(.group-about__motif) {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Sheets behind the assistant card ────────────────────── */
+
+.group-about__motif {
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  width: 170px;
+  height: 150px;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.group-about__sheet {
+  position: absolute;
+  border-radius: 6px;
+  background: var(--color-inverse-on-surface);
+  opacity: 0.1;
+}
+
+.group-about__sheet--back {
+  right: 74px;
+  top: 10px;
+  width: 62px;
+  height: 80px;
+  transform: rotate(-13deg);
+}
+
+.group-about__sheet--mid {
+  right: 16px;
+  top: 0;
+  width: 66px;
+  height: 86px;
+  transform: rotate(8deg);
+  opacity: 0.14;
+}
+
+.group-about__sheet--front {
+  right: 44px;
+  bottom: 4px;
+  width: 70px;
+  height: 90px;
+  transform: rotate(-4deg);
+  opacity: 0.18;
+}
+
+/* The motif is decoration; below this width the card needs its room for
+   the words. */
+@media (max-width: 760px) {
+  .group-about__motif {
+    display: none;
+  }
 }
 
 .group-about__card-head {
@@ -72,16 +157,6 @@
   color: var(--ws-ink, var(--muc));
   font-size: 0.875rem;
   font-weight: 700;
-}
-
-.group-about__badge {
-  padding: 3px 9px;
-  border-radius: 999px;
-  background: var(--ws-accent, var(--muc));
-  color: var(--ws-accent-ink, var(--nen));
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
 }
 
 .group-about__description {

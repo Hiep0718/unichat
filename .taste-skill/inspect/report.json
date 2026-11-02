@@ -1,0 +1,1436 @@
+{
+ "url": ".taste-skill/snapshots/chat.html",
+ "at": "2026-10-31T09:01:57.908Z",
+ "allow": [],
+ "viewports": [
+  {
+   "width": 1440,
+   "height": 900,
+   "load": "load",
+   "screens": 1,
+   "filled": [
+    0.75
+   ],
+   "motion": {
+    "elements": 7,
+    "css": 7,
+    "transitions": 0,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "page": {
+     "height": 900,
+     "screens": 1,
+     "words": 221,
+     "img": 2,
+     "video": 0,
+     "canvas": 0,
+     "svg": 0,
+     "sections": 0,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 0,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Quản lý dự án",
+     "words": 4,
+     "chars": 13,
+     "lines": 1,
+     "size": 34,
+     "vw": 2.4,
+     "font": "Source Serif 4 Variable",
+     "weight": 600,
+     "tracking": -0.01,
+     "leading": 1.15,
+     "top": 312,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "h1": {
+     "text": "Quản lý dự án",
+     "words": 4,
+     "lines": 1,
+     "size": 34,
+     "font": "Source Serif 4 Variable"
+    },
+    "headings": [
+     {
+      "text": "Quản lý dự án",
+      "words": 4,
+      "chars": 13,
+      "lines": 1,
+      "size": 34,
+      "vw": 2.4,
+      "font": "Source Serif 4 Variable",
+      "weight": 600,
+      "tracking": -0.01,
+      "leading": 1.15,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.6,
+      "top": 312,
+      "tag": "h1",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 1,
+     "maxLines": 1,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 0,
+     "medianWords": null,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "IBM Plex Sans Variable",
+       "share": 0.69,
+       "mono": false
+      },
+      {
+       "family": "Source Serif 4 Variable",
+       "share": 0.21,
+       "mono": false
+      },
+      {
+       "family": "Material Symbols Outlined",
+       "share": 0.06,
+       "mono": true
+      },
+      {
+       "family": "Material Symbols Rounded",
+       "share": 0.04,
+       "mono": true
+      }
+     ],
+     "familyCount": 4,
+     "sizes": [
+      11,
+      12,
+      13,
+      14,
+      16,
+      17,
+      18,
+      20,
+      34
+     ],
+     "sizeCount": 9,
+     "notLoaded": [],
+     "body": {
+      "font": "IBM Plex Sans Variable",
+      "size": 14,
+      "leading": 1.5,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 15.5
+     },
+     "measureChars": 72,
+     "max": {
+      "size": 34,
+      "vw": 2.4,
+      "font": "Source Serif 4 Variable",
+      "text": "Quản lý dự án"
+     },
+     "monoShare": 0.11,
+     "monoProseShare": 0.11,
+     "monoFamilies": [
+      "Material Symbols Rounded",
+      "Material Symbols Outlined"
+     ],
+     "monoSamples": [
+      "add",
+      "auto_awesome",
+      "arrow_back",
+      "notifications",
+      "logout",
+      "close"
+     ],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0.06,
+     "centerShare": 0.15,
+     "smallText": 4
+    },
+    "eyebrows": [],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#f6f6f3",
+     "bodyBgHsl": {
+      "h": 60,
+      "s": 0.14,
+      "l": 0.96
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#f6f6f3",
+       "top": 0,
+       "hsl": {
+        "h": 60,
+        "s": 0.14,
+        "l": 0.96
+       }
+      },
+      {
+       "color": "#ffffff",
+       "top": 0,
+       "hsl": {
+        "h": 0,
+        "s": 0,
+        "l": 1
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#171f1a",
+       "share": 0.52
+      },
+      {
+       "color": "#58615a",
+       "share": 0.3
+      },
+      {
+       "color": "#5c655e",
+       "share": 0.12
+      },
+      {
+       "color": "#ffffff",
+       "share": 0.05
+      },
+      {
+       "color": "#a7a99f",
+       "share": 0.01
+      }
+     ],
+     "button": {
+      "bg": "#ffffff",
+      "hsl": {
+       "h": 0,
+       "s": 0,
+       "l": 1
+      },
+      "fg": "#000000"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 9,
+     "inHero": 9,
+     "radius": 10,
+     "height": 78,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "add Cuộc trò chuyện mới",
+      "history Lịch sử",
+      "auto_awesome Studio",
+      "add Hội thoại mới",
+      "GIẢI THÍCH Giải thích một khái niệm tron"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 1,
+     "shadowOverlay": 1,
+     "shadowSamples": [
+      "div.chat-input-form__wrapper → rgba(15, 23, 42, 0.08) 0px 4px 16px 0px"
+     ],
+     "gradients": 0,
+     "scrims": 1,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 2,
+     "hairlineSamples": [
+      "aside.chat-history 268px",
+      "header.chat-header 1089px"
+     ],
+     "outlinedBoxes": 1,
+     "dashed": 0,
+     "blurred": 0,
+     "roundedBoxes": 2,
+     "boxRadius": 12,
+     "squareMedia": 0,
+     "roundedMedia": 0,
+     "mediaRadius": 0,
+     "textShadow": 0,
+     "cardRows": []
+    },
+    "heroMedia": [],
+    "nav": {
+     "links": 2,
+     "fixed": true,
+     "height": 900,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "material symbols outlined",
+     "material symbols rounded",
+     "ibm plex sans variable",
+     "source serif 4 variable"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "pageH": 900,
+    "margins": {
+     "left": 80,
+     "right": 53
+    },
+    "sections": [],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Quản lý dự án",
+      "size": 34,
+      "top": 312,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 445,
+      "n": 2
+     },
+     {
+      "x": 80,
+      "n": 1
+     },
+     {
+      "x": 402,
+      "n": 1
+     },
+     {
+      "x": 460,
+      "n": 1
+     }
+    ],
+    "leftBlocks": 5,
+    "bodySize": 14,
+    "stage": false,
+    "explains": false,
+    "slivers": [],
+    "voidShare": 0.18,
+    "voidBox": {
+     "x": 60,
+     "y": 240,
+     "w": 360,
+     "h": 660
+    }
+   },
+   "app": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "dark": false,
+    "ground": "#f6f6f3",
+    "sidebar": {
+     "w": 68,
+     "tag": "nav",
+     "links": 6,
+     "share": 0.05
+    },
+    "topbar": null,
+    "canvas": {
+     "left": 12,
+     "right": 53
+    },
+    "hero": {
+     "text": "Quản lý dự án",
+     "words": 4,
+     "chars": 13,
+     "lines": 1,
+     "size": 34,
+     "vw": 2.4,
+     "font": "Source Serif 4 Variable",
+     "weight": 600,
+     "tracking": -0.01,
+     "leading": 1.15,
+     "top": 312,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "charts": 0,
+    "layout": {
+     "panels": 1,
+     "firstScreen": 1,
+     "ragged": [],
+     "voids": []
+    },
+    "tiles": 1,
+    "panels": {
+     "count": 7,
+     "radii": [
+      [
+       0,
+       5
+      ],
+      [
+       12,
+       2
+      ]
+     ],
+     "heavyBorders": 0,
+     "borderSamples": [],
+     "heavyShadows": 0,
+     "softShadows": 0,
+     "shadowSamples": [],
+     "glass": 0
+    },
+    "chips": {
+     "count": 0,
+     "hues": 0,
+     "samples": []
+    },
+    "numbers": {
+     "cells": 0,
+     "leftAligned": 0,
+     "figures": 0,
+     "tabularShare": null,
+     "kpiMax": null
+    },
+    "rows": null,
+    "chartHues": 0,
+    "placeholders": [],
+    "type": {
+     "under13": 0.15,
+     "tiny": 0,
+     "tinySamples": [],
+     "sizes": [
+      11,
+      12,
+      13,
+      14,
+      16,
+      17,
+      18,
+      20,
+      34
+     ]
+    },
+    "title": {
+     "text": "Quản lý dự án",
+     "size": 34,
+     "top": 312
+    },
+    "colourShare": 0
+   },
+   "consoleErrors": [
+    "Error: @vitejs/plugin-react can't detect preamble. Something is wrong.\n    at http://127.0.0.1:5173/src/components/loading-screen-view.tsx:106:11"
+   ]
+  },
+  {
+   "width": 768,
+   "height": 1024,
+   "load": "load",
+   "screens": 1,
+   "filled": [
+    0.7
+   ],
+   "motion": {
+    "elements": 7,
+    "css": 7,
+    "transitions": 0,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "page": {
+     "height": 1024,
+     "screens": 1,
+     "words": 221,
+     "img": 2,
+     "video": 0,
+     "canvas": 0,
+     "svg": 0,
+     "sections": 0,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 0,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Quản lý dự án",
+     "words": 4,
+     "chars": 13,
+     "lines": 1,
+     "size": 34,
+     "vw": 4.4,
+     "font": "Source Serif 4 Variable",
+     "weight": 600,
+     "tracking": -0.01,
+     "leading": 1.15,
+     "top": 328,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "h1": {
+     "text": "Quản lý dự án",
+     "words": 4,
+     "lines": 1,
+     "size": 34,
+     "font": "Source Serif 4 Variable"
+    },
+    "headings": [
+     {
+      "text": "Quản lý dự án",
+      "words": 4,
+      "chars": 13,
+      "lines": 1,
+      "size": 34,
+      "vw": 4.4,
+      "font": "Source Serif 4 Variable",
+      "weight": 600,
+      "tracking": -0.01,
+      "leading": 1.15,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.48,
+      "top": 328,
+      "tag": "h1",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 1,
+     "maxLines": 1,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 0,
+     "medianWords": null,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "IBM Plex Sans Variable",
+       "share": 0.68,
+       "mono": false
+      },
+      {
+       "family": "Source Serif 4 Variable",
+       "share": 0.21,
+       "mono": false
+      },
+      {
+       "family": "Material Symbols Outlined",
+       "share": 0.07,
+       "mono": true
+      },
+      {
+       "family": "Material Symbols Rounded",
+       "share": 0.05,
+       "mono": true
+      }
+     ],
+     "familyCount": 4,
+     "sizes": [
+      11,
+      12,
+      13,
+      14,
+      16,
+      17,
+      18,
+      20,
+      34
+     ],
+     "sizeCount": 9,
+     "notLoaded": [],
+     "body": {
+      "font": "IBM Plex Sans Variable",
+      "size": 14,
+      "leading": 1.5,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 15.5
+     },
+     "measureChars": 43,
+     "max": {
+      "size": 34,
+      "vw": 4.4,
+      "font": "Source Serif 4 Variable",
+      "text": "Quản lý dự án"
+     },
+     "monoShare": 0.11,
+     "monoProseShare": 0.11,
+     "monoFamilies": [
+      "Material Symbols Rounded",
+      "Material Symbols Outlined"
+     ],
+     "monoSamples": [
+      "add",
+      "auto_awesome",
+      "arrow_back",
+      "notifications",
+      "logout",
+      "close"
+     ],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0.06,
+     "centerShare": 0.15,
+     "smallText": 4
+    },
+    "eyebrows": [],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#f6f6f3",
+     "bodyBgHsl": {
+      "h": 60,
+      "s": 0.14,
+      "l": 0.96
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#f6f6f3",
+       "top": 0,
+       "hsl": {
+        "h": 60,
+        "s": 0.14,
+        "l": 0.96
+       }
+      },
+      {
+       "color": "#ffffff",
+       "top": 0,
+       "hsl": {
+        "h": 0,
+        "s": 0,
+        "l": 1
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#171f1a",
+       "share": 0.5
+      },
+      {
+       "color": "#58615a",
+       "share": 0.31
+      },
+      {
+       "color": "#5c655e",
+       "share": 0.13
+      },
+      {
+       "color": "#ffffff",
+       "share": 0.06
+      },
+      {
+       "color": "#a7a99f",
+       "share": 0.01
+      }
+     ],
+     "button": {
+      "bg": "#171f1a",
+      "hsl": {
+       "h": 143,
+       "s": 0.15,
+       "l": 0.11
+      },
+      "fg": "#ffffff"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 5,
+     "inHero": 5,
+     "radius": 10,
+     "height": 37,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "add Cuộc trò chuyện mới",
+      "history Lịch sử",
+      "auto_awesome Studio",
+      "add Hội thoại mới",
+      "verified Chỉ theo Tài liệu"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 1,
+     "shadowOverlay": 1,
+     "shadowSamples": [
+      "div.chat-input-form__wrapper → rgba(15, 23, 42, 0.08) 0px 4px 16px 0px"
+     ],
+     "gradients": 0,
+     "scrims": 1,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 2,
+     "hairlineSamples": [
+      "aside.chat-history 220px",
+      "header.chat-header 465px"
+     ],
+     "outlinedBoxes": 1,
+     "dashed": 0,
+     "blurred": 0,
+     "roundedBoxes": 2,
+     "boxRadius": 12,
+     "squareMedia": 0,
+     "roundedMedia": 0,
+     "mediaRadius": 0,
+     "textShadow": 0,
+     "cardRows": [
+      {
+       "count": 4,
+       "iconTopped": false,
+       "rounded": false,
+       "top": 554
+      }
+     ]
+    },
+    "heroMedia": [],
+    "nav": {
+     "links": 2,
+     "fixed": true,
+     "height": 1024,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "material symbols outlined",
+     "material symbols rounded",
+     "ibm plex sans variable",
+     "source serif 4 variable"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "pageH": 1024,
+    "margins": {
+     "left": 80,
+     "right": 45
+    },
+    "sections": [],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Quản lý dự án",
+      "size": 34,
+      "top": 328,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 336,
+      "n": 2
+     },
+     {
+      "x": 80,
+      "n": 1
+     },
+     {
+      "x": 354,
+      "n": 1
+     }
+    ],
+    "leftBlocks": 4,
+    "bodySize": 14,
+    "stage": false,
+    "explains": false,
+    "slivers": [],
+    "voidShare": 0,
+    "voidBox": null
+   },
+   "app": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "dark": false,
+    "ground": "#f6f6f3",
+    "sidebar": {
+     "w": 68,
+     "tag": "nav",
+     "links": 6,
+     "share": 0.09
+    },
+    "topbar": null,
+    "canvas": {
+     "left": 12,
+     "right": -96
+    },
+    "hero": {
+     "text": "Quản lý dự án",
+     "words": 4,
+     "chars": 13,
+     "lines": 1,
+     "size": 34,
+     "vw": 4.4,
+     "font": "Source Serif 4 Variable",
+     "weight": 600,
+     "tracking": -0.01,
+     "leading": 1.15,
+     "top": 328,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "charts": 0,
+    "layout": {
+     "panels": 1,
+     "firstScreen": 1,
+     "ragged": [],
+     "voids": []
+    },
+    "tiles": 1,
+    "panels": {
+     "count": 7,
+     "radii": [
+      [
+       0,
+       5
+      ],
+      [
+       12,
+       2
+      ]
+     ],
+     "heavyBorders": 0,
+     "borderSamples": [],
+     "heavyShadows": 0,
+     "softShadows": 0,
+     "shadowSamples": [],
+     "glass": 0
+    },
+    "chips": {
+     "count": 0,
+     "hues": 0,
+     "samples": []
+    },
+    "numbers": {
+     "cells": 0,
+     "leftAligned": 0,
+     "figures": 0,
+     "tabularShare": null,
+     "kpiMax": null
+    },
+    "rows": null,
+    "chartHues": 0,
+    "placeholders": [],
+    "type": {
+     "under13": 0.15,
+     "tiny": 0,
+     "tinySamples": [],
+     "sizes": [
+      11,
+      12,
+      13,
+      14,
+      16,
+      17,
+      18,
+      20,
+      34
+     ]
+    },
+    "title": {
+     "text": "Quản lý dự án",
+     "size": 34,
+     "top": 328
+    },
+    "colourShare": 0.002
+   },
+   "consoleErrors": [
+    "Error: @vitejs/plugin-react can't detect preamble. Something is wrong.\n    at http://127.0.0.1:5173/src/components/loading-screen-view.tsx:106:11"
+   ]
+  },
+  {
+   "width": 390,
+   "height": 844,
+   "load": "load",
+   "screens": 1,
+   "filled": [
+    0.47
+   ],
+   "motion": {
+    "elements": 7,
+    "css": 7,
+    "transitions": 0,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "page": {
+     "height": 844,
+     "screens": 1,
+     "words": 215,
+     "img": 2,
+     "video": 0,
+     "canvas": 0,
+     "svg": 0,
+     "sections": 0,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 0,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "arrow_back",
+     "words": 1,
+     "chars": 10,
+     "lines": 1,
+     "size": 20,
+     "vw": 5.1,
+     "font": "Material Symbols Outlined",
+     "weight": 400,
+     "tracking": 0,
+     "leading": 1,
+     "top": 24,
+     "tag": "span",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "h1": {
+     "text": "Quản lý dự án",
+     "words": 4,
+     "lines": 4,
+     "size": 26,
+     "font": "Source Serif 4 Variable"
+    },
+    "headings": [
+     {
+      "text": "Quản lý dự án",
+      "words": 4,
+      "chars": 13,
+      "lines": 4,
+      "size": 26,
+      "vw": 6.7,
+      "font": "Source Serif 4 Variable",
+      "weight": 600,
+      "tracking": -0.01,
+      "leading": 1.15,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.11,
+      "top": 1002,
+      "tag": "h1",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 1,
+     "maxLines": 4,
+     "over2Lines": 1,
+     "statements": 0,
+     "centered": 0,
+     "medianWords": 4,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "IBM Plex Sans Variable",
+       "share": 0.71,
+       "mono": false
+      },
+      {
+       "family": "Source Serif 4 Variable",
+       "share": 0.22,
+       "mono": false
+      },
+      {
+       "family": "Material Symbols Outlined",
+       "share": 0.07,
+       "mono": true
+      }
+     ],
+     "familyCount": 3,
+     "sizes": [
+      11,
+      12,
+      13,
+      14,
+      16,
+      17,
+      18,
+      20,
+      26
+     ],
+     "sizeCount": 9,
+     "notLoaded": [],
+     "body": {
+      "font": "IBM Plex Sans Variable",
+      "size": 14,
+      "leading": 1.5,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 15.5
+     },
+     "measureChars": 5,
+     "max": {
+      "size": 26,
+      "vw": 6.7,
+      "font": "Source Serif 4 Variable",
+      "text": "Quản lý dự án"
+     },
+     "monoShare": 0.07,
+     "monoProseShare": 0.07,
+     "monoFamilies": [
+      "Material Symbols Outlined"
+     ],
+     "monoSamples": [
+      "close",
+      "add",
+      "arrow_back",
+      "psychology",
+      "forum",
+      "history"
+     ],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0.07,
+     "centerShare": 0.16,
+     "smallText": 4
+    },
+    "eyebrows": [],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#f6f6f3",
+     "bodyBgHsl": {
+      "h": 60,
+      "s": 0.14,
+      "l": 0.96
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#f6f6f3",
+       "top": 0,
+       "hsl": {
+        "h": 60,
+        "s": 0.14,
+        "l": 0.96
+       }
+      },
+      {
+       "color": "#ffffff",
+       "top": 0,
+       "hsl": {
+        "h": 0,
+        "s": 0,
+        "l": 1
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#171f1a",
+       "share": 0.53
+      },
+      {
+       "color": "#58615a",
+       "share": 0.29
+      },
+      {
+       "color": "#5c655e",
+       "share": 0.13
+      },
+      {
+       "color": "#ffffff",
+       "share": 0.04
+      },
+      {
+       "color": "#a7a99f",
+       "share": 0.01
+      }
+     ],
+     "button": {
+      "bg": "#171f1a",
+      "hsl": {
+       "h": 143,
+       "s": 0.15,
+       "l": 0.11
+      },
+      "fg": "#ffffff"
+     },
+     "lowContrast": [
+      {
+       "text": "0/2000",
+       "ratio": 2.4,
+       "need": 4.5,
+       "size": 11,
+       "fg": "#a7a99f",
+       "bg": "#ffffff"
+      }
+     ]
+    },
+    "buttons": {
+     "count": 4,
+     "inHero": 4,
+     "radius": 10,
+     "height": 37,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "add Cuộc trò chuyện mới",
+      "history Lịch sử",
+      "auto_awesome Studio",
+      "add Hội thoại mới"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 1,
+     "shadowOverlay": 0,
+     "shadowSamples": [
+      "div.chat-input-form__wrapper → rgba(15, 23, 42, 0.08) 0px 4px 16px 0px"
+     ],
+     "gradients": 0,
+     "scrims": 1,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 1,
+     "hairlineSamples": [
+      "aside.chat-history 220px"
+     ],
+     "outlinedBoxes": 0,
+     "dashed": 0,
+     "blurred": 0,
+     "roundedBoxes": 0,
+     "boxRadius": 0,
+     "squareMedia": 0,
+     "roundedMedia": 0,
+     "mediaRadius": 0,
+     "textShadow": 0,
+     "cardRows": []
+    },
+    "heroMedia": [],
+    "nav": {
+     "links": 0,
+     "fixed": true,
+     "height": 0,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": [
+     "material symbols outlined",
+     "ibm plex sans variable",
+     "source serif 4 variable"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "pageH": 844,
+    "margins": {
+     "left": 12,
+     "right": 0
+    },
+    "sections": [],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Quản lý dự án",
+      "size": 26,
+      "top": 1002,
+      "firstScreen": false
+     }
+    ],
+    "edgeText": [
+     {
+      "text": "Lịch sử hội thoại",
+      "side": "left",
+      "px": 12
+     },
+     {
+      "text": "Quản lý dự án",
+      "side": "right",
+      "px": 13
+     },
+     {
+      "text": "forum",
+      "side": "right",
+      "px": 0
+     }
+    ],
+    "edges": [
+     {
+      "x": 12,
+      "n": 1
+     },
+     {
+      "x": 286,
+      "n": 1
+     }
+    ],
+    "leftBlocks": 2,
+    "bodySize": 14,
+    "stage": false,
+    "explains": false,
+    "slivers": [],
+    "voidShare": 0,
+    "voidBox": null
+   },
+   "app": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "dark": false,
+    "ground": "#f6f6f3",
+    "sidebar": null,
+    "topbar": null,
+    "canvas": {
+     "left": 12,
+     "right": -406
+    },
+    "hero": {
+     "text": "arrow_back",
+     "words": 1,
+     "chars": 10,
+     "lines": 1,
+     "size": 20,
+     "vw": 5.1,
+     "font": "Material Symbols Outlined",
+     "weight": 400,
+     "tracking": 0,
+     "leading": 1,
+     "top": 24,
+     "tag": "span",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "charts": 0,
+    "layout": {
+     "panels": 1,
+     "firstScreen": 1,
+     "ragged": [],
+     "voids": []
+    },
+    "tiles": 1,
+    "panels": {
+     "count": 1,
+     "radii": [
+      [
+       0,
+       1
+      ]
+     ],
+     "heavyBorders": 0,
+     "borderSamples": [],
+     "heavyShadows": 0,
+     "softShadows": 0,
+     "shadowSamples": [],
+     "glass": 0
+    },
+    "chips": {
+     "count": 0,
+     "hues": 0,
+     "samples": []
+    },
+    "numbers": {
+     "cells": 0,
+     "leftAligned": 0,
+     "figures": 0,
+     "tabularShare": null,
+     "kpiMax": null
+    },
+    "rows": null,
+    "chartHues": 0,
+    "placeholders": [],
+    "type": {
+     "under13": 0.15,
+     "tiny": 0,
+     "tinySamples": [],
+     "sizes": [
+      11,
+      12,
+      13,
+      14,
+      16,
+      17,
+      18,
+      20,
+      26
+     ]
+    },
+    "title": {
+     "text": "Quản lý dự án",
+     "size": 26,
+     "top": 1002
+    },
+    "colourShare": 0
+   },
+   "consoleErrors": [
+    "Error: @vitejs/plugin-react can't detect preamble. Something is wrong.\n    at http://127.0.0.1:5173/src/components/loading-screen-view.tsx:106:11"
+   ]
+  }
+ ],
+ "findings": [
+  {
+   "level": "FAIL",
+   "id": "font-count",
+   "width": 1440,
+   "message": "4 typefaces in use (IBM Plex Sans Variable, Source Serif 4 Variable, Material Symbols Outlined, Material Symbols Rounded).",
+   "fix": "Two at most: one display, one text. Often one is enough.",
+   "alsoAt": [
+    768
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "dev-server",
+   "width": 1440,
+   "message": "This page is served by a development server (Vite, webpack or Next in dev mode).",
+   "fix": "Run the last gate on the production build too (vite build && vite preview, next build && next start, or the built index.html): minifiers and bundlers change the CSS a visitor receives.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "font-not-dealt",
+   "width": 1440,
+   "message": "The sheet dealt Instrument Sans, but the page renders IBM Plex Sans Variable, Source Serif 4 Variable.",
+   "fix": "Load the dealt face (the link on the sheet) and put it first in font-family. A build that falls back to a default face lands on the default look."
+  },
+  {
+   "level": "FAIL",
+   "id": "headline-lines",
+   "width": 390,
+   "message": "1 headline(s) wrap past two lines at 390px: \"Quản lý dự án\" → 4 lines (4 words, 26px)",
+   "fix": "Cut words first (a headline is a title, not a sentence). Then give it a wider measure. Lower the size only as a last resort and never below the scale you chose. A real statement paragraph belongs in a <p> or <blockquote> at 24px or less."
+  },
+  {
+   "level": "FAIL",
+   "id": "contrast",
+   "width": 390,
+   "message": "Unreadable text: \"0/2000\" 2.4:1 (#a7a99f on #ffffff)",
+   "fix": "Raise contrast to at least 4.5:1 for text, 3:1 for large display."
+  },
+  {
+   "level": "WARN",
+   "id": "font-count",
+   "width": 390,
+   "message": "3 typefaces in use (IBM Plex Sans Variable, Source Serif 4 Variable, Material Symbols Outlined).",
+   "fix": "Two at most."
+  },
+  {
+   "level": "FAIL",
+   "id": "edge-text",
+   "width": 390,
+   "message": "1 text block(s) sit within 12px of the screen edge: \"forum\" (0px from the right)",
+   "fix": "Keep text inside the page margin (16–20px). Only display type deliberately bled past the edge may touch it."
+  }
+ ],
+ "images": [
+  {
+   "viewport": "desktop",
+   "width": 1440,
+   "fold": "D:\\DoAnTotNghiep\\unichat\\.taste-skill\\inspect\\desktop-fold.jpg",
+   "pages": [
+    "D:\\DoAnTotNghiep\\unichat\\.taste-skill\\inspect\\desktop-page-01.jpg"
+   ],
+   "film": []
+  },
+  {
+   "viewport": "tablet",
+   "width": 768,
+   "fold": "D:\\DoAnTotNghiep\\unichat\\.taste-skill\\inspect\\tablet-fold.jpg",
+   "pages": [
+    "D:\\DoAnTotNghiep\\unichat\\.taste-skill\\inspect\\tablet-page-01.jpg"
+   ],
+   "film": []
+  },
+  {
+   "viewport": "mobile",
+   "width": 390,
+   "fold": "D:\\DoAnTotNghiep\\unichat\\.taste-skill\\inspect\\mobile-fold.jpg",
+   "pages": [
+    "D:\\DoAnTotNghiep\\unichat\\.taste-skill\\inspect\\mobile-page-01.jpg"
+   ],
+   "film": []
+  }
+ ]
+}

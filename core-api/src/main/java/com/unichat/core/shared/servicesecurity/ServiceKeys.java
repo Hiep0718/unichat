@@ -23,8 +23,8 @@ public class ServiceKeys {
     /** Reads configuration only; absent identities fail closed when used. */
     public ServiceKeys(@Value("${CORE_SERVICE_PRIVATE_KEY:}") String privatePem,
             @Value("${AI_SERVICE_PUBLIC_KEY:}") String publicPem,
-            @Value("${CORE_SERVICE_PRIVATE_KEY_PATH:}") String privatePath,
-            @Value("${AI_SERVICE_PUBLIC_KEY_PATH:}") String publicPath, ResourceLoader resources) {
+            @Value("${CORE_SERVICE_PRIVATE_KEY_PATH:.service-keys/core-service-private.pem}") String privatePath,
+            @Value("${AI_SERVICE_PUBLIC_KEY_PATH:.service-keys/ai-service-public.pem}") String publicPath, ResourceLoader resources) {
         this.privatePem = privatePem; this.publicPem = publicPem;
         this.privatePath = privatePath; this.publicPath = publicPath; this.resources = resources;
     }

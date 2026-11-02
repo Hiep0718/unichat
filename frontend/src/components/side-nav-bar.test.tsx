@@ -69,7 +69,10 @@ describe('SideNavBar', () => {
     expect(screen.getByText('Thông báo')).toBeInTheDocument();
 
     // Logout item with text label
-    expect(screen.getByText('Đăng xuất')).toBeInTheDocument();
+    // Theo tên khả truy cập chứ không theo chữ hiện: nút đăng xuất giờ nằm
+    // trong hàng người dùng và chỉ còn biểu tượng. Điều cần giữ là nó vẫn
+    // gọi được tên, không phải nó vẫn in ra chữ.
+    expect(screen.getByRole('button', { name: 'Đăng xuất' })).toBeInTheDocument();
   });
 
   it('offers the assistant and the way out, and leaves the rest to the group tabs', async () => {

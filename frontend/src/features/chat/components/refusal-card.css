@@ -1,0 +1,123 @@
+/* Thẻ từ chối và thẻ chính sách.
+
+   Những quy tắc này từng nằm trong citation-panel.css và bị chính tôi xóa
+   mất ở commit fcc3184 khi viết lại file đó cho rãnh bằng chứng — 13 dòng
+   biến mất, và bề mặt từ chối chạy không style suốt từ đó: không nền, không
+   đệm, và liên kết trong thẻ chính sách cùng hệt màu chữ quanh nó nên không
+   ai biết là bấm được. Giờ chúng ở file của riêng mình, nên lần viết lại kế
+   tiếp của một file khác không kéo chúng đi theo.
+
+   Một từ chối có bằng chứng ở đây là kết quả đúng của sản phẩm, không phải
+   một lỗi. Bản cũ sơn nó bằng var(--color-error-container) và viền đỏ, tức
+   đọc sai bản chất của nó. Nó là một panel sắc độ như mọi panel khác; khác
+   biệt giữa "cần làm rõ" và "từ chối" do biểu tượng, tiêu đề và một nét mực
+   bên lề gánh, không do màu. */
+
+.refusal-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 16px 18px;
+  /* Tờ giấy của khung chat là trắng; panel cách nó 4,3 điểm sáng. */
+  background: var(--be-mat);
+  border-radius: var(--radius-lg);
+  color: var(--muc);
+}
+
+/* Hai loại khác nhau ở độ dứt khoát của nét lề, không ở sắc độ: một từ chối
+   mang nét mực đặc, một yêu cầu làm rõ chỉ mang nét viền. */
+.refusal-card--refuse {
+  border-inline-start: 2px solid var(--muc);
+}
+
+.refusal-card--clarify {
+  border-inline-start: 2px solid var(--vien);
+}
+
+.refusal-card__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.refusal-card__icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.refusal-card__title {
+  font: var(--font-label-md);
+  font-weight: 700;
+}
+
+.refusal-card__reason {
+  font: var(--font-body-md);
+  line-height: 1.5;
+  color: var(--muc-nhat);
+}
+
+/* Liên kết trong thẻ chính sách. Không có quy tắc nào cho nó nên nó render
+   đúng màu chữ thân bài, tức là một liên kết trông y hệt chữ thường. */
+.refusal-card a {
+  align-self: flex-start;
+  margin-top: 4px;
+  color: var(--muc);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ── Chuyển câu hỏi chưa trả lời được sang cộng đồng ── */
+.refusal-card__escalation {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--vien);
+}
+
+.refusal-card__escalation-text {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font: var(--font-body-sm);
+  line-height: 1.5;
+  /* Trước đây là opacity 0.85, tức một sắc xám tự sinh ra ngoài bộ vai mực.
+     Dùng thẳng vai mực nhạt, đã đo đạt AA trên cả ba vùng nền. */
+  color: var(--muc-nhat);
+}
+
+.refusal-card__escalation-icon {
+  flex-shrink: 0;
+  margin-top: 1px;
+  font-size: 18px;
+}
+
+.refusal-card__escalation-btn {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: var(--radius-lg);
+  background: var(--nhan);
+  color: var(--nhan-muc);
+  font: var(--font-label-md);
+  cursor: pointer;
+}
+
+.refusal-card__escalation-btn:hover {
+  background: var(--muc-nhat);
+}
+
+.refusal-card__escalation-btn .material-symbols-outlined {
+  font-size: 18px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .refusal-card__escalation-btn {
+    transition: none;
+  }
+}

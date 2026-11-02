@@ -3,9 +3,46 @@ import {
   WorkspaceItem,
   WorkspaceDetail,
   DocumentItem,
+  GroupMember,
   PageResponse,
   CreateWorkspacePayload,
 } from './workspace-types';
+
+import type { FeedPost } from '../feed/feed-types';
+
+/**
+ * Trình bày một bài của nhóm theo đúng hình dạng thẻ bài viết đang chờ.
+ *
+ * <p>Hai endpoint mang cùng một bài dưới những cái tên hơi khác nhau, nên ở đây
+ * ánh xạ thay vì nhân đôi thẻ: dùng chung một component nghĩa là nền bài viết,
+ * tệp đính kèm và bình luận hoạt động y hệt nhau ở nhóm và ở bảng tin, bởi vì
+ * đó đúng là cùng một đoạn mã đang vẽ.
+ */
+function toFeedPost(raw: Record<string, any>): FeedPost {
+  return {
+    id: raw.id,
+    workspaceId: raw.workspaceId,
+    workspaceName: raw.workspaceName ?? '',
+    authorId: raw.authorId,
+    authorName: raw.authorName,
+    authorAvatar: raw.authorAvatar ?? null,
+    title: raw.title,
+    body: raw.body,
+    label: (raw.label ?? 'DISCUSSION') as FeedPost['label'],
+    voteScore: raw.voteScore ?? 0,
+    replyCount: raw.replyCount ?? 0,
+    reactions: raw.reactions ?? { counts: {}, total: 0, myReaction: null },
+    backgroundKey: raw.backgroundKey ?? null,
+    acceptedReplyId: raw.acceptedReplyId ?? null,
+    // Lưu bài là khái niệm của bảng tin; danh sách của nhóm không hiện cũng
+    // không đặt được nó.
+    isBookmarked: false,
+    createdAt: raw.createdAt,
+    attachments: raw.attachments ?? [],
+    hasAiAnswer: Boolean(raw.hasAiAnswer),
+    pinned: Boolean(raw.pinned),
+  };
+}
 
 export interface PaginationParams {
   page?: number;
@@ -119,6 +156,46 @@ export const workspaceApi = {
       method: 'POST',
       body: formData,
     });
+  },
+
+  /**
+   * Thành viên đang hoạt động của một nhóm.
+   *
+   * <p>Core API chỉ trả danh sách này cho chủ sở hữu; với vai trò khác nó từ
+   * chối, nên nơi gọi phải tự quyết có hỏi hay không thay vì nuốt lỗi.
+   *
+   * @param workspaceId nhóm cần đọc
+   * @returns thành viên kèm nhận dạng để vẽ avatar
+   */
+  async getWorkspaceMembers(workspaceId: string): Promise<GroupMember[]> {
+    return fetchJson<GroupMember[]>(`/workspaces/${workspaceId}/members`);
+  },
+
+  /**
+   * Bài viết trong một nhóm.
+   *
+   * @param workspaceId nhóm cần đọc
+   * @param params phân trang, lọc theo nhãn và thứ tự sắp xếp
+   * @returns một trang bài viết; `label` bỏ trống nghĩa là mọi loại
+   */
+  async getWorkspacePosts(
+    workspaceId: string,
+    params: PaginationParams & { label?: string; sort?: 'NEW' | 'HOT' } = {}
+  ): Promise<PageResponse<FeedPost>> {
+    const page = params.page ?? 0;
+    const size = params.size ?? 20;
+    const query = new URLSearchParams({
+      page: String(page),
+      size: String(size),
+      sort: params.sort ?? 'NEW',
+    });
+    if (params.label) query.set('label', params.label);
+
+    const res = await fetchJson<PageResponse<Record<string, unknown>>>(
+      `/workspaces/${workspaceId}/discussions?${query.toString()}`
+    );
+    // Một phản hồi thiếu mảng content thì danh sách rỗng, không phải lỗi.
+    return { ...res, content: (res?.content ?? []).map(toFeedPost) };
   },
 
   /**

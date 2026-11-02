@@ -7,88 +7,27 @@
    Rendered inside the group page, which owns the page padding and width. */
 /* No width of its own: the group page frame sets it, so this tab lines up
    with Tệp and Thành viên instead of jumping narrower when it opens. */
+/* Two columns: the posts, and the rail saying what the group can answer and
+   who is in it. The rail is this tab's, not the page's — the Thành viên tab
+   beside a card of member faces would say the same thing twice. */
 .disc-list {
+  display: grid;
   width: 100%;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  align-items: start;
+  gap: 24px;
 }
 
-.disc-list__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 24px;
-  gap: 16px;
-  flex-wrap: wrap;
+.disc-list__main {
+  min-width: 0;
 }
 
-.disc-list__title {
-  font: var(--font-headline-lg);
-  color: var(--color-on-surface);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 0;
-}
-
-.disc-list__title-icon {
-  color: var(--color-primary);
-}
-
-.disc-list__controls {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.disc-list__divider {
-  width: 1px;
-  height: 24px;
-  background-color: var(--color-outline-variant);
-  margin: 0 4px;
-}
-
-/* No `border` was ever set here, so the browser's own button border showed
-   through as a grey box around every chip — the boxed look that did not
-   match the mockup's borderless pills. */
-.disc-list__filter-btn {
-  padding: 6px 14px;
-  border: none;
-  border-radius: var(--radius-full);
-  background: var(--ws-chip, var(--color-surface-dim));
-  color: var(--ws-ink-soft, var(--muc-nhat));
-  font: var(--font-label-md);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.disc-list__filter-btn:hover {
-  background: var(--be-mat);
-}
-
-.disc-list__filter-btn--active {
-  background: var(--ws-accent-gradient);
-  color: var(--color-on-primary);
-  border-color: var(--color-primary);
-}
-
-.disc-list__new-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 18px;
-  border-radius: var(--radius-full);
-  border: none;
-  background: var(--ws-accent-gradient);
-  color: var(--color-on-primary);
-  font: var(--font-label-md);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  box-shadow: var(--shadow-sm);
-}
-
-.disc-list__new-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
+/* Below this the rail would squeeze the titles it sits beside, so it goes
+   under them instead of alongside. */
+@media (max-width: 1100px) {
+  .disc-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 /* ---------- Card list ---------- */
@@ -260,7 +199,7 @@
 }
 
 .reply-node--ai .reply-node__avatar {
-  background: linear-gradient(135deg, var(--muc), var(--muc));
+  background: var(--muc);
   color: white;
 }
 
@@ -283,7 +222,7 @@
 }
 
 .reply-node__dot {
-  color: var(--color-outline);
+  color: var(--muc-nhat);
   font-size: 10px;
 }
 
@@ -409,28 +348,4 @@
 }
 
 /* ---------- Search within the group ---------- */
-.disc-list__search {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 16px;
-  padding: 9px 16px;
-  border-radius: var(--radius-full);
-  background: var(--color-surface-container-lowest);
-  color: var(--color-on-surface-variant);
-}
-
-.disc-list__search:focus-within {
-  border-color: var(--color-primary);
-}
-
-.disc-list__search input {
-  flex: 1;
-  min-width: 0;
-  border: none;
-  outline: none;
-  background: transparent;
-  font: var(--font-body-md);
-  color: var(--color-on-surface);
-}
 

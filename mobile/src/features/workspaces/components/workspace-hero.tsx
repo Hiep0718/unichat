@@ -1,316 +1,294 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
-import { LinearGradient } from 'expo-linear-gradient';
-import { radii, spacing } from '../../../design/tokens';
+import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { colors, radii, spacing } from '../../../design/tokens';
 import { typography } from '../../../design/typography';
 import { UCIcon } from '../../../components/uc-icon';
-import { UCGlassCard } from '../../../components/uc-glass-card';
+
+const WEEKDAYS = [
+  'Chủ Nhật',
+  'Thứ Hai',
+  'Thứ Ba',
+  'Thứ Tư',
+  'Thứ Năm',
+  'Thứ Sáu',
+  'Thứ Bảy',
+];
 
 interface WorkspaceHeroProps {
-  email?: string;
-  displayName?: string;
-  workspaceCount?: number;
-  documentCount?: number;
-  onQuickChat?: () => void;
-  onCreateWorkspace?: () => void;
+  readonly email?: string | undefined;
+  readonly displayName?: string | undefined;
+  readonly workspaceCount: number;
+  readonly documentCount: number;
+  readonly memberCount: number;
+  readonly onQuickChat: () => void;
+  readonly onNotifications?: (() => void) | undefined;
+  readonly onAccount?: (() => void) | undefined;
 }
 
-function getGreeting(): string {
-  const hour = new Date().getHours();
+/** Lời chào theo giờ trong ngày. */
+function greeting(now: Date): string {
+  const hour = now.getHours();
   if (hour < 12) return 'Chào buổi sáng';
   if (hour < 18) return 'Chào buổi chiều';
   return 'Chào buổi tối';
 }
 
+/** Ngày hôm nay, viết như người Việt đọc nó. */
+function today(now: Date): string {
+  return `${WEEKDAYS[now.getDay()]}, ${now.getDate()} tháng ${now.getMonth() + 1}`;
+}
+
+/** Tên hiển thị rút từ email khi tài khoản chưa đặt tên. */
+function nameFrom(displayName?: string, email?: string): string {
+  const trimmed = displayName?.trim();
+  if (trimmed) return trimmed;
+  return email?.split('@')[0] ?? '';
+}
+
+/**
+ * Dải chào ở đầu màn Workspace.
+ *
+ * Một mảng màu đặc mang lời chào, ô hỏi nhanh và ba con số — cùng hình với
+ * dải chào trên web, nên hai nơi đọc ra là một sản phẩm.
+ */
 export function WorkspaceHero({
   email,
   displayName,
-  workspaceCount = 0,
-  documentCount = 0,
+  workspaceCount,
+  documentCount,
+  memberCount,
   onQuickChat,
-  onCreateWorkspace,
+  onNotifications,
+  onAccount,
 }: WorkspaceHeroProps) {
-  const greeting = getGreeting();
-  const greetingName =
-    displayName?.trim() ||
-    (email ? email.split('@')[0] : 'Sinh viên UniChat');
-  const userInitial = greetingName.charAt(0).toUpperCase();
+  const now = new Date();
+  const who = nameFrom(displayName, email);
+  const initial = (who || '?').charAt(0).toUpperCase();
+
+  const stats = [
+    { value: workspaceCount, label: 'Workspace' },
+    { value: documentCount, label: 'Tài liệu' },
+    { value: memberCount, label: 'Thành viên' },
+  ];
 
   return (
-    <Animated.View entering={FadeInDown.springify().damping(18).stiffness(160)}>
-      <UCGlassCard variant="navy" style={styles.heroGlassCard} glow>
-        {/* Top Profile & AI Status Bar */}
-        <View style={styles.heroTopRow}>
-          <View style={styles.avatarWrapper}>
-            <LinearGradient
-              colors={['#57DFFE', '#1E3A8A', '#00236F']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.avatarGradient}
+    <View style={styles.root}>
+      {/* Ảnh nền, neo theo mép trên.
+
+          React Native không có background-image, nên đây là một <Image> tuyệt
+          đối nằm dưới mọi nội dung. Không dùng resizeMode="cover": ảnh cao
+          1170x1200 còn dải này rộng và thấp, nên 'cover' canh giữa và cắt mất
+          đúng khúc trên — nơi có vầng sáng và các trang tài liệu. Thay vào đó
+          ảnh lấy trọn bề ngang, giữ đúng tỉ lệ của nó, và khung cha cắt phần
+          thừa phía dưới. Phần dưới của ảnh gần như đen nên chỗ bị cắt không
+          mang nội dung gì.
+
+          Ba vòng tròn đồng tâm vẽ tay trước đây đã bỏ: ảnh đã mang hoa văn
+          của riêng nó, và chồng cả hai lên nhau thì thành hai lớp trang trí
+          đánh nhau. */}
+      <View pointerEvents="none" style={styles.artClip}>
+        <Image
+          source={require('../../../../assets/images/workspace-hero.jpg')}
+          style={styles.art}
+          resizeMode="cover"
+          accessibilityRole="image"
+          accessibilityLabel=""
+        />
+      </View>
+
+      <SafeAreaView edges={['top']} style={styles.safe}>
+        <View style={styles.topRow}>
+          <View style={styles.brand}>
+            <View style={styles.brandMark}>
+              <UCIcon name="school" size={18} color={colors.primary} />
+            </View>
+            <Text style={styles.brandName}>UniChat</Text>
+          </View>
+
+          <View style={styles.topActions}>
+            <TouchableOpacity
+              style={styles.iconBtn}
+              onPress={onNotifications}
+              accessibilityRole="button"
+              accessibilityLabel="Thông báo"
+              hitSlop={8}
             >
-              <Text style={styles.avatarText}>{userInitial}</Text>
-            </LinearGradient>
-            <View style={styles.onlineBadgeRing}>
-              <View style={styles.onlineBadgeDot} />
-            </View>
-          </View>
+              <UCIcon name="notifications" size={19} color="#FFFFFF" />
+            </TouchableOpacity>
 
-          <View style={styles.heroUserText}>
-            <Text style={styles.heroGreetingPrefix}>{greeting},</Text>
-            <Text style={styles.heroGreetingName} numberOfLines={1}>
-              {greetingName}
-            </Text>
-          </View>
-
-          <View style={styles.statusBadge}>
-            <View style={styles.greenPulseDot} />
-            <Text style={styles.statusText}>AI Active</Text>
+            <TouchableOpacity
+              style={styles.avatar}
+              onPress={onAccount}
+              accessibilityRole="button"
+              accessibilityLabel="Tài khoản"
+              hitSlop={8}
+            >
+              <Text style={styles.avatarText}>{initial}</Text>
+            </TouchableOpacity>
           </View>
         </View>
 
-        {/* Live Academic Knowledge Stats Grid */}
-        <View style={styles.statsGrid}>
-          <View style={styles.statTile}>
-            <View style={[styles.statIconBox, { backgroundColor: 'rgba(87, 223, 254, 0.15)' }]}>
-              <UCIcon name="folder" size={15} color="#57DFFE" />
-            </View>
-            <View>
-              <Text style={styles.statNumber}>{workspaceCount}</Text>
-              <Text style={styles.statLabel}>Không gian</Text>
-            </View>
+        <Text style={styles.date}>{today(now)}</Text>
+        <Text style={styles.greeting}>
+          {greeting(now)},{who ? `\n${who}` : ''}
+        </Text>
+
+        {/* Ô hỏi nhanh. Bấm vào là sang màn chat chứ không gửi tại đây: câu
+            hỏi phải thuộc về một nhóm, và việc chọn nhóm nằm ở màn đó. */}
+        <TouchableOpacity
+          style={styles.ask}
+          onPress={onQuickChat}
+          activeOpacity={0.9}
+          accessibilityRole="button"
+          accessibilityLabel="Hỏi UniChat về tài liệu"
+        >
+          <UCIcon name="auto-awesome" size={17} color={colors.primary} />
+          <TextInput
+            style={styles.askInput}
+            placeholder="Hỏi UniChat về tài liệu..."
+            placeholderTextColor={colors.outline}
+            editable={false}
+            pointerEvents="none"
+          />
+          <View style={styles.askSend}>
+            <UCIcon name="arrow-upward" size={17} color="#FFFFFF" />
           </View>
+        </TouchableOpacity>
 
-          <View style={styles.statDivider} />
-
-          <View style={styles.statTile}>
-            <View style={[styles.statIconBox, { backgroundColor: 'rgba(52, 211, 153, 0.15)' }]}>
-              <UCIcon name="description" size={15} color="#34D399" />
+        <View style={styles.stats}>
+          {stats.map((stat) => (
+            <View key={stat.label} style={styles.stat}>
+              <Text style={styles.statValue}>{stat.value}</Text>
+              <Text style={styles.statLabel}>{stat.label}</Text>
             </View>
-            <View>
-              <Text style={styles.statNumber}>{documentCount}</Text>
-              <Text style={styles.statLabel}>Tài liệu số</Text>
-            </View>
-          </View>
-
-          <View style={styles.statDivider} />
-
-          <View style={styles.statTile}>
-            <View style={[styles.statIconBox, { backgroundColor: 'rgba(251, 191, 36, 0.15)' }]}>
-              <UCIcon name="verified" size={15} color="#FBBF24" />
-            </View>
-            <View>
-              <Text style={styles.statNumber}>100%</Text>
-              <Text style={styles.statLabel}>Trích dẫn</Text>
-            </View>
-          </View>
+          ))}
         </View>
-
-        {/* Quick Actions Row */}
-        {(onQuickChat || onCreateWorkspace) && (
-          <View style={styles.quickActionsRow}>
-            {onQuickChat && (
-              <TouchableOpacity
-                style={styles.heroActionButton}
-                onPress={onQuickChat}
-                activeOpacity={0.8}
-              >
-                <LinearGradient
-                  colors={['rgba(87, 223, 254, 0.25)', 'rgba(0, 104, 122, 0.35)']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={styles.actionGradient}
-                >
-                  <UCIcon name="auto-awesome" size={15} color="#57DFFE" />
-                  <Text style={styles.actionBtnText}>Hỏi AI ngay</Text>
-                </LinearGradient>
-              </TouchableOpacity>
-            )}
-
-            {onCreateWorkspace && (
-              <TouchableOpacity
-                style={styles.heroSecondaryAction}
-                onPress={onCreateWorkspace}
-                activeOpacity={0.8}
-              >
-                <UCIcon name="add" size={15} color="#ACEDFF" />
-                <Text style={styles.secondaryBtnText}>Tạo không gian</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        )}
-      </UCGlassCard>
-    </Animated.View>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  heroGlassCard: {
-    padding: spacing.md + 4,
-    borderRadius: radii['2xl'],
-    marginBottom: spacing.md,
+  root: {
+    /* Navy đậm, đúng màu dải chào trên web (--ray-nen: #151F42), nên hai
+       client đọc ra là một sản phẩm. Ảnh nền phủ lên màu này. */
+    backgroundColor: '#151F42',
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
+    overflow: 'hidden',
   },
-  heroTopRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-  },
-  avatarWrapper: {
-    position: 'relative',
-    marginRight: spacing.sm + 4,
-  },
-  avatarGradient: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1.5,
-    borderColor: 'rgba(172, 237, 255, 0.45)',
-  },
-  avatarText: {
-    ...typography.headlineMd,
-    color: '#FFFFFF',
-    fontWeight: '700',
-  },
-  onlineBadgeRing: {
+
+  /** Khung cắt: trải kín dải và giấu phần ảnh thừa phía dưới. */
+  artClip: {
     position: 'absolute',
-    bottom: -1,
-    right: -1,
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    backgroundColor: '#00236F',
-    alignItems: 'center',
-    justifyContent: 'center',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    overflow: 'hidden',
   },
-  onlineBadgeDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#34D399',
-  },
-  heroUserText: {
-    flex: 1,
-  },
-  heroGreetingPrefix: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: '#ACEDFF',
-    letterSpacing: 0.2,
-    marginBottom: 2,
-  },
-  heroGreetingName: {
-    ...typography.headlineMd,
-    color: '#FFFFFF',
-    fontWeight: '700',
-    letterSpacing: -0.3,
-  },
-  statusBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(52, 211, 153, 0.14)',
-    borderWidth: 1,
-    borderColor: 'rgba(52, 211, 153, 0.35)',
-    paddingHorizontal: 9,
-    paddingVertical: 5,
-    borderRadius: radii.full,
-    gap: 6,
-  },
-  greenPulseDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#34D399',
-  },
-  statusText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#34D399',
-    letterSpacing: 0.3,
-  },
-  statsGrid: {
+  /** Ảnh lấy trọn bề ngang và giữ tỉ lệ gốc, nên mép trên luôn nằm ở mép trên. */
+  art: { width: '100%', aspectRatio: 1170 / 1200, opacity: 0.34 },
+
+  safe: { paddingHorizontal: spacing.md, paddingBottom: spacing.lg },
+
+  topRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    borderRadius: radii.xl,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.12)',
-    paddingVertical: spacing.sm + 2,
-    paddingHorizontal: spacing.md,
+    marginTop: spacing.sm,
   },
-  statTile: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    flex: 1,
-    justifyContent: 'center',
-  },
-  statIconBox: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+  brand: { flexDirection: 'row', alignItems: 'center', gap: 9 },
+  brandMark: {
+    width: 34,
+    height: 34,
+    borderRadius: 11,
+    backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  statNumber: {
-    fontSize: 15,
-    fontWeight: '700',
+  brandName: { ...typography.bodyLg, color: '#FFFFFF', fontWeight: '700' },
+
+  topActions: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  iconBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    // Đặc, không trong suốt: xem chú thích ở `stat`.
+    backgroundColor: '#3A4360',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F2C79A',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarText: { ...typography.labelMd, color: '#3A2A14', fontWeight: '700' },
+
+  date: {
+    ...typography.labelSm,
+    marginTop: spacing.lg,
+    color: 'rgba(255, 255, 255, 0.82)',
+  },
+  greeting: {
+    ...typography.headlineLg,
+    marginTop: 4,
     color: '#FFFFFF',
-    lineHeight: 18,
+    fontWeight: '700',
+    lineHeight: 32,
   },
-  statLabel: {
-    fontSize: 10,
-    fontWeight: '500',
-    color: '#DCE1FF',
-    lineHeight: 12,
-  },
-  statDivider: {
-    width: 1,
-    height: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-  },
-  quickActionsRow: {
+
+  ask: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
+    gap: 10,
     marginTop: spacing.md,
+    paddingLeft: 14,
+    paddingRight: 6,
+    paddingVertical: 6,
+    borderRadius: radii.full ?? 999,
+    backgroundColor: '#FFFFFF',
   },
-  heroActionButton: {
+  askInput: {
     flex: 1,
-    borderRadius: radii.full,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(87, 223, 254, 0.5)',
+    ...typography.bodyMd,
+    color: colors.onSurface,
+    paddingVertical: 8,
   },
-  actionGradient: {
-    flexDirection: 'row',
+  askSend: {
+    width: 38,
+    height: 38,
+    borderRadius: 13,
+    backgroundColor: '#121A3A',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 9,
+  },
+
+  stats: { flexDirection: 'row', gap: 8, marginTop: spacing.md },
+  /* Ô số liệu: nền đặc, không trong suốt.
+
+     Trắng-16%-trong-suốt để vùng sáng của ảnh xuyên qua, nên nền ô đổi theo
+     từng điểm trên ảnh và không đo được — đúng lỗi đã gặp ở dải chào trên
+     web. Hai màu dưới đây là kết quả của trắng 16% và 22% phủ trên #151F42,
+     nên hình dáng không đổi, chỉ còn đoán được: chữ trắng 9,76:1, chữ phụ
+     7,17:1. */
+  stat: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'baseline',
     gap: 6,
-  },
-  actionBtnText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  heroSecondaryAction: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 9,
-    paddingHorizontal: spacing.md,
-    borderRadius: radii.full,
-    backgroundColor: 'rgba(255, 255, 255, 0.10)',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+    backgroundColor: '#3A4360',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.20)',
-    gap: 5,
+    borderColor: '#454E6C',
   },
-  secondaryBtnText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#ACEDFF',
-  },
+  statValue: { ...typography.bodyLg, color: '#FFFFFF', fontWeight: '700' },
+  statLabel: { ...typography.labelSm, color: 'rgba(255, 255, 255, 0.86)' },
 });

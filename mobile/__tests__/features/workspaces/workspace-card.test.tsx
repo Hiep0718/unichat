@@ -28,7 +28,7 @@ describe('WorkspaceCard', () => {
     expect(getByText('8 tài liệu')).toBeTruthy();
     expect(getByText('25 thành viên')).toBeTruthy();
     expect(getByText('Công khai')).toBeTruthy();
-    expect(getByText('Vào học')).toBeTruthy();
+    expect(getByText('Truy cập')).toBeTruthy();
 
     await fireEvent.press(getByTestId('workspace-card-ws-123'));
     expect(onPressMock).toHaveBeenCalledWith('ws-123');

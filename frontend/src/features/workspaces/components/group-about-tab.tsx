@@ -33,6 +33,23 @@ function formatDate(iso: string | undefined): string {
   });
 }
 
+/**
+ * The sheets drifting behind the assistant card.
+ *
+ * Drawn rather than shipped as a picture: it is three rectangles, it stays
+ * crisp at any density, and it costs no request. Hidden from assistive
+ * technology, which has nothing to gain from it.
+ */
+function PaperMotif() {
+  return (
+    <div className="group-about__motif" aria-hidden="true">
+      <span className="group-about__sheet group-about__sheet--back" />
+      <span className="group-about__sheet group-about__sheet--mid" />
+      <span className="group-about__sheet group-about__sheet--front" />
+    </div>
+  );
+}
+
 export function GroupAboutTab() {
   const { workspaceId = '' } = useParams<{ workspaceId: string }>();
   const { workspace, role, isOwner } = useWorkspace();
@@ -41,6 +58,7 @@ export function GroupAboutTab() {
   if (!workspace) return null;
 
   const privacy = visibilityOption(workspace.visibility);
+  const hasDescription = Boolean(workspace.description?.trim());
 
   return (
     <div className="group-about">
@@ -54,36 +72,40 @@ export function GroupAboutTab() {
                 className="group-about__edit"
               >
                 <Icon name="edit" size={15} />
-                Chỉnh sửa
+                {hasDescription ? 'Chỉnh sửa' : 'Thêm mô tả'}
               </Link>
             )}
           </header>
+          {/* An empty description is a thing to do, not merely a fact, so the
+              placeholder says what writing one is for. */}
           <p className="group-about__description">
-            {workspace.description?.trim() || 'Nhóm này chưa có mô tả.'}
+            {hasDescription
+              ? workspace.description.trim()
+              : 'Nhóm này chưa có mô tả. Viết vài dòng để người mới biết nhóm học gì.'}
           </p>
           <TopicChips topics={details?.topics ?? []} />
         </section>
 
         <section className="group-about__card group-about__card--ai">
+          <PaperMotif />
           <header className="group-about__card-head">
             <h2 className="group-about__heading">
               <Icon name="auto_awesome" size={17} />
               Trợ lý AI của nhóm
             </h2>
-            <span className="group-about__badge">RAG</span>
           </header>
           <p className="group-about__description">
-            Trợ lý trả lời dựa trên các tệp trong tab <strong>Tệp</strong> của nhóm này,
-            kèm trích dẫn tới đúng tài liệu. Thành viên đóng góp thêm tệp ở tab đó;
-            tệp được duyệt sẽ trở thành nguồn mà trợ lý có thể trích dẫn.
+            Trả lời dựa trên các tệp trong tab <strong>Tệp</strong> của nhóm, kèm trích
+            dẫn tới đúng tài liệu. Tệp được duyệt sẽ trở thành nguồn mà trợ lý có thể
+            trích dẫn.
           </p>
           <ul className="group-about__points">
             <li>
-              <Icon name="format_quote" size={16} />
+              <Icon name="check" size={16} />
               Mỗi câu trả lời dẫn ngược về đoạn tài liệu đã dùng
             </li>
             <li>
-              <Icon name="shield" size={16} />
+              <Icon name="check" size={16} />
               Thiếu căn cứ trong tài liệu thì trợ lý từ chối thay vì đoán
             </li>
           </ul>
@@ -117,7 +139,7 @@ export function GroupAboutTab() {
 
       <aside className="group-about__aside">
         <section className="group-about__card">
-          <h2 className="group-about__heading">Thông tin chi tiết</h2>
+          <h2 className="group-about__heading">Thông tin</h2>
           <dl className="group-about__facts">
             <div className="group-about__fact">
               <dt>Vai trò của bạn</dt>

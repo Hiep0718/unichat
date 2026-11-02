@@ -68,5 +68,5 @@
 }
 
 .reply-node--ai .foldable__toggle:hover {
-  background: rgb(255 255 255 / 92%);
+  background: var(--nen);
 }

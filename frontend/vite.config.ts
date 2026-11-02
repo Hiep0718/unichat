@@ -51,6 +51,12 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test-setup.ts'],
     include: ['src/**/*.test.{ts,tsx}'],
+    // Mỗi worker dựng một jsdom riêng, và ở số worker mặc định chúng bị hệ
+    // điều hành giết giữa chừng: báo cáo trả về "Worker exited unexpectedly"
+    // kèm số test nhảy loạn giữa các lần chạy, vì file của worker chết thì
+    // không được tính. Không test nào hỏng cả — chỉ là hết bộ nhớ. Giới hạn
+    // lại để một lần chạy luôn đếm đúng số file.
+    maxWorkers: '50%',
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

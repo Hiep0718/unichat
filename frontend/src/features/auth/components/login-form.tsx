@@ -41,9 +41,9 @@ export function LoginForm() {
   return (
     <div className="login-card">
       <div className="login-card__header">
-        <h2 className="login-card__title">Đăng nhập vào UniChat</h2>
+        <h2 className="login-card__title">Chào mừng trở lại</h2>
         <p className="login-card__subtitle">
-          Truy cập không gian làm việc RAG của bạn
+          Đăng nhập để tiếp tục vào không gian học tập của bạn.
         </p>
       </div>
 
@@ -105,12 +105,17 @@ export function LoginForm() {
           </label>
         </div>
 
-        <button 
-          className="login-form__submit" 
+        <button
+          className="login-form__submit"
           type="submit"
           disabled={loginMutation.isPending}
         >
-          {loginMutation.isPending ? 'Đang xử lý...' : 'Đăng nhập'}
+          {loginMutation.isPending ? 'Đang xử lý...' : (
+            <>
+              Đăng nhập
+              <Icon name="arrow_forward" size={18} rounded />
+            </>
+          )}
         </button>
 
 

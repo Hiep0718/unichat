@@ -7,7 +7,6 @@ import { useCallback, useMemo, useState } from 'react';
 
 import { Icon } from '../../components/icon';
 import { WelcomeBanner } from './components/welcome-banner';
-import { QuickStats } from './components/quick-stats';
 import { WorkspaceCard } from './components/workspace-card';
 import { WorkspaceForm } from './components/workspace-form';
 import { SkeletonCard } from './components/skeleton-card';
@@ -83,7 +82,7 @@ function WorkspaceListPage() {
   return (
     <main className="workspace-main">
       <div className="workspace-dashboard">
-        <WelcomeBanner />
+        <WelcomeBanner workspaces={allWorkspaces} />
 
         <div className="dashboard-tabs">
           <button
@@ -106,10 +105,6 @@ function WorkspaceListPage() {
 
         {activeTab === 'MY_WORKSPACES' ? (
           <>
-            {!isLoading && !error && allWorkspaces.length > 0 && (
-              <QuickStats workspaces={allWorkspaces} />
-            )}
-
             {!isLoading && !error && recentWorkspaces.length > 0 && (
               <RecentSection workspaces={recentWorkspaces} />
             )}
@@ -156,10 +151,13 @@ interface RecentSectionProps {
 function RecentSection({ workspaces }: RecentSectionProps) {
   return (
     <section className="recent-section">
-      <h3 className="recent-section__title">
-        <Icon name="bolt" size={20} />
-        Truy cập nhanh
-      </h3>
+      <div className="recent-section__head">
+        <h3 className="recent-section__title">
+          <Icon name="bolt" size={20} />
+          Truy cập nhanh
+        </h3>
+        <p className="recent-section__sub">Các workspace bạn mở gần đây</p>
+      </div>
       <div className="recent-section__grid">
         {workspaces.map((ws, i) => (
           <WorkspaceCard
@@ -224,6 +222,7 @@ function AllWorkspacesSection({
         <h3 className="all-workspaces-section__title">
           <Icon name="folder" size={20} />
           Tất cả Workspace
+          <span className="all-workspaces-section__count">{filteredWorkspaces.length}</span>
         </h3>
         <button
           className="workspace-header__create-btn"
@@ -333,6 +332,18 @@ function AllWorkspacesSection({
                 animationIndex={i}
               />
             ))}
+            {/* Ô cuối lưới, không phải một nút trôi nổi ở đâu đó: việc tạo
+                nhóm mới nằm đúng chỗ nhóm mới sẽ xuất hiện. */}
+            <button
+              type="button"
+              className="workspace-new-tile"
+              onClick={onCreateClick}
+            >
+              <span className="workspace-new-tile__plus">
+                <Icon name="add" size={22} rounded />
+              </span>
+              Tạo workspace mới
+            </button>
           </div>
         )}
       </div>

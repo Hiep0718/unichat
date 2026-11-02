@@ -16,6 +16,25 @@
         window.global = window;
       }
     </script>
+    <script>
+      // Áp chế độ hiển thị trước khi trang vẽ lần đầu.
+      //
+      // Nếu để React làm việc này thì người dùng nền tối thấy một chớp trắng
+      // ở mỗi lần tải, vì bundle chỉ chạy sau khi trình duyệt đã vẽ xong
+      // khung đầu tiên. Đoạn này cố ý nằm inline và đồng bộ.
+      //
+      // Logic phải khớp với src/lib/theme.ts; chỉ có tên khóa là chia sẻ.
+      (function () {
+        try {
+          var saved = localStorage.getItem('unichat.theme');
+          if (saved === 'light' || saved === 'dark') {
+            document.documentElement.setAttribute('data-theme', saved);
+          }
+        } catch (err) {
+          // Lưu trữ bị chặn: đi theo thiết lập hệ thống, không chặn tải trang.
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

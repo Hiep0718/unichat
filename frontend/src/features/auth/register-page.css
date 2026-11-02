@@ -1,178 +1,161 @@
-/* Register Page */
+/* Màn đăng ký. Vỏ hai cột dùng chung với màn đăng nhập (login-page.css);
+   file này chỉ mang phần riêng của nó. */
 
-.register-page {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--stack-md);
-  background: var(--color-background);
+/* ---------- Nửa trái ---------- */
+
+.register-story__tag {
+  /* align-self là bắt buộc, không phải thừa: .login-story__pitch là một
+     flex column, nên align-items mặc định kéo nhãn này dài hết chiều ngang
+     và inline-block không cứu được. */
+  align-self: flex-start;
+  margin: 0 0 18px;
+  padding: 6px 15px;
+  border-radius: var(--radius-full);
+  background: rgb(255 255 255 / 14%);
+  font: var(--font-label-sm);
+  font-weight: 600;
+  color: #ffffff;
 }
+
+.register-story__features {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 30px 0 0;
+  padding: 0;
+  max-inline-size: 530px;
+  list-style: none;
+}
+
+/* Thẻ tính năng đặt trên ảnh, nên chúng cần một mảng nền riêng để chữ đọc
+   được ở bất kỳ chỗ nào của bức minh họa. */
+.register-story__feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 15px 17px;
+  border-radius: var(--radius-xl);
+  background: rgb(10 15 34 / 62%);
+  border: 1px solid rgb(255 255 255 / 10%);
+}
+
+.register-story__feature-mark {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  inline-size: 38px;
+  block-size: 38px;
+  border-radius: var(--radius-lg);
+  background: #ffffff;
+  color: var(--nhan);
+}
+
+.register-story__feature-title {
+  margin: 0;
+  font: var(--font-label-md);
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.register-story__feature-body {
+  margin: 4px 0 0;
+  font: var(--font-body-sm);
+  line-height: 1.5;
+  color: rgb(255 255 255 / 78%);
+}
+
+.register-story__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  font: var(--font-label-sm);
+  color: rgb(255 255 255 / 78%);
+}
+
+/* ---------- Thẻ đăng ký ---------- */
 
 .register-card {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  max-width: 1000px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-outline-variant);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-md);
-  overflow: hidden;
-}
-
-.register-card__form-side {
-  width: 100%;
-  padding: 32px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.register-card__logo {
-  display: flex;
-  align-items: center;
-  gap: var(--stack-sm);
-  margin-bottom: 32px;
-}
-
-.register-card__logo-icon {
-  color: var(--color-primary);
-}
-
-.register-card__logo-text {
-  font: var(--font-headline-md);
-  font-weight: 700;
-  color: var(--color-primary);
-}
-
-.register-card__header {
-  margin-bottom: 32px;
+  inline-size: 100%;
+  max-inline-size: 430px;
+  padding: clamp(24px, 3vw, 36px);
+  border-radius: 24px;
+  background: var(--nen);
+  border: 1px solid var(--vien);
 }
 
 .register-card__title {
-  font: var(--font-headline-lg);
-  color: var(--color-on-surface);
-  margin-bottom: var(--stack-sm);
+  margin: 0;
+  font: var(--font-headline-md);
+  font-weight: 700;
+  line-height: 1.22;
+  color: var(--muc);
 }
 
 .register-card__subtitle {
+  margin: 8px 0 22px;
   font: var(--font-body-md);
-  color: var(--color-on-surface-variant);
+  line-height: 1.5;
+  color: var(--muc-nhat);
 }
 
-/* Benefits Panel */
-.benefits-panel {
+@media (max-width: 599px) {
+  .register-story__features {
+    display: none;
+  }
+}
+
+/* ---------- Khổ điện thoại ---------- */
+
+/* Nút quay lại: ẩn ở khổ rộng, hiện ở khổ hẹp. */
+.register-story__back {
   display: none;
-  width: 50%;
-  padding: 32px 48px;
-  flex-direction: column;
-  position: relative;
-  overflow: hidden;
-  background: var(--color-surface-container-low);
-  border-left: 1px solid var(--color-outline-variant);
 }
 
-.benefits-panel__title {
-  font: var(--font-headline-md);
-  color: var(--color-on-surface);
-  margin-bottom: 32px;
-}
+@media (max-width: 1023px) {
+  .register-story__back {
+    position: absolute;
+    inset-block-start: 20px;
+    inset-inline-start: 20px;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    inline-size: 40px;
+    block-size: 40px;
+    border-radius: var(--radius-lg);
+    background: rgb(10 15 34 / 72%);
+    border: 1px solid rgb(255 255 255 / 14%);
+    color: #ffffff;
+  }
 
-.benefits-panel__items {
-  display: flex;
-  flex-direction: column;
-  gap: var(--stack-lg);
-  flex-grow: 1;
-}
+  .register-story__back:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 2px;
+  }
 
-.benefit-item {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--stack-md);
-  padding: var(--stack-md);
-  background: var(--color-surface);
-  border: 1px solid var(--color-outline-variant);
-  border-radius: var(--radius-xl);
-  transition: border-color var(--transition-fast);
-}
+  /* Tiêu đề ba dòng cần chỗ hơn tiêu đề hai dòng của màn đăng nhập. */
+  .login-page:has(.register-story__back) .login-story {
+    block-size: 330px;
+    min-block-size: 330px;
+  }
 
-.benefit-item:hover {
-  border-color: var(--color-primary-fixed-dim);
-}
+  /* Chứa nút quay lại nên thương hiệu lùi xuống một nhịp. */
+  .login-page:has(.register-story__back) .login-story__inner {
+    padding-block-start: 70px;
+  }
 
-.benefit-item__icon {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-full);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
+  .register-story__features,
+  .register-story__badge,
+  .register-story__tag {
+    display: none;
+  }
 
-.benefit-item__title {
-  font: var(--font-label-md);
-  color: var(--color-on-surface);
-  margin-bottom: 4px;
-}
-
-.benefit-item__desc {
-  font: var(--font-body-md);
-  color: var(--color-on-surface-variant);
-}
-
-.benefits-panel__testimonial {
-  margin-top: 32px;
-  padding-top: var(--stack-lg);
-  border-top: 1px solid var(--color-outline-variant);
-}
-
-.benefits-panel__quote {
-  font: var(--font-body-md);
-  color: var(--color-on-surface-variant);
-  font-style: italic;
-  margin-bottom: 12px;
-}
-
-.benefits-panel__author {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.benefits-panel__avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-full);
-  background: var(--color-surface-dim);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-on-surface-variant);
-}
-
-.benefits-panel__name {
-  font: var(--font-label-sm);
-  color: var(--color-on-surface);
-}
-
-.benefits-panel__role {
-  font-size: 11px;
-  color: var(--color-on-surface-variant);
-}
-
-@media (min-width: 768px) {
+  /* Thẻ bỏ viền và đệm riêng: tờ giấy trắng của .login-pane đã là thẻ. */
   .register-card {
-    flex-direction: row;
-  }
-
-  .register-card__form-side {
-    width: 50%;
-    padding: 48px;
-  }
-
-  .benefits-panel {
-    display: flex;
+    max-inline-size: 100%;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
   }
 }

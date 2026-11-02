@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
 
+import './refusal-card.css';
+
 interface PolicyNoticeProps {
   readonly workspaceId: string;
   readonly isOwner: boolean;

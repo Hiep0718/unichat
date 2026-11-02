@@ -31,10 +31,10 @@
 .admin-page__field input:focus,
 .admin-page__field textarea:focus { outline: 3px solid rgb(37 99 235 / 16%); border-color: var(--muc); }
 .admin-page__toolbar button,
-.admin-page__button { min-height: 40px; padding: 8px 14px; border: 0; border-radius: 8px; background: var(--muc); color: var(--nen); font-weight: 650; cursor: pointer; }
+.admin-page__button { min-height: 40px; padding: 8px 14px; border: 0; border-radius: 8px; background: var(--nhan); color: var(--nhan-muc); font-weight: 650; cursor: pointer; }
 .admin-page__toolbar button:disabled,
 .admin-page__button:disabled { opacity: .55; cursor: not-allowed; }
-.admin-page__card { overflow-x: auto; padding: 18px; border: 1px solid var(--ke); border-radius: 12px; background: var(--nen); box-shadow: 0 1px 3px rgb(15 23 42 / 4%); }
+.admin-page__card { overflow-x: auto; padding: 18px; border: 1px solid var(--ke); border-radius: 12px; background: var(--nen);}
 .admin-page__card h3 { margin: 0 0 14px; font-size: 1rem; }
 .admin-page__card table { width: 100%; border-collapse: collapse; text-align: left; }
 .admin-page__card th { padding: 12px; background: var(--nen); color: var(--muc-nhat); font-size: .75rem; letter-spacing: .04em; text-transform: uppercase; }

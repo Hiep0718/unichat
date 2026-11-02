@@ -1,10 +1,10 @@
 /**
- * Members tab of a group. Thin wrapper that supplies the member table with the
+ * Members tab of a group. Thin wrapper that supplies the member panel with the
  * ids and permissions it needs from the workspace context.
  */
 import { useParams } from 'react-router-dom';
 
-import { MemberTable } from '../../members';
+import { MemberPanel } from '../../members';
 import { useWorkspace } from '../workspace-context';
 
 export function GroupMembersTab() {
@@ -12,7 +12,7 @@ export function GroupMembersTab() {
   const { isOwner, workspace } = useWorkspace();
 
   return (
-    <MemberTable
+    <MemberPanel
       workspaceId={workspaceId}
       isOwner={isOwner}
       visibility={workspace?.visibility}

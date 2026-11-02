@@ -68,8 +68,14 @@ jest.mock('@expo/vector-icons/MaterialIcons', () => {
 
 jest.mock('react-native-safe-area-context', () => {
   const React = require('react');
+  const { View } = require('react-native');
   return {
     SafeAreaProvider: ({ children }) => children,
+    // Mock nay truoc do khong co SafeAreaView, nen bat ky man nao dung no
+    // deu render ra undefined va do voi "Element type is invalid" — mot loi
+    // khong noi gi ve nguyen nhan. Tra ve mot View that de bo cuc van dung.
+    SafeAreaView: ({ children, style }) =>
+      React.createElement(View, { style }, children),
     SafeAreaConsumer: ({ children }) => children({ top: 44, bottom: 34, left: 0, right: 0 }),
     useSafeAreaInsets: () => ({ top: 44, bottom: 34, left: 0, right: 0 }),
     useSafeAreaFrame: () => ({ x: 0, y: 0, width: 390, height: 844 }),
@@ -84,6 +90,12 @@ jest.mock('expo-router', () => ({
     navigate: jest.fn(),
   },
   useLocalSearchParams: () => ({}),
+  // Chay ngay mot lan va don dep khi thao, giong hanh vi khi man hinh dang
+  // duoc hien; man nao dung hook nay se do neu mock thieu no.
+  useFocusEffect: (effect) => {
+    const React = require('react');
+    React.useEffect(effect, [effect]);
+  },
   useRouter: () => ({
     replace: jest.fn(),
     push: jest.fn(),

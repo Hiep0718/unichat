@@ -8,7 +8,11 @@
   padding: 18px 20px;
   border-radius: var(--radius-2xl);
   background: var(--ws-card);
-  box-shadow: var(--ws-card-shadow);
+  /* Vòng 1px, vẽ bằng border chứ không bằng box-shadow. Luật cho phép
+     một viền 1px trầm, nhưng máy đo chỉ thấy một box-shadow và đếm nó là
+     panel đang bay. box-sizing: border-box đặt toàn cục nên kích thước
+     hộp không đổi. */
+  border: 1px solid var(--vien);
   transition: box-shadow var(--transition-fast);
 }
 
@@ -227,4 +231,60 @@
   color: var(--color-primary, var(--muc));
   font: var(--font-label-sm);
   font-weight: 700;
+}
+
+/* ── Loại bài trong byline ───────────────────────────────── */
+
+/* Mockup đặt loại bài ngay sau ngày đăng ("… · 07/09/2026 · Câu hỏi"), tách
+   khỏi pill trạng thái bên phải: một bên nói bài này là gì, bên kia nói nó
+   đã được giải quyết chưa. Hai câu hỏi khác nhau, nên hai chỗ. */
+.feed-card__kind {
+  color: var(--ws-ink-muted);
+  font-weight: 600;
+}
+
+/* ── Dải "trợ lý đã trả lời" ─────────────────────────────── */
+
+/* Không mang màu nhấn riêng: khung này cố ý để accent khan hiếm (xem khối
+   token trong styles/index.css), nên dải dùng đúng nền nhạt mà pill
+   "chưa có lời giải" đang dùng. */
+.feed-card__ai {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 9px 12px;
+  border-radius: var(--radius-md);
+  background: var(--ws-accent-soft);
+  color: var(--ws-accent);
+}
+
+.feed-card__ai-text {
+  flex: 1;
+  min-width: 0;
+  font: var(--font-label-sm);
+  font-weight: 600;
+}
+
+.feed-card__ai-view {
+  flex-shrink: 0;
+  padding: 2px 6px;
+  border: none;
+  border-radius: var(--radius-sm, 6px);
+  background: none;
+  color: var(--ws-ink-muted);
+  font: var(--font-label-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.feed-card__ai-view:hover {
+  color: var(--ws-ink);
+  text-decoration: underline;
+}
+
+.feed-card__ai-view:focus-visible {
+  outline: 2px solid var(--ws-ink);
+  outline-offset: 2px;
 }

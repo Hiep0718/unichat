@@ -100,7 +100,6 @@
 .workspace-form__input:focus,
 .workspace-form__textarea:focus {
   border-color: var(--color-secondary);
-  box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.2);
 }
 
 .workspace-form__textarea {
@@ -110,7 +109,7 @@
 
 .workspace-form__hint {
   font: var(--font-label-sm);
-  color: var(--color-outline);
+  color: var(--muc-nhat);
   text-align: right;
 }
 

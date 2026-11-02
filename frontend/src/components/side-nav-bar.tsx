@@ -16,8 +16,11 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import { authApi } from '../features/auth/api/auth-api';
 import { useAuth } from '../features/auth/auth-context';
+import { EntityAvatar } from './entity-avatar';
+import { readRailCollapsed, writeRailCollapsed } from '../lib/rail-state';
 import { Icon } from './icon';
 import { NotificationBell } from '../features/community/notification-bell';
+import { ThemeToggle } from './theme-toggle';
 import { GroupMark } from '../features/workspaces/components/group-mark';
 import { PendingApprovalBadge } from '../features/documents/components/pending-approval-badge';
 import { useOptionalWorkspace } from '../features/workspaces/workspace-context';
@@ -49,6 +52,13 @@ export function SideNavBar() {
   const navigate = useNavigate();
   const { workspaceId } = useParams<{ workspaceId?: string }>();
   const { user, clearToken } = useAuth();
+  const [collapsed, setCollapsed] = useState(() => readRailCollapsed());
+
+  const toggleRail = () => {
+    const next = !collapsed;
+    setCollapsed(next);
+    writeRailCollapsed(next);
+  };
   const { data: groupPage } = useWorkspaces(0);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
 
@@ -105,7 +115,9 @@ export function SideNavBar() {
 
   return (
     <nav
-      className={`side-nav ${notificationsOpen ? 'side-nav--expanded' : ''}`}
+      className={`side-nav${collapsed ? ' side-nav--collapsed' : ''}${
+        notificationsOpen ? ' side-nav--expanded' : ''
+      }`}
       aria-label="Thanh điều hướng chính"
     >
       {/* Header Zone */}
@@ -120,9 +132,9 @@ export function SideNavBar() {
               <GroupMark workspaceId={workspaceId} name={workspaceDisplayName} size={38} />
             </div>
             <div className="side-nav__brand-info">
-              <h1 className="side-nav__title side-nav__title--ws" title={workspaceDisplayName}>
+              <p className="side-nav__title side-nav__title--ws" title={workspaceDisplayName}>
                 {workspaceDisplayName}
-              </h1>
+              </p>
               <p className="side-nav__subtitle">Không gian tri thức</p>
             </div>
           </Link>
@@ -132,7 +144,7 @@ export function SideNavBar() {
               <img src={logoWhite} alt="UniChat Logo" width="22" height="22" style={{ objectFit: 'contain' }} />
             </div>
             <div className="side-nav__brand-info">
-              <h1 className="side-nav__title">UniChat</h1>
+              <p className="side-nav__title">UniChat</p>
               <p className="side-nav__subtitle">AI Platform</p>
             </div>
           </Link>
@@ -197,7 +209,17 @@ export function SideNavBar() {
 
             {groups.length > 0 && (
               <>
-                <p className="side-nav__section">Nhóm</p>
+                <div className="side-nav__section-row">
+                  <p className="side-nav__section">Nhóm của bạn</p>
+                  <Link
+                    to="/workspaces?new=1"
+                    className="side-nav__section-add"
+                    title="Tạo nhóm mới"
+                    aria-label="Tạo nhóm mới"
+                  >
+                    <Icon name="add" size={16} rounded />
+                  </Link>
+                </div>
                 {groups.map((group) => {
                   const href = `/workspaces/${group.id}/chat`;
                   return (
@@ -234,19 +256,56 @@ export function SideNavBar() {
           </Link>
         )}
 
-        <NotificationBell onOpenChange={setNotificationsOpen} />
+        {/* Một mục có nhãn chữ, không phải một chấm tròn ở mép.
+
+            Bản trước là một nút 22px nằm vắt ngang đường biên thanh bên:
+            người dùng lần đầu không có cách nào đoán ra bấm vào đó thì điều
+            gì xảy ra. Đứng cùng hàng với "Nền tối" và "Thông báo", nó đọc
+            ra là một việc làm được, và nhãn chữ nói thẳng nó là việc gì. */}
         <button
           type="button"
-          className="side-nav__item side-nav__btn side-nav__item--danger"
-          onClick={handleLogout}
-          title="Đăng xuất"
-          aria-label="Đăng xuất"
+          className="side-nav__item side-nav__btn"
+          onClick={toggleRail}
+          title={collapsed ? 'Mở rộng thanh bên' : 'Thu gọn thanh bên'}
+          aria-label={collapsed ? 'Mở rộng thanh bên' : 'Thu gọn thanh bên'}
+          aria-expanded={!collapsed}
         >
           <span className="side-nav__icon-wrap">
-            <Icon name="logout" size={20} rounded />
+            <Icon name={collapsed ? 'right_panel_open' : 'left_panel_close'} size={20} rounded />
           </span>
-          <span className="side-nav__label">Đăng xuất</span>
+          <span className="side-nav__label">Thu gọn</span>
         </button>
+        <ThemeToggle />
+        <NotificationBell onOpenChange={setNotificationsOpen} />
+        <div className="side-nav__user">
+          <EntityAvatar
+            name={user?.displayName || user?.email || '?'}
+            {...(user?.id ? { userId: user.id } : {})}
+            shape="circle"
+            size={32}
+          />
+          <div className="side-nav__user-text">
+            {/* Dự phòng bằng phần đầu email chứ không phải chữ "Tài khoản":
+                mục điều hướng ngay trên đã mang đúng chữ đó, và hai thứ cùng tên
+                trong một thanh bên thì không ai biết đâu là đâu. */}
+            <p className="side-nav__user-name">
+              {user?.displayName || user?.email?.split('@')[0] || '—'}
+            </p>
+            {/* Email chứ không phải vai trò: SessionUser chỉ có systemRole
+                USER/ADMIN, không có khái niệm sinh viên như mockup vẽ, và email
+                còn hữu ích khi một người dùng nhiều tài khoản. */}
+            <p className="side-nav__user-sub" title={user?.email}>{user?.email}</p>
+          </div>
+          <button
+            type="button"
+            className="side-nav__user-out"
+            onClick={handleLogout}
+            title="Đăng xuất"
+            aria-label="Đăng xuất"
+          >
+            <Icon name="logout" size={18} rounded />
+          </button>
+        </div>
       </div>
     </nav>
   );

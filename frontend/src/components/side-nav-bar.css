@@ -10,12 +10,13 @@
   flex-direction: column;
   padding: 16px 12px;
   gap: 12px;
-  background: var(--color-surface);
-  /* Was transparent, so the rail dissolved into whatever it stood against:
-     its own var(--be-mat) beside the assistant's var(--be-mat) column is a difference of
-     nothing. The seam is what tells a reader these are two regions. */
-  border-right: 1px solid var(--ws-line, var(--ke));
-  box-shadow: inset -1px 0 0 rgb(15 23 42 / 6%);
+  /* Thanh bên là một mảng màu đặc, không phải một vùng giấy sẫm hơn.
+
+     Trước đây nó rộng 68px, chỉ hiện biểu tượng, và nở ra khi rê chuột.
+     Mockup cho thấy nó luôn mở với nhãn chữ, nên cơ chế nở ra không còn
+     lý do tồn tại: một thanh bên đã hiện đủ chữ thì không có gì để nở. */
+  background: var(--ray-nen);
+  color: var(--ray-muc);
   overflow: hidden;
   z-index: 100;
   white-space: nowrap;
@@ -25,11 +26,10 @@
 }
 
 /* Hover / Active Expanded State */
-.side-nav:hover,
 .side-nav--expanded {
-  width: 260px;
-  box-shadow: 0 12px 36px -4px rgba(15, 23, 42, 0.16), 0 4px 12px rgba(15, 23, 42, 0.08);
-  background: var(--nen);
+  /* Giữ lại cho các nơi gọi cũ. Thanh bên luôn mở nên lớp này không
+     còn làm gì; để trống có chủ ý thay vì xóa đi và để lại một lớp chết. */
+  width: var(--sidebar-width);
 }
 
 .side-nav__header {
@@ -53,39 +53,28 @@
   height: 40px;
   min-width: 40px;
   border-radius: 13px;
-  background: linear-gradient(140deg, var(--muc) 0%, var(--muc) 58%, var(--muc) 100%);
-  color: var(--nen);
+  background: var(--ray-nhan);
+  color: var(--ray-nen);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgb(79 70 229 / 34%);
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .side-nav__brand-link:hover .side-nav__avatar {
   transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgb(79 70 229 / 44%);
 }
 
 .side-nav__brand-info {
-  opacity: 0;
-  visibility: hidden;
-  transform: translateX(-8px);
-  transition: opacity 0.22s ease 0.04s, transform 0.22s ease 0.04s, visibility 0.22s;
-}
-
-.side-nav:hover .side-nav__brand-info,
-.side-nav--expanded .side-nav__brand-info {
-  opacity: 1;
-  visibility: visible;
-  transform: translateX(0);
+  /* Hiện thẳng. Trước đây nhãn chữ bị ẩn và chỉ lộ ra khi rê chuột vào
+     thanh bên; thanh bên giờ luôn mở nên không còn gì để lộ ra. */
 }
 
 .side-nav__title {
   font: var(--font-headline-md);
   font-size: 17px;
   font-weight: 700;
-  color: var(--color-primary);
+  color: var(--ray-nhan);
   letter-spacing: -0.015em;
   line-height: 1.2;
   margin: 0;
@@ -93,7 +82,7 @@
 
 .side-nav__subtitle {
   font: var(--font-label-sm);
-  color: var(--color-on-surface-variant);
+  color: var(--ray-muc-nhat);
   margin: 0;
 }
 
@@ -106,13 +95,11 @@
   justify-content: center;
   border-radius: var(--radius-lg, 12px);
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .side-nav__brand-link--ws:hover .side-nav__ws-avatar {
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.2);
 }
 
 .side-nav__title--ws {
@@ -124,13 +111,13 @@
 }
 
 .side-nav__switch-btn {
-  color: var(--color-primary);
+  color: var(--ray-nhan);
   font-weight: 600;
 }
 
 .side-nav__switch-btn:hover {
-  background: var(--color-surface-container-high);
-  color: var(--color-primary);
+  background: var(--ray-noi);
+  color: var(--ray-nhan);
 }
 
 /* Upload Button */
@@ -143,7 +130,7 @@
   height: 44px;
   padding: 0 12px;
   background: var(--ws-accent-gradient);
-  color: var(--color-on-primary);
+  color: var(--ray-nen);
   border: none;
   border-radius: var(--radius-xl);
   font: var(--font-label-md);
@@ -168,17 +155,8 @@
 }
 
 .side-nav__upload-text {
-  opacity: 0;
-  visibility: hidden;
-  transform: translateX(-8px);
-  transition: opacity 0.22s ease 0.04s, transform 0.22s ease 0.04s, visibility 0.22s;
-}
-
-.side-nav:hover .side-nav__upload-text,
-.side-nav--expanded .side-nav__upload-text {
-  opacity: 1;
-  visibility: visible;
-  transform: translateX(0);
+  /* Hiện thẳng. Trước đây nhãn chữ bị ẩn và chỉ lộ ra khi rê chuột vào
+     thanh bên; thanh bên giờ luôn mở nên không còn gì để lộ ra. */
 }
 
 /* Nav Items */
@@ -194,29 +172,17 @@
 /* Section label ("Nhóm"). Hidden while the rail is collapsed, where a divider
    carries the grouping instead. */
 .side-nav__section {
-  margin: 14px 0 2px 14px;
+  margin: 14px 0 2px;
   font: var(--font-label-sm);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--color-on-surface-variant);
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.22s ease 0.04s, visibility 0.22s;
+  color: var(--ray-muc-nhat);
 }
 
-.side-nav:hover .side-nav__section,
-.side-nav--expanded .side-nav__section {
-  opacity: 1;
-  visibility: visible;
-}
-
-.side-nav:not(:hover):not(.side-nav--expanded) .side-nav__section {
-  margin: 10px 12px;
-  height: 1px;
-  background: var(--color-outline-variant);
-  font-size: 0;
-}
+/* Quy tắc thu nhãn mục thành một vạch 1px với font-size: 0 đã bỏ.
+   Nó dành cho lúc thanh bên đang thu; thanh bên giờ luôn mở nên điều kiện
+   :not(:hover) đúng mãi mãi, và "NHÓM CỦA BẠN" biến mất hoàn toàn. */
 
 .side-nav__item {
   /* Anchors the pending-approval dot while the nav is collapsed. */
@@ -227,7 +193,7 @@
   height: 44px;
   padding: 0 12px;
   border-radius: var(--radius-full);
-  color: var(--color-on-surface-variant);
+  color: var(--ray-muc-nhat);
   font: var(--font-body-md);
   font-size: 14.5px;
   font-weight: 500;
@@ -267,60 +233,54 @@ button.side-nav__item,
 }
 
 .side-nav__label {
-  opacity: 0;
-  visibility: hidden;
-  transform: translateX(-8px);
-  transition: opacity 0.22s ease 0.04s, transform 0.22s ease 0.04s, visibility 0.22s;
-}
-
-.side-nav:hover .side-nav__label,
-.side-nav--expanded .side-nav__label {
-  opacity: 1;
-  visibility: visible;
-  transform: translateX(0);
+  /* Hiện thẳng. Trước đây nhãn chữ bị ẩn và chỉ lộ ra khi rê chuột vào
+     thanh bên; thanh bên giờ luôn mở nên không còn gì để lộ ra. */
 }
 
 .side-nav__item:hover:not(.side-nav__item--active) {
-  background: var(--color-surface-container-high);
-  color: var(--color-on-surface);
+  background: var(--ray-noi);
+  color: var(--ray-muc);
 }
 
 .side-nav__item--danger:hover {
-  background: var(--color-error-container);
-  color: var(--color-error);
+  background: rgb(240 119 107 / 14%);
+  color: #f0776b;
 }
 
 .side-nav__item--admin {
-  color: var(--muc);
+  color: var(--ray-muc);
   font-weight: 600;
 }
 
 .side-nav__item--admin:hover:not(.side-nav__item--active) {
-  background: var(--nen);
-  color: var(--muc);
+  background: var(--ray-noi);
+  color: var(--ray-muc);
 }
 
 .side-nav__item--active {
-  background: linear-gradient(120deg, var(--muc) 0%, var(--muc) 62%, var(--muc) 100%);
-  color: var(--nen);
+  /* Trước đây là một linear-gradient ba điểm dừng cùng một màu — tàn tích
+     của lượt làm trầm bộ màu, vẽ ra một dải không có dải — kèm một vầng sáng
+     indigo, mà indigo thì nằm trong danh sách cấm. Mục đang mở là một mảng
+     mực phẳng. */
+  background: var(--nhan);
+  color: var(--nhan-muc);
   font-weight: 600;
-  box-shadow: 0 4px 14px rgb(79 70 229 / 30%);
 }
 
 /* AI Assistant Navigation Highlight */
 .side-nav__item--ai {
-  color: var(--muc);
+  color: var(--ray-muc);
   font-weight: 600;
 }
 
 .side-nav__item--ai .material-symbols-outlined {
-  color: var(--muc);
+  color: var(--ray-muc);
   transition: transform var(--transition-fast);
 }
 
 .side-nav__item--ai:hover:not(.side-nav__item--active) {
-  background: var(--be-mat);
-  color: var(--muc);
+  background: var(--ray-noi);
+  color: var(--ray-muc);
 }
 
 .side-nav__item--ai:hover .material-symbols-outlined {
@@ -328,13 +288,12 @@ button.side-nav__item,
 }
 
 .side-nav__item--ai.side-nav__item--active {
-  background: linear-gradient(120deg, var(--muc) 0%, var(--muc) 50%, var(--muc) 100%);
-  color: var(--nen);
-  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+  background: var(--nhan);
+  color: var(--nhan-muc);
 }
 
 .side-nav__item--ai.side-nav__item--active .material-symbols-outlined {
-  color: var(--nen);
+  color: var(--ray-nen);
 }
 
 /* Group row with quick AI chat action */
@@ -358,7 +317,7 @@ button.side-nav__item,
   border-radius: var(--radius-full);
   border: none;
   background: transparent;
-  color: var(--color-on-surface-variant);
+  color: var(--ray-muc-nhat);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -369,8 +328,7 @@ button.side-nav__item,
   z-index: 2;
 }
 
-.side-nav:hover .side-nav__group-row:hover .side-nav__quick-chat,
-.side-nav--expanded .side-nav__group-row:hover .side-nav__quick-chat,
+.side-nav__group-row:hover .side-nav__quick-chat,
 .side-nav__group-row--active .side-nav__quick-chat {
   opacity: 0.85;
   transform: scale(1);
@@ -379,27 +337,26 @@ button.side-nav__item,
 .side-nav__quick-chat:hover {
   opacity: 1 !important;
   background: rgba(2, 132, 199, 0.16);
-  color: var(--muc);
+  color: var(--ray-muc);
   transform: scale(1.15) !important;
 }
 
 .side-nav__group-row--active .side-nav__quick-chat {
-  color: var(--nen);
+  color: var(--ray-nen);
 }
 
 .side-nav__group-row--active .side-nav__quick-chat:hover {
   background: rgba(255, 255, 255, 0.28);
-  color: var(--nen);
+  color: var(--ray-nen);
 }
 
 .side-nav__item--active .group-mark {
-  box-shadow: 0 0 0 2px rgb(255 255 255 / 55%);
 }
 
 .side-nav__footer {
   margin-top: auto;
   padding-top: 12px;
-  border-top: 1px solid rgb(15 23 42 / 8%);
+  border-top: 1px solid rgb(255 255 255 / 10%);
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -410,3 +367,147 @@ button.side-nav__item,
     display: flex;
   }
 }
+
+/* ---------- Tiêu đề mục nhóm, kèm nút tạo ---------- */
+
+.side-nav__section-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-inline: 10px;
+}
+
+.side-nav__section-row .side-nav__section {
+  padding-inline: 0;
+}
+
+.side-nav__section-add {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  inline-size: 22px;
+  block-size: 22px;
+  border-radius: 7px;
+  color: var(--ray-muc-nhat);
+  text-decoration: none;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.side-nav__section-add:hover {
+  background: var(--ray-noi);
+  color: var(--ray-muc);
+}
+
+.side-nav__section-add:focus-visible {
+  outline: 2px solid var(--ray-nhan);
+  outline-offset: 2px;
+}
+
+/* ---------- Hàng người dùng ở chân ---------- */
+
+.side-nav__user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  margin-top: 4px;
+  border-radius: var(--radius-lg);
+  background: var(--ray-noi);
+}
+
+.side-nav__user-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.side-nav__user-name,
+.side-nav__user-sub {
+  margin: 0;
+  /* Cả hai dòng đều cắt bớt thay vì xuống dòng: một email dài sẽ đẩy
+     nút đăng xuất ra khỏi thanh bên. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.side-nav__user-name {
+  font: var(--font-label-md);
+  font-weight: 600;
+  color: var(--ray-muc);
+}
+
+.side-nav__user-sub {
+  font: var(--font-label-sm);
+  color: var(--ray-muc-nhat);
+}
+
+.side-nav__user-out {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  inline-size: 30px;
+  block-size: 30px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--ray-muc-nhat);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.side-nav__user-out:hover {
+  background: rgb(240 119 107 / 16%);
+  color: #f0776b;
+}
+
+.side-nav__user-out:focus-visible {
+  outline: 2px solid var(--ray-nhan);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .side-nav__section-add,
+  .side-nav__user-out {
+    transition: none;
+  }
+}
+
+/* ---------- Thu gọn ---------- */
+
+/* Trạng thái thu: chỉ còn biểu tượng.
+
+   68px là một ô biểu tượng 40px cộng đệm 12px mỗi bên. Nhãn chữ bị gỡ ra
+   khỏi bố cục bằng display: none chứ không phải opacity: 0 — đúng cái bẫy
+   cũ, khi chữ vô hình nhưng vẫn giữ chỗ và thanh bên rộng 224px để hiển
+   thị mấy biểu tượng 24px. */
+.side-nav--collapsed {
+  width: 68px;
+}
+
+.side-nav--collapsed .side-nav__label,
+.side-nav--collapsed .side-nav__brand-info,
+.side-nav--collapsed .side-nav__upload-text,
+.side-nav--collapsed .side-nav__section,
+.side-nav--collapsed .side-nav__user-text,
+.side-nav--collapsed .side-nav__user-out {
+  display: none;
+}
+
+.side-nav--collapsed .side-nav__section-row {
+  justify-content: center;
+  padding-inline: 0;
+}
+
+.side-nav--collapsed .side-nav__item,
+.side-nav--collapsed .side-nav__btn,
+.side-nav--collapsed .side-nav__user {
+  justify-content: center;
+  padding-inline: 0;
+}
+
+.side-nav--collapsed .side-nav__brand-link {
+  justify-content: center;
+}
+
+

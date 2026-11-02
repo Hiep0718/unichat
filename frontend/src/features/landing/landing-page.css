@@ -1,0 +1,22 @@
+/* Khung cuộn của trang giới thiệu.
+
+   #root bị khoá ở height: 100vh và overflow: hidden để vỏ ứng dụng tự quản
+   phần cuộn của nó. Trang này không nằm trong vỏ ấy, nên nó mang khung cuộn
+   của riêng mình thay vì nới luật chung và làm các màn đã đăng nhập sinh ra
+   hai thanh cuộn lồng nhau. */
+
+.landing {
+  position: relative;
+  block-size: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--be-mat);
+  /* Neo nhảy tới mục dừng lại mềm thay vì giật. */
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing {
+    scroll-behavior: auto;
+  }
+}

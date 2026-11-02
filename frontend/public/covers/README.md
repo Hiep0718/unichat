@@ -76,11 +76,42 @@ Thứ tự khai báo trong `DEFAULT_COVERS` cũng có chủ đích: khi ảnh ư
 workspace đã bị lấy, thuật toán đi tiếp xuống danh sách, nên hai ảnh cạnh nhau
 không nên cùng tông.
 
+### Hai ảnh phải hạ sáng
+
+Khung 16/11 phơi ra vùng ảnh mà khung 3:1 cũ cắt bỏ, và hai tấm vì thế vượt
+ngưỡng `đáy`. Cả hai được hạ sáng ngay tại CDN bằng tham số `bri`, giữ nguyên
+bức ảnh đã chọn thay vì thay ảnh khác:
+
+| Tệp | `bri` | đáy trước | đáy sau |
+| --- | --- | --- | --- |
+| `cover-dawn.jpg` | −40 | 182 | 84 |
+| `topics/topic-entrepreneurship.jpg` | −30 | 119 | 55 |
+
+`cover-dawn.jpg` **đã trượt ngưỡng từ trước** khi cắt lại — bản 3:1 đang chạy
+đo được đáy 189, rối 78. Đây là lỗi có sẵn, không phải do đổi tỉ lệ.
+
+**Còn nợ:** `topic-entrepreneurship.jpg` chụp một bảng phấn đầy chữ tiếng Anh
+cỡ lớn (CREATIVE PRODUCT, MARKETING, STRATEGY…). Tiêu chí ở trên loại đúng
+loại ảnh này vì nó đụng với chữ của chính thẻ. Bản 3:1 cũ chỉ lộ một phần
+bảng; khung vuông hơn lộ gần hết. Hạ sáng làm chữ phấn chìm bớt nhưng không
+chữa được gốc — chủ đề "Khởi nghiệp" cần một bức ảnh khác.
+
 ## Thay hoặc thêm ảnh
 
-Ảnh bìa cắt sẵn **1200×400** (tỉ lệ 3:1, gấp đôi khung ~600×200 trên thẻ), JPEG
-chất lượng 72. Thêm tệp vào đây rồi khai báo tên trong `DEFAULT_COVERS`. Số ảnh
-càng lớn thì số workspace tối đa không trùng càng cao — hiện là 20.
+Ảnh bìa cắt sẵn **1000×688** (tỉ lệ 16/11), JPEG **baseline** chất lượng 72.
+Thêm tệp vào đây rồi khai báo tên trong `DEFAULT_COVERS`. Số ảnh càng lớn thì
+số workspace tối đa không trùng càng cao — hiện là 20.
+
+Tỉ lệ 16/11 không tùy ý: nó là đúng tỉ lệ khung `.workspace-card` và
+`.explore-card` trên web, nên thẻ hiện **99,9%** mỗi bức ảnh. Bộ trước cắt
+3:1 và thẻ chỉ hiện **48%** — mất hơn nửa chiều ngang mỗi bức, và hai nhóm
+đội hai ảnh khác nhau vẫn trông giống nhau vì chỉ khúc giữa lọt vào khung.
+Đổi tỉ lệ bộ ảnh thì phải đổi cả khung tiêu thụ nó, xem mục dưới.
+
+**Baseline, không phải progressive.** Trình giải mã của React Native, nhất là
+trên Android, có thể từ chối JPEG progressive và rơi về chữ cái đầu. CDN của
+Unsplash trả về progressive kể cả khi yêu cầu `fm=jpg`, nên bước mã hoá lại
+tại chỗ là bắt buộc chứ không phải tùy chọn.
 
 Ảnh banner cắt **2400×240** (10:1), chất lượng 74. Thay thì ghi đè đúng tên tệp
 `banner-dashboard.jpg`, không cần sửa code.
@@ -88,6 +119,19 @@ càng lớn thì số workspace tối đa không trùng càng cao — hiện là
 Cắt ở đúng tỉ lệ đích thay vì để CSS cắt giúp: `object-fit`/`background-size:
 cover` sẽ khoét mất phần trên dưới, nên ảnh tải về ở tỉ lệ khác sẽ hiện ra một
 vùng ảnh khác với vùng đã xem khi chọn.
+
+### Khung nào tiêu thụ bộ ảnh này
+
+| Bề mặt | Tỉ lệ khung | Hiện ra | Ghi chú |
+| --- | --- | --- | --- |
+| `.workspace-card` (web) | 16/11 | 99,9% | khớp đúng tỉ lệ bộ ảnh |
+| `.explore-card` (web) | 16/11 | 99,9% | |
+| `.cover-banner` (web, trang chi tiết) | ~6,3 | ~23% | cắt dọc, ra một dải texture — đúng vai trò banner |
+| `workspace-card.tsx` (mobile) | ~1,5 | ~95% | `resizeMode="cover"` |
+| `workspace-quick-card.tsx` (mobile) | 16/11 | 100% | `COVER_HEIGHT = CARD_WIDTH × 11/16` |
+
+Đổi tỉ lệ bộ ảnh mà quên hai khung mobile thì lỗi 48% chỉ chuyển chỗ chứ không
+mất: thẻ truy cập nhanh từng chia cứng `CARD_WIDTH / 3` theo bộ ảnh 3:1 cũ.
 
 ## Ảnh theo chủ đề
 
@@ -142,25 +186,29 @@ server và bộ vest — nhận màu trung tính khác nhau về độ sáng và
 Cùng giấy phép Unsplash như trên. Cột `đáy` là độ sáng trung bình một phần ba
 phía dưới (thang 0–255, càng thấp chữ trắng càng rõ); `rối` là độ lệch chuẩn.
 
+Các con số dưới đây đo trên bộ ảnh **16/11 hiện tại**. Cắt lại tỉ lệ đổi hẳn
+vùng pixel nằm dưới dòng chữ trắng, nên mọi số đo của bộ 3:1 cũ đều không còn
+dùng được — phải đo lại cả bộ, không suy ra được.
+
 | Chủ đề | Tệp | Ảnh gốc | đáy | rối |
 | --- | --- | --- | --- | --- |
-| Lập trình | `topics/topic-programming.jpg` | https://unsplash.com/photos/1555066931-4365d14bab8c | 40 | 20 |
-| Cơ sở dữ liệu | `topics/topic-database.jpg` | https://unsplash.com/photos/1558494949-ef010cbdcc31 | 49 | 32 |
-| Mạng và hệ thống | `topics/topic-network-systems.jpg` | https://unsplash.com/photos/1451187580459-43490279c0fa | 45 | 30 |
-| An toàn thông tin | `topics/topic-information-security.jpg` | https://unsplash.com/photos/1614064641938-3bbee52942c7 | 50 | 38 |
-| Khoa học dữ liệu | `topics/topic-data-science.jpg` | https://unsplash.com/photos/1639322537228-f710d846310a | 10 | 19 |
-| Trí tuệ nhân tạo | `topics/topic-artificial-intelligence.jpg` | https://unsplash.com/photos/1644088379091-d574269d422f | 57 | 35 |
-| Thiết kế và sáng tạo | `topics/topic-design.jpg` | https://unsplash.com/photos/1600132806370-bf17e65e942f | 44 | 19 |
-| Kinh tế và quản trị | `topics/topic-business.jpg` | https://unsplash.com/photos/1507679799987-c73779587ccf | 78 | 56 |
-| Khởi nghiệp | `topics/topic-entrepreneurship.jpg` | https://unsplash.com/photos/1758873272412-7166447a94ae | 74 | 41 |
-| Quản lý dự án | `topics/topic-project-management.jpg` | https://unsplash.com/photos/1768055105012-4c53791b2877 | 66 | 62 |
-| Lãnh đạo và nhân sự | `topics/topic-leadership.jpg` | https://unsplash.com/photos/1522071820081-009f0129c71c | 72 | 48 |
-| Năng suất và kỹ năng | `topics/topic-productivity.jpg` | https://unsplash.com/photos/1518281361980-b26bfd556770 | 45 | 44 |
-| Quy chế và hành chính | `topics/topic-regulations.jpg` | https://unsplash.com/photos/1575505586569-646b2ca898fc | 22 | 57 |
-| Sức khỏe và y học | `topics/topic-health.jpg` | https://unsplash.com/photos/1628595351029-c2bf17511435 | 80 | 45 |
-| Tâm lý và phát triển bản thân | `topics/topic-psychology.jpg` | https://unsplash.com/photos/1506126613408-eca07ce68773 | 79 | 29 |
-| Ngoại ngữ | `topics/topic-languages.jpg` | https://unsplash.com/photos/1507842217343-583bb7270b66 | 83 | 39 |
-| Nghệ thuật và văn hóa | `topics/topic-arts-culture.jpg` | https://unsplash.com/photos/1577720643272-265f09367456 | 86 | 43 |
-| Lịch sử và xã hội | `topics/topic-history-society.jpg` | https://unsplash.com/photos/1461360370896-922624d12aa1 | 85 | 63 |
-| Đồ án và nghiên cứu | `topics/topic-research.jpg` | https://unsplash.com/photos/1576086213369-97a306d36557 | 12 | 21 |
-| Khác | `topics/topic-other.jpg` | https://unsplash.com/photos/1541746972996-4e0b0f43e02a | 76 | 35 |
+| Lập trình | `topics/topic-programming.jpg` | https://unsplash.com/photos/1555066931-4365d14bab8c | 35 | 26 |
+| Cơ sở dữ liệu | `topics/topic-database.jpg` | https://unsplash.com/photos/1558494949-ef010cbdcc31 | 41 | 43 |
+| Mạng và hệ thống | `topics/topic-network-systems.jpg` | https://unsplash.com/photos/1451187580459-43490279c0fa | 22 | 28 |
+| An toàn thông tin | `topics/topic-information-security.jpg` | https://unsplash.com/photos/1614064641938-3bbee52942c7 | 49 | 38 |
+| Khoa học dữ liệu | `topics/topic-data-science.jpg` | https://unsplash.com/photos/1639322537228-f710d846310a | 8 | 18 |
+| Trí tuệ nhân tạo | `topics/topic-artificial-intelligence.jpg` | https://unsplash.com/photos/1644088379091-d574269d422f | 57 | 36 |
+| Thiết kế và sáng tạo | `topics/topic-design.jpg` | https://unsplash.com/photos/1600132806370-bf17e65e942f | 42 | 27 |
+| Kinh tế và quản trị | `topics/topic-business.jpg` | https://unsplash.com/photos/1507679799987-c73779587ccf | 84 | 63 |
+| Khởi nghiệp | `topics/topic-entrepreneurship.jpg` | https://unsplash.com/photos/1758873272412-7166447a94ae | 55 | 40 |
+| Quản lý dự án | `topics/topic-project-management.jpg` | https://unsplash.com/photos/1768055105012-4c53791b2877 | 74 | 58 |
+| Lãnh đạo và nhân sự | `topics/topic-leadership.jpg` | https://unsplash.com/photos/1522071820081-009f0129c71c | 53 | 53 |
+| Năng suất và kỹ năng | `topics/topic-productivity.jpg` | https://unsplash.com/photos/1518281361980-b26bfd556770 | 67 | 50 |
+| Quy chế và hành chính | `topics/topic-regulations.jpg` | https://unsplash.com/photos/1575505586569-646b2ca898fc | 15 | 63 |
+| Sức khỏe và y học | `topics/topic-health.jpg` | https://unsplash.com/photos/1628595351029-c2bf17511435 | 77 | 50 |
+| Tâm lý và phát triển bản thân | `topics/topic-psychology.jpg` | https://unsplash.com/photos/1506126613408-eca07ce68773 | 75 | 45 |
+| Ngoại ngữ | `topics/topic-languages.jpg` | https://unsplash.com/photos/1507842217343-583bb7270b66 | 94 | 51 |
+| Nghệ thuật và văn hóa | `topics/topic-arts-culture.jpg` | https://unsplash.com/photos/1577720643272-265f09367456 | 78 | 51 |
+| Lịch sử và xã hội | `topics/topic-history-society.jpg` | https://unsplash.com/photos/1461360370896-922624d12aa1 | 61 | 61 |
+| Đồ án và nghiên cứu | `topics/topic-research.jpg` | https://unsplash.com/photos/1576086213369-97a306d36557 | 14 | 22 |
+| Khác | `topics/topic-other.jpg` | https://unsplash.com/photos/1541746972996-4e0b0f43e02a | 57 | 30 |

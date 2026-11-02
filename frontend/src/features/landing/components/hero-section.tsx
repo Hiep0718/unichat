@@ -1,162 +1,149 @@
-/**
- * Hero section of the landing page.
- * Displays the main headline, description, CTA buttons, and product mockup.
- */
+import { Link } from 'react-router-dom';
 
 import { Icon } from '../../../components/icon';
+import heroArt from '../../../assets/login-hero.jpg';
+
 import './hero-section.css';
 
 /**
- * Renders the hero section with copy, CTAs, and browser mockup preview.
+ * Hai ý chính của câu trả lời mẫu, mỗi ý kèm số trích dẫn.
+ *
+ * Số trích dẫn là phần đáng kể: nó là thứ phân biệt sản phẩm này với một
+ * hộp chat bất kỳ, nên bản demo phải cho thấy nó chứ không chỉ nói về nó.
  */
+const DEMO_POINTS = [
+  {
+    term: 'Lưỡng tính sóng – hạt',
+    body: 'vật chất vừa có tính chất sóng vừa có tính chất hạt',
+    cite: 1,
+  },
+  {
+    term: 'Nguyên lý bất định Heisenberg',
+    body: 'không thể xác định đồng thời chính xác cả vị trí và động lượng của một hạt vi mô',
+    cite: 2,
+  },
+] as const;
+
+/** Dải mở đầu của trang giới thiệu. */
 export function HeroSection() {
   return (
     <section className="hero" aria-labelledby="hero-title">
+      <img className="hero__art" src={heroArt} alt="" aria-hidden="true" />
+      <div className="hero__scrim" />
+
       <div className="hero__inner">
         <HeroCopy />
-        <HeroMockup />
+        <HeroDemo />
       </div>
     </section>
   );
 }
 
-/** Left-side marketing copy with headline, description, and CTAs. */
+/** Nửa trái: lời chào hàng và lối vào. */
 function HeroCopy() {
   return (
     <div className="hero__copy">
-      <div className="hero__badge">
-        <span className="hero__badge-dot">
-          <span className="hero__badge-ping" />
-          <span className="hero__badge-core" />
-        </span>
-        UniChat v1.0 Mới ra mắt
-      </div>
+      <p className="hero__badge">
+        <span className="hero__badge-tag">Mới</span>
+        UniChat v1.0 đã ra mắt
+      </p>
 
+      {/* Khoảng trắng trước mỗi <br /> là bắt buộc: thẻ ngắt dòng không sinh
+          ra khoảng trắng nào, nên thiếu chúng thì tên khả truy cập của tiêu đề
+          là "Hỏi đáp trên chínhtài liệu học tậpcủa bạn." và trình đọc màn hình
+          đọc dính chữ. Mắt không thấy điều này; một test đối chiếu tên khả
+          truy cập thì thấy. */}
       <h1 id="hero-title" className="hero__title">
-        Trợ lý hỏi đáp tài liệu học tập bằng{' '}
-        <span className="hero__rag">RAG</span>
+        Hỏi đáp trên chính{' '}
+        <br />
+        <span className="hero__title-accent">tài liệu học tập</span>{' '}
+        <br />
+        của bạn.
       </h1>
 
       <p className="hero__desc">
-        Tải tài liệu học tập lên Workspace, đặt câu hỏi tiếng Việt và nhận câu trả lời
-        có trích dẫn nguồn rõ ràng. Giải pháp tối ưu cho sinh viên, nghiên cứu sinh và
-        giảng viên.
+        Tải giáo trình, bài giảng lên Workspace, đặt câu hỏi bằng tiếng Việt và
+        nhận câu trả lời kèm trích dẫn nguồn rõ ràng. Dành cho sinh viên, nghiên
+        cứu sinh và giảng viên.
       </p>
 
-      <div className="hero__cta-group">
-        <button className="hero__cta-primary" type="button">
-          Bắt đầu miễn phí
-        </button>
-        <button className="hero__cta-secondary" type="button">
-          <Icon name="play_circle" size={18} />
-          Xem demo
-        </button>
-      </div>
+      <Link to="/register" className="hero__cta">
+        Bắt đầu
+        <Icon name="arrow_forward" size={18} rounded />
+      </Link>
 
-      <div className="hero__social-proof">
-        <p>Hơn 5,000+ sinh viên &amp; nghiên cứu sinh tin dùng</p>
-      </div>
+      {/* Mockup ghi "Hơn 5.000 sinh viên tin dùng". Đó là một con số về lượng
+          người dùng, và không có nguồn nào trong sản phẩm chứng minh được nó,
+          nên ở đây là một câu nói đúng điều sản phẩm làm. Chủ sản phẩm quyết
+          định có đưa con số thật vào hay không. */}
+      <p className="hero__proof">
+        <Icon name="verified" size={16} />
+        Mọi câu trả lời đều dẫn lại nguồn trong tài liệu của bạn
+      </p>
     </div>
   );
 }
 
-/** Right-side browser mockup demonstrating the chat interface. */
-function HeroMockup() {
+/** Nửa phải: một cửa sổ trình duyệt dựng lại cuộc hỏi đáp thật. */
+function HeroDemo() {
   return (
-    <div className="hero__mockup-wrapper">
-      <div className="hero__mockup-glow" />
-      <div className="hero__mockup">
-        <MockupHeader />
-        <MockupContent />
-        <MockupInput />
+    <div className="hero__demo" id="demo" aria-hidden="true">
+      <div className="demo__chrome">
+        <span className="demo__dot demo__dot--red" />
+        <span className="demo__dot demo__dot--amber" />
+        <span className="demo__dot demo__dot--green" />
+        <span className="demo__url">
+          <Icon name="lock" size={12} />
+          unichat.vn/workspace
+        </span>
       </div>
-      <FloatingElements />
-    </div>
-  );
-}
 
-function MockupHeader() {
-  return (
-    <div className="mockup__header">
-      <div className="mockup__dots">
-        <span className="mockup__dot mockup__dot--red" />
-        <span className="mockup__dot mockup__dot--yellow" />
-        <span className="mockup__dot mockup__dot--green" />
-      </div>
-      <div className="mockup__url">
-        <Icon name="lock" size={12} /> unichat.vn/workspace
-      </div>
-    </div>
-  );
-}
-
-function MockupContent() {
-  return (
-    <div className="mockup__body">
-      <div className="mockup__user-msg">
-        <p>
-          Tóm tắt các nguyên lý cơ bản của cơ học lượng tử dựa theo tài liệu Vật lý
-          Đại cương tập 3.
+      <div className="demo__body">
+        <p className="demo__ask">
+          Tóm tắt các nguyên lý cơ bản của cơ học lượng tử dựa theo tài liệu Vật
+          lý Đại cương Tập 3.
         </p>
-      </div>
 
-      <div className="mockup__ai-thinking">
-        <div className="mockup__ai-avatar">
-          <Icon name="school" size={14} />
+        <div className="demo__row">
+          <span className="demo__spark">
+            <Icon name="auto_awesome" size={14} filled />
+          </span>
+          <span className="demo__found">
+            <Icon name="check" size={13} />
+            Đã tìm trong 3 tài liệu
+          </span>
         </div>
-        <div className="mockup__thinking-pill">
-          <span className="mockup__spinner" />
-          <span>Đang trích xuất từ 3 tài liệu...</span>
-        </div>
-      </div>
 
-      <div className="mockup__ai-msg">
-        <p>
-          Dựa trên tài liệu &ldquo;Vật lý Đại cương Tập 3&rdquo;, cơ học lượng tử được
-          xây dựng dựa trên các nguyên lý cơ bản sau:
+        <div className="demo__answer">
+          <p className="demo__lede">
+            Dựa trên tài liệu “Vật lý Đại cương Tập 3”, cơ học lượng tử được xây
+            dựng trên các nguyên lý cơ bản sau:
+          </p>
+          <ul className="demo__points">
+            {DEMO_POINTS.map((point) => (
+              <li key={point.cite}>
+                <strong>{point.term}:</strong> {point.body}
+                <span className="demo__cite">{point.cite}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <p className="demo__note">
+          <span className="demo__note-left">
+            <Icon name="check_circle" size={14} />
+            Mọi câu trả lời đều có nguồn
+          </span>
+          <span className="demo__note-count">2 đoạn trích</span>
         </p>
-        <ul>
-          <li>
-            <strong>Tính lưỡng tính sóng - hạt:</strong> Vật chất vừa có tính chất sóng
-            vừa có tính chất hạt{' '}
-            <span className="mockup__cite">[1]</span>.
-          </li>
-          <li>
-            <strong>Nguyên lý bất định Heisenberg:</strong> Không thể xác định đồng thời
-            chính xác cả vị trí và động lượng của một hạt vi mô{' '}
-            <span className="mockup__cite">[2]</span>.
-          </li>
-        </ul>
+
+        <div className="demo__input">
+          <span className="demo__placeholder">Nhập câu hỏi của bạn...</span>
+          <span className="demo__send">
+            <Icon name="arrow_upward" size={14} rounded />
+          </span>
+        </div>
       </div>
     </div>
-  );
-}
-
-function MockupInput() {
-  return (
-    <div className="mockup__input-area">
-      <div className="mockup__input-wrap">
-        <input
-          className="mockup__input"
-          placeholder="Nhập câu hỏi của bạn..."
-          readOnly
-          type="text"
-        />
-        <button className="mockup__send-btn" type="button" aria-label="Gửi">
-          <Icon name="send" size={18} />
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function FloatingElements() {
-  return (
-    <>
-      <div className="hero__float hero__float--citation">
-        <Icon name="check_circle" size={20} className="hero__float-icon" />
-        <p>Trích dẫn chính xác 100%</p>
-      </div>
-    </>
   );
 }

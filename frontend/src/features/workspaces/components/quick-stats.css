@@ -1,4 +1,20 @@
-/* Quick Stats Cards */
+/* Ô đếm.
+
+   Trước đây mỗi ô là một biểu tượng trong ô vuông bo tròn 46px được nhuộm
+   màu, kèm một vầng sáng bên dưới: indigo, cyan và hồng. Cả ba sắc đó không
+   có trong bộ màu, ô "Thành viên" thì lấy thẳng var(--color-error) nên một
+   con số bình thường được sơn như một cảnh báo, và chú thích cũ còn gọi đó
+   là "những liều nhỏ, bão hòa". Ngân sách màu nhấn của bộ rút là dưới 2%
+   diện tích và dành cho phần tử dữ liệu chính, không dành cho trang trí
+   biểu tượng.
+
+   Chỉ dẫn ô đếm: cao 128px, không biểu tượng, không delta. Con số tự gánh
+   ô; nó là thứ duy nhất ở đây đáng nhìn.
+
+   Cỡ 40px chứ không 48px: máy đo bắt bản trước của tôi ở đúng chỗ này —
+   con số trên màn ứng dụng chạy 16-40px, không màn nào trong nghiên cứu
+   chạm 48px, và thứ làm một con số vang lên là khoảng trống quanh nó chứ
+   không phải cỡ chữ. */
 
 .quick-stats {
   display: grid;
@@ -6,91 +22,45 @@
   gap: var(--stack-md);
 }
 
-/* No outline: a hairline border around every panel is what made the page read
-   as a form. Depth comes from a soft shadow instead. */
 .quick-stats__card {
   display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 18px 20px;
-  background: var(--color-surface-container-lowest);
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 2px;
+  min-height: 128px;
+  padding: 20px 22px;
+  /* Nền trang là var(--be-mat); ô là tờ giấy trắng, cách nền 4,3 điểm sáng —
+     nằm trong khoảng 2-6 điểm mà luật panel cho. Chênh lệch sắc độ tự dựng
+     hình khối, nên không cần viền và không cần đổ bóng. */
+  background: var(--nen);
   border: none;
   border-radius: var(--radius-xl);
-  box-shadow: 0 1px 2px rgb(15 23 42 / 6%), 0 4px 14px rgb(15 23 42 / 5%);
-  transition: box-shadow var(--transition-normal), transform var(--transition-normal);
-}
-
-.quick-stats__card:hover {
-  box-shadow: 0 2px 4px rgb(15 23 42 / 8%), 0 10px 26px rgb(15 23 42 / 10%);
-  transform: translateY(-2px);
-}
-
-/* The tile is where the card palette's hues appear in the chrome — small,
-   saturated doses, so the page and the cards look like one product. */
-.quick-stats__icon-wrap {
-  display: grid;
-  place-items: center;
-  width: 46px;
-  height: 46px;
-  border-radius: 14px;
-  flex-shrink: 0;
-  color: var(--nen);
-}
-
-.quick-stats__icon-wrap--workspaces {
-  background: linear-gradient(145deg, var(--muc) 0%, var(--muc) 100%);
-  box-shadow: 0 4px 12px rgb(99 102 241 / 34%);
-}
-
-.quick-stats__icon-wrap--documents {
-  background: linear-gradient(145deg, var(--muc) 0%, var(--muc) 100%);
-  box-shadow: 0 4px 12px rgb(34 211 238 / 34%);
-}
-
-.quick-stats__icon-wrap--members {
-  background: linear-gradient(145deg, var(--ws-warn-ink) 0%, var(--color-error) 100%);
-  box-shadow: 0 4px 12px rgb(236 72 153 / 30%);
-}
-
-.quick-stats__info {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  min-width: 0;
 }
 
 .quick-stats__value {
-  font-size: 26px;
-  font-weight: 700;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-  color: var(--color-on-surface);
+  font-size: 40px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--muc);
   font-variant-numeric: tabular-nums;
 }
 
 .quick-stats__label {
   font: var(--font-label-sm);
-  color: var(--color-on-surface-variant);
+  color: var(--muc-nhat);
 }
 
 @media (max-width: 767px) {
   .quick-stats {
     grid-template-columns: 1fr;
   }
-}
 
-@media (min-width: 768px) and (max-width: 1023px) {
-  .quick-stats {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
   .quick-stats__card {
-    transition: none;
+    min-height: 96px;
   }
 
-  .quick-stats__card:hover {
-    transform: none;
+  .quick-stats__value {
+    font-size: 32px;
   }
 }

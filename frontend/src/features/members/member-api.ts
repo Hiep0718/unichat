@@ -16,9 +16,16 @@ export interface WorkspaceMemberResponse {
   workspaceId: string;
   userId: string;
   email: string;
+  /** Name to show and to derive a letter avatar from; null when unresolved. */
+  displayName: string | null;
+  /** Whether to fetch the member's picture or draw the letter avatar. */
+  hasAvatar: boolean;
+  /** Chosen letter-avatar colour, null to derive one from the name. */
+  avatarColor: string | null;
   role: WorkspaceRole;
   status: WorkspaceMemberStatus;
-  invitedById: string;
+  /** Who invited them; null for a membership nobody was invited into. */
+  invitedById: string | null;
 }
 
 export interface AddWorkspaceMemberRequest {

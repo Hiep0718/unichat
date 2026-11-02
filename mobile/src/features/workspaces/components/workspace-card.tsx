@@ -48,13 +48,27 @@ export function WorkspaceCard({
         testID={`workspace-card-${workspace.id}`}
         style={styles.card}
       >
-        <View style={styles.cover}>
+        {/* Ảnh phủ toàn thẻ, không còn là một dải 124px ở trên — cùng cách
+            thẻ trên web làm.
+
+            Dùng 'cover'. Bản trước phải dùng 'contain' vì ảnh bìa khi ấy là
+            3:1 còn thẻ gần vuông, nên 'cover' cắt mất hơn nửa và 'contain'
+            là cách duy nhất thấy trọn bức ảnh — đổi lại hai mép thẻ lộ mảng
+            màu phẳng. Bộ ảnh nay cắt lại ở 16/11, còn thẻ này rộng ~328 cao
+            ~214, tức ~1,5, nên 'cover' vừa lấp kín thẻ vừa giữ được ~95% bức
+            ảnh. Không còn phải đánh đổi giữa hai điều đó. */}
+        <View style={styles.coverFill} pointerEvents="none">
           <WorkspaceCover
             workspaceId={workspace.id}
             name={workspace.name}
             topics={workspace.topics}
           />
+        </View>
 
+        {/* Lớp tối cho chữ đọc được trên bất kỳ bức ảnh nào. */}
+        <View style={styles.scrim} pointerEvents="none" />
+
+        <View style={styles.cover}>
           <View style={styles.coverTop}>
             <View style={styles.visibility}>
               <UCIcon name={isPublic ? 'public' : 'lock'} size={12} color="#FFFFFF" />
@@ -77,14 +91,14 @@ export function WorkspaceCard({
           <View style={styles.footer}>
             <View style={styles.stats}>
               <View style={styles.stat}>
-                <UCIcon name="description" size={13} color={workplace.inkMuted} />
+                <UCIcon name="description" size={13} color="rgba(255, 255, 255, 0.76)" />
                 <Text style={styles.statText}>
                   {workspace.documentCount || 0} tài liệu
                 </Text>
               </View>
 
               <View style={styles.stat}>
-                <UCIcon name="group" size={13} color={workplace.inkMuted} />
+                <UCIcon name="group" size={13} color="rgba(255, 255, 255, 0.76)" />
                 <Text style={styles.statText}>
                   {workspace.memberCount || 1} thành viên
                 </Text>
@@ -102,7 +116,7 @@ export function WorkspaceCard({
               </Pressable>
             ) : (
               <View style={styles.openPill}>
-                <Text style={styles.openPillText}>Vào học</Text>
+                <Text style={styles.openPillText}>Truy cập</Text>
                 <UCIcon name="arrow-forward" size={13} color={workplace.accent} />
               </View>
             )}
@@ -124,9 +138,20 @@ const styles = StyleSheet.create({
     ...shadows.card,
   },
 
-  /** Tall enough to read as a picture; a strip reads as a coloured rule. */
+  /** Ảnh và lớp tối trải kín thẻ, nằm dưới mọi nội dung. */
+  coverFill: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
+  scrim: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(8, 12, 24, 0.52)',
+  },
+
+  /** Vùng chữ ở nửa trên, giờ đặt trên ảnh chứ không phải cạnh ảnh. */
   cover: {
-    height: 124,
+    minHeight: 124,
     padding: spacing.md,
     justifyContent: 'space-between',
   },
@@ -162,7 +187,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   desc: {
-    color: workplace.inkSoft,
+    color: 'rgba(255, 255, 255, 0.86)',
     fontSize: 14,
     lineHeight: 20,
   },
@@ -174,7 +199,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: workplace.line,
+    borderTopColor: 'rgba(255, 255, 255, 0.18)',
   },
   stats: {
     flex: 1,
@@ -190,10 +215,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: radii.full,
-    backgroundColor: workplace.chip,
+    backgroundColor: 'rgba(255, 255, 255, 0.16)',
   },
   statText: {
-    color: workplace.inkMuted,
+    color: 'rgba(255, 255, 255, 0.76)',
     fontSize: 11,
     fontFamily: 'Inter_500Medium',
   },

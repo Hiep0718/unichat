@@ -75,7 +75,6 @@
 
 .settings-form__input:focus {
   border-color: var(--color-secondary);
-  box-shadow: 0 0 0 2px rgba(0, 104, 122, 0.15);
 }
 
 .settings-form__textarea {
@@ -94,7 +93,6 @@
 
 .settings-form__textarea:focus {
   border-color: var(--color-secondary);
-  box-shadow: 0 0 0 2px rgba(0, 104, 122, 0.15);
 }
 
 .settings-form__error {
@@ -278,7 +276,6 @@
 
 .danger-zone__confirm-input:focus {
   border-color: var(--color-error);
-  box-shadow: 0 0 0 2px rgba(186, 26, 26, 0.15);
 }
 
 .danger-zone__modal-actions {

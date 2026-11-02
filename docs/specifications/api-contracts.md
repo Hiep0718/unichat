@@ -83,6 +83,26 @@ Hạ visibility xuống PRIVATE khi workspace còn thành viên ACTIVE khác tr�
 
 Danh sách khám phá sắp theo `updatedAt DESC, id DESC` — trước đây không có `ORDER BY` nên phân trang có thể lặp hoặc bỏ sót dòng.
 
+`WorkspaceResponse` trả thêm `postCount`: **mọi** bài còn sống của nhóm, khác với
+`recentPostCount` vốn chỉ đếm bài trong một tuần. Huy hiệu số bên cạnh tab "Bài
+viết" đọc `postCount`; dùng `recentPostCount` ở đó thì một nhóm 200 bài mà tuần
+qua im ắng sẽ hiện 0. Cả hai được gom một truy vấn nhóm cho mỗi trang, nên danh
+sách nhóm không trả thêm một truy vấn mỗi thẻ.
+
+`DiscussionResponse` trả thêm `hasAiAnswer`: nhóm đã có câu trả lời của trợ lý
+cho bài này chưa, suy từ `discussion_replies.is_ai_answer`. Thẻ bài viết vẽ một
+dải từ cờ này, để người đọc phân biệt câu hỏi đã được trả lời với câu hỏi còn mở
+mà không phải mở từng bài. Endpoint danh sách gom **một** truy vấn cho cả trang;
+các đường một-bài hỏi riêng cho bài đó. Endpoint bảng tin toàn cục
+(`FeedPostResponse`) **không** mang trường này, nên thẻ ở đó không vẽ dải.
+
+`WorkspaceMemberResponse` trả thêm `displayName`, `hasAvatar` và `avatarColor`:
+tab Thành viên vẽ ảnh đại diện thật nếu có, không thì chữ cái trên nền màu. Ba
+trường này **không tốn thêm truy vấn** — `getMembers` vốn đã nạp các `User` để
+lấy email. `avatarColor` là khóa chữ thường (`navy`, `teal`, `plum`, `moss`,
+`clay`, `slate`), `null` nghĩa là suy màu từ tên. `invitedById` có thể là `null`
+(kiểu TS trước đây khai là `string`, không đúng).
+
 ### Link mời (ADR-025)
 
 | Method | Route | Quyền | Ghi chú |

@@ -33,7 +33,7 @@ describe('Workspace tab load failures', () => {
     await waitFor(() => expect(getByText('Không tải được dữ liệu')).toBeTruthy());
     // Shown on the card and in the toast, so the reader sees it whichever they look at.
     expect(getAllByText(/lỗi 500/i).length).toBeGreaterThan(0);
-    expect(queryByText('Chưa có Không gian nào')).toBeNull();
+    expect(queryByText('Chưa có workspace nào')).toBeNull();
   });
 
   it('should name an expired session rather than show a bare server code', async () => {
@@ -51,7 +51,7 @@ describe('Workspace tab load failures', () => {
 
     const { getByText, queryByText } = await renderScreen();
 
-    await waitFor(() => expect(getByText('Chưa có Không gian nào')).toBeTruthy());
+    await waitFor(() => expect(getByText('Chưa có workspace nào')).toBeTruthy());
     expect(queryByText('Không tải được dữ liệu')).toBeNull();
   });
 });

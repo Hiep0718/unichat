@@ -21,15 +21,10 @@ export default function WorkspaceLayout() {
       <Stack.Screen
         name="[id]/index"
         options={{
-          title: 'Chi tiết Workspace',
-          headerBackTitle: 'Quay lại',
-        }}
-      />
-      <Stack.Screen
-        name="[id]/documents"
-        options={{
-          title: 'Quản lý tài liệu',
-          headerBackTitle: 'Workspace',
+          // Màn này tự vẽ dải bìa mang tên nhóm, số liệu và nút quay lại, và
+          // dải đó chạy hẳn lên dưới thanh trạng thái. Một thanh tiêu đề nữa ở
+          // trên chỉ chen vào giữa.
+          headerShown: false,
         }}
       />
       <Stack.Screen

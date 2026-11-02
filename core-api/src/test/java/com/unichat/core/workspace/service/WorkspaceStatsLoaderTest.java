@@ -59,6 +59,7 @@ class WorkspaceStatsLoaderTest {
         when(memberRepository.countGroupedByWorkspaceIds(anyList(), any())).thenReturn(List.of());
         when(discussionRepository.countRecentGroupedByWorkspaceIds(anyList(), any()))
                 .thenReturn(List.of());
+        when(discussionRepository.countGroupedByWorkspaceIds(anyList())).thenReturn(List.of());
         when(memberRepository.findFacesForWorkspaces(anyList(), anyInt())).thenReturn(List.of());
     }
 
@@ -104,6 +105,35 @@ class WorkspaceStatsLoaderTest {
         // Assert
         assertEquals(4, stats.get(busy).recentPostCount());
         assertEquals(0, stats.get(quiet).recentPostCount());
+    }
+
+    @Test
+    void shouldReportEveryPostAlongsideTheRecentOnes() {
+        // Arrange: the tab badge beside "Bài viết" claims the total, while the
+        // card's activity line claims the week. A group with a long history and
+        // a quiet week must report both honestly rather than one twice.
+        when(discussionRepository.countGroupedByWorkspaceIds(anyList()))
+                .thenReturn(List.<Object[]>of(new Object[] { busy, 200L }));
+        when(discussionRepository.countRecentGroupedByWorkspaceIds(any(), any()))
+                .thenReturn(List.of());
+
+        // Act
+        Map<UUID, WorkspaceCardStats> stats = loader.loadFor(List.of(busy, quiet));
+
+        // Assert
+        assertEquals(200, stats.get(busy).postCount());
+        assertEquals(0, stats.get(busy).recentPostCount());
+        assertEquals(0, stats.get(quiet).postCount());
+    }
+
+    @Test
+    void shouldCountEveryPostInOneQueryForTheWholePage() {
+        // Act
+        loader.loadFor(List.of(busy, quiet));
+
+        // Assert: one grouped query for the page, like the other card counts,
+        // so a list of groups does not pay a query per card.
+        verify(discussionRepository).countGroupedByWorkspaceIds(List.of(busy, quiet));
     }
 
     @Test
@@ -155,6 +185,7 @@ class WorkspaceStatsLoaderTest {
         // some drivers, invalid SQL.
         assertTrue(stats.isEmpty());
         verify(documentRepository, never()).countGroupedByWorkspaceIds(anyList());
+        verify(discussionRepository, never()).countGroupedByWorkspaceIds(anyList());
         verify(memberRepository, never()).findFacesForWorkspaces(anyList(), anyInt());
     }
 

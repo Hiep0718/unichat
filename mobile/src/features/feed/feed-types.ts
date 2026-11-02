@@ -55,4 +55,13 @@ export interface FeedPost {
   isBookmarked: boolean;
   createdAt: string;
   attachments: PostAttachment[];
+  /**
+   * Trợ lý của nhóm đã trả lời bài này chưa.
+   *
+   * Không bắt buộc vì chỉ danh sách bài của một nhóm báo về trường này; bảng
+   * tin toàn cục thì không, và thẻ ở đó đơn giản là không vẽ dải.
+   */
+  hasAiAnswer?: boolean;
+  /** Bài được ghim lên đầu danh sách của nhóm. */
+  pinned?: boolean;
 }

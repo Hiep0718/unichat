@@ -13,12 +13,12 @@ import { WorkspaceShell } from './workspace-shell';
 import type { WorkspaceDto } from '../features/workspaces/workspace-schema';
 
 vi.mock('../features/workspaces/workspace-api', () => ({ getWorkspace: vi.fn(), updateWorkspace: vi.fn() }));
-vi.mock('../features/members/components/member-table', () => ({ MemberTable: () => null }));
+vi.mock('../features/members/components/member-panel', () => ({ MemberPanel: () => null }));
 vi.mock('./app-shell', () => ({ AppShell: () => <><ContextSnapshot /><WorkspaceSettingsPage /></> }));
 
 const WORKSPACE: WorkspaceDto = {
   id: 'workspace-1', ownerId: 'owner-1', name: 'Nhóm nghiên cứu', description: '', visibility: 'PRIVATE',
-  cloudAllowed: false, version: 3, userRole: 'OWNER', documentCount: 0, memberCount: 1, recentPostCount: 0,
+  cloudAllowed: false, version: 3, userRole: 'OWNER', documentCount: 0, memberCount: 1, recentPostCount: 0, postCount: 0,
   faces: [], topics: [], hasCover: false, createdAt: '', updatedAt: '',
 };
 

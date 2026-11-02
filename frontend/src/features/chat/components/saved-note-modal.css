@@ -30,7 +30,7 @@
 
 .unichat-saved-note-modal__header {
   padding: 16px 20px;
-  background: linear-gradient(135deg, var(--nen) 0%, var(--nen) 100%);
+  background: var(--nen);
   border-bottom: 1px solid var(--ke);
   display: flex;
   align-items: center;

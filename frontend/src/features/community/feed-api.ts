@@ -26,6 +26,13 @@ export interface FeedPostResponse {
   isBookmarked: boolean;
   createdAt: string;
   attachments: PostAttachment[];
+  /**
+   * Whether the group's assistant has replied to this post.
+   *
+   * Optional because only a group's own post list reports it; the global feed
+   * endpoint does not, and a card there simply omits the marker.
+   */
+  hasAiAnswer?: boolean;
 }
 
 export interface FeedPage {

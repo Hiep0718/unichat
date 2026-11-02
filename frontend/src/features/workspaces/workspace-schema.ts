@@ -30,6 +30,8 @@ export interface WorkspaceDto {
   readonly memberCount: number;
   /** Posts in the last week, so a dormant group reads as dormant. */
   readonly recentPostCount: number;
+  /** Every live post, however old; what the "Bài viết" tab badge counts. */
+  readonly postCount: number;
   /** A few members to draw as faces on the card, owners first. */
   readonly faces: readonly WorkspaceFace[];
   /** What the group is about. Empty for groups created before topics. */

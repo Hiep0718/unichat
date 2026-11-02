@@ -5,6 +5,9 @@ import { useMutation } from '@tanstack/react-query';
 import { Icon } from '../../components/icon';
 import { authApi } from './api/auth-api';
 import type { ApiError } from '../../lib/api-client';
+import heroImage from '../../assets/login-hero.jpg';
+import heroPortrait from '../../assets/login-hero-portrait.jpg';
+
 import './login-page.css';
 import './components/login-form.css';
 
@@ -101,20 +104,42 @@ function ForgotPasswordPage() {
 
   return (
     <div className="login-page">
-      <div className="login-page__bg" aria-hidden="true">
-        <div className="login-page__blob login-page__blob--1" />
-        <div className="login-page__blob login-page__blob--2" />
-        <div className="login-page__blob login-page__blob--3" />
-      </div>
-
-      <main className="login-page__main">
-        <div className="login-page__logo">
-          <div className="login-page__logo-icon">
-            <Icon name="chat_bubble" size={24} />
+      {/* Cùng vỏ với màn đăng nhập. Trước đây trang này dùng các lớp
+          login-page__bg / __blob / __main / __logo / __badge; khi màn đăng
+          nhập được dựng lại, tám lớp đó biến mất và trang này chạy không
+          style mà không test nào đổ. */}
+      <section className="login-story" aria-label="Giới thiệu UniChat">
+        <picture className="login-story__art">
+          {/* Ảnh dọc cho khổ điện thoại: ảnh ngang bị cắt ở đó thì điểm
+              sáng trung tâm rơi ra ngoài khung. 50 KB so với 118 KB của bản
+              ngang, nên máy nhỏ cũng không tải thứ nó không dùng. */}
+          <source media="(max-width: 1023px)" srcSet={heroPortrait} />
+          <img src={heroImage} alt="" aria-hidden="true" />
+        </picture>
+        <div className="login-story__inner">
+          <div className="login-story__brand">
+            <span className="login-story__brand-mark">
+              <Icon name="school" size={22} filled />
+            </span>
+            <span className="login-story__brand-text">
+              <strong>UniChat</strong>
+              <small>AI Platform</small>
+            </span>
           </div>
-          <h1 className="login-page__logo-text">UniChat</h1>
+          <div className="login-story__pitch">
+            <h1 className="login-story__title">
+              Khôi phục quyền<br />truy cập của bạn.
+            </h1>
+            <p className="login-story__lede">
+              Chúng tôi gửi một mã xác thực tới email của bạn. Nhập mã đó cùng
+              mật khẩu mới để quay lại không gian học tập.
+            </p>
+          </div>
+          <span />
         </div>
+      </section>
 
+      <main className="login-pane">
         <div className="login-card">
           <div className="login-card__header">
             <h2 className="login-card__title">Khôi phục mật khẩu</h2>
@@ -247,10 +272,10 @@ function ForgotPasswordPage() {
           </div>
         </div>
 
-        <div className="login-page__badge">
-          <Icon name="security" size={16} className="login-page__badge-icon" />
-          <span>Tài khoản của bạn được bảo vệ bằng xác thực JWT</span>
-        </div>
+        <p className="login-pane__badge">
+          <Icon name="shield" size={15} />
+          Dữ liệu của bạn được bảo mật
+        </p>
       </main>
     </div>
   );

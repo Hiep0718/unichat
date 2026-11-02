@@ -34,10 +34,26 @@ public record DiscussionResponse(
         UUID acceptedReplyId,
         List<PostAttachmentResponse> attachments,
         /** Counts per reaction type plus the caller's own choice. */
-        ReactionSummary reactions
+        ReactionSummary reactions,
+        /**
+         * Whether the group's assistant has replied to this post.
+         *
+         * <p>The post list draws a marker from this, so the reader can tell an
+         * answered question from an open one without opening it.
+         */
+        boolean hasAiAnswer
 ) {
-    public static DiscussionResponse from(Discussion d, String authorName, String authorAvatar) {
-        return from(d, null, authorName, authorAvatar, List.of(), ReactionSummary.empty());
+    /**
+     * Maps a discussion with no workspace name, files or reactions resolved.
+     *
+     * @param hasAiAnswer whether the assistant has replied; the caller must
+     *                    establish this, because a response that reports a
+     *                    marker it never looked up is a response that lies
+     */
+    public static DiscussionResponse from(Discussion d, String authorName, String authorAvatar,
+                                          boolean hasAiAnswer) {
+        return from(d, null, authorName, authorAvatar, List.of(), ReactionSummary.empty(),
+                hasAiAnswer);
     }
 
     /**
@@ -46,11 +62,13 @@ public record DiscussionResponse(
      * @param workspaceName owning workspace name, null when not resolved
      * @param attachments   files attached to the post, never null
      * @param reactions     reaction counts, never null
+     * @param hasAiAnswer   whether the assistant has replied to this post
      */
     public static DiscussionResponse from(Discussion d, String workspaceName, String authorName,
                                           String authorAvatar,
                                           List<PostAttachmentResponse> attachments,
-                                          ReactionSummary reactions) {
+                                          ReactionSummary reactions,
+                                          boolean hasAiAnswer) {
         return new DiscussionResponse(
                 d.getId(), d.getWorkspaceId(), workspaceName, d.getAuthorId(), d.getTitle(),
                 d.getBody(), d.getLabel(), d.isPinned(), d.getStatus(),
@@ -58,7 +76,8 @@ public record DiscussionResponse(
                 d.getEditedAt(), d.getVoteScore(),
                 authorName, authorAvatar,
                 d.getBackgroundKey(), d.getAcceptedReplyId(), attachments,
-                reactions == null ? ReactionSummary.empty() : reactions
+                reactions == null ? ReactionSummary.empty() : reactions,
+                hasAiAnswer
         );
     }
 }

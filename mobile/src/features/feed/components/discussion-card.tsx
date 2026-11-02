@@ -14,56 +14,27 @@ import {
   toPlainPreview,
   AnswerStatus,
 } from '../answer-status';
-import { FeedPost, ReactionType } from '../feed-types';
+import {
+  LABEL_TEXT,
+  STATUS_BG,
+  STATUS_INK,
+  STATUS_TEXT,
+  usedReactions,
+} from '../post-presentation';
+import { FeedPost } from '../feed-types';
 
 interface DiscussionCardProps {
   post: FeedPost;
   index: number;
   onOpen?: (id: string) => void;
   onBookmark?: (id: string) => void;
-}
-
-const STATUS_TEXT: Record<AnswerStatus, string> = {
-  UNANSWERED: 'Chưa có lời giải',
-  DISCUSSING: 'Đang thảo luận',
-  RESOLVED: 'Đã giải đáp',
-};
-
-const LABEL_TEXT: Record<string, string> = {
-  QUESTION: 'Câu hỏi',
-  DISCUSSION: 'Thảo luận',
-  ANNOUNCEMENT: 'Thông báo',
-};
-
-const REACTION_EMOJI: Record<ReactionType, string> = {
-  LIKE: '👍',
-  LOVE: '❤️',
-  CARE: '🥰',
-  HAHA: '😆',
-  WOW: '😮',
-  SAD: '😢',
-  ANGRY: '😠',
-};
-
-const STATUS_BG: Record<AnswerStatus, string> = {
-  RESOLVED: workplace.okBg,
-  DISCUSSING: workplace.warnBg,
-  UNANSWERED: workplace.accentSoft,
-};
-
-const STATUS_INK: Record<AnswerStatus, string> = {
-  RESOLVED: workplace.okInk,
-  DISCUSSING: workplace.warnInk,
-  UNANSWERED: workplace.accent,
-};
-
-/** The reaction faces actually left on a post, most-used first. */
-function usedReactions(counts: Partial<Record<ReactionType, number>>): string[] {
-  return (Object.entries(counts) as [ReactionType, number][])
-    .filter(([, n]) => n > 0)
-    .sort(([, a], [, b]) => b - a)
-    .slice(0, 3)
-    .map(([type]) => REACTION_EMOJI[type]);
+  /**
+   * Giấu tên và dấu nhóm. Đặt trên trang của chính nhóm đó, nơi mọi thẻ đều
+   * thuộc về cái nhóm người đọc đang nhìn.
+   */
+  hideGroup?: boolean;
+  /** Hiện dấu đã ghim; chỉ danh sách của một nhóm mới sắp theo nó. */
+  pinned?: boolean;
 }
 
 /**
@@ -84,6 +55,8 @@ export function DiscussionCard({
   index,
   onOpen,
   onBookmark,
+  hideGroup = false,
+  pinned = false,
 }: DiscussionCardProps) {
   const preview = toPlainPreview(post.body);
   const isQuestion = hasResolutionState(post.label);
@@ -97,36 +70,13 @@ export function DiscussionCard({
       )}
       style={styles.card}
     >
-      <View style={styles.head}>
-        <GroupMark workspaceId={post.workspaceId} name={post.workspaceName} size={34} />
-        <View style={styles.headText}>
-          <Text style={styles.groupName} numberOfLines={1}>
-            {post.workspaceName}
-          </Text>
-          <Text style={styles.byline} numberOfLines={1}>
-            {post.authorName} · {formatRelativeTime(post.createdAt)}
-          </Text>
-        </View>
-
-        {isQuestion ? (
-          <View style={[styles.chip, { backgroundColor: STATUS_BG[status] }]}>
-            {status === 'RESOLVED' ? (
-              <UCIcon name="check" size={13} color={STATUS_INK[status]} />
-            ) : null}
-            <Text style={[styles.chipText, { color: STATUS_INK[status] }]}>
-              {STATUS_TEXT[status]}
-            </Text>
-          </View>
-        ) : null}
-
-        {!isQuestion && post.label !== 'DISCUSSION' ? (
-          <View style={[styles.chip, styles.chipAnnouncement]}>
-            <Text style={[styles.chipText, styles.chipTextAnnouncement]}>
-              {LABEL_TEXT[post.label] ?? post.label}
-            </Text>
-          </View>
-        ) : null}
-      </View>
+      <PostCardHead
+        post={post}
+        hideGroup={hideGroup}
+        pinned={pinned}
+        isQuestion={isQuestion}
+        status={status}
+      />
 
       <Pressable onPress={() => onOpen?.(post.id)} accessibilityRole="button">
         <Text style={styles.title}>{post.title}</Text>
@@ -136,6 +86,21 @@ export function DiscussionCard({
         <Text style={styles.preview} numberOfLines={2}>
           {preview}
         </Text>
+      ) : null}
+
+      {post.hasAiAnswer ? (
+        <Pressable
+          style={styles.ai}
+          onPress={() => onOpen?.(post.id)}
+          accessibilityRole="button"
+          accessibilityLabel="Xem câu trả lời của trợ lý"
+        >
+          <UCIcon name="auto-awesome" size={14} color={workplace.accent} />
+          <Text style={styles.aiText} numberOfLines={1}>
+            Trợ lý AI đã trả lời
+          </Text>
+          <Text style={styles.aiView}>Xem</Text>
+        </Pressable>
       ) : null}
 
       {post.attachments && post.attachments.length > 0 ? (
@@ -179,6 +144,68 @@ export function DiscussionCard({
   );
 }
 
+interface PostCardHeadProps {
+  readonly post: FeedPost;
+  readonly hideGroup: boolean;
+  readonly pinned: boolean;
+  readonly isQuestion: boolean;
+  readonly status: AnswerStatus;
+}
+
+/**
+ * Hàng đầu của thẻ: bài này ở đâu, của ai, và nó đã xong chưa.
+ *
+ * Tách ra vì phần vẽ của thẻ đã vượt số dòng JSX dự án cho phép trong một hàm.
+ * Trong trang của chính nhóm, `hideGroup` bỏ tên và dấu nhóm đi — mọi thẻ ở đó
+ * đều thuộc về cái nhóm người đọc đang nhìn.
+ */
+function PostCardHead({ post, hideGroup, pinned, isQuestion, status }: PostCardHeadProps) {
+  return (
+    <View style={[styles.head, hideGroup && styles.headWrapped]}>
+      {!hideGroup && (
+        <GroupMark workspaceId={post.workspaceId} name={post.workspaceName} size={34} />
+      )}
+
+      {pinned && (
+        <View style={styles.pin}>
+          <UCIcon name="push-pin" size={12} color={workplace.ink} />
+          <Text style={styles.pinText}>Đã ghim</Text>
+        </View>
+      )}
+
+      <View style={styles.headText}>
+        {!hideGroup && (
+          <Text style={styles.groupName} numberOfLines={1}>
+            {post.workspaceName}
+          </Text>
+        )}
+        <Text style={styles.byline} numberOfLines={1}>
+          {post.authorName} · {formatRelativeTime(post.createdAt)}
+        </Text>
+      </View>
+
+      {isQuestion ? (
+        <View style={[styles.chip, { backgroundColor: STATUS_BG[status] }]}>
+          {status === 'RESOLVED' ? (
+            <UCIcon name="check" size={13} color={STATUS_INK[status]} />
+          ) : null}
+          <Text style={[styles.chipText, { color: STATUS_INK[status] }]}>
+            {STATUS_TEXT[status]}
+          </Text>
+        </View>
+      ) : null}
+
+      {!isQuestion && post.label !== 'DISCUSSION' ? (
+        <View style={[styles.chip, styles.chipAnnouncement]}>
+          <Text style={[styles.chipText, styles.chipTextAnnouncement]}>
+            {LABEL_TEXT[post.label] ?? post.label}
+          </Text>
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   card: {
     gap: 11,
@@ -193,6 +220,53 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
+  },
+  // Trong nhóm, hàng đầu mất dấu nhóm nên còn thừa chỗ; để pill trạng thái
+  // xuống dòng riêng như mockup thay vì ép nó chen vào cùng một hàng.
+  headWrapped: {
+    flexWrap: 'wrap',
+    rowGap: 8,
+  },
+  pin: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: radii.full,
+    backgroundColor: workplace.chip,
+  },
+  pinText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: workplace.ink,
+    fontFamily: 'Inter_700Bold',
+  },
+  // Không mang màu nhấn riêng: dùng đúng nền nhạt mà bảng màu này đã dành cho
+  // accent, giống dải tương ứng bên web.
+  ai: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    borderRadius: radii.lg,
+    backgroundColor: workplace.accentSoft,
+  },
+  aiText: {
+    flex: 1,
+    minWidth: 0,
+    fontSize: 12,
+    fontWeight: '600',
+    color: workplace.accent,
+    fontFamily: 'Inter_600SemiBold',
+  },
+  aiView: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: workplace.inkMuted,
+    fontFamily: 'Inter_600SemiBold',
   },
   headText: {
     flex: 1,

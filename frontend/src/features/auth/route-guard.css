@@ -16,7 +16,6 @@
   aspect-ratio: 1;
   border: 1px solid rgb(0 35 111 / 8%);
   border-radius: 50%;
-  box-shadow: 0 0 0 42px rgb(0 35 111 / 2%), 0 0 0 84px rgb(0 35 111 / 2%);
 }
 
 .session-loading__card { position: relative; display: grid; justify-items: center; gap: 14px; }
@@ -28,7 +27,6 @@
   border-radius: 22px;
   background: var(--muc);
   color: var(--nen);
-  box-shadow: 0 14px 30px rgb(16 43 120 / 22%);
 }
 .session-loading h1 { margin: 0; font-size: 30px; letter-spacing: -.04em; }
 .session-loading p { margin: 0; color: var(--muc-nhat); font-size: 14px; }

@@ -1,0 +1,119 @@
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  RefreshControl,
+  TouchableOpacity,
+  TextInput,
+} from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
+import { router } from 'expo-router';
+import { colors, spacing, radii } from '../../src/design/tokens';
+import { typography } from '../../src/design/typography';
+import { UCIcon } from '../../src/components/uc-icon';
+import { UCGlassCard } from '../../src/components/uc-glass-card';
+import { UCScreenContainer } from '../../src/components/uc-screen-container';
+import { UCSkeletonList } from '../../src/components/uc-skeleton';
+import { useAuth } from '../../src/features/auth/auth-context';
+import { useToast } from '../../src/lib/toast-context';
+import { workspaceApi } from '../../src/features/workspaces/workspace-api';
+import { WorkspaceItem } from '../../src/features/workspaces/workspace-types';
+import { WorkspaceHero } from '../../src/features/workspaces/components/workspace-hero';
+import { WorkspaceCard } from '../../src/features/workspaces/components/workspace-card';
+import { CreateWorkspaceModal } from '../../src/features/workspaces/create-workspace-modal';
+import { ApiError } from '../../src/lib/api-client';
+
+/** Names the failure so the reader can act on it instead of guessing. */
+function describeLoadFailure(reason: unknown): string {
+  if (reason instanceof ApiError) {
+    if (reason.status === 401 || reason.status === 403) {
+      return 'Phiên đăng nhập đã hết hạn. Hãy đăng nhập lại.';
+    }
+    return `Không tải được danh sách không gian (lỗi ${reason.status}).`;
+  }
+  if (reason instanceof Error && reason.message) return reason.message;
+  return 'Không tải được danh sách không gian.';
+}
+
+export default function WorkspaceTabScreen() {
+  const { user } = useAuth();
+  const { showToast } = useToast();
+  const [tab, setTab] = useState<'mine' | 'explore'>('mine');
+  const [myWorkspaces, setMyWorkspaces] = useState<WorkspaceItem[]>([]);
+  const [publicWorkspaces, setPublicWorkspaces] = useState<WorkspaceItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  const loadData = useCallback(async () => {
+    try {
+      const [mineRes, exploreRes] = await Promise.allSettled([
+        workspaceApi.getWorkspaces({ page: 0, size: 20 }),
+        workspaceApi.getExploreWorkspaces({ page: 0, size: 20 }),
+      ]);
+
+      // A failed request used to render exactly like an empty account: both
+      // showed "Chưa có Không gian nào", so a dead session or a 500 read as
+      // "you have no workspaces" and there was nothing on screen to tell them
+      // apart.
+      if (mineRes.status === 'fulfilled') {
+        setMyWorkspaces(mineRes.value.content || []);
+        setLoadError(null);
+      } else {
+        const message = describeLoadFailure(mineRes.reason);
+        setLoadError(message);
+        showToast({ message, type: 'error' });
+      }
+      if (exploreRes.status === 'fulfilled') {
+        setPublicWorkspaces(exploreRes.value.content || []);
+      }
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, [showToast]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    loadData();
+  };
+
+  const handleJoin = async (workspaceId: string) => {
+    try {
+      await workspaceApi.joinWorkspace(workspaceId);
+      showToast({ message: 'Tham gia không gian thành công!', type: 'success' });
+      await loadData();
+      setTab('mine');
+    } catch (err: any) {
+      showToast({ message: err.message || 'Không thể tham gia không gian', type: 'error' });
+    }
+  };
+
+  const handleWorkspacePress = (workspaceId: string) => {
+    router.push(`/workspace/${workspaceId}` as any);
+  };
+
+  const totalDocuments = useMemo(() => {
+    return myWorkspaces.reduce((acc, ws) => acc + (ws.documentCount || 0), 0);
+  }, [myWorkspaces]);
+
+  const rawList = tab === 'mine' ? myWorkspaces : publicWorkspaces;
+
+  const currentList = useMemo(() => {
+    if (!searchQuery.trim()) return rawList;
+    const q = searchQuery.toLowerCase().trim();
+    return rawList.filter(
+      (ws) =>
+        ws.name.toLowerCase().includes(q) ||
+        (ws.description && ws.description.toLowerCase().includes(q))
+    );
+  }, [rawList, searchQuery]);
+

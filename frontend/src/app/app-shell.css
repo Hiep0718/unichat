@@ -30,6 +30,13 @@
   .app-shell__main {
     margin-left: var(--sidebar-width);
   }
+
+  /* Vùng nội dung đi theo bề rộng thật của thanh bên. Thanh bên position:
+     fixed nên nó không đẩy gì cả; nếu lề này không đổi theo, thu thanh bên
+     lại sẽ chỉ để lại một khoảng trống 156px. */
+  .app-shell:has(.side-nav--collapsed) .app-shell__main {
+    margin-left: 68px;
+  }
 }
 
 /* ── The rail and the assistant's history column ─────────── */

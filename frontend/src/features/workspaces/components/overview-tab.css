@@ -141,7 +141,7 @@
 
 .overview-tab__description-empty {
   font-style: italic;
-  color: var(--color-outline);
+  color: var(--muc-nhat);
 }
 
 /* ─── Visibility badge ───────────────────────────────────── */

@@ -1,6 +1,6 @@
 import { useSearchParams } from 'react-router-dom';
 
-import { MemberTable } from '../members/components/member-table';
+import { MemberPanel } from '../members';
 import { useWorkspace } from '../workspaces/workspace-context';
 import { InvitePanel } from '../workspaces/components/invite-panel';
 import { AccessForm } from './access-form';
@@ -57,7 +57,7 @@ export function WorkspaceSettingsPage() {
         </section>
         <section className="settings-section">
           <h3>Danh sách Thành viên</h3>
-          <MemberTable workspaceId={workspace.id} isOwner={isOwner} visibility={workspace.visibility} />
+          <MemberPanel workspaceId={workspace.id} isOwner={isOwner} visibility={workspace.visibility} />
         </section>
       </div>}
       {activeTab === 'privacy' && <PrivacyForm key={workspace.id} workspace={workspace} isOwner={isOwner} />}

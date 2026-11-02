@@ -76,6 +76,8 @@ public class WorkspaceStatsLoader {
                 memberRepository.countGroupedByWorkspaceIds(workspaceIds, WorkspaceMemberStatus.ACTIVE));
         Map<UUID, Long> recentPosts = countsFrom(
                 discussionRepository.countRecentGroupedByWorkspaceIds(workspaceIds, recentSince()));
+        Map<UUID, Long> posts = countsFrom(
+                discussionRepository.countGroupedByWorkspaceIds(workspaceIds));
         Map<UUID, List<WorkspaceCardStats.MemberFace>> faces = facesFrom(
                 memberRepository.findFacesForWorkspaces(workspaceIds, FACES_PER_CARD));
         Map<UUID, List<WorkspaceTopic>> topics = topicsFrom(
@@ -87,6 +89,7 @@ public class WorkspaceStatsLoader {
                     documents.getOrDefault(id, 0L),
                     members.getOrDefault(id, 0L),
                     recentPosts.getOrDefault(id, 0L),
+                    posts.getOrDefault(id, 0L),
                     faces.getOrDefault(id, List.of()),
                     topics.getOrDefault(id, List.of())));
         }

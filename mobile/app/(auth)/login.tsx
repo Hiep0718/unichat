@@ -1,27 +1,38 @@
 import { useState } from 'react';
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
+  Image,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
-import Animated, { FadeInUp, FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
+
 import { colors, spacing } from '../../src/design/tokens';
 import { typography } from '../../src/design/typography';
-import { shadows } from '../../src/design/shadows';
 import { UCTextInput } from '../../src/components/uc-text-input';
 import { UCButton } from '../../src/components/uc-button';
 import { UCIcon } from '../../src/components/uc-icon';
-import { UCGlassCard } from '../../src/components/uc-glass-card';
-import { UCAnimatedBackground } from '../../src/components/uc-animated-background';
 import { useAuth } from '../../src/features/auth/auth-context';
 import { loginSchema } from '../../src/features/auth/auth-schema';
 
+const HERO = require('../../assets/images/auth-hero.jpg');
+const HERO_HEIGHT = 300;
+
+/**
+ * Màn đăng nhập.
+ *
+ * Dải ảnh tối ở trên, tờ giấy trắng trôi lên đè một đoạn lên nó — cùng bố
+ * cục với màn đăng nhập trên web ở khổ điện thoại, nên hai nơi đọc ra là
+ * một sản phẩm chứ không phải hai.
+ *
+ * Nút "điền tài khoản thử" đã bị bỏ: nó nhúng thẳng mật khẩu của một tài
+ * khoản vào mã nguồn, tức là vào cả bản phát hành.
+ */
 export default function LoginScreen() {
   const { login } = useAuth();
   const [email, setEmail] = useState('');
@@ -49,274 +60,247 @@ export default function LoginScreen() {
     try {
       setIsLoading(true);
       await login(email.trim(), password);
-    } catch (err: any) {
-      setGeneralError(err.message || 'Đăng nhập không thành công. Vui lòng thử lại.');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : '';
+      setGeneralError(message || 'Đăng nhập không thành công. Vui lòng thử lại.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const fillDemoAccount = () => {
-    setEmail('alice.expert@unichat.test');
-    setPassword('Password123!');
-    setErrors({});
-    setGeneralError(null);
-  };
-
   return (
     <View style={styles.root}>
-      {/* Animated Ambient Background Orbs */}
-      <UCAnimatedBackground />
+      {/* Ảnh neo lên đỉnh, không canh giữa.
 
-      <SafeAreaView style={styles.safeArea}>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.keyboardView}
+          React Native không có object-position, nên resizeMode="cover" luôn
+          canh giữa. Tâm sáng của bức vẽ nằm ở khoảng 15% chiều cao, còn dải này
+          chỉ cao 300px — canh giữa thì nó cắt đúng khúc giữa tối om và bỏ mất
+          tâm sáng trên mọi khổ máy. Bọc trong một khung cắt rồi cho ảnh cao
+          theo tỷ lệ thật thì phần hiện ra là 300px đầu của ảnh. */}
+      <View style={styles.heroClip}>
+        <Image source={HERO} style={styles.hero} resizeMode="cover" />
+      </View>
+      <View style={styles.heroScrim} />
+
+      {/* Khối này cao đúng HERO_HEIGHT, cố định.
+
+          Bản trước để SafeAreaView tự co theo nội dung rồi kéo tờ giấy lên
+          bằng một margin âm. Chiều cao đó phụ thuộc vùng an toàn của từng
+          máy, nên trên máy có tai thỏ tờ giấy trôi quá cao và cắt mất dòng
+          tiêu đề thứ hai. Cố định chiều cao thì vị trí tờ giấy không còn
+          phụ thuộc thiết bị. */}
+      <View style={styles.heroBlock}>
+        <SafeAreaView style={styles.safe} edges={['top']}>
+          <View style={styles.brandRow}>
+            <View style={styles.brandMark}>
+              <UCIcon name="school" size={22} color="#FFFFFF" />
+            </View>
+            <View>
+              <Text style={styles.brandName}>UniChat</Text>
+              <Text style={styles.brandSub}>AI Platform</Text>
+            </View>
+          </View>
+
+          <Text style={styles.heroTitle}>
+            Không gian học thuật{'\n'}dành riêng cho bạn.
+          </Text>
+
+          <View style={styles.heroNote}>
+            <UCIcon name="auto-awesome" size={15} color="#FFFFFF" />
+            <Text style={styles.heroNoteText}>
+              Hiểu sâu hơn từ chính nguồn tài liệu của bạn
+            </Text>
+          </View>
+        </SafeAreaView>
+      </View>
+
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={styles.sheetWrap}
+      >
+        <ScrollView
+          style={styles.sheet}
+          contentContainerStyle={styles.sheetBody}
+          keyboardShouldPersistTaps="handled"
         >
-          <ScrollView
-            contentContainerStyle={styles.scrollContent}
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
-          >
-            {/* Brand Header */}
-            <Animated.View
-              entering={FadeInDown.delay(100).springify().damping(16).stiffness(140)}
-              style={styles.header}
-            >
-              <View style={styles.logoBadgeContainer}>
-                <View style={styles.logoBadge}>
-                  <UCIcon name="school" size={42} color="#FFFFFF" />
-                  <View style={styles.logoBadgeSpecular} />
-                </View>
-                <View style={styles.sparkleBadge}>
-                  <UCIcon name="auto-awesome" size={14} color="#57DFFE" />
-                </View>
-              </View>
+          <Text style={styles.title}>Chào mừng trở lại</Text>
+          <Text style={styles.subtitle}>
+            Đăng nhập để tiếp tục vào không gian học tập của bạn.
+          </Text>
 
-              <Text style={[styles.brandTitle, typography.headlineXl]}>UniChat</Text>
-              <Text style={[styles.brandSubtitle, typography.bodyMd]}>
-                Nền tảng Tri thức Học thuật AI
-              </Text>
-            </Animated.View>
+          {generalError ? (
+            <View style={styles.errorBox}>
+              <UCIcon name="error-outline" size={17} color={colors.error} />
+              <Text style={styles.errorText}>{generalError}</Text>
+            </View>
+          ) : null}
 
-            {/* Liquid Glass Form Card */}
-            <Animated.View entering={FadeInUp.delay(200).springify().damping(18).stiffness(160)}>
-              <UCGlassCard variant="heavy" style={styles.glassFormCard} glow>
-                {generalError ? (
-                  <View style={styles.errorBox}>
-                    <UCIcon name="error-outline" size={18} color={colors.error} />
-                    <Text style={[styles.generalErrorText, typography.bodySm]}>
-                      {generalError}
-                    </Text>
-                  </View>
-                ) : null}
+          <UCTextInput
+            label="Email"
+            icon="mail-outline"
+            placeholder="ban@truong.edu.vn"
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            {...(errors.email ? { error: errors.email } : {})}
+          />
 
-                <UCTextInput
-                  label="Email học thuật hoặc cá nhân"
-                  placeholder="ten@truong.edu.vn"
-                  value={email}
-                  onChangeText={setEmail}
-                  error={errors.email}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  icon="mail-outline"
-                />
+          <UCTextInput
+            label="Mật khẩu"
+            icon="lock-outline"
+            placeholder="Nhập mật khẩu"
+            value={password}
+            onChangeText={setPassword}
+            isPassword
+            {...(errors.password ? { error: errors.password } : {})}
+          />
 
-                <UCTextInput
-                  label="Mật khẩu"
-                  placeholder="Tối thiểu 12 ký tự"
-                  value={password}
-                  onChangeText={setPassword}
-                  error={errors.password}
-                  isPassword
-                  icon="lock-outline"
-                />
+          <Pressable onPress={() => router.push('/(auth)/forgot-password')} hitSlop={8}>
+            <Text style={styles.forgot}>Quên mật khẩu?</Text>
+          </Pressable>
 
-                <View style={styles.rowBetween}>
-                  <TouchableOpacity
-                    style={styles.demoChip}
-                    onPress={fillDemoAccount}
-                    activeOpacity={0.7}
-                  >
-                    <UCIcon name="flash-on" size={14} color={colors.primary} />
-                    <Text style={styles.demoChipText}>Thử tài khoản mẫu</Text>
-                  </TouchableOpacity>
+          <UCButton
+            title="Đăng nhập"
+            onPress={handleLogin}
+            loading={isLoading}
+            icon="arrow-forward"
+            style={styles.submit}
+          />
 
-                  <TouchableOpacity
-                    style={styles.forgotPasswordLink}
-                    onPress={() => router.push('/(auth)/forgot-password')}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={[styles.linkText, typography.labelSm]}>
-                      Quên mật khẩu?
-                    </Text>
-                  </TouchableOpacity>
-                </View>
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>Chưa có tài khoản?</Text>
+            <Pressable onPress={() => router.push('/(auth)/register')} hitSlop={8}>
+              <Text style={styles.footerLink}>Đăng ký</Text>
+            </Pressable>
+          </View>
 
-                <UCButton
-                  title="Đăng nhập"
-                  onPress={handleLogin}
-                  loading={isLoading}
-                  size="lg"
-                  style={styles.submitBtn}
-                />
-              </UCGlassCard>
-            </Animated.View>
-
-            {/* Footer */}
-            <Animated.View
-              entering={FadeInUp.delay(350).duration(280)}
-              style={styles.footerLinkContainer}
-            >
-              <Text style={[styles.footerText, typography.bodyMd]}>
-                Chưa có tài khoản?{' '}
-              </Text>
-              <TouchableOpacity
-                onPress={() => router.push('/(auth)/register')}
-                activeOpacity={0.7}
-              >
-                <Text style={[styles.signUpText, typography.labelMd]}>
-                  Đăng ký ngay
-                </Text>
-              </TouchableOpacity>
-            </Animated.View>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
+          <View style={styles.badge}>
+            <UCIcon name="shield" size={14} color={colors.onSurfaceVariant} />
+            <Text style={styles.badgeText}>Dữ liệu của bạn được bảo mật</Text>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: '#F4F6FC',
-  },
-  safeArea: {
-    flex: 1,
-  },
-  keyboardView: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.xl,
-    justifyContent: 'center',
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: spacing.xl,
-  },
-  logoBadgeContainer: {
-    position: 'relative',
-    marginBottom: spacing.md,
-  },
-  logoBadge: {
-    width: 76,
-    height: 76,
-    borderRadius: 24,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-    overflow: 'hidden',
-    ...shadows.ambientNavy,
-  },
-  logoBadgeSpecular: {
+  root: { flex: 1, backgroundColor: '#070B1A' },
+  heroClip: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    height: 2,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    height: HERO_HEIGHT,
+    overflow: 'hidden',
   },
-  sparkleBadge: {
+  /* Rộng hết khung, cao theo tỷ lệ thật của bức vẽ (780 x 1688), nên nó cao
+     hơn 300px và khung bên ngoài cắt phần dư ở dưới. */
+  hero: { width: '100%', aspectRatio: 780 / 1688 },
+
+  /* Lớp tối trên ảnh, để chữ đọc được ở bất kỳ khung hình nào của bức vẽ. */
+  heroScrim: {
     position: 'absolute',
-    bottom: -4,
-    right: -6,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: '#00236F',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: HERO_HEIGHT,
+    backgroundColor: 'rgba(7, 11, 26, 0.52)',
+  },
+
+  /* Chiều cao cố định, nên tờ giấy bên dưới luôn bắt đầu ở cùng một chỗ
+     bất kể vùng an toàn của máy rộng hẹp ra sao. */
+  heroBlock: { height: HERO_HEIGHT },
+
+  safe: { paddingHorizontal: spacing.lg },
+  brandRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginTop: spacing.sm,
+  },
+  brandMark: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
-    ...shadows.ambientCyan,
   },
-  brandTitle: {
-    color: colors.primary,
-    fontFamily: 'Inter_800ExtraBold',
-    letterSpacing: -0.5,
+  brandName: { ...typography.bodyLg, color: '#FFFFFF', fontWeight: '700' },
+  brandSub: { ...typography.labelSm, color: 'rgba(255,255,255,0.68)' },
+
+  heroTitle: {
+    ...typography.headlineLg,
+    marginTop: spacing.lg,
+    color: '#FFFFFF',
+    fontWeight: '700',
+    lineHeight: 34,
   },
-  brandSubtitle: {
+  heroNote: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    marginTop: spacing.md,
+  },
+  heroNoteText: {
+    ...typography.labelSm,
+    color: 'rgba(255,255,255,0.88)',
+    flex: 1,
+  },
+
+  /* Tờ giấy kéo lên đè đáy dải ảnh. Phần đè là thứ nói cho người dùng biết
+     còn nội dung phía dưới để cuộn. */
+  /* -28 là phần đè lên đáy dải ảnh, đúng bằng bán kính bo góc trên của tờ
+     giấy. Con số này đo từ một khối cao cố định, không còn từ chiều cao
+     thay đổi theo máy như bản trước. */
+  sheetWrap: { flex: 1, marginTop: -28 },
+  sheet: {
+    flex: 1,
+    backgroundColor: colors.surfaceContainerLowest,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+  },
+  sheetBody: {
+    padding: spacing.lg,
+    paddingBottom: spacing.xl,
+    gap: spacing.md,
+  },
+
+  title: { ...typography.headlineMd, color: colors.onSurface, fontWeight: '700' },
+  subtitle: {
+    ...typography.bodyMd,
     color: colors.onSurfaceVariant,
-    marginTop: 4,
-    letterSpacing: -0.2,
+    marginTop: -spacing.sm,
   },
-  glassFormCard: {
-    width: '100%',
-    borderRadius: 28,
+  forgot: {
+    ...typography.labelMd,
+    color: colors.primary,
+    fontWeight: '600',
+    alignSelf: 'flex-end',
   },
+  submit: { marginTop: spacing.xs },
+
   errorBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.errorContainer,
-    borderRadius: 12,
+    gap: 8,
     padding: spacing.md,
-    marginBottom: spacing.md,
-    gap: spacing.sm,
-  },
-  generalErrorText: {
-    color: colors.onErrorContainer,
-    flex: 1,
-    fontWeight: '500',
-  },
-  rowBetween: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 2,
-    marginBottom: spacing.lg,
-  },
-  demoChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 35, 111, 0.08)',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
     borderRadius: 12,
-    gap: 4,
+    backgroundColor: colors.errorContainer,
   },
-  demoChipText: {
-    fontSize: 12,
-    fontFamily: 'Inter_600SemiBold',
-    color: colors.primary,
-  },
-  forgotPasswordLink: {
-    paddingVertical: 4,
-  },
-  linkText: {
-    color: colors.primary,
-    fontFamily: 'Inter_600SemiBold',
-  },
-  submitBtn: {
-    marginTop: spacing.xs,
-  },
-  footerLinkContainer: {
+  errorText: { ...typography.bodySm, color: colors.onErrorContainer, flex: 1 },
+
+  footer: { flexDirection: 'row', justifyContent: 'center', gap: 6 },
+  footerText: { ...typography.bodySm, color: colors.onSurfaceVariant },
+  footerLink: { ...typography.bodySm, color: colors.primary, fontWeight: '700' },
+
+  badge: {
     flexDirection: 'row',
-    justifyContent: 'center',
     alignItems: 'center',
-    marginTop: spacing.xl,
+    justifyContent: 'center',
+    gap: 6,
   },
-  footerText: {
-    color: colors.onSurfaceVariant,
-  },
-  signUpText: {
-    color: colors.primary,
-    fontFamily: 'Inter_700Bold',
-  },
+  badgeText: { ...typography.labelSm, color: colors.onSurfaceVariant },
 });

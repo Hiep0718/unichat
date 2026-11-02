@@ -71,6 +71,7 @@ export function ChatPage({ workspaceId: suppliedWorkspace, conversationId: suppl
 
 function ChatSessionPage({ workspaceId = '', conversationId: initialId }: ChatPageProps) {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const workspace = useWorkspace();
   const chat = useChatSession(workspaceId, initialId);
   const notes = useChatNotes(workspaceId, chat.conversationId, chat.messages);
@@ -102,6 +103,21 @@ function ChatSessionPage({ workspaceId = '', conversationId: initialId }: ChatPa
   const toggleHistory = (open: boolean) => { setHistory(open); rememberHistoryOpen(open); };
   const policyBlocked = workspace.workspace?.cloudAllowed === false;
   const send = (question: string, expanded = false) => { if (workspaceId && !policyBlocked) void chat.send(question, expanded); };
+
+  // Câu hỏi đến từ ô hỏi nhanh ở dải chào, mang theo trong `?q=`.
+  //
+  // Gửi xong thì xóa tham số khỏi URL bằng replace: nếu để nguyên, một lần
+  // tải lại trang sẽ gọi AI thêm lần nữa, mà đó là thứ tốn tiền thật.
+  const pending = searchParams.get('q');
+  useEffect(() => {
+    if (!pending || !workspaceId || policyBlocked) return;
+    const next = new URLSearchParams(searchParams);
+    next.delete('q');
+    setSearchParams(next, { replace: true });
+    void chat.send(pending);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pending, workspaceId, policyBlocked]);
+
   return <div className={`chat-layout ${studio ? 'chat-layout--studio-open' : ''}`}>
     {/* A column of its own beside the conversation rather than inside it, so
         it starts at the top of the window like the rail does. Nested under

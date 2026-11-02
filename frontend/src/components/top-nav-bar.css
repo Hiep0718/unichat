@@ -1,13 +1,25 @@
 /* Top Navigation Bar */
 
 .top-nav {
-  position: fixed;
+  /* absolute chứ không fixed.
+
+     Thanh này trong suốt và mang chữ trắng. Cố định ở đỉnh màn hình thì khi
+     cuộn xuống các khối nền giấy, chữ trắng nằm trên nền trắng và biến mất
+     hoàn toàn. absolute thì nó cuộn đi cùng dải tối, là thứ duy nhất nó đủ
+     tương phản để đứng trên. */
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   z-index: 50;
-  background: var(--color-surface-container-lowest);
-  border-bottom: 1px solid var(--color-outline-variant);
+  /* Trong suốt, đè lên dải tối của trang giới thiệu.
+
+     Thanh này chỉ xuất hiện trên trang giới thiệu — màn đã đăng nhập dùng
+     thanh bên — nên nó không cần nền riêng, và một nền đặc ở đây sẽ cắt
+     ngang bức minh họa bên dưới. */
+  background: transparent;
+  border-bottom: none;
+  color: #ffffff;
 }
 
 .top-nav__inner {
@@ -27,7 +39,7 @@
   gap: var(--stack-sm);
   font: var(--font-headline-md);
   font-weight: 700;
-  color: var(--color-primary);
+  color: #ffffff;
 }
 
 .top-nav__links {
@@ -38,12 +50,12 @@
 
 .top-nav__link {
   font: var(--font-label-md);
-  color: var(--color-on-surface-variant);
+  color: rgb(255 255 255 / 80%);
   transition: color var(--transition-fast);
 }
 
 .top-nav__link:hover {
-  color: var(--color-primary);
+  color: #ffffff;
 }
 
 .top-nav__actions {
@@ -55,7 +67,7 @@
 .top-nav__signin {
   display: none;
   font: var(--font-label-md);
-  color: var(--color-primary);
+  color: #ffffff;
   transition: opacity var(--transition-fast);
 }
 
@@ -65,8 +77,8 @@
 
 .top-nav__signup-btn {
   padding: 8px 16px;
-  background: var(--color-primary);
-  color: var(--color-on-primary);
+  background: #ffffff;
+  color: #0a0d14;
   font: var(--font-label-md);
   border: none;
   border-radius: var(--radius-lg);

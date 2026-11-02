@@ -17,7 +17,6 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .ai-studio-toolbar__header {
@@ -75,7 +74,6 @@
 
 .ai-studio-filter-select:focus {
   border-color: var(--muc);
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
 }
 
 .ai-studio-btn-refresh {
@@ -83,8 +81,8 @@
   align-items: center;
   gap: 6px;
   padding: 8px 14px;
-  background: var(--muc);
-  color: var(--nen);
+  background: var(--nhan);
+  color: var(--nhan-muc);
   border: none;
   border-radius: 8px;
   font-size: 0.875rem;
@@ -94,7 +92,7 @@
 }
 
 .ai-studio-btn-refresh:hover:not(:disabled) {
-  background: var(--muc);
+  background: var(--nhan);
 }
 
 .ai-studio-btn-refresh:disabled {
@@ -117,13 +115,11 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   transition: transform 0.15s, box-shadow 0.15s;
 }
 
 .ai-kpi-card:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 
 .ai-kpi-card__icon {
@@ -240,7 +236,6 @@
   border: 1px solid var(--ke);
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -444,7 +439,6 @@
   font-weight: 500;
   color: var(--muc-nhat);
   pointer-events: none;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
 }
 
 /* --- API Key Table --- */
@@ -557,7 +551,6 @@
 
 .ai-playground-input:focus {
   border-color: var(--muc);
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
 }
 
 .ai-playground-reply {

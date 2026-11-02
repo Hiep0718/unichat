@@ -1,6 +1,9 @@
+/* Taller than it was, to the proportion the mockup gives the band. The art is
+   the one thing on this page that says what the group is about before a word
+   is read, and 168px gave it less height than the identity row below it. */
 .cover-banner {
   position: relative;
-  height: 168px;
+  height: 220px;
   border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   overflow: hidden;
 }
@@ -71,6 +74,6 @@
 
 @media (max-width: 640px) {
   .cover-banner {
-    height: 124px;
+    height: 150px;
   }
 }

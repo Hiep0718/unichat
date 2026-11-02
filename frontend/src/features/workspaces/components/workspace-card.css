@@ -9,7 +9,6 @@
   text-decoration: none;
   color: var(--nen);
   isolation: isolate;
-  box-shadow: var(--shadow-sm, 0 1px 3px rgb(0 0 0 / 12%));
   transition:
     box-shadow var(--transition-normal),
     transform var(--transition-normal);
@@ -18,7 +17,6 @@
 }
 
 .workspace-card:hover {
-  box-shadow: 0 14px 30px rgb(15 23 42 / 26%);
   transform: translateY(-4px);
 }
 
@@ -77,7 +75,8 @@
   line-height: 1.25;
   letter-spacing: -0.01em;
   color: var(--nen);
-  text-shadow: 0 1px 10px rgb(2 6 23 / 55%);
+  /* Bỏ đổ bóng chữ: span.__scrim phía dưới đã lo phần đọc được,
+     còn một lớp bóng chồng lên chỉ làm nhòe nét chữ. */
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
@@ -121,12 +120,10 @@
   height: 6px;
   border-radius: 50%;
   background: currentColor;
-  box-shadow: 0 0 0 3px rgb(110 231 183 / 22%);
 }
 
 /* The faces sit on a dark picture here, so their ring is light, not surface. */
 .workspace-card .member-faces__slot {
-  box-shadow: 0 0 0 2px rgb(255 255 255 / 72%);
 }
 
 .workspace-card .member-faces__more {
@@ -149,7 +146,7 @@
 .workspace-grid--list .workspace-card:hover {
   box-shadow: var(--shadow-sm);
   transform: none;
-  border-color: var(--color-outline);
+  border-color: var(--muc-nhat);
 }
 
 .workspace-grid--list .workspace-cover {

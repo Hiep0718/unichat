@@ -36,10 +36,12 @@
   align-items: flex-end;
 }
 
+/* Raised so the mark straddles the band's lower edge, the way the mockup has
+   it: roughly half of it over the art, the rest on the page. Tied to the
+   mark's own size, so changing one does not silently misalign the other. */
 .group-page__header--under-cover .group-mark {
   align-self: flex-start;
-  margin-top: -40px;
-  box-shadow: 0 0 0 4px var(--color-surface, var(--nen)), 0 4px 14px rgb(15 23 42 / 18%);
+  margin-top: -44px;
 }
 
 .group-page__identity {
@@ -194,6 +196,22 @@
 .group-tab--active {
   color: var(--ws-accent, var(--muc));
   border-bottom-color: var(--ws-accent, var(--muc));
+}
+
+/* How much is in the tab, set in the quieter weight so the name stays the
+   thing being read and the number is the aside. */
+.group-tab__count {
+  padding: 1px 7px;
+  border-radius: var(--radius-full);
+  background: var(--ws-chip);
+  color: var(--ws-ink-muted);
+  font: var(--font-label-sm);
+  font-weight: 600;
+}
+
+.group-tab--active .group-tab__count {
+  background: var(--ws-accent-soft);
+  color: var(--ws-accent);
 }
 
 /* One geometry for every tab. The posts tab capped itself at 900px while

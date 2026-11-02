@@ -46,6 +46,28 @@ const STATUS_TEXT: Record<string, string> = {
   UNANSWERED: 'Chưa có lời giải',
 };
 
+/**
+ * Says the assistant has answered this post, and opens the thread to read it.
+ *
+ * "Xem" opens the card's own comments rather than navigating away, because the
+ * assistant's answer is one of the replies living there: sending the reader to
+ * another page to see a reply this card can already show would lose their place
+ * in the list for nothing.
+ */
+function AssistantAnsweredStrip({ onView }: { readonly onView: () => void }) {
+  return (
+    <div className="feed-card__ai">
+      <Icon name="auto_awesome" size={15} />
+      <span className="feed-card__ai-text">
+        Trợ lý AI đã trả lời dựa trên tài liệu hiện có
+      </span>
+      <button type="button" className="feed-card__ai-view" onClick={onView}>
+        Xem
+      </button>
+    </div>
+  );
+}
+
 /** Strips Markdown syntax so the preview line reads as plain prose. */
 function toPlainPreview(body: string): string {
   return body
@@ -109,6 +131,12 @@ export function FeedCard({
           </button>
           <span aria-hidden="true"> · </span>
           <time dateTime={post.createdAt}>{formatRelativeTime(post.createdAt)}</time>
+          {post.label && LABEL_TEXT[post.label] && (
+            <>
+              <span aria-hidden="true"> · </span>
+              <span className="feed-card__kind">{LABEL_TEXT[post.label]}</span>
+            </>
+          )}
         </span>
 
         {isQuestion && (
@@ -134,6 +162,10 @@ export function FeedCard({
         <PostBackgroundPanel backgroundKey={post.backgroundKey} body={post.body} compact />
       ) : (
         preview && <p className="feed-card__preview">{preview}</p>
+      )}
+
+      {post.hasAiAnswer && (
+        <AssistantAnsweredStrip onView={() => setShowComments(true)} />
       )}
 
       {post.attachments?.length > 0 && (

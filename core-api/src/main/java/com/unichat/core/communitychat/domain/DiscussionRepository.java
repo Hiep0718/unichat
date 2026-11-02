@@ -83,6 +83,23 @@ public interface DiscussionRepository extends JpaRepository<Discussion, UUID> {
     List<Object[]> countRecentGroupedByWorkspaceIds(@Param("wsIds") List<UUID> wsIds,
                                                     @Param("since") Instant since);
 
+    /**
+     * Every live post per workspace, however old.
+     *
+     * <p>The companion to {@link #countRecentGroupedByWorkspaceIds}: that one
+     * answers "is anything happening here", this one answers "how much is
+     * here", which is what a tab badge beside "Bài viết" claims to say.
+     *
+     * <p>Grouped for a whole page in one query, like the other card counts, so
+     * a list of groups does not pay a query per card.
+     *
+     * @return rows of {workspaceId, count}; a workspace with none is absent
+     */
+    @Query("SELECT d.workspaceId, COUNT(d) FROM Discussion d "
+            + "WHERE d.workspaceId IN :wsIds AND " + NOT_DELETED
+            + " GROUP BY d.workspaceId")
+    List<Object[]> countGroupedByWorkspaceIds(@Param("wsIds") List<UUID> wsIds);
+
     @Query("SELECT count(d) FROM Discussion d WHERE d.authorId = :userId "
             + "AND d.workspaceId IN :wsIds AND " + NOT_DELETED)
     long countPostsBy(@Param("userId") UUID userId, @Param("wsIds") List<UUID> wsIds);

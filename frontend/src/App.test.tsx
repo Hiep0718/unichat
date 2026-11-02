@@ -19,7 +19,7 @@ describe('App', () => {
     // resolved rather than that the page is wrong.
     const heading = await screen.findByRole(
       'heading',
-      { name: /Trợ lý hỏi đáp tài liệu học tập bằng RAG/i },
+      { name: /Hỏi đáp trên chính tài liệu học tập của bạn/i },
       { timeout: 5000 },
     );
     expect(heading).toBeInTheDocument();
