@@ -1,7 +1,6 @@
 """Provider selection, durable attempt accounting and Core-owned policy checkpoints."""
 
 import logging
-import os
 import time
 import uuid
 from dataclasses import dataclass
@@ -10,17 +9,12 @@ from typing import Any
 
 import httpx
 from google.genai import errors
-from pydantic import ValidationError
 
+from app.core.provider_settings import ProviderSettings
 from app.core.rag.gemini_provider import _gemini, _ollama
 from app.core.rag.generation_policy import GenerationPolicy, Purpose, attempt_event
 from app.core.rag.hive_provider import generate_hive
-from app.core.rag.key_registry import (
-    ProviderKey,
-    active_provider,
-    configured_keys,
-    configured_model,
-)
+from app.core.rag.key_registry import ProviderKey
 from app.core.rag.provider_contracts import (
     Cancellation,
     GenerationCancelled,
@@ -28,6 +22,11 @@ from app.core.rag.provider_contracts import (
     ProviderFailure,
     ProviderResult,
     check_cancelled,
+)
+from app.core.rag.provider_routing import (
+    GenerationRouteState,
+    ProviderTarget,
+    build_provider_route,
 )
 from app.core.service_security import ServiceSecurityError
 
@@ -44,10 +43,8 @@ __all__ = [
 
 
 @dataclass
-class AttemptBudget:
-    """Request-local fallback budget shared across validation retries."""
-
-    fallback_used: bool = False
+class AttemptBudget(GenerationRouteState):
+    """Compatibility name for request-local route state across validation retries."""
 
 
 def classify_failure(error: Exception) -> ProviderFailure:
@@ -56,6 +53,8 @@ def classify_failure(error: Exception) -> ProviderFailure:
         return error
     if isinstance(error, (TimeoutError, httpx.TimeoutException)):
         return ProviderFailure("PROVIDER_TIMEOUT", True)
+    if isinstance(error, httpx.NetworkError):
+        return ProviderFailure("PROVIDER_NETWORK_ERROR", True)
     if isinstance(error, errors.APIError):
         code = error.code or 0
         return ProviderFailure(f"PROVIDER_HTTP_{code}", code == 429 or 500 <= code <= 599)
@@ -63,23 +62,6 @@ def classify_failure(error: Exception) -> ProviderFailure:
         code = error.response.status_code
         return ProviderFailure(f"PROVIDER_HTTP_{code}", code == 429 or 500 <= code <= 599)
     return ProviderFailure("PROVIDER_UNAVAILABLE")
-
-
-def _selection(selected_key: ProviderKey | None, model: str | None) -> tuple[ProviderKey, str]:
-    try:
-        provider = active_provider()
-        keys = [key for key in configured_keys() if key.provider == provider]
-        key = selected_key or (keys[0] if keys else None)
-        target_model = model or configured_model()
-    except ValidationError as error:
-        raise ProviderFailure("PROVIDER_UNCONFIGURED") from error
-    if key is None:
-        raise ProviderFailure("PROVIDER_UNCONFIGURED")
-    if key.provider != provider or target_model != configured_model(provider):
-        raise ProviderFailure("PROVIDER_SELECTION_INVALID")
-    if selected_key is not None and selected_key not in keys:
-        raise ProviderFailure("PROVIDER_KEY_UNKNOWN")
-    return key, target_model
 
 
 def generate(
@@ -93,70 +75,64 @@ def generate(
     budget: AttemptBudget | None = None,
     cancelled: Cancellation | None = None,
 ) -> ProviderResult:
-    """Run one selected provider; Hive never falls back to another key/model/provider."""
+    """Run an exact selected target or the bounded primary/fallback route."""
     check_cancelled(cancelled)
     policy.checkpoint(purpose)
-    key, target_model = _selection(selected_key, model)
-    attempt_budget = budget or AttemptBudget()
-    try:
-        return _run_attempt(prompt, policy, purpose, key, target_model, observer, schema, cancelled)
-    except ProviderFailure as error:
-        if not _fallback_allowed(key, purpose, error, attempt_budget):
-            raise
-        attempt_budget.fallback_used = True
-        check_cancelled(cancelled)
-        if observer:
-            observer("reset", {"reason": "PROVIDER_FALLBACK"})
-        return _run_attempt(
-            prompt,
-            policy,
-            purpose,
-            None,
-            os.getenv("OLLAMA_MODEL", "llama3"),
-            observer,
-            schema,
-            cancelled,
-        )
-
-
-def _fallback_allowed(
-    key: ProviderKey,
-    purpose: Purpose,
-    error: ProviderFailure,
-    budget: AttemptBudget,
-) -> bool:
-    return (
-        key.provider == "gemini"
-        and error.transient
-        and purpose == "CHAT"
-        and not budget.fallback_used
-        and os.getenv("ENABLE_OLLAMA_FALLBACK", "false").lower() == "true"
+    route_state = budget or AttemptBudget()
+    route_state.initialize(build_provider_route(purpose, selected_key, model))
+    return _run_route(
+        prompt, policy, purpose, route_state, observer, schema, cancelled
     )
+
+
+def _run_route(
+    prompt: str, policy: GenerationPolicy, purpose: Purpose,
+    route_state: GenerationRouteState, observer: Observer | None,
+    schema: dict[str, Any] | None, cancelled: Cancellation | None,
+) -> ProviderResult:
+    while True:
+        target = route_state.current_target()
+        try:
+            result = _run_attempt(
+                prompt, policy, purpose, target, observer, schema, cancelled
+            )
+            route_state.pin(target, result)
+            return result
+        except ProviderFailure as error:
+            if not route_state.can_advance(purpose, error):
+                raise
+            route_state.advance()
+            check_cancelled(cancelled)
+            if observer:
+                observer("reset", {"reason": "PROVIDER_FALLBACK"})
 
 
 def _run_attempt(
     prompt: str,
     policy: GenerationPolicy,
     purpose: Purpose,
-    key: ProviderKey | None,
-    model: str,
+    target: ProviderTarget,
     observer: Observer | None,
     schema: dict[str, Any] | None,
     cancelled: Cancellation | None,
 ) -> ProviderResult:
     check_cancelled(cancelled)
     attempt_id = str(uuid.uuid4())
-    timeout = policy.checkpoint(purpose, attempt_id)
-    provider, key_id = (key.provider, key.key_id) if key else ("ollama", "ollama-local")
-    event = attempt_event(policy, attempt_id, purpose, provider, key_id, model, "START")
+    timeout = _attempt_checkpoint(policy, purpose, target, attempt_id)
+    event = attempt_event(
+        policy, attempt_id, purpose, target.provider,
+        target.key_id, target.model, "START",
+    )
     policy.record(event)
     started = time.perf_counter()
     try:
         check_cancelled(cancelled)
-        timeout = min(timeout, policy.checkpoint(purpose, attempt_id))
+        timeout = min(timeout, _attempt_checkpoint(policy, purpose, target, attempt_id))
         if observer:
-            observer("attempt", {"attemptId": attempt_id, "provider": provider})
-        result = _invoke(prompt, policy, purpose, key, model, timeout, observer, schema, cancelled)
+            observer("attempt", {"attemptId": attempt_id, "provider": target.provider})
+        result = _invoke(
+            prompt, policy, purpose, target, timeout, observer, schema, cancelled
+        )
         check_cancelled(cancelled)
         if time.perf_counter() - started >= timeout:
             raise ProviderFailure("PROVIDER_TIMEOUT", True)
@@ -187,26 +163,52 @@ def _run_attempt(
     return result
 
 
+def _attempt_checkpoint(policy: GenerationPolicy, purpose: Purpose,
+                        target: ProviderTarget, attempt_id: str) -> float:
+    if target.provider == "hive" and purpose == "CHAT":
+        limit = ProviderSettings().hive_chat_attempt_timeout_seconds
+        return policy.checkpoint(purpose, attempt_id, limit)
+    return policy.checkpoint(purpose, attempt_id)
+
+
 def _invoke(
     prompt: str,
     policy: GenerationPolicy,
     purpose: Purpose,
-    key: ProviderKey | None,
-    model: str,
+    target: ProviderTarget,
     timeout: float,
     observer: Observer | None,
     schema: dict[str, Any] | None,
     cancelled: Cancellation | None,
 ) -> ProviderResult:
     try:
-        if key is None:
-            return _ollama(prompt, model, timeout)
-        adapter = generate_hive if key.provider == "hive" else _gemini
-        return adapter(prompt, key, model, timeout, observer, schema, policy, purpose, cancelled)
+        if target.key is None:
+            return _ollama(prompt, target.model, timeout)
+        adapter = generate_hive if target.provider == "hive" else _gemini
+        return adapter(
+            prompt, target.key, target.model, timeout, observer,
+            schema, policy, purpose, cancelled,
+        )
     except (GenerationCancelled, ServiceSecurityError, ProviderFailure):
         raise
     except Exception as error:
+        if isinstance(error, errors.APIError):
+            logger.warning("provider_request_failed request_id=%s provider=%s status=%s reason=%s",
+                           policy.request_id, target.provider, error.code, _safe_api_reason(error))
         raise classify_failure(error) from error
+
+
+def _safe_api_reason(error: errors.APIError) -> str:
+    message = str(error.message or "").lower()
+    if "api key" in message or "api_key" in message:
+        return "API_KEY"
+    if "schema" in message or "too many states" in message:
+        return "SCHEMA"
+    if "billing" in message or "quota" in message:
+        return "BILLING_OR_QUOTA"
+    if "model" in message and ("not found" in message or "not supported" in message):
+        return "MODEL_UNAVAILABLE"
+    return "INVALID_REQUEST" if error.code == 400 else "OTHER"
 
 
 def _record_error(

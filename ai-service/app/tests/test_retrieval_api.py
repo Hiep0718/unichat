@@ -13,8 +13,10 @@ from app.tests.plan_v2_fixtures import (
     DOCUMENT_ID,
     api_client,
     candidate,
+    fallback_planning_result,
     generated,
     payload,
+    retrieved_evidence,
 )
 
 client = api_client(router)
@@ -33,10 +35,21 @@ def test_should_return_source_safe_refusal_without_generator() -> None:
 @pytest.mark.parametrize("expanded", [False, True])
 def test_should_return_validated_answer_with_actual_provenance(expanded: bool) -> None:
     result = ProviderResult(generated(expanded=expanded), "gemini", "test-model", "primary")
-    with patch("app.core.rag.answer_pipeline.retrieve_chunks", return_value=[candidate()]):
-        with patch("app.core.rag.llm_provider.generate", return_value=result):
-            response = client.post("/internal/v1/retrieval/answers",
-                                   json=payload(allowExternalKnowledge=expanded))
+    with (
+        patch(
+            "app.core.rag.answer_pipeline.plan_question",
+            side_effect=lambda question, *_: fallback_planning_result(question),
+        ),
+        patch(
+            "app.core.rag.answer_pipeline.retrieve_planned_evidence",
+            return_value=retrieved_evidence([candidate()]),
+        ),
+        patch("app.core.rag.llm_provider.generate", return_value=result),
+    ):
+        response = client.post(
+            "/internal/v1/retrieval/answers",
+            json=payload(allowExternalKnowledge=expanded),
+        )
     body = response.json()
     assert response.status_code == 200
     assert body["decision"] == "ANSWER"
@@ -44,19 +57,24 @@ def test_should_return_validated_answer_with_actual_provenance(expanded: bool) -
     assert body["citations"][0]["chunkId"] == "real-chunk-101"
     assert body["citations"][0]["contentHash"] == candidate().content_hash
     assert body["sections"][0]["type"] == "DOCUMENT"
+    if expanded:
+        assert body["sections"][1]["type"] == "EXTERNAL"
 
 
 @pytest.mark.parametrize("changes", [{"workspaceId": "bad"}, {"question": "ab"},
                                      {"cloudAllowed": "true"}, {"question": "a" * 2001}])
 def test_should_reject_invalid_input_before_dependency_calls(changes: dict[str, Any]) -> None:
-    with patch("app.core.rag.answer_pipeline.retrieve_chunks") as retrieval:
+    with patch("app.core.rag.answer_pipeline.retrieve_planned_evidence") as retrieval:
         response = client.post("/internal/v1/retrieval/answers", json=payload(**changes))
     assert response.status_code == 422
     retrieval.assert_not_called()
 
 
 def test_should_return_safe_dependency_failure() -> None:
-    with patch("app.core.rag.answer_pipeline.retrieve_chunks", side_effect=RuntimeError("secret")):
+    with patch(
+        "app.core.rag.answer_pipeline.retrieve_planned_evidence",
+        side_effect=RuntimeError("secret"),
+    ):
         response = client.post("/internal/v1/retrieval/answers", json=payload())
     assert response.status_code == 503
     assert "secret" not in response.text
@@ -88,7 +106,14 @@ def test_should_retrieve_with_validated_context_but_generate_from_original_quest
     }
 
     with (
-        patch("app.core.rag.answer_pipeline.retrieve_chunks", return_value=[candidate()]) as retrieval,
+        patch(
+            "app.core.rag.answer_pipeline.plan_question",
+            side_effect=lambda value, *_: fallback_planning_result(value),
+        ),
+        patch(
+            "app.core.rag.answer_pipeline.retrieve_planned_evidence",
+            return_value=retrieved_evidence([candidate()]),
+        ) as retrieval,
         patch(
             "app.core.rag.answer_pipeline.generate_rag_answer",
             return_value=generated_result,
@@ -102,8 +127,10 @@ def test_should_retrieve_with_validated_context_but_generate_from_original_quest
     assert response.status_code == 200
     retrieval.assert_called_once()
     assert retrieval.call_args.args[2] == question
-    assert "vector embeddings" in retrieval.call_args.kwargs["contextual_query"]
+    assert "vector embeddings" in retrieval.call_args.args[6]
     assert generator.call_args.args[0] == question
-    query_event = next(record for record in caplog.records if record.msg == "retrieval_query_variants")
-    assert getattr(query_event, "contextual_query_used", False) is True
-    assert not hasattr(query_event, "question")
+    coverage_event = next(
+        record for record in caplog.records if record.msg == "retrieval_evidence_coverage"
+    )
+    assert getattr(coverage_event, "facet_count", None) == 1
+    assert not hasattr(coverage_event, "question")

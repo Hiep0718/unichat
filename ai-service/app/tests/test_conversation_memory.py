@@ -110,10 +110,10 @@ def test_compact_conversation_should_require_explicit_operation_policy(monkeypat
 def test_prompt_builder_shared_functions() -> None:
     # Test build_system_prompt
     sys_prompt_ext = build_system_prompt(allow_external_knowledge=True)
-    assert "chuyên gia AI tri thức cao cấp UniChat" in sys_prompt_ext
-    assert "NotebookLM" in sys_prompt_ext
+    assert "trợ lý AI tri thức UniChat" in sys_prompt_ext
     assert "BẮT BUỘC có ít nhất một section DOCUMENT và một section EXTERNAL riêng" in sys_prompt_ext
     assert "không tra cứu web/công cụ" in sys_prompt_ext
+    assert "chưa được tài liệu kiểm chứng" in sys_prompt_ext
 
     sys_prompt_strict = build_system_prompt(allow_external_knowledge=False)
     assert "CHỈ THEO TÀI LIỆU" in sys_prompt_strict or "CHỈ sử dụng thông tin" in sys_prompt_strict

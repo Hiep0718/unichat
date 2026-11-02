@@ -2,6 +2,7 @@
 
 import hashlib
 import json
+from collections.abc import Iterator
 from typing import Any
 from unittest.mock import MagicMock, patch
 
@@ -23,10 +24,13 @@ from app.core.rag.source_validation import SourceValidationError, build_citation
 from app.tests.plan_v2_fixtures import (
     DOCUMENT_HASH,
     DOCUMENT_ID,
+    WORKSPACE_ID,
     candidate,
+    fallback_planning_result,
     generated,
     payload,
     policy,
+    retrieved_evidence,
     source,
 )
 
@@ -42,7 +46,9 @@ def _definition_retrieval_dependencies(include_definition: bool) -> tuple[MagicM
     locators = ["slide:4", "slide:5"] if include_definition else ["slide:4"]
     metadatas = [
         {
+            "workspace_id": WORKSPACE_ID,
             "document_id": DOCUMENT_ID,
+            "document_status": "PROCESSED",
             "locator_type": "SLIDE_NUMBER",
             "locator_value": locator,
             "content_hash": hashlib.sha256(text.encode("utf-8")).hexdigest(),
@@ -66,6 +72,15 @@ def _definition_retrieval_dependencies(include_definition: bool) -> tuple[MagicM
     return chroma_client, embedding_model
 
 
+@pytest.fixture(autouse=True)
+def mock_question_planner() -> Iterator[None]:
+    with patch(
+        "app.core.rag.answer_pipeline.plan_question",
+        side_effect=lambda question, *_: fallback_planning_result(question),
+    ):
+        yield
+
+
 @pytest.mark.parametrize("changes,code", [
     ({"cloudAllowed": False}, "CLOUD_POLICY_DENIED"),
     ({"cloudAllowed": None}, "OPERATION_POLICY_REQUIRED"),
@@ -76,7 +91,7 @@ def _definition_retrieval_dependencies(include_definition: bool) -> tuple[MagicM
 ])
 def test_should_refuse_missing_policy_or_sources_without_ai(changes: dict[str, Any], code: str) -> None:
     request = RetrievalAnswerRequest.model_validate(payload(**changes))
-    with patch("app.core.rag.answer_pipeline.retrieve_chunks") as retrieval:
+    with patch("app.core.rag.answer_pipeline.retrieve_planned_evidence") as retrieval:
         with patch("app.core.rag.answer_pipeline.generate_rag_answer") as generator:
             result = complete_answer(prepare_answer(request))
     assert result.decision == "REFUSE"
@@ -88,7 +103,10 @@ def test_should_refuse_missing_policy_or_sources_without_ai(changes: dict[str, A
 @pytest.mark.parametrize("expanded", [False, True])
 def test_should_gate_both_modes_without_evidence(expanded: bool) -> None:
     request = RetrievalAnswerRequest.model_validate(payload(allowExternalKnowledge=expanded))
-    with patch("app.core.rag.answer_pipeline.retrieve_chunks", return_value=[]):
+    with patch(
+        "app.core.rag.answer_pipeline.retrieve_planned_evidence",
+        return_value=retrieved_evidence(),
+    ):
         with patch("app.core.rag.answer_pipeline.generate_rag_answer") as generator:
             result = complete_answer(prepare_answer(request))
     assert result.decision != "ANSWER"
@@ -170,6 +188,36 @@ def test_should_reject_external_section_in_strict_mode_and_fake_external_referen
     response["sections"][1]["claims"][0]["citationIds"] = ["1"]
     with pytest.raises(ValueError):
         validate_generated_answer(json.dumps(response), citations, True)
+
+
+def test_should_reorder_expanded_suggestions_after_external_section() -> None:
+    citations = build_citations([candidate()], [source()], [DOCUMENT_ID])
+    raw = json.dumps({
+        "sections": [
+            {
+                "type": "DOCUMENT",
+                "claims": [
+                    {"text": "Nội dung tài liệu.", "citationIds": ["1"]},
+                    {"text": "---\n\n### 💡 Gợi ý câu hỏi & bước tiếp theo:\n- Gợi ý 1 [1]", "citationIds": ["1"]},
+                ],
+            },
+            {
+                "type": "EXTERNAL",
+                "claims": [
+                    {"text": "Kiến thức mở rộng bổ trợ.", "citationIds": []},
+                ],
+            },
+        ]
+    })
+    answer = validate_generated_answer(raw, citations, True)
+    assert len(answer.sections[0].claims) == 1
+    assert "Nội dung tài liệu." in answer.sections[0].content
+    assert "Gợi ý câu hỏi" not in answer.sections[0].content
+    assert len(answer.sections[1].claims) == 2
+    assert "Kiến thức mở rộng" in answer.sections[1].claims[0].text
+    assert "💡 Gợi ý câu hỏi" in answer.sections[1].claims[1].text
+    assert answer.sections[1].claims[1].citationIds == []
+    assert "[1]" not in answer.sections[1].claims[1].text
 
 
 def test_should_retry_when_expanded_answer_omits_external_section() -> None:

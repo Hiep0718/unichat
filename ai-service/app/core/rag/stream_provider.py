@@ -17,9 +17,6 @@ from app.core.rag.provider_contracts import (
 )
 
 logger = logging.getLogger(__name__)
-_TEXT_VALUE = re.compile(r'"text"\s*:\s*("(?:[^"\\]|\\.)*")')
-
-
 class StreamDeliveryClosed(GenerationCancelled):
     """Stop an upstream attempt when its private Core subscription has closed."""
 
@@ -29,12 +26,147 @@ def format_sse(event: str, data: dict[str, Any]) -> str:
     return f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
 
 
-class ProvisionalClaims:
-    """Extract completed text fields only; raw JSON is never shown as user prose."""
+class IncrementalClaimExtractor:
+    """Extract and unescape text fields incrementally.
+
+    Emits ordinary prose character-by-character/token-by-token for smooth streaming,
+    while buffering Mermaid code fences to emit diagrams as single complete blocks.
+    """
 
     def __init__(self) -> None:
-        self.buffer = ""
-        self.emitted = 0
+        self.state = "SEEKING"
+        self.raw_buf = ""
+        self.escape_buf = ""
+        self.mermaid_buf = ""
+        self.in_mermaid = False
+
+    def reset(self) -> None:
+        self.state = "SEEKING"
+        self.raw_buf = ""
+        self.escape_buf = ""
+        self.mermaid_buf = ""
+        self.in_mermaid = False
+
+    def feed(self, delta: str) -> list[str]:
+        out: list[str] = []
+        self.raw_buf += delta
+        while self.raw_buf:
+            if self.state == "SEEKING":
+                m = re.search(r'"text"\s*:\s*"', self.raw_buf)
+                if not m:
+                    if len(self.raw_buf) > 30:
+                        self.raw_buf = self.raw_buf[-20:]
+                    break
+                self.raw_buf = self.raw_buf[m.end():]
+                self.state = "IN_TEXT"
+                self.escape_buf = ""
+                self.mermaid_buf = ""
+                self.in_mermaid = False
+
+            if self.state == "IN_TEXT":
+                idx = 0
+                text_chars: list[str] = []
+                while idx < len(self.raw_buf):
+                    ch = self.raw_buf[idx]
+                    if self.escape_buf:
+                        self.escape_buf += ch
+                        idx += 1
+                        unescaped = self._unescape_char()
+                        if unescaped is not None:
+                            text_chars.append(unescaped)
+                        continue
+                    if ch == "\\":
+                        self.escape_buf = "\\"
+                        idx += 1
+                        continue
+                    if ch == '"':
+                        self.raw_buf = self.raw_buf[idx + 1:]
+                        self.state = "SEEKING"
+                        if text_chars:
+                            self._process_piece("".join(text_chars) + "\n\n", out)
+                            text_chars = []
+                        elif self.mermaid_buf:
+                            out.append(self.mermaid_buf + "\n\n")
+                            self.mermaid_buf = ""
+                            self.in_mermaid = False
+                        else:
+                            out.append("\n\n")
+                        break
+                    text_chars.append(ch)
+                    idx += 1
+
+                if self.state == "IN_TEXT":
+                    self.raw_buf = ""
+                    if text_chars:
+                        self._process_piece("".join(text_chars), out)
+                    break
+        return out
+
+    def _unescape_char(self) -> str | None:
+        seq = self.escape_buf
+        mapping = {
+            "\\\\": "\\", '\\"': '"', "\\n": "\n", "\\r": "\r",
+            "\\t": "\t", "\\/": "/", "\\b": "\b", "\\f": "\f",
+        }
+        if seq in mapping:
+            self.escape_buf = ""
+            return mapping[seq]
+        if seq.startswith("\\u"):
+            if len(seq) == 6:
+                self.escape_buf = ""
+                try:
+                    return chr(int(seq[2:], 16))
+                except ValueError:
+                    return seq
+            return None
+        if len(seq) >= 2 and not seq.startswith("\\u"):
+            self.escape_buf = ""
+            return seq[1:]
+        return None
+
+    def _process_piece(self, piece: str, out: list[str]) -> None:
+        if not piece:
+            return
+        full = (self.mermaid_buf if self.in_mermaid else "") + piece
+        if not self.in_mermaid:
+            m_start = full.find("```mermaid")
+            if m_start == -1:
+                out.append(piece)
+            else:
+                before = full[:m_start]
+                if before:
+                    out.append(before)
+                self.in_mermaid = True
+                self.mermaid_buf = full[m_start:]
+                self._check_mermaid_close(out)
+        else:
+            self.mermaid_buf += piece
+            self._check_mermaid_close(out)
+
+    def _check_mermaid_close(self, out: list[str]) -> None:
+        start_tag = "```mermaid"
+        pos = self.mermaid_buf.find(start_tag)
+        if pos == -1:
+            return
+        after_tag = pos + len(start_tag)
+        end_tag = self.mermaid_buf.find("```", after_tag)
+        if end_tag != -1:
+            close_pos = end_tag + 3
+            if close_pos < len(self.mermaid_buf) and self.mermaid_buf[close_pos] == "\n":
+                close_pos += 1
+            out.append(self.mermaid_buf[:close_pos])
+            remainder = self.mermaid_buf[close_pos:]
+            self.in_mermaid = False
+            self.mermaid_buf = ""
+            if remainder:
+                self._process_piece(remainder, out)
+
+
+class ProvisionalClaims:
+    """Extract claim text incrementally; buffers Mermaid diagrams to emit as single blocks."""
+
+    def __init__(self) -> None:
+        self.extractor = IncrementalClaimExtractor()
         self.sequence = 0
         self.attempt_id = ""
 
@@ -44,27 +176,25 @@ class ProvisionalClaims:
             self.attempt_id = str(payload["attemptId"])
             return [("pipeline-step", {"stepKey": "GENERATION", "attemptId": self.attempt_id})]
         if kind == "reset":
-            self.buffer, self.emitted = "", 0
+            self.extractor.reset()
             return [("reset", {**payload, "attemptId": self.attempt_id})]
         if kind != "raw":
             return []
-        self.buffer += str(payload["delta"])
-        values = _TEXT_VALUE.findall(self.buffer)
+        deltas = self.extractor.feed(str(payload["delta"]))
         frames: list[tuple[str, dict[str, Any]]] = []
-        for value in values[self.emitted :]:
+        for delta in deltas:
             self.sequence += 1
             frames.append(
                 (
                     "token",
                     {
-                        "delta": json.loads(value) + "\n\n",
+                        "delta": delta,
                         "provisional": True,
                         "attemptId": self.attempt_id,
                         "sequence": self.sequence,
                     },
                 )
             )
-        self.emitted = len(values)
         return frames
 
 
