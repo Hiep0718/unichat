@@ -13,9 +13,11 @@ from app.core.provider_settings import ProviderSettings
 def isolate_provider_configuration(monkeypatch: pytest.MonkeyPatch) -> None:
     """Never load live provider credentials or allow outbound test connections."""
     monkeypatch.setitem(ProviderSettings.model_config, "env_file", None)
-    for name in ("LLM_PROVIDER", "HIVE_API_KEY", "HIVE_API_KEY_2", "HIVE_API_KEY_SECONDARY",
+    for name in ("LLM_PROVIDER", "LLM_FALLBACK_PROVIDER", "ENABLE_PROVIDER_FALLBACK",
+                 "HIVE_API_KEY", "HIVE_API_KEY_2", "HIVE_API_KEY_SECONDARY",
                  "HIVE_API_KEYS", "GEMINI_API_KEY", "GEMINI_API_KEY_2",
-                 "GEMINI_API_KEY_SECONDARY", "GEMINI_API_KEYS", "ENABLE_OLLAMA_FALLBACK"):
+                 "GEMINI_API_KEY_SECONDARY", "GEMINI_API_KEYS", "ENABLE_OLLAMA_FALLBACK",
+                 "QUERY_PLANNER_ENABLED"):
         monkeypatch.delenv(name, raising=False)
 
     original_connect = socket.socket.connect

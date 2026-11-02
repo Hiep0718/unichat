@@ -14,7 +14,7 @@ public final class ChatSubscription {
     private record Event(String name,Object data) { }
     private final ArrayBlockingQueue<Event> queue=new ArrayBlockingQueue<>(32);
     private final AtomicBoolean closed=new AtomicBoolean();
-    private final SseEmitter emitter=new SseEmitter(125000L);
+    private final SseEmitter emitter=new SseEmitter(245000L);
     private final ChatOperation operation;
     private final ChatOutputGuard guard;
     private final boolean contentFreeReplay;

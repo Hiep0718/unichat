@@ -50,6 +50,26 @@ public class ChatMessageStore {
                 """, UUID.randomUUID(),result.messageId(),citation.documentId(),citation.chunkId(),citation.fileName(),
                 citation.locator(),citation.excerpt(),citation.contentHash(),++ordinal,citation.ingestionVersion(),citation.citationId(),citation.score());
     }
+
+    /** Stores a workspace summary as a conversation message pointing at its canonical artifact. */
+    public UUID assistantSummary(ChatOperation operation, UUID summaryId, String overview, Instant now) {
+        UUID messageId = UUID.randomUUID();
+        QuestionResponse canonical = new QuestionResponse(messageId, operation.conversationId(), "ANSWER",
+                overview, "SUMMARY", "workspace-summary-v1", List.of(), null, operation.requestId(),
+                null, false, null, operation.id(), "STRICT", List.of());
+        database.update("""
+                INSERT INTO messages(id,conversation_id,role,content,intent,sequence_no,source_fingerprint,
+                canonical_result,workspace_summary_id,created_at)
+                VALUES(?,?,'ASSISTANT',?,'SUMMARY',?,?,?::jsonb,?,?)
+                """, messageId, operation.conversationId(), overview,
+                conversations.nextSequence(operation.conversationId(), now), operation.sources().fingerprint(),
+                json.write(canonical), summaryId, Timestamp.from(now));
+        for (var source : operation.sources().sources()) {
+            database.update("INSERT INTO chat_source_dependencies(message_id,document_id,ingestion_version,document_hash) VALUES(?,?,?,?)",
+                    messageId, source.documentId(), source.ingestionVersion(), source.contentHash());
+        }
+        return messageId;
+    }
     /** Rebuilds an operation result after checking current source visibility. */
     public QuestionResponse result(ChatOperation operation, ChatSourceSnapshot current) {
         return database.query("SELECT * FROM messages WHERE id=? AND conversation_id=?", (row,index) -> {
@@ -57,7 +77,8 @@ public class ChatMessageStore {
             QuestionResponse saved = json.read(row.getString("canonical_result"),QuestionResponse.class);
             return new QuestionResponse(saved.messageId(),operation.conversationId(),saved.decision(),saved.answer(),saved.intent(),
                     saved.strategyVersion(),saved.citations(),saved.refusalCode(),operation.requestId(),saved.evidenceScore(),
-                    saved.singleSourceWarning(),saved.warningMessage(),operation.id(),saved.knowledgeMode(),saved.sections());
+                    saved.singleSourceWarning(),saved.warningMessage(),operation.id(),saved.knowledgeMode(),saved.sections(),
+                    row.getString("provider_model"));
         },operation.resultMessageId(),operation.conversationId()).stream().findFirst().orElseThrow(() -> new NotFoundError("Kết quả không tồn tại."));
     }
     /** Lists stable anchored pages without loading an unbounded conversation. */
@@ -114,10 +135,10 @@ public class ChatMessageStore {
         QuestionResponse result = assistant && !redacted ? json.read(row.getString("canonical_result"),QuestionResponse.class) : null;
         return new MessageResponse(row.getObject("id",UUID.class),row.getObject("conversation_id",UUID.class),row.getString("role"),
                 redacted ? REDACTED : row.getString("content"), redacted ? null : row.getString("intent"),
-                redacted ? "SOURCE_UNAVAILABLE" : row.getString("refusal_code"),row.getString("provider_model"),
+                redacted ? "SOURCE_UNAVAILABLE" : row.getString("refusal_code"),redacted ? null : row.getString("provider_model"),
                 row.getTimestamp("created_at").toInstant(),result == null ? List.of() : result.citations(),row.getLong("sequence_no"),
                 redacted,result == null ? "STRICT" : result.knowledgeMode(),result == null ? List.of() : result.sections(),
-                result == null ? null : result.operationId());
+                result == null ? null : result.operationId(), row.getObject("workspace_summary_id", UUID.class));
     }
     private QuestionResponse redactedResult(ChatOperation operation) {
         return new QuestionResponse(operation.resultMessageId(),operation.conversationId(),"REFUSE",REDACTED,"UNKNOWN","v1.0",List.of(),

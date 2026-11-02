@@ -33,6 +33,10 @@ public class ChatController {
             @RequestHeader("Idempotency-Key") @Pattern(regexp=UUID_PATTERN) String key,
             @RequestHeader(value="X-Request-Id",required=false) @Size(max=100) String requestId) {
         var response=chat.ask(ChatActor.from(jwt),workspaceId,request,UUID.fromString(key),requestId(requestId));
+        if (response.taskType() == ChatTaskType.WORKSPACE_SUMMARY) {
+            if ("RUNNING".equals(response.state())) return running(workspaceId,response);
+            return ResponseEntity.ok(response);
+        }
         if ("RUNNING".equals(response.state())) return running(workspaceId,response);
         if ("COMPLETED".equals(response.state())) return ResponseEntity.ok(response.result());
         return ResponseEntity.status(409).body(response);
@@ -45,6 +49,10 @@ public class ChatController {
             @RequestHeader(value="X-Request-Id",required=false) @Size(max=100) String requestId) {
         var actor=ChatActor.from(jwt);
         var reservation=operations.reserve(actor,workspaceId,request,UUID.fromString(key),requestId(requestId));
+        if (reservation.operation().taskType() == ChatTaskType.WORKSPACE_SUMMARY) {
+            var status=operations.status(actor,workspaceId,reservation.operation().id());
+            return "RUNNING".equals(status.state()) ? running(workspaceId,status) : ResponseEntity.ok(status);
+        }
         if (!reservation.created() && "RUNNING".equals(reservation.operation().state())) {
             return running(workspaceId,operations.status(actor,workspaceId,reservation.operation().id()));
         }

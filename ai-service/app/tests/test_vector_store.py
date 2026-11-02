@@ -6,6 +6,8 @@ from app.services import vector_store
 from app.services.chunker import CHUNKING_VERSION, ChunkResult
 from app.services.vector_store import (
     VectorStoreUnavailableError,
+    VectorStoreIncompleteError,
+    get_document_chunks_exact,
     get_chroma_client,
     get_embedding_model,
     store_document_chunks,
@@ -194,3 +196,47 @@ def test_should_not_repeat_heading_already_in_source_text() -> None:
         )
 
     model.encode.assert_called_once_with("passage: Section title\n\nBody text.")
+
+
+def test_should_read_exact_manifest_chunk_ids_in_pages() -> None:
+    import hashlib
+
+    collection = MagicMock()
+    text = "Chunk body."
+    metadata = {
+        "workspace_id": "workspace-1", "document_id": "document-1",
+        "document_status": "PROCESSED", "ingestion_version": 3,
+        "document_content_hash": "a" * 64, "chunk_index": 1,
+        "content_hash": hashlib.sha256(text.encode("utf-8")).hexdigest(),
+        "locator_type": "PDF_PAGE", "locator_value": "page:1",
+    }
+    collection.get.return_value = {
+        "ids": ["document-1_1"], "documents": [text], "metadatas": [metadata],
+    }
+    client = MagicMock()
+    client.get_collection.return_value = collection
+
+    with (
+        patch("app.services.vector_store.get_chroma_client", return_value=client),
+        patch("app.services.vector_store.get_active_collection_name", return_value="chunks"),
+    ):
+        chunks = get_document_chunks_exact(
+            "workspace-1", "document-1", 3, "a" * 64, 1, page_size=1
+        )
+
+    assert [chunk.chunk_id for chunk in chunks] == ["document-1_1"]
+    collection.get.assert_called_once_with(ids=["document-1_1"], include=["documents", "metadatas"])
+
+
+def test_should_fail_when_a_manifest_chunk_is_missing() -> None:
+    collection = MagicMock()
+    collection.get.return_value = {"ids": [], "documents": [], "metadatas": []}
+    client = MagicMock()
+    client.get_collection.return_value = collection
+
+    with (
+        patch("app.services.vector_store.get_chroma_client", return_value=client),
+        patch("app.services.vector_store.get_active_collection_name", return_value="chunks"),
+        pytest.raises(VectorStoreIncompleteError, match="missing"),
+    ):
+        get_document_chunks_exact("workspace-1", "document-1", 3, "a" * 64, 1)

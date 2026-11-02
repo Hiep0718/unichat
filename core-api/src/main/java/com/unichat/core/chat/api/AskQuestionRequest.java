@@ -7,6 +7,10 @@ import jakarta.validation.constraints.Size;
 
 /**
  * Payload for asking a question in a workspace.
+ *
+ * <p>{@code taskType} is optional. When omitted, Core infers the task from the question: a
+ * collection-wide summary request is routed to the workspace summary pipeline when enabled,
+ * every other question is answered by adaptive retrieval.</p>
  */
 public record AskQuestionRequest(
         @NotBlank(message = "Câu hỏi không được để trống")
@@ -15,5 +19,12 @@ public record AskQuestionRequest(
 
         UUID conversationId,
 
-        Boolean allowExternalKnowledge
-) {}
+        Boolean allowExternalKnowledge,
+
+        ChatTaskType taskType
+) {
+    /** Preserves existing callers while allowing an explicit summary request. */
+    public AskQuestionRequest(String question, UUID conversationId, Boolean allowExternalKnowledge) {
+        this(question, conversationId, allowExternalKnowledge, ChatTaskType.QUESTION);
+    }
+}

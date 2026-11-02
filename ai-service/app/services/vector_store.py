@@ -1,5 +1,7 @@
+import hashlib
 import logging
 import os
+from dataclasses import dataclass
 from typing import Any
 
 import chromadb
@@ -20,6 +22,94 @@ _ephemeral_client: Any = None
 
 class VectorStoreUnavailableError(RuntimeError):
     """Raised when the configured vector store cannot be reached or initialized."""
+
+
+class VectorStoreIncompleteError(RuntimeError):
+    """Raised when indexed chunks do not match the Core ingestion manifest."""
+
+
+@dataclass(frozen=True)
+class StoredDocumentChunk:
+    """One exact chunk read and validated against a Core-owned source manifest."""
+
+    chunk_id: str
+    chunk_index: int
+    text: str
+    locator_type: str
+    locator_value: str
+    content_hash: str
+
+
+def get_document_chunks_exact(
+    workspace_id: str,
+    document_id: str,
+    ingestion_version: int,
+    document_content_hash: str,
+    expected_chunk_count: int,
+    page_size: int = 100,
+) -> list[StoredDocumentChunk]:
+    """Read every known chunk ID and fail if any manifest item is missing or stale."""
+    if expected_chunk_count < 1 or page_size < 1:
+        raise ValueError("A source manifest must contain at least one chunk.")
+    collection = get_chroma_client().get_collection(name=get_active_collection_name())
+    chunks: list[StoredDocumentChunk] = []
+    for first_index in range(1, expected_chunk_count + 1, page_size):
+        final_index = min(first_index + page_size, expected_chunk_count + 1)
+        ids = [f"{document_id}_{index}" for index in range(first_index, final_index)]
+        payload = collection.get(ids=ids, include=["documents", "metadatas"])
+        chunks.extend(
+            _validate_exact_chunk_page(
+                payload, ids, workspace_id, document_id, ingestion_version, document_content_hash
+            )
+        )
+    chunks.sort(key=lambda chunk: chunk.chunk_index)
+    if [chunk.chunk_index for chunk in chunks] != list(range(1, expected_chunk_count + 1)):
+        raise VectorStoreIncompleteError("Indexed chunk count differs from the source manifest.")
+    return chunks
+
+
+def _validate_exact_chunk_page(
+    payload: dict[str, Any],
+    ids: list[str],
+    workspace_id: str,
+    document_id: str,
+    ingestion_version: int,
+    document_content_hash: str,
+) -> list[StoredDocumentChunk]:
+    ids_by_value = {chunk_id: index for index, chunk_id in enumerate(payload.get("ids") or [])}
+    if set(ids_by_value) != set(ids):
+        raise VectorStoreIncompleteError("An indexed chunk is missing from Chroma.")
+    chunks: list[StoredDocumentChunk] = []
+    for chunk_id in ids:
+        position = ids_by_value[chunk_id]
+        metadata = payload["metadatas"][position]
+        text = payload["documents"][position]
+        chunk_index = int(chunk_id.rsplit("_", maxsplit=1)[1])
+        content_hash = hashlib.sha256(text.encode("utf-8")).hexdigest()
+        is_current = (
+            metadata.get("workspace_id") == workspace_id
+            and metadata.get("document_id") == document_id
+            and metadata.get("document_status") == "PROCESSED"
+            and metadata.get("ingestion_version") == ingestion_version
+            and metadata.get("document_content_hash") == document_content_hash
+            and metadata.get("chunk_index") == chunk_index
+            and metadata.get("content_hash") == content_hash
+        )
+        if not is_current:
+            raise VectorStoreIncompleteError(
+                "Indexed chunk metadata differs from the source manifest."
+            )
+        chunks.append(
+            StoredDocumentChunk(
+                chunk_id,
+                chunk_index,
+                text,
+                str(metadata.get("locator_type") or ""),
+                str(metadata.get("locator_value") or ""),
+                content_hash,
+            )
+        )
+    return chunks
 
 
 def get_embedding_model() -> SentenceTransformer:
@@ -56,9 +146,7 @@ def get_chroma_client() -> Any:
         if not cloud_api_key or not tenant:
             raise VectorStoreUnavailableError("Chroma Cloud configuration is incomplete.")
         try:
-            return chromadb.CloudClient(
-                tenant=tenant, database=database, api_key=cloud_api_key
-            )
+            return chromadb.CloudClient(tenant=tenant, database=database, api_key=cloud_api_key)
         except Exception as error:
             logger.error("chroma_cloud_unavailable code=%s", type(error).__name__)
             raise VectorStoreUnavailableError("Configured Chroma Cloud is unavailable.") from error

@@ -61,7 +61,7 @@ class ChatPostgresIT {
         operations=new ChatOperationRepository(database,json);
         admission=new AiAdmissionService(new AiAdmissionRepository(database),audit); limits=mock(RateLimitService.class);
         service=new ChatOperationService(operations,conversations,new ChatMessageStore(database,json,conversations),access,json,
-                limits,audit,Clock.systemUTC(),manager,admission);
+                limits,audit,Clock.systemUTC(),manager,admission,mock(WorkspaceSummaryJobService.class));
     }
     @Test void shouldReserveOneConversationAndTurnAcrossConcurrentSameKeyRetries() throws Exception {
         UUID key=UUID.randomUUID(); CyclicBarrier barrier=new CyclicBarrier(2);

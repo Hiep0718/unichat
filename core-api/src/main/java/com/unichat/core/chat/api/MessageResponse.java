@@ -23,12 +23,13 @@ public record MessageResponse(
         boolean redacted,
         String knowledgeMode,
         List<AnswerSection> sections,
-        UUID operationId
+        UUID operationId,
+        UUID workspaceSummaryId
 ) {
     /** Legacy mapping has no verified sequence or source provenance. */
     public MessageResponse(UUID id, UUID conversationId, String role, String content, String intent,
             String refusalCode, String providerModel, Instant createdAt, List<CitationResponse> citations) {
-        this(id,conversationId,role,content,intent,refusalCode,providerModel,createdAt,citations,0,false,"STRICT",List.of(),null);
+        this(id,conversationId,role,content,intent,refusalCode,providerModel,createdAt,citations,0,false,"STRICT",List.of(),null,null);
     }
     /** Maps an existing domain message without inventing citation metadata. */
     public static MessageResponse from(Message m) {

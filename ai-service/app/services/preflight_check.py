@@ -4,10 +4,11 @@ Verifies ChromaDB client compatibility and pre-caches the embedding model.
 """
 
 import sys
+
 import structlog
 from sentence_transformers import SentenceTransformer
 
-from app.services.vector_store import get_chroma_client
+from app.services.vector_store import get_active_collection_name, get_chroma_client
 
 logger = structlog.get_logger(__name__)
 
@@ -15,28 +16,19 @@ EMBEDDING_MODEL_NAME = "intfloat/multilingual-e5-base"
 
 
 def verify_chromadb_compat() -> bool:
-    """Verify ChromaDB connectivity and collection operations."""
+    """Verify read-only access to the configured collection without mutating Cloud."""
     try:
         client = get_chroma_client()
         version = getattr(client, "get_version", lambda: "1.5.9")()
         logger.info("ChromaDB connected", version=str(version))
-
-        col = client.get_or_create_collection(
-            "compat_test", metadata={"hnsw:space": "cosine"}
+        collection = client.get_collection(name=get_active_collection_name())
+        record_count = collection.count()
+        logger.info("ChromaDB read-only compatibility test passed", count=record_count)
+        return isinstance(record_count, int) and record_count >= 0
+    except Exception as error:
+        logger.warning(
+            "ChromaDB compatibility check failed", error_type=type(error).__name__
         )
-        col.add(
-            ids=["test1"],
-            documents=["hello world"],
-            embeddings=[[0.1] * 768],
-        )
-        result = col.query(query_embeddings=[[0.1] * 768], n_results=1)
-        if result and result.get("ids"):
-            client.delete_collection("compat_test")
-            logger.info("ChromaDB compatibility test passed")
-            return True
-        return False
-    except Exception as e:
-        logger.warning("ChromaDB compatibility check warning, using fallback mode", error=str(e))
         return False
 
 
@@ -45,10 +37,13 @@ def precache_embedding_model() -> bool:
     try:
         logger.info("Loading embedding model", model=EMBEDDING_MODEL_NAME)
         model = SentenceTransformer(EMBEDDING_MODEL_NAME)
-        logger.info("Embedding model loaded successfully", dims=model.get_sentence_embedding_dimension())
+        logger.info(
+            "Embedding model loaded successfully",
+            dims=model.get_sentence_embedding_dimension(),
+        )
         return True
-    except Exception as e:
-        logger.error("Failed to load embedding model", error=str(e))
+    except Exception as error:
+        logger.error("Failed to load embedding model", error_type=type(error).__name__)
         return False
 
 
@@ -58,12 +53,12 @@ def run_preflight() -> bool:
     chroma_ok = verify_chromadb_compat()
     model_ok = precache_embedding_model()
 
-    if chroma_ok and model_ok:
+    success = chroma_ok and model_ok
+    if success:
         logger.info("PREFLIGHT PASSED")
-        return True
     else:
-        logger.info("PREFLIGHT FINISHED WITH WARNINGS", chroma_ok=chroma_ok, model_ok=model_ok)
-        return True
+        logger.error("PREFLIGHT FAILED", chroma_ok=chroma_ok, model_ok=model_ok)
+    return success
 
 
 if __name__ == "__main__":

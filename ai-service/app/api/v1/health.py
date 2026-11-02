@@ -5,7 +5,12 @@ from typing import Literal
 from fastapi import APIRouter
 from pydantic import BaseModel, ValidationError
 
-from app.core.rag.key_registry import active_provider, configured_keys, configured_model
+from app.core.rag.key_registry import (
+    active_provider,
+    configured_keys,
+    configured_model,
+    fallback_provider,
+)
 from app.services.vector_store import get_chroma_client
 
 router = APIRouter()
@@ -27,6 +32,8 @@ class ReadinessResponse(BaseModel):
     provider_status: str
     active_provider: str | None
     active_model: str | None
+    fallback_provider: str | None
+    fallback_model: str | None
 
 
 @router.get("/health", response_model=HealthResponse)
@@ -47,7 +54,7 @@ def get_readiness() -> ReadinessResponse:
     except Exception:
         chroma_state = "error"
 
-    provider_state, provider, model = _provider_readiness()
+    provider_state, provider, model, fallback, fallback_model = _provider_readiness()
     overall_status = "ok" if chroma_state == "ok" and provider_state == "configured" else "degraded"
     return ReadinessResponse(
         status=overall_status,
@@ -56,13 +63,23 @@ def get_readiness() -> ReadinessResponse:
         provider_status=provider_state,
         active_provider=provider,
         active_model=model,
+        fallback_provider=fallback,
+        fallback_model=fallback_model,
     )
 
 
-def _provider_readiness() -> tuple[str, str | None, str | None]:
+def _provider_readiness() -> tuple[
+    str, str | None, str | None, str | None, str | None
+]:
     try:
-        provider, model = active_provider(), configured_model()
-        configured = any(key.provider == provider for key in configured_keys())
-        return "configured" if configured else "unconfigured", provider, model
+        provider, fallback = active_provider(), fallback_provider()
+        keys = configured_keys()
+        primary_ready = any(key.provider == provider for key in keys)
+        fallback_ready = fallback is None or any(key.provider == fallback for key in keys)
+        state = "configured" if primary_ready and fallback_ready else "unconfigured"
+        return (
+            state, provider, configured_model(provider), fallback,
+            configured_model(fallback) if fallback else None,
+        )
     except ValidationError:
-        return "invalid_configuration", None, None
+        return "invalid_configuration", None, None, None, None

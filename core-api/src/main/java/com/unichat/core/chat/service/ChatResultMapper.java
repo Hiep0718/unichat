@@ -32,7 +32,8 @@ public class ChatResultMapper {
                     string(raw,"intent","UNKNOWN"), string(raw,"strategyVersion","v1.0"), citations,
                     string(raw,"refusalCode",null), operation.requestId(), number(raw.get("evidenceScore")),
                     raw.get("singleSourceWarning") instanceof Boolean value ? value : null,
-                    string(raw,"warningMessage",null), operation.id(), operation.expanded() ? "EXPANDED" : "STRICT", sections);
+                    string(raw,"warningMessage",null), operation.id(), operation.expanded() ? "EXPANDED" : "STRICT",
+                    sections, string(raw,"provider",null));
         } catch (IllegalArgumentException error) {
             return refusal(operation, messageId, "VALIDATION_FAILED", "Không thể xác minh trích dẫn của câu trả lời.");
         }
