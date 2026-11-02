@@ -8,15 +8,18 @@ import type { AiStudioMetricsResponse } from './admin-api';
 vi.mock('./admin-api', () => ({ fetchAiStudioMetrics: vi.fn(), fetchAiAdmission: vi.fn(),
   sendQuickPrompt: vi.fn(), testProviderKey: vi.fn(), updateAiAdmission: vi.fn() }));
 const model = 'deepseek-ai/deepseek-v4.1-flash';
+const geminiModel = 'gemini-3.5-flash';
 const metrics: AiStudioMetricsResponse = {
   status: 'NO_DATA', completeness: 'PARTIAL', sampleCount: 0, updatedAt: '2026-10-11T00:00:00Z',
   retainedFrom: null, registryStatus: 'AVAILABLE', tier: 'UNKNOWN', timeRangeDays: 28,
-  activeProvider: 'hive', activeModel: model, historicalKeys: [{ keyId: 'gemini-primary', provider: 'gemini' }],
-  keys: [{ keyId: 'hive-primary', name: 'Hive chính', maskedKey: '***A', isConfigured: true,
-    provider: 'hive', isActive: true, supportedModels: [model] },
+  activeProvider: 'gemini', activeModel: geminiModel, primaryProvider: 'gemini',
+  fallbackProvider: 'hive', fallbackModel: model,
+  historicalKeys: [{ keyId: 'gemini-primary', provider: 'gemini' }],
+  keys: [{ keyId: 'gemini-primary', name: 'Gemini chính', maskedKey: '***A', isConfigured: true,
+    provider: 'gemini', isActive: true, routingRole: 'PRIMARY', supportedModels: [geminiModel] },
   { keyId: 'hive-secondary', name: 'Hive dự phòng', maskedKey: '***B', isConfigured: true,
-    provider: 'hive', isActive: true, supportedModels: [model] }],
-  models: ['gemini-2.5-flash'], configuredModels: [model], chartRequestsSuccess: [], chartErrors: [], chartInputTokens: [],
+    provider: 'hive', isActive: true, routingRole: 'FALLBACK', supportedModels: [model] }],
+  models: ['gemini-2.5-flash'], configuredModels: [geminiModel, model], chartRequestsSuccess: [], chartErrors: [], chartInputTokens: [],
   chartOutputTokens: [], chartRequestsPerModel: [], summary: { totalRequests: 0, totalErrors: 0, overallSuccessRate: null },
 };
 function renderPage() {
@@ -39,7 +42,7 @@ describe('AdminAiStudioPage', () => {
     expect(await screen.findByText('Chưa có mẫu đo trong khoảng thời gian này.')).toBeInTheDocument();
     expect(screen.getByText('UNKNOWN')).toBeInTheDocument();
     expect(screen.getByText(/Độ đầy đủ: PARTIAL/)).toBeInTheDocument();
-    expect(screen.getByText(/Nhà cung cấp đang hoạt động: hive/)).toHaveTextContent(model);
+    expect(screen.getByText(/Luồng sinh nội dung: gemini/)).toHaveTextContent('dự phòng: hive');
     expect(screen.queryByText('100%')).not.toBeInTheDocument();
     expect(testProviderKey).not.toHaveBeenCalled();
     expect(screen.getByRole('button', { name: 'Kiểm tra API key' })).toBeDisabled();
@@ -47,7 +50,7 @@ describe('AdminAiStudioPage', () => {
   it('should keep historical filters separate from explicit Hive diagnostic selection', async () => {
     vi.mocked(testProviderKey).mockResolvedValue({ status: 'HEALTHY', message: 'OK', latencyMs: 3, probeType: 'GENERATION' });
     vi.mocked(sendQuickPrompt).mockResolvedValue({ status: 'SUCCESS', reply: 'Kết quả', latencyMs: 12, tokensUsed: null, model });
-    renderPage(); await screen.findByText(/Nhà cung cấp đang hoạt động/);
+    renderPage(); await screen.findByText(/Luồng sinh nội dung/);
     fireEvent.change(screen.getByLabelText('API key'), { target: { value: 'gemini-primary' } });
     fireEvent.change(screen.getByLabelText('Mô hình'), { target: { value: 'gemini-2.5-flash' } });
     expect(screen.getByLabelText('Khóa kiểm tra')).toHaveValue('');
@@ -69,7 +72,7 @@ describe('AdminAiStudioPage', () => {
   });
   it('should block diagnostics during draining', async () => {
     vi.mocked(fetchAiAdmission).mockResolvedValue({ state: 'DRAINING', version: 2, runningOperationCount: 1, pendingAttemptCount: 0 });
-    renderPage(); await screen.findByText(/Nhà cung cấp đang hoạt động/); selectDiagnostics();
+    renderPage(); await screen.findByText(/Luồng sinh nội dung/); selectDiagnostics();
     expect(screen.getByRole('button', { name: 'Kiểm tra API key' })).toBeDisabled();
     expect(screen.queryByRole('button', { name: 'Chuyển sang VERIFYING' })).not.toBeInTheDocument();
   });
