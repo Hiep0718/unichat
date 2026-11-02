@@ -10,6 +10,7 @@ from app.api.v1 import api_router
 from app.core.logging import configure_logging
 from app.core.settings import get_settings
 from app.services.rabbitmq_consumer import start_consumer_thread
+from app.services.workspace_summary_consumer import start_summary_consumer_thread
 from app.shared.handlers import register_exception_handlers
 
 
@@ -18,6 +19,8 @@ async def lifespan(_application: FastAPI) -> AsyncIterator[None]:
     """Start background services on startup and clean up on shutdown."""
     settings = get_settings()
     start_consumer_thread(settings.rabbitmq_url)
+    if settings.workspace_summary_enabled:
+        start_summary_consumer_thread(settings.rabbitmq_url)
     yield
 
 

@@ -60,3 +60,9 @@ Thư mục này tổng hợp các tài liệu nền phù hợp với đề tài 
 ## Ghi chú bản quyền
 
 Các file `.url` trong thư mục `links` chỉ là shortcut đến nguồn trực tuyến. Nếu cần lưu PDF offline, chỉ nên tải các paper open-access như arXiv hoặc tài liệu có giấy phép cho phép tải/lưu. Không tải hoặc chia sẻ bản sao sách O'Reilly/có bản quyền nếu không có quyền truy cập hợp lệ.
+
+## Cập nhật as-built 24/10/2026
+
+Thư mục này hỗ trợ khóa luận về **Adaptive Knowledge Retrieval & Reasoning**. Khi viết báo cáo, dùng đặc tả và codebase làm bằng chứng cho hành vi triển khai; dùng các nguồn dưới đây cho cơ sở khoa học và công nghệ. Hive là provider đang cấu hình với DeepSeek V4.1 Flash; Gemini là phương án rollback thủ công. Không dùng các nguồn này để suy diễn rằng OCR, LMS, voice hoặc mindmap đã hoàn thành.
+
+Nguồn mới cần ưu tiên trong Chương 2 và Chương 6: Self-RAG cho self-reflection trong retrieval, CRAG cho corrective retrieval, RAGAS cho khung đánh giá, tài liệu RabbitMQ cho luồng ingestion và Expo/React Native cho client mobile. Ngày truy cập của tài liệu trực tuyến trong đợt đồng bộ là 24/10/2026.

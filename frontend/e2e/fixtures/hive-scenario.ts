@@ -68,6 +68,7 @@ async function api(route: Route, path: string, scenario: HiveScenario): Promise<
   if (path.endsWith('/ai-studio/test-key')) { await json(route, { status: 'HEALTHY', message: 'Đã kiểm tra', latencyMs: 8, probeType: 'GENERATION' }); return; }
   if (path.endsWith('/ai-studio/quick-prompt')) { await json(route, { status: 'SUCCESS', reply: 'Xin chào từ Hive', model: HIVE_MODEL, tokensUsed: null, latencyMs: 10 }); return; }
   if (path.endsWith('/questions/stream')) { await chat(route, scenario); return; }
+  if (path.endsWith('/chat-operations/active-summary')) { await route.fulfill({ status: 204 }); return; }
   if (path === `/api/v1/workspaces/${WORKSPACE_ID}`) {
     await json(route, { id: WORKSPACE_ID, name: 'Nhóm nghiên cứu', visibility: 'PRIVATE', userRole: 'OWNER',
       description: '', cloudAllowed: true, version: 0 }); return;

@@ -37,6 +37,10 @@ intents:
     rule_id: "RULE_SUMMARY_ALL"
     patterns:
       - "(tom tat|tong quan|y chinh|noi dung chinh|tom luoc|khai quat)"
+      - "(\\bliet ke\\b|danh sach cac|bao gom nhung gi|gom nhung gi)"
+      - "((cac|nhung) .+ (de cap|trinh bay|co) trong (tai lieu|bai giang|giao trinh|chuong|slide))"
+      - "(trong (tai lieu|bai giang|giao trinh|slide) .* (co nhung|gom nhung|de cap nhung|de cap cac|bao gom))"
+      - "((co nhung|gom nhung) (loai|kien truc|mo hinh|phong cach|phuong phap|thanh phan|chu de|phan|chuong) nao)"
     negative_patterns: []
 
   DEFINITION:

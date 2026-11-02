@@ -14,16 +14,17 @@
       ],
       "severity": "CRITICAL",
       "allowedOutcome": "PASS_WITH_SCOPED_EXCEPTION",
-      "allowedScope": "non-chroma-only",
+      "allowedScope": "managed-chroma-cloud-client-retrieval-testing-only",
       "blocks": [
-        "Chroma-backed retrieval",
-        "Chroma client/server compatibility acceptance",
-        "Deployment with a Chroma-dependent execution path"
+        "Self-hosted Chroma server deployment or exposure",
+        "Chroma package/version or server configuration changes",
+        "Production release while the advisory remains unresolved"
       ],
       "closureCriteria": [
-        "The advisory is absent from the resolved inventory",
-        "Client/server compatibility integration tests pass",
-        "Security regression checks pass"
+        "The vulnerable server implementation is removed from the application runtime or upgraded to a version not affected by the advisory",
+        "The Cloud client contract and provider security posture are verified",
+        "Cloud integration and security regression checks pass",
+        "Dependency audit no longer reports the unresolved Critical advisory"
       ]
     },
     {

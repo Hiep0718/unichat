@@ -30,6 +30,7 @@ export interface AiStudioKey {
   isConfigured: boolean;
   provider?: string;
   isActive?: boolean;
+  routingRole?: 'PRIMARY' | 'FALLBACK' | null;
   supportedModels?: string[];
 }
 
@@ -66,6 +67,9 @@ export interface AiStudioMetricsResponse {
   configuredModels: string[];
   activeProvider?: string | null;
   activeModel?: string | null;
+  primaryProvider?: string | null;
+  fallbackProvider?: string | null;
+  fallbackModel?: string | null;
   historicalKeys?: { keyId: string; provider: string }[];
   chartRequestsSuccess: RequestsSuccessDataPoint[];
   chartErrors: ErrorsDataPoint[];

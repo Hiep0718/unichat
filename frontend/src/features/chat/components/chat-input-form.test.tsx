@@ -1,105 +1,115 @@
-import { fireEvent, render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
-
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ChatInputForm } from './chat-input-form';
 
+const field = () => screen.getByLabelText('Câu hỏi tri thức');
+
 describe('ChatInputForm', () => {
-  it('should keep the field label for screen readers only', () => {
-    // `.sr-only` was referenced here and defined nowhere, so the label meant
-    // for assistive technology was printed above the field as body text.
+  afterEach(cleanup);
+
+  it('should start in strict document-only mode with a multi-line field and a disabled send button', () => {
     render(<ChatInputForm onSend={vi.fn()} loading={false} />);
 
-    expect(screen.getByLabelText('Câu hỏi tri thức')).toBeInTheDocument();
-    expect(screen.getByText('Câu hỏi tri thức')).toHaveClass('sr-only');
+    expect(screen.getByRole('radio', { name: /Chỉ tài liệu/ })).toHaveAttribute('aria-checked', 'true');
+    expect(field().tagName).toBe('TEXTAREA');
+    expect(screen.getByRole('button', { name: 'Gửi câu hỏi' })).toBeDisabled();
+    expect(screen.getByText(/Chỉ trả lời từ tài liệu bạn được cấp quyền/)).toBeInTheDocument();
   });
 
-  it('should refuse to send until there is a question worth sending', async () => {
+  it('should not render a hardcoded workspace summary button', () => {
+    render(<ChatInputForm onSend={vi.fn()} loading={false} />);
+
+    expect(screen.queryByRole('button', { name: /Tóm tắt toàn bộ tài liệu/ })).not.toBeInTheDocument();
+  });
+
+  it('should adapt placeholder and corpus scope badge to workspace context', () => {
+    const { rerender } = render(
+      <ChatInputForm onSend={vi.fn()} loading={false} workspaceName="Kiến trúc hệ thống"
+        readySourceCount={6} totalSourceCount={6} />,
+    );
+
+    expect(field()).toHaveAttribute('placeholder', expect.stringContaining('Kiến trúc hệ thống'));
+    expect(screen.getByText('6 nguồn tài liệu')).toBeInTheDocument();
+
+    rerender(<ChatInputForm onSend={vi.fn()} loading={false} readySourceCount={3} totalSourceCount={5} />);
+    expect(screen.getByText('3/5 nguồn sẵn sàng')).toBeInTheDocument();
+
+    rerender(<ChatInputForm onSend={vi.fn()} loading={false} readySourceCount={0} totalSourceCount={0} />);
+    expect(screen.getByText('Chưa có nguồn')).toBeInTheDocument();
+  });
+
+  it('should send a summary request typed in natural language as an ordinary question', () => {
     const onSend = vi.fn();
     render(<ChatInputForm onSend={onSend} loading={false} />);
 
-    const send = screen.getByRole('button', { name: 'Gửi' });
-    expect(send).toBeDisabled();
+    fireEvent.change(field(), { target: { value: '  Tóm tắt toàn bộ tài liệu  ' } });
+    fireEvent.keyDown(field(), { key: 'Enter' });
 
-    await userEvent.type(screen.getByLabelText('Câu hỏi tri thức'), 'ab');
-    expect(send).toBeDisabled();
-
-    await userEvent.type(screen.getByLabelText('Câu hỏi tri thức'), 'c');
-    expect(send).toBeEnabled();
+    expect(onSend).toHaveBeenCalledWith('Tóm tắt toàn bộ tài liệu', false);
+    expect(field()).toHaveValue('');
   });
 
-  it('should style the send button rather than leave it a browser default', async () => {
-    // The markup carried no classes at all, so the stylesheet describing this
-    // button never reached it and it rendered as a plain grey bar.
-    render(<ChatInputForm onSend={vi.fn()} loading={false} />);
-
-    const send = screen.getByRole('button', { name: 'Gửi' });
-    expect(send).toHaveClass('chat-input-form__submit-btn');
-    expect(send).not.toHaveClass('chat-input-form__submit-btn--active');
-
-    await userEvent.type(screen.getByLabelText('Câu hỏi tri thức'), 'MongoDB là gì');
-    expect(send).toHaveClass('chat-input-form__submit-btn--active');
-  });
-
-  it('should hand the question over and clear the field', async () => {
+  it('should insert a new line instead of sending on Shift+Enter or during IME composition', () => {
     const onSend = vi.fn();
     render(<ChatInputForm onSend={onSend} loading={false} />);
 
-    const field = screen.getByLabelText('Câu hỏi tri thức');
-    await userEvent.type(field, 'MongoDB là gì');
-    await userEvent.click(screen.getByRole('button', { name: 'Gửi' }));
+    fireEvent.change(field(), { target: { value: 'Giải thích RAG' } });
+    fireEvent.keyDown(field(), { key: 'Enter', shiftKey: true });
+    fireEvent.keyDown(field(), { key: 'Enter', isComposing: true });
 
-    expect(onSend).toHaveBeenCalledWith('MongoDB là gì', false);
-    expect(field).toHaveValue('');
+    expect(onSend).not.toHaveBeenCalled();
   });
 
-  it('should offer to stop instead of to send while an answer is coming', () => {
-    const onCancel = vi.fn();
-    render(<ChatInputForm onSend={vi.fn()} loading onCancel={onCancel} />);
-
-    expect(screen.getByRole('button', { name: 'Dừng' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Gửi' })).not.toBeInTheDocument();
-  });
-
-  it('should say which sources an answer may draw on, and change it with the mode', async () => {
+  it('should explain minimum length when fewer than three characters are typed', () => {
     render(<ChatInputForm onSend={vi.fn()} loading={false} />);
 
-    expect(screen.getByText('Câu trả lời chỉ dùng tài liệu được cấp quyền.')).toBeInTheDocument();
+    fireEvent.change(field(), { target: { value: 'AI' } });
 
-    await userEvent.click(screen.getByRole('button', { name: /Chỉ theo Tài liệu/ }));
-
-    expect(
-      screen.getByText(/Phần kiến thức mở rộng được ghi nhãn riêng/),
-    ).toBeInTheDocument();
+    expect(screen.getByText('Tối thiểu 3 ký tự')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Gửi câu hỏi' })).toBeDisabled();
   });
 
-  it('should connect document-mode composer controls to the styled layout', () => {
-    render(<ChatInputForm onSend={vi.fn()} loading={false} />);
-
-    expect(screen.getByRole('button', { name: /Chỉ theo Tài liệu/ }))
-      .toHaveClass('chat-input-form__context-indicator--strict');
-    expect(screen.getByLabelText('Câu hỏi tri thức')).toHaveClass('chat-input-form__field');
-    expect(screen.getByRole('button', { name: 'Gửi' })).toHaveClass('chat-input-form__submit-btn');
-  });
-
-  it('should send the question and expose expanded mode styling when selected', () => {
+  it('should send with expanded knowledge after switching the scope', () => {
     const onSend = vi.fn();
     render(<ChatInputForm onSend={onSend} loading={false} />);
-    fireEvent.change(screen.getByLabelText('Câu hỏi tri thức'), { target: { value: 'Giải thích RAG' } });
-    fireEvent.click(screen.getByRole('button', { name: /Chỉ theo Tài liệu/ }));
 
-    expect(screen.getByRole('button', { name: /RAG \+ AI Mở rộng/ }))
-      .toHaveClass('chat-input-form__context-indicator--hybrid');
-    fireEvent.click(screen.getByRole('button', { name: 'Gửi' }));
+    fireEvent.click(screen.getByRole('radio', { name: /Mở rộng/ }));
+    fireEvent.change(field(), { target: { value: 'Giải thích RAG' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Gửi câu hỏi' }));
+
+    expect(screen.getByRole('radio', { name: /Mở rộng/ })).toHaveAttribute('aria-checked', 'true');
     expect(onSend).toHaveBeenCalledWith('Giải thích RAG', true);
+  });
+
+  it('should keep the draft editable and expose only the stop action while an answer is loading', () => {
+    const onSend = vi.fn();
+    const onCancel = vi.fn();
+    render(<ChatInputForm onSend={onSend} loading onCancel={onCancel} />);
+
+    fireEvent.change(field(), { target: { value: 'Câu hỏi tiếp theo' } });
+    fireEvent.keyDown(field(), { key: 'Enter' });
+    fireEvent.click(screen.getByRole('button', { name: 'Dừng tạo câu trả lời' }));
+
+    expect(field()).not.toBeDisabled();
+    expect(onSend).not.toHaveBeenCalled();
+    expect(onCancel).toHaveBeenCalledOnce();
+  });
+
+  it('should show the character counter only near the limit', () => {
+    render(<ChatInputForm onSend={vi.fn()} loading={false} />);
+    expect(screen.queryByText(/\/2\.000/)).not.toBeInTheDocument();
+
+    fireEvent.change(field(), { target: { value: 'a'.repeat(1700) } });
+
+    expect(screen.getByText('1.700/2.000')).toBeInTheDocument();
   });
 
   it('should block clicks and form submission when workspace AI is disabled', () => {
     const onSend = vi.fn();
     const { container } = render(<ChatInputForm onSend={onSend} loading={false} disabled />);
-    expect(screen.getByLabelText('Câu hỏi tri thức')).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Gửi' })).toBeDisabled();
-    fireEvent.change(screen.getByLabelText('Câu hỏi tri thức'), { target: { value: 'Giải thích RAG' } });
+    expect(field()).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Gửi câu hỏi' })).toBeDisabled();
+    fireEvent.change(field(), { target: { value: 'Giải thích RAG' } });
     fireEvent.submit(container.querySelector('form')!);
     expect(onSend).not.toHaveBeenCalled();
   });

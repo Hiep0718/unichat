@@ -96,6 +96,7 @@ export default function NewWorkspaceChatScreen() {
                 <MessageBubble
                   key={msg.id}
                   message={msg}
+                  workspaceId={id}
                   onPressCitation={(c) => setSelectedCitation(c)}
                 />
               ))}

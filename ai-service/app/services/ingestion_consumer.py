@@ -100,7 +100,12 @@ def process_ingestion_message(payload: dict[str, Any]) -> bool:
             stored_count,
             document_id,
         )
-        publish_ingestion_result(document_id, success=True, chunk_count=stored_count)
+        publish_ingestion_result(
+            document_id,
+            success=True,
+            chunk_count=stored_count,
+            indexed_character_count=sum(len(chunk.text) for chunk in chunks),
+        )
         return True
 
     except Exception as e:

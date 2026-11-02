@@ -396,10 +396,20 @@ public class DocumentService {
      */
     @Transactional
     public void updateIngestionResult(UUID documentId, DocumentStatus newStatus, int chunkCount) {
+        updateIngestionResult(documentId, newStatus, chunkCount, 0L);
+    }
+
+    /** Updates ingestion status and stores the completeness manifest reported by AI. */
+    @Transactional
+    public void updateIngestionResult(UUID documentId, DocumentStatus newStatus, int chunkCount,
+                                      long indexedCharacterCount) {
         Document document = documentRepository.findById(documentId)
                 .orElseThrow(() -> new NotFoundError("Document not found for ingestion result: " + documentId));
         document.setStatus(newStatus);
         document.setPageOrBlockCount(chunkCount);
+        document.setIndexedChunkCount(newStatus == DocumentStatus.PROCESSED ? chunkCount : null);
+        document.setIndexedCharacterCount(newStatus == DocumentStatus.PROCESSED ? indexedCharacterCount : null);
+        document.setIngestionCompletedAt(newStatus == DocumentStatus.PROCESSED ? Instant.now(clock) : null);
         document.setUpdatedAt(Instant.now(clock));
         documentRepository.save(document);
         log.info("Updated document {} status to {} with {} chunks", documentId, newStatus, chunkCount);

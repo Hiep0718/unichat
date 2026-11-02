@@ -3,7 +3,8 @@
 .tmp/
 .agents/
 .local-archive/
-.pipeline/
+.pipeline/*
+!.pipeline/decisions-log.md
 .repository-reorganization/
 .audit/
 .service-keys/
@@ -15,6 +16,7 @@ dev-service.ps1
 .env
 .env.*
 !.env.example
+!.env.production.example
 *.pem
 *.key
 
@@ -57,6 +59,11 @@ logs/
 .DS_Store
 Thumbs.db
 desktop.ini
+*.dtmp
+.*.dtmp
+
+# Evaluation and data
+data/
 
 # Office temporary locks
 ~$*

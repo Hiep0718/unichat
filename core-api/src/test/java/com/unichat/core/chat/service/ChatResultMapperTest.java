@@ -24,6 +24,14 @@ class ChatResultMapperTest {
         assertEquals("ANSWER",result.decision());assertEquals("Câu trả lời có nguồn.",result.answer());
         assertEquals("Nguồn thứ mười một.pdf",result.citations().get(0).fileName());
     }
+    @Test void shouldExposeActualModelForValidatedLiveAnswer() {
+        var raw = new java.util.HashMap<>(answer(citation(3, ChatFixture.DOCUMENT), documentSections(List.of("C1"))));
+        raw.put("provider", "deepseek-ai/deepseek-v4.1-flash-1017");
+
+        var result = mapper.convert(ChatFixture.operation(true), raw, UUID.randomUUID());
+
+        assertEquals("deepseek-ai/deepseek-v4.1-flash-1017", result.providerModel());
+    }
     @Test void shouldRefuseOutsideAllowlistOrStaleSourceVersion() {
         for (Object citation:List.of(citation(2,ChatFixture.DOCUMENT),citation(3,UUID.randomUUID()))) {
             var result=mapper.convert(ChatFixture.operation(true),answer(citation,documentSections(List.of("C1"))),UUID.randomUUID());

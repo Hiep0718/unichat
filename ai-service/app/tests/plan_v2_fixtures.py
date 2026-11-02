@@ -10,7 +10,11 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from app.core.rag.contracts import SourceVersion
+from app.core.rag.evidence_coverage import EvidenceCoverage
+from app.core.rag.evidence_retrieval import RetrievedEvidence
 from app.core.rag.generation_policy import GenerationPolicy
+from app.core.rag.question_plan import AnswerFacet, QuestionPlan
+from app.core.rag.question_planner import QuestionPlanningResult
 from app.core.rag.retrieval_engine import RetrievedChunkCandidate
 from app.core.security import verify_service_jwt
 
@@ -38,6 +42,29 @@ def candidate(**overrides: Any) -> RetrievedChunkCandidate:
         "ingestion_version": 2, "document_content_hash": DOCUMENT_HASH, **overrides,
     }
     return RetrievedChunkCandidate(**values)
+
+
+def fallback_planning_result(question: str) -> QuestionPlanningResult:
+    """Build an explicit deterministic planner fallback for pipeline unit tests."""
+    return QuestionPlanningResult(
+        QuestionPlan(
+            facets=[AnswerFacet(facet_id="facet_1", query=question, query_variants=[])]
+        ),
+        "FALLBACK",
+        "PROVIDER_UNAVAILABLE",
+    )
+
+
+def retrieved_evidence(
+    candidates: list[RetrievedChunkCandidate] | None = None,
+) -> RetrievedEvidence:
+    """Build deterministic retrieval output for answer-pipeline unit tests."""
+    selected = candidates or []
+    coverage = EvidenceCoverage(
+        ("facet_1",) if selected else (),
+        () if selected else ("facet_1",),
+    )
+    return RetrievedEvidence(selected, selected, coverage)
 
 
 def payload(**overrides: Any) -> dict[str, Any]:

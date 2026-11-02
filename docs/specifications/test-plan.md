@@ -32,6 +32,7 @@ UI component ưu tiên interaction unit test và E2E happy path; không đặt m
 - Không skip test; quarantine phải có issue, owner và deadline.
 - Integration DB dùng Testcontainers PostgreSQL; AI adapter dùng ephemeral/fake Chroma phù hợp contract.
 - Provider fake trả fixture JSON; CI chặn outbound network.
+- Đánh giá trực tiếp trên Chroma Cloud là bài staging read-only được gọi riêng, không thuộc CI tự động và bắt buộc dùng document allowlist do Core cấp. Không ghi, sửa hoặc xóa collection Cloud hiện có.
 
 ## 3. Traceability acceptance criteria
 
@@ -95,6 +96,7 @@ MSW mock toàn bộ Core API trong unit/component test. Playwright chạy với 
 - strategy/evidence: table-driven test mọi intent và boundary threshold.
 - vector: metadata filter, ranking, delete/upsert idempotent.
 - generation: structured JSON, citation validation, retry once/refuse.
+- definition evidence: title-only phải REFUSE trước provider; đoạn định nghĩa khác locator phải vào prompt và citation trỏ đúng locator hỗ trợ.
 - fallback: chỉ timeout/429/5xx; tối đa một lần.
 - logging: không raw prompt/chunk/API key.
 
@@ -119,14 +121,16 @@ MSW mock toàn bộ Core API trong unit/component test. Playwright chạy với 
 
 ## 8. Research evaluation
 
-- 120 case, 20 mỗi intent.
-- 60 development và 60 holdout, 10 mỗi intent/tập; split theo topic group.
-- Hai người gán nhãn độc lập; Cohen kappa mục tiêu ≥0,70.
-- Paired bootstrap 1.000 mẫu, confidence interval 95%.
-- Primary: source hit@K và citation source accuracy.
-- Safety: claim support, locator accuracy, refusal F1, cross-Workspace leakage.
-- Cost: p50/p95 latency, prompt tokens, chunks và fallback rate.
-- Không đổi corpus/model/prompt/dataset giữa baseline/adaptive ngoài retrieval strategy.
+- Dùng corpus và question set cố định, được ủy quyền, có manifest/hash bất biến. `total_cases=120` sinh động từ Chroma chỉ là draft/fixture-authoring aid, không phải gold benchmark.
+- Split development/holdout theo document-family/topic cluster; mọi paraphrase song ngữ và biến thể nhiều lượt cùng cluster phải nằm trong một split. Không dùng holdout để tuning.
+- Cỡ mẫu được xác định sau data gate theo độ phủ intent/ngôn ngữ/document type và số cluster độc lập. Nếu dưới 20 cluster độc lập, chỉ báo cáo mô tả và giới hạn bất định; không tuyên bố ý nghĩa thống kê.
+- So sánh baseline/candidate dùng paired cluster-bootstrap percentile hai phía 95%, 10.000 lần lấy mẫu và seed cố định được ghi trong report.
+- Human rating dùng thang 1–5 có anchor cho directness, completeness, useful uncertainty, citation correctness và refusal appropriateness; factual support được chấm riêng. Hai rater chấm độc lập tối thiểu 20% case, hoặc toàn bộ khi tập nhỏ; ẩn strategy/model và randomize thứ tự khi khả thi; báo cáo Krippendorff's alpha ordinal, số bất đồng và kết quả adjudication.
+- Primary: Recall@K/MRR, source hit@K và citation source accuracy.
+- Safety: claim support, locator accuracy, false-refusal/false-answer, refusal appropriateness và cross-Workspace leakage.
+- Cost: p50/p95 latency, prompt tokens, số query/chunks và provider/fallback rate khi được phép.
+- Không đổi corpus, split, gold labels hoặc cấu hình ngoài thành phần candidate được công bố giữa baseline/candidate; mọi khác biệt model/prompt/strategy phải được version/hash và phê duyệt theo scope.
+- Entry point benchmark chuẩn phải dùng fixed dataset và canonical `app/evaluation` runner/metrics/report; unit test riêng lẻ không được thay thế integration test của entrypoint.
 
 ## 9. Evidence artifacts
 
@@ -150,3 +154,11 @@ Compile, typecheck, lint, unit, integration và E2E đều pass; core logic cove
 - PostgreSQL gate races: shared reservation/START đối đầu exclusive state update, replay trước block, stale version409, same-state no-op, DRAINING counts RUNNING/pending, unknown pending giữ nguyên. Database tests dùng disposable instance, không shared Supabase.
 - ADMIN/web/mobile: gate RBAC, status/transition/audit/maintenance header, model/key selection tách history filter, GENERATION notice, missing usage không hiển thị0, friendly provider failures không evidence escalation.
 - CI chưa có Playwright job; lưu riêng evidence E2E local với mocked network. Real Hive smoke cần approval/credit và fixture được phép, không dùng legacy synthetic research evaluation để kết luận chất lượng.
+
+## 12. Gemini primary / Hive fallback acceptance — ADR-024
+
+- Route unit tests: Gemini primary → Gemini secondary → Hive, tối đa ba attempts; target thành công được pin cho validation retry.
+- Failure matrix: chỉ timeout/429/5xx/network advance; 400/401/403, safety, evidence, citation/schema, policy, config và cancel không fallback.
+- Purpose matrix: CHAT/COMPACTION dùng route; QUERY_PLAN chỉ Gemini rồi deterministic original-query fallback; ADMIN_PROMPT/KEY_PROBE exact target.
+- Registry/readiness/admin tests: primary/fallback metadata nhất quán xuyên AI Service, Core và Web; không provider call thật trong test.
+- RAG regression: retrieval, evidence coverage, citation validation, model attribution, history và compaction giữ nguyên contract.

@@ -23,6 +23,10 @@ class Settings(ProviderSettings):
         validation_alias="FRONTEND_ORIGIN",
     )
     log_level: str = Field(default="INFO", validation_alias="LOG_LEVEL")
+    workspace_summary_enabled: bool = Field(default=False, validation_alias="WORKSPACE_SUMMARY_ENABLED")
+    workspace_summary_input_char_budget: int = Field(
+        default=6000, ge=1000, le=20000, validation_alias="WORKSPACE_SUMMARY_INPUT_CHAR_BUDGET"
+    )
 
     # RabbitMQ — supports amqp:// (local) and amqps:// (CloudAMQP)
     rabbitmq_url: str = Field(

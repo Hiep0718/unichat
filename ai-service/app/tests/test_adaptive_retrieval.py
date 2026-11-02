@@ -36,6 +36,28 @@ def test_evidence_gate_answer_on_high_similarity() -> None:
     assert gate_res.evidence_score >= strategy.evidence_gate_threshold
 
 
+def test_evidence_gate_refuses_title_only_definition_despite_high_similarity() -> None:
+    strategy = get_strategy(IntentEnum.DEFINITION)
+    candidates = [
+        RetrievedChunkCandidate(
+            "title-chunk",
+            "doc1",
+            "Architecture Characteristics Defined",
+            0.95,
+            "SLIDE_NUMBER",
+            "slide:4",
+            "hash1",
+            section_heading="Architecture Characteristics Defined",
+        )
+    ]
+
+    gate_res = evaluate_evidence(IntentEnum.DEFINITION, strategy, candidates)
+
+    assert gate_res.decision == DecisionEnum.REFUSE
+    assert gate_res.evidence_score == 0.0
+    assert "chưa tìm thấy đoạn định nghĩa trực tiếp" in (gate_res.refusal_reason or "")
+
+
 def test_evidence_gate_comparison_adaptive_single_doc_workspace() -> None:
     """COMPARISON with single document workspace should not refuse if workspace_document_count=1."""
     strategy = get_strategy(IntentEnum.COMPARISON)
@@ -50,4 +72,43 @@ def test_evidence_gate_comparison_adaptive_single_doc_workspace() -> None:
         workspace_document_count=1,
     )
     assert gate_res.decision == DecisionEnum.ANSWER
+
+
+def test_should_classify_corpus_overview_as_summary_and_keep_concept_as_definition() -> None:
+    overview_queries = [
+        "Các kiến trúc đề cập trong tài liệu là gì",
+        "Những mô hình nào được trình bày trong bài giảng?",
+        "Trong tài liệu có những kiến trúc nào?",
+        "Liệt kê các phong cách kiến trúc phần mềm",
+    ]
+    for query in overview_queries:
+        assert detect_intent(query).intent == IntentEnum.SUMMARY
+
+    assert detect_intent("microservice là gì").intent == IntentEnum.DEFINITION
+    assert detect_intent("Trong tài liệu này, microservice là gì?").intent == IntentEnum.DEFINITION
+
+
+def test_should_include_source_filename_and_section_heading_in_generation_prompt() -> None:
+    from unittest.mock import patch
+
+    from app.core.rag.llm_provider import generate_rag_answer
+    from app.core.rag.provider_gateway import ProviderResult
+    from app.tests.plan_v2_fixtures import DOCUMENT_ID, candidate, generated, policy, source
+
+    chunk = candidate(locator_value="slide:12", section_heading="Microservices Topology")
+    doc_source = source(fileName="07._Microservices.pdf")
+    provider_reply = ProviderResult(generated(), "gemini", "gemini-3.5-flash", "primary")
+
+    with patch("app.core.rag.llm_provider.generate", return_value=provider_reply) as mock_gen:
+        result = generate_rag_answer(
+            "Các kiến trúc đề cập trong tài liệu là gì?",
+            [chunk],
+            [DOCUMENT_ID],
+            policy=policy(),
+            sources=[doc_source],
+        )
+
+    prompt = mock_gen.call_args.args[0]
+    assert result["validationFailed"] is False
+    assert "[1] Nguồn: 07._Microservices.pdf (slide:12) | Mục: Microservices Topology:\n" in prompt
 

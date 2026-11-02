@@ -17,6 +17,8 @@ from app.core.rag.conversation_memory import (
     acompact_conversation,
     compact_conversation,
 )
+from app.core.rag.evidence_coverage import EvidenceCoverage
+from app.core.rag.evidence_retrieval import RetrievedEvidence
 from app.core.rag.llm_provider import generate_rag_answer
 from app.core.rag.provider_contracts import GenerationCancelled, ProviderFailure, ProviderResult
 from app.core.rag.stream_provider import _execute_stream
@@ -25,6 +27,7 @@ from app.tests.plan_v2_fixtures import (
     DOCUMENT_ID,
     api_client,
     candidate,
+    fallback_planning_result,
     generated,
     payload,
     policy,
@@ -175,7 +178,20 @@ def test_should_preserve_maintenance_http_code_for_admin_start(
 def test_should_copy_actual_model_attribution_into_private_response() -> None:
     actual_model = "deepseek-ai/deepseek-v4.1-flash-1017"
     result = ProviderResult(generated(), "hive", actual_model, "hive-primary")
-    with patch("app.core.rag.answer_pipeline.retrieve_chunks", return_value=[candidate()]):
-        with patch("app.core.rag.llm_provider.generate", return_value=result):
-            response = api_client(router).post("/internal/v1/retrieval/answers", json=payload())
+    with (
+        patch(
+            "app.core.rag.answer_pipeline.plan_question",
+            side_effect=lambda question, *_: fallback_planning_result(question),
+        ),
+        patch(
+            "app.core.rag.answer_pipeline.retrieve_planned_evidence",
+            return_value=RetrievedEvidence(
+                candidates=[candidate()],
+                direct_candidates=[candidate()],
+                coverage=EvidenceCoverage(("facet_1",), ()),
+            ),
+        ),
+        patch("app.core.rag.llm_provider.generate", return_value=result),
+    ):
+        response = api_client(router).post("/internal/v1/retrieval/answers", json=payload())
     assert response.json()["provider"] == actual_model

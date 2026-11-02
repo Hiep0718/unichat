@@ -36,6 +36,9 @@ public class ProviderMetricsService {
         result.put("keys", registry.getOrDefault("keys", List.of())); result.put("models", models);
         result.put("configuredModels", registry.getOrDefault("configuredModels", registry.getOrDefault("models", List.of())));
         result.put("activeProvider", registry.get("activeProvider")); result.put("activeModel", registry.get("activeModel"));
+        result.put("primaryProvider", registry.getOrDefault("primaryProvider", registry.get("activeProvider")));
+        result.put("fallbackProvider", registry.get("fallbackProvider"));
+        result.put("fallbackModel", registry.get("fallbackModel"));
         result.put("historicalKeys", repository.historicalKeys());
         result.put("registryStatus", registry.getOrDefault("status", "AVAILABLE"));
         result.put("tier", registry.getOrDefault("tier", "UNKNOWN"));

@@ -62,6 +62,24 @@ describe('ChatMessageItem', () => {
     expect(onSelectCitation).toHaveBeenCalledWith(citation);
   });
 
+  it('should disclose when expanded mode has no configured web search', () => {
+    const message: MessageItem = {
+      ...refusalMessage,
+      content: 'Câu trả lời dựa trên tài liệu.',
+      response: {
+        ...refusalMessage.response!,
+        decision: 'ANSWER',
+        answer: 'Câu trả lời dựa trên tài liệu.',
+        knowledgeMode: 'EXPANDED',
+        warningMessage: 'Chưa cấu hình tìm kiếm web; câu trả lời hiện chỉ dựa trên tài liệu.',
+      },
+    };
+
+    render(<ChatMessageItem message={message} />);
+
+    expect(screen.getByText(/Chưa cấu hình tìm kiếm web/)).toHaveAttribute('role', 'note');
+  });
+
   it('should retain the community action for a genuine knowledge gap', () => {
     const onAskCommunity = vi.fn();
     const message = { ...refusalMessage, response: { ...refusalMessage.response!, refusalCode: 'EVIDENCE_INSUFFICIENT' } };
@@ -86,5 +104,12 @@ describe('ChatMessageItem', () => {
     expect(container.querySelector('.chat-msg__bubble--thinking')).toBeInTheDocument();
     expect(container.querySelector('.chat-msg__thinking-dots')).toBeInTheDocument();
     expect(screen.getByText('UniChat AI đang suy nghĩ…')).toBeInTheDocument();
+  });
+
+  it('should not render a ghost bubble after an assistant request fails', () => {
+    const message: MessageItem = { id: 'assistant-failed', role: 'ASSISTANT', content: '', isStreaming: false };
+    const { container } = render(<ChatMessageItem message={message} />);
+
+    expect(container).toBeEmptyDOMElement();
   });
 });

@@ -44,8 +44,8 @@ def test_should_fallback_only_for_transient_errors(monkeypatch: pytest.MonkeyPat
     monkeypatch.setenv("ENABLE_OLLAMA_FALLBACK", "true")
     context = fake_policy()
     events = []
-    result = ProviderResult("answer", "ollama", "local", "ollama-local")
-    with patch("app.core.rag.provider_gateway.configured_keys",
+    result = ProviderResult("answer", "ollama", "llama3", "ollama-local")
+    with patch("app.core.rag.provider_routing.configured_keys",
                return_value=[ProviderKey("primary", "PRIMARY", "secret")]):
         with patch("app.core.rag.provider_gateway._gemini",
                    side_effect=ProviderFailure(code, transient)) as primary:
@@ -67,7 +67,7 @@ def test_should_fallback_only_for_transient_errors(monkeypatch: pytest.MonkeyPat
 def test_should_never_call_model_without_durable_attempt_start() -> None:
     context = fake_policy()
     context.record.side_effect = ServiceSecurityError("CORE_POLICY_UNAVAILABLE")
-    with patch("app.core.rag.provider_gateway.configured_keys",
+    with patch("app.core.rag.provider_routing.configured_keys",
                return_value=[ProviderKey("primary", "PRIMARY", "secret")]):
         with patch("app.core.rag.provider_gateway._gemini") as model:
             with pytest.raises(ServiceSecurityError):
@@ -75,20 +75,23 @@ def test_should_never_call_model_without_durable_attempt_start() -> None:
     model.assert_not_called()
 
 
-def test_should_checkpoint_again_before_fallback_and_limit_fallback_across_retries(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_should_pin_fallback_target_across_validation_retries(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("ENABLE_OLLAMA_FALLBACK", "true")
     context = fake_policy()
     budget = AttemptBudget()
-    with patch("app.core.rag.provider_gateway.configured_keys",
+    with patch("app.core.rag.provider_routing.configured_keys",
                return_value=[ProviderKey("primary", "PRIMARY", "secret")]):
         with patch("app.core.rag.provider_gateway._gemini",
                    side_effect=ProviderFailure("PROVIDER_TIMEOUT", True)):
             with patch("app.core.rag.provider_gateway._ollama",
-                       return_value=ProviderResult("answer", "ollama", "local", "local")) as fallback:
+                       return_value=ProviderResult(
+                           "answer", "ollama", "llama3", "ollama-local"
+                       )) as fallback:
                 generate("prompt", context, budget=budget)
-                with pytest.raises(ProviderFailure):
-                    generate("same prompt", context, budget=budget)
-    assert fallback.call_count == 1
+                generate("same prompt", context, budget=budget)
+    assert fallback.call_count == 2
+    assert budget.pinned_target is not None
+    assert budget.pinned_target.provider == "ollama"
     assert context.checkpoint.call_count >= 5
 
 
@@ -96,7 +99,7 @@ def test_should_stop_when_core_revokes_policy_between_attempts(monkeypatch: pyte
     monkeypatch.setenv("ENABLE_OLLAMA_FALLBACK", "true")
     context = fake_policy()
     context.checkpoint.side_effect = [30, 30, GenerationPolicyError("CORE_POLICY_DENIED")]
-    with patch("app.core.rag.provider_gateway.configured_keys",
+    with patch("app.core.rag.provider_routing.configured_keys",
                return_value=[ProviderKey("primary", "PRIMARY", "secret")]):
         with patch("app.core.rag.provider_gateway._gemini",
                    side_effect=ProviderFailure("PROVIDER_TIMEOUT", True)):
@@ -108,10 +111,12 @@ def test_should_stop_when_core_revokes_policy_between_attempts(monkeypatch: pyte
 
 def test_should_keep_unmeasured_usage_null() -> None:
     context = fake_policy()
-    with patch("app.core.rag.provider_gateway.configured_keys",
+    with patch("app.core.rag.provider_routing.configured_keys",
                return_value=[ProviderKey("primary", "PRIMARY", "secret")]):
         with patch("app.core.rag.provider_gateway._gemini",
-                   return_value=ProviderResult("answer", "gemini", "test", "primary")):
+                   return_value=ProviderResult(
+                       "answer", "gemini", "gemini-3.5-flash", "primary"
+                   )):
             generate("prompt", context)
     event = context.record.call_args.args[0]
     assert event["inputTokens"] is None
@@ -146,5 +151,62 @@ def test_should_respect_core_remaining_deadline_and_attempt_timeout() -> None:
     response = {"allowed": True, "cloudAllowed": True, "deadlineAt": deadline.isoformat()}
     with patch("app.core.rag.generation_policy.call_core", return_value=response):
         assert 0 < policy().checkpoint("CHAT") <= 8
+
+
+def test_should_route_two_transient_gemini_failures_to_hive(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("LLM_PROVIDER", "gemini")
+    monkeypatch.setenv("LLM_FALLBACK_PROVIDER", "hive")
+    monkeypatch.setenv("ENABLE_PROVIDER_FALLBACK", "true")
+    monkeypatch.setenv("GEMINI_API_KEY", "gemini-primary-fixture")
+    monkeypatch.setenv("GEMINI_API_KEY_2", "gemini-secondary-fixture")
+    monkeypatch.setenv("HIVE_API_KEY", "hive-primary-fixture")
+    context = fake_policy()
+    events: list[str] = []
+    expected = ProviderResult("answer", "hive", "deepseek-ai/deepseek-v4.1-flash-1017",
+                              "hive-primary")
+
+    with patch("app.core.rag.provider_gateway._gemini",
+               side_effect=ProviderFailure("PROVIDER_TIMEOUT", True)) as gemini:
+        with patch("app.core.rag.provider_gateway.generate_hive", return_value=expected) as hive:
+            result = generate("prompt", context,
+                              observer=lambda kind, data: events.append(kind))
+
+    assert result == expected
+    assert gemini.call_count == 2
+    assert hive.call_count == 1
+    assert events.count("reset") == 2
+    assert context.record.call_count == 6
+
+
+def test_should_not_fallback_to_hive_for_non_transient_gemini_failure(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("LLM_PROVIDER", "gemini")
+    monkeypatch.setenv("LLM_FALLBACK_PROVIDER", "hive")
+    monkeypatch.setenv("ENABLE_PROVIDER_FALLBACK", "true")
+    monkeypatch.setenv("GEMINI_API_KEY", "gemini-primary-fixture")
+    monkeypatch.setenv("GEMINI_API_KEY_2", "gemini-secondary-fixture")
+    monkeypatch.setenv("HIVE_API_KEY", "hive-primary-fixture")
+
+    with patch("app.core.rag.provider_gateway._gemini",
+               side_effect=ProviderFailure("PROVIDER_HTTP_403")) as gemini:
+        with patch("app.core.rag.provider_gateway.generate_hive") as hive:
+            with pytest.raises(ProviderFailure, match="PROVIDER_HTTP_403"):
+                generate("prompt", fake_policy())
+
+    assert gemini.call_count == 1
+    hive.assert_not_called()
+
+
+def test_should_classify_network_errors_as_transient() -> None:
+    request = httpx.Request("POST", "https://provider.invalid")
+    error = httpx.ConnectError("redacted", request=request)
+
+    failure = classify_failure(error)
+
+    assert failure.code == "PROVIDER_NETWORK_ERROR"
+    assert failure.transient is True
 
 

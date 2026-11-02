@@ -1,6 +1,7 @@
 """Validated RAG wire types and immutable source provenance."""
 
 from typing import Literal
+from datetime import datetime
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -14,6 +15,9 @@ class SourceVersion(BaseModel):
     ingestionVersion: int = Field(ge=1, strict=True)
     contentHash: str = Field(pattern=r"^[a-f0-9]{64}$")
     fileName: str = Field(min_length=1, max_length=255)
+    indexedChunkCount: int | None = Field(default=None, ge=0, strict=True)
+    indexedCharacterCount: int | None = Field(default=None, ge=0, strict=True)
+    ingestionCompletedAt: datetime | None = None
 
 
 class SourceDependency(BaseModel):
@@ -113,3 +117,5 @@ class RetrievalAnswerResponse(BaseModel):
     summarySources: list[SourceDependency] = Field(default_factory=list)
     singleSourceWarning: bool = False
     warningMessage: str | None = None
+    planStatus: Literal["PLANNED", "FALLBACK"] | None = None
+    uncoveredFacets: list[str] = Field(default_factory=list, max_length=4)

@@ -36,7 +36,7 @@ dev = [
 
 
 [tool.pytest.ini_options]
-testpaths = ["app/tests", "app/core/rag/tests"]
+testpaths = ["app/tests", "app/core/rag/tests", "app/services"]
 pythonpath = ["."]
 addopts = "--strict-config --strict-markers"
 
@@ -51,6 +51,7 @@ ignore = ["ANN401"]
 [tool.ruff.lint.per-file-ignores]
 "app/tests/**/*.py" = ["S101", "ANN", "E501", "B017"]
 "app/core/rag/tests/**/*.py" = ["S101", "ANN", "E501", "B017"]
+"app/services/test_*.py" = ["S101", "ANN", "E501", "B017"]
 "conftest.py" = ["ANN"]
 
 [tool.mypy]
@@ -61,7 +62,7 @@ plugins = ["pydantic.mypy"]
 [tool.coverage.run]
 branch = true
 source = ["app"]
-omit = ["app/tests/*", "app/core/rag/tests/*"]
+omit = ["app/tests/*", "app/core/rag/tests/*", "app/services/test_*.py"]
 
 [tool.coverage.report]
 fail_under = 80

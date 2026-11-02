@@ -115,7 +115,7 @@ Reason: reproducibility quan trọng hơn chạy theo major mới.
 
 ## ADR-018 — Testing/evaluation
 
-Decision: unit ≥80% core logic; integration cho mọi API/DB; Playwright cho critical flows; network ngoài hệ thống luôn mock. Nghiên cứu dùng 120 case, 60 development/60 holdout, split theo topic group.
+Decision: unit ≥80% core logic; integration cho mọi API/DB; Playwright cho critical flows; network ngoài hệ thống luôn mock. Giao thức nghiên cứu ban đầu dự kiến 120 case, 60 development/60 holdout theo topic group; phần cỡ mẫu, bootstrap và chấm nhãn được ADR-023 thay thế sau khi xác nhận tập 120 case hiện tại chỉ là draft động, chưa phải gold dataset được ủy quyền.
 
 Reason: tách kiểm thử phần mềm khỏi đánh giá nghiên cứu và ngăn data leakage.
 
@@ -190,6 +190,18 @@ Reason: tránh phụ thuộc Google AI Studio free, giữ hành vi nguồn/quy�
 Decision: gate singleton `ai_generation_control` trong PostgreSQL là nguồn admission chung: OPEN nhận mới, DRAINING chỉ cho operation cũ/replay/control tiếp tục, VERIFYING chỉ nhận thêm ADMIN diagnostics. Shared row lock bảo vệ reservation/diagnostic START; exclusive lock bảo vệ đổi trạng thái/version. Không giữ transaction khi gọi AI, không cache gate, không bỏ pending không xác định để vượt drain.
 
 Reason: restart hoặc rollback không được cắt operation đang chạy. Public subscriber detach độc lập với operation; private disconnect/cancel/policy denial dừng generation. Idle read timeout5s không phải SLA hủy toàn worker. Migration gate, live cutover và provider smoke là delivery actions riêng.
+
+## ADR-023 — Giao thức đánh giá retrieval có dữ liệu cố định và cluster-aware
+
+Decision: evaluator phải dùng corpus/question set cố định, có quyền sử dụng, manifest/hash bất biến và split development/holdout theo document-family/topic cluster. Không coi `total_cases=120` sinh động từ Chroma là gold benchmark. So sánh baseline/candidate dùng paired cluster-bootstrap hai phía 95%, 10.000 lần lấy mẫu và seed được ghi lại; nếu có dưới 20 cluster độc lập thì chỉ báo cáo mô tả, không tuyên bố ý nghĩa thống kê. Human rating dùng thang 1–5 có anchor, ẩn danh chiến lược và randomize thứ tự khi khả thi; hai rater chấm độc lập tối thiểu 20% số case (toàn bộ khi tập nhỏ), báo cáo Krippendorff's alpha cho dữ liệu ordinal và adjudicate bất đồng.
+
+Reason: paraphrase song ngữ, biến thể nhiều lượt và case cùng tài liệu không độc lập; bootstrap theo từng case sẽ đánh giá thấp độ bất định. Protocol cũ 1.000 bootstrap/Cohen kappa/fixed 120 cases không còn phù hợp khi chưa có gold dataset và khi tỷ lệ double-rating có thể nhỏ hơn 100%. Thay đổi này chỉ cập nhật hợp đồng thiết kế; triển khai evaluator, xử lý corpus và chạy provider vẫn cần phê duyệt riêng.
+
+## ADR-024 — Gemini primary với Hive fallback có giới hạn
+
+Decision: supersede thứ tự provider của ADR-011/ADR-022 cho route mới. CHAT và COMPACTION gọi Gemini primary, Gemini secondary nếu cấu hình, rồi Hive fallback, tối đa ba attempts. Chỉ timeout, HTTP 429/5xx và lỗi mạng đã phân loại được advance. QUERY_PLAN chỉ dùng Gemini rồi trả về câu hỏi gốc khi thất bại; ADMIN_PROMPT và KEY_PROBE chỉ gọi target admin chọn. Validation retry giữ nguyên provider/key/model vừa thành công. Ollama không thuộc route mới; chế độ legacy vẫn được hỗ trợ khi provider fallback bị tắt rõ ràng.
+
+Reason: Gemini giữ vai trò core như thiết kế ban đầu và hai khóa chia tải/failover, trong khi Hive cung cấp khả năng phục hồi có kiểm soát. Typed failover ngăn lỗi xác thực, safety, evidence, citation/schema, policy hoặc cancellation bị che khuất, đồng thời không thay đổi Adaptive RAG và ranh giới authorization của Core.
 
 ## Consequences
 

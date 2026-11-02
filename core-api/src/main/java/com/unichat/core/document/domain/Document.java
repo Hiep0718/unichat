@@ -50,6 +50,15 @@ public class Document {
     @Column(name = "page_or_block_count", nullable = false)
     private int pageOrBlockCount;
 
+    @Column(name = "indexed_chunk_count")
+    private Integer indexedChunkCount;
+
+    @Column(name = "indexed_character_count")
+    private Long indexedCharacterCount;
+
+    @Column(name = "ingestion_completed_at")
+    private Instant ingestionCompletedAt;
+
     @Version
     @Column(name = "version", nullable = false)
     private Long version;
@@ -164,6 +173,24 @@ public class Document {
     public void setPageOrBlockCount(int pageOrBlockCount) {
         this.pageOrBlockCount = pageOrBlockCount;
     }
+
+    /** Returns the exact number of indexed chunks reported by ingestion. */
+    public Integer getIndexedChunkCount() { return indexedChunkCount; }
+
+    /** Sets the verified indexed chunk count from the ingestion worker. */
+    public void setIndexedChunkCount(Integer indexedChunkCount) { this.indexedChunkCount = indexedChunkCount; }
+
+    /** Returns the number of indexed text characters reported by ingestion. */
+    public Long getIndexedCharacterCount() { return indexedCharacterCount; }
+
+    /** Sets the indexed character count from the ingestion worker. */
+    public void setIndexedCharacterCount(Long indexedCharacterCount) { this.indexedCharacterCount = indexedCharacterCount; }
+
+    /** Returns when ingestion completed successfully. */
+    public Instant getIngestionCompletedAt() { return ingestionCompletedAt; }
+
+    /** Records successful manifest completion time. */
+    public void setIngestionCompletedAt(Instant ingestionCompletedAt) { this.ingestionCompletedAt = ingestionCompletedAt; }
 
     public Long getVersion() {
         return version;

@@ -1,17 +1,21 @@
 """Hybrid 3-level chunker module (Header -> Paragraph -> Sentence)."""
 
 import hashlib
+import re
+from dataclasses import dataclass
 from typing import Any
 
-from app.services.sentence_splitter import split_sentences
 from app.services.text_extractor import ExtractedBlock, ExtractedChunk
 
 DEFAULT_MAX_CHUNK_SIZE = 3000
 DEFAULT_MIN_CHUNK_SIZE = 200
 DEFAULT_SENTENCE_OVERLAP = 2
+CHUNKING_VERSION = "2.0"
 
 
 class ChunkResult:
+    """Text chunk with a single source locator and deterministic content hash."""
+
     def __init__(
         self,
         chunk_index: int,
@@ -31,6 +35,7 @@ class ChunkResult:
         self.chunk_level = chunk_level
 
     def to_dict(self) -> dict[str, Any]:
+        """Serialize chunk metadata for existing ingestion consumers."""
         return {
             "chunk_index": self.chunk_index,
             "text": self.text,
@@ -42,7 +47,23 @@ class ChunkResult:
         }
 
 
+@dataclass(frozen=True)
+class _SourceGroup:
+    blocks: list[ExtractedBlock]
+    heading: str | None
+
+
+@dataclass(frozen=True)
+class _RawChunk:
+    text: str
+    locator_type: str
+    locator_value: str
+    heading: str | None
+    level: int
+
+
 def compute_hash(text: str) -> str:
+    """Return the UTF-8 SHA-256 digest of source text."""
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
@@ -52,160 +73,188 @@ def chunk_blocks_hybrid(
     min_chunk_size: int = DEFAULT_MIN_CHUNK_SIZE,
     sentence_overlap: int = DEFAULT_SENTENCE_OVERLAP,
 ) -> list[ChunkResult]:
-    """Hybrid 3-level chunking: Header (Level 1) -> Paragraph (Level 2) -> Sentence (Level 3)."""
+    """Create lossless chunks whose text shares one source locator."""
     if not blocks:
         return []
+    _validate_options(max_chunk_size, min_chunk_size, sentence_overlap)
+    raw_chunks = [
+        chunk
+        for group in _group_source_blocks(blocks)
+        for chunk in _chunks_for_group(group, max_chunk_size, sentence_overlap)
+    ]
+    merged = _merge_short_chunks(raw_chunks, min_chunk_size, max_chunk_size)
+    return _to_chunk_results(merged)
 
-    # 1. Group blocks by sections (Level 1)
-    sections: list[dict[str, Any]] = []
-    current_heading: str | None = None
-    current_blocks: list[ExtractedBlock] = []
 
+def _validate_options(max_size: int, min_size: int, overlap: int) -> None:
+    if max_size < 1 or min_size < 0 or overlap < 0:
+        raise ValueError("Chunk limits must be non-negative and max size must be positive.")
+
+
+def _group_source_blocks(blocks: list[ExtractedBlock]) -> list[_SourceGroup]:
+    groups: list[_SourceGroup] = []
+    current: list[ExtractedBlock] = []
+    heading: str | None = None
+    current_key: tuple[str, str, str | None] | None = None
     for block in blocks:
         if block.block_type == "HEADING":
-            if current_blocks:
-                sections.append({
-                    "heading": current_heading,
-                    "blocks": current_blocks,
-                })
-                current_blocks = []
-            current_heading = block.text
-            current_blocks.append(block)
-        else:
-            current_blocks.append(block)
+            heading = block.text
+        key = (block.locator_type, block.locator_value, heading)
+        if current and key != current_key:
+            groups.append(_SourceGroup(current, current_key[2] if current_key else None))
+            current = []
+        current.append(block)
+        current_key = key
+    if current:
+        groups.append(_SourceGroup(current, heading))
+    return groups
 
-    if current_blocks:
-        sections.append({
-            "heading": current_heading,
-            "blocks": current_blocks,
-        })
 
-    # 2. Process sections into chunks
-    raw_chunks: list[dict[str, Any]] = []
+def _chunks_for_group(
+    group: _SourceGroup, max_size: int, overlap: int
+) -> list[_RawChunk]:
+    text = "\n\n".join(block.text for block in group.blocks)
+    if not text:
+        return []
+    first = group.blocks[0]
+    level = 1 if len(text) <= max_size else 3
+    effective_overlap = 0 if all(block.block_type == "TABLE" for block in group.blocks) else overlap
+    pieces = [text] if level == 1 else _pack_source_text(text, max_size, effective_overlap)
+    return [
+        _RawChunk(piece, first.locator_type, first.locator_value, group.heading, level)
+        for piece in pieces
+    ]
 
-    for sec in sections:
-        sec_heading = sec["heading"]
-        sec_blocks: list[ExtractedBlock] = sec["blocks"]
-        sec_text = "\n\n".join(b.text for b in sec_blocks)
 
-        # Level 1: Full Section fits in max_chunk_size
-        if len(sec_text) <= max_chunk_size:
-            raw_chunks.append({
-                "text": sec_text,
-                "locator_type": sec_blocks[0].locator_type,
-                "locator_value": sec_blocks[0].locator_value,
-                "heading": sec_heading,
-                "level": 1,
-            })
-            continue
+def _pack_source_text(text: str, max_size: int, overlap: int) -> list[str]:
+    units = _sentence_units(text)
+    bounded_units = [
+        piece
+        for unit in units
+        for piece in (_split_oversized_unit(unit, max_size) if len(unit) > max_size else [unit])
+    ]
+    return _pack_units(bounded_units, max_size, overlap)
 
-        # Level 2: Section too large -> Split by paragraphs / blocks
-        for block in sec_blocks:
-            b_text = block.text
-            if len(b_text) <= max_chunk_size:
-                raw_chunks.append({
-                    "text": b_text,
-                    "locator_type": block.locator_type,
-                    "locator_value": block.locator_value,
-                    "heading": sec_heading,
-                    "level": 2,
-                })
-            elif block.block_type == "TABLE":
-                # TABLE too large: truncate at max_chunk_size
-                raw_chunks.append({
-                    "text": b_text[:max_chunk_size],
-                    "locator_type": block.locator_type,
-                    "locator_value": block.locator_value,
-                    "heading": sec_heading,
-                    "level": 2,
-                })
-            else:
-                # Level 3: Paragraph too large -> Split by sentences with overlap
-                sentences = split_sentences(b_text)
-                if not sentences:
-                    continue
 
-                sentence_idx = 0
-                while sentence_idx < len(sentences):
-                    accumulated: list[str] = []
-                    acc_len = 0
+def _sentence_units(text: str) -> list[str]:
+    boundaries = [match.end() for match in re.finditer(r"(?<=[.!?])\s+|\n+|;\n+", text)]
+    units: list[str] = []
+    start = 0
+    for boundary in boundaries:
+        if boundary > start:
+            units.append(text[start:boundary])
+            start = boundary
+    if start < len(text):
+        units.append(text[start:])
+    return units or [text]
 
-                    while sentence_idx < len(sentences):
-                        s = sentences[sentence_idx]
-                        if acc_len + len(s) > max_chunk_size and accumulated:
-                            break
-                        accumulated.append(s)
-                        acc_len += len(s)
-                        sentence_idx += 1
 
-                    chunk_text = " ".join(accumulated)
-                    raw_chunks.append({
-                        "text": chunk_text,
-                        "locator_type": block.locator_type,
-                        "locator_value": block.locator_value,
-                        "heading": sec_heading,
-                        "level": 3,
-                    })
+def _split_oversized_unit(unit: str, max_size: int) -> list[str]:
+    parts: list[str] = []
+    start = 0
+    while start < len(unit):
+        end = min(start + max_size, len(unit))
+        if end < len(unit):
+            end = _preferred_boundary(unit, start, end)
+        parts.append(unit[start:end])
+        start = end
+    return parts
 
-                    # Apply sentence overlap
-                    if sentence_idx < len(sentences) and sentence_overlap > 0:
-                        sentence_idx = max(sentence_idx - sentence_overlap, 0)
-                        if sentence_idx >= len(sentences) - 1:
-                            break
 
-    # 3. Post-processing: Merge short chunks (< min_chunk_size) with adjacent chunks
-    merged_chunks: list[dict[str, Any]] = []
-    i = 0
-    while i < len(raw_chunks):
-        c = raw_chunks[i]
-        if len(c["text"]) < min_chunk_size and merged_chunks:
-            # Merge with previous chunk if same heading
-            prev = merged_chunks[-1]
-            if prev["heading"] == c["heading"] and len(prev["text"]) + len(c["text"]) <= max_chunk_size:
-                prev["text"] = prev["text"] + "\n\n" + c["text"]
-                i += 1
-                continue
+def _preferred_boundary(text: str, start: int, end: int) -> int:
+    window = text[start:end]
+    sentence_end = 0
+    whitespace_end = 0
+    for match in re.finditer(r"\s+", window):
+        whitespace_end = match.end()
+        if match.start() > 0 and window[match.start() - 1] in ".!?":
+            sentence_end = match.end()
+    return start + sentence_end if sentence_end else (
+        start + whitespace_end if whitespace_end else end
+    )
 
-        merged_chunks.append(c)
-        i += 1
 
-    # 4. Wrap into ChunkResult
-    results: list[ChunkResult] = []
-    for idx, c in enumerate(merged_chunks, start=1):
-        text = c["text"]
-        results.append(
-            ChunkResult(
-                chunk_index=idx,
-                text=text,
-                locator_type=c["locator_type"],
-                locator_value=c["locator_value"],
-                content_hash=compute_hash(text),
-                section_heading=c["heading"],
-                chunk_level=c["level"],
+def _pack_units(units: list[str], max_size: int, overlap: int) -> list[str]:
+    chunks: list[str] = []
+    start = 0
+    while start < len(units):
+        end = start
+        size = 0
+        while end < len(units) and size + len(units[end]) <= max_size:
+            size += len(units[end])
+            end += 1
+        chunks.append("".join(units[start:end]))
+        if end == len(units):
+            break
+        start = max(end - overlap, start + 1)
+    return chunks
+
+
+def _merge_short_chunks(chunks: list[_RawChunk], min_size: int, max_size: int) -> list[_RawChunk]:
+    merged: list[_RawChunk] = []
+    for chunk in chunks:
+        if _can_merge_short_chunk(chunk, merged, min_size, max_size):
+            previous = merged[-1]
+            merged[-1] = _RawChunk(
+                previous.text + chunk.text,
+                previous.locator_type,
+                previous.locator_value,
+                previous.heading,
+                max(previous.level, chunk.level),
             )
+        else:
+            merged.append(chunk)
+    return merged
+
+
+def _can_merge_short_chunk(
+    chunk: _RawChunk, merged: list[_RawChunk], min_size: int, max_size: int
+) -> bool:
+    if len(chunk.text) >= min_size or not merged or chunk.level >= 3:
+        return False
+    previous = merged[-1]
+    return (
+        previous.level < 3
+        and previous.heading == chunk.heading
+        and previous.locator_type == chunk.locator_type
+        and previous.locator_value == chunk.locator_value
+        and len(previous.text) + len(chunk.text) <= max_size
+    )
+
+
+def _to_chunk_results(chunks: list[_RawChunk]) -> list[ChunkResult]:
+    return [
+        ChunkResult(
+            chunk_index=index,
+            text=chunk.text,
+            locator_type=chunk.locator_type,
+            locator_value=chunk.locator_value,
+            content_hash=compute_hash(chunk.text),
+            section_heading=chunk.heading,
+            chunk_level=chunk.level,
         )
+        for index, chunk in enumerate(chunks, start=1)
+    ]
 
-    return results
 
-
-# Legacy wrapper
 def chunk_extracted_chunks(
     extracted_chunks: list[ExtractedChunk],
     max_chunk_size: int = DEFAULT_MAX_CHUNK_SIZE,
     overlap: int = 50,
 ) -> list[ChunkResult]:
     """Legacy chunking adapter for backward compatibility."""
-    blocks: list[ExtractedBlock] = []
-    for idx, item in enumerate(extracted_chunks, start=1):
-        blocks.append(
-            ExtractedBlock(
-                text=item.text,
-                block_type="PARAGRAPH",
-                heading_level=None,
-                locator_type=item.locator_type,
-                locator_value=item.locator_value,
-                content_hash=item.content_hash,
-                source_page_or_index=idx,
-            )
+    if overlap < 0:
+        raise ValueError("Chunk overlap must be non-negative.")
+    blocks = [
+        ExtractedBlock(
+            text=item.text,
+            block_type="PARAGRAPH",
+            heading_level=None,
+            locator_type=item.locator_type,
+            locator_value=item.locator_value,
+            content_hash=item.content_hash,
+            source_page_or_index=index,
         )
+        for index, item in enumerate(extracted_chunks, start=1)
+    ]
     return chunk_blocks_hybrid(blocks, max_chunk_size=max_chunk_size)

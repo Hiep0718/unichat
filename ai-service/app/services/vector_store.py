@@ -1,11 +1,13 @@
+import hashlib
 import logging
 import os
+from dataclasses import dataclass
 from typing import Any
 
 import chromadb
 from sentence_transformers import SentenceTransformer
 
-from app.services.chunker import ChunkResult
+from app.services.chunker import CHUNKING_VERSION, ChunkResult
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +20,100 @@ _model: SentenceTransformer | None = None
 _ephemeral_client: Any = None
 
 
+class VectorStoreUnavailableError(RuntimeError):
+    """Raised when the configured vector store cannot be reached or initialized."""
+
+
+class VectorStoreIncompleteError(RuntimeError):
+    """Raised when indexed chunks do not match the Core ingestion manifest."""
+
+
+@dataclass(frozen=True)
+class StoredDocumentChunk:
+    """One exact chunk read and validated against a Core-owned source manifest."""
+
+    chunk_id: str
+    chunk_index: int
+    text: str
+    locator_type: str
+    locator_value: str
+    content_hash: str
+
+
+def get_document_chunks_exact(
+    workspace_id: str,
+    document_id: str,
+    ingestion_version: int,
+    document_content_hash: str,
+    expected_chunk_count: int,
+    page_size: int = 100,
+) -> list[StoredDocumentChunk]:
+    """Read every known chunk ID and fail if any manifest item is missing or stale."""
+    if expected_chunk_count < 1 or page_size < 1:
+        raise ValueError("A source manifest must contain at least one chunk.")
+    collection = get_chroma_client().get_collection(name=get_active_collection_name())
+    chunks: list[StoredDocumentChunk] = []
+    for first_index in range(1, expected_chunk_count + 1, page_size):
+        final_index = min(first_index + page_size, expected_chunk_count + 1)
+        ids = [f"{document_id}_{index}" for index in range(first_index, final_index)]
+        payload = collection.get(ids=ids, include=["documents", "metadatas"])
+        chunks.extend(
+            _validate_exact_chunk_page(
+                payload, ids, workspace_id, document_id, ingestion_version, document_content_hash
+            )
+        )
+    chunks.sort(key=lambda chunk: chunk.chunk_index)
+    if [chunk.chunk_index for chunk in chunks] != list(range(1, expected_chunk_count + 1)):
+        raise VectorStoreIncompleteError("Indexed chunk count differs from the source manifest.")
+    return chunks
+
+
+def _validate_exact_chunk_page(
+    payload: dict[str, Any],
+    ids: list[str],
+    workspace_id: str,
+    document_id: str,
+    ingestion_version: int,
+    document_content_hash: str,
+) -> list[StoredDocumentChunk]:
+    ids_by_value = {chunk_id: index for index, chunk_id in enumerate(payload.get("ids") or [])}
+    if set(ids_by_value) != set(ids):
+        raise VectorStoreIncompleteError("An indexed chunk is missing from Chroma.")
+    chunks: list[StoredDocumentChunk] = []
+    for chunk_id in ids:
+        position = ids_by_value[chunk_id]
+        metadata = payload["metadatas"][position]
+        text = payload["documents"][position]
+        chunk_index = int(chunk_id.rsplit("_", maxsplit=1)[1])
+        content_hash = hashlib.sha256(text.encode("utf-8")).hexdigest()
+        is_current = (
+            metadata.get("workspace_id") == workspace_id
+            and metadata.get("document_id") == document_id
+            and metadata.get("document_status") == "PROCESSED"
+            and metadata.get("ingestion_version") == ingestion_version
+            and metadata.get("document_content_hash") == document_content_hash
+            and metadata.get("chunk_index") == chunk_index
+            and metadata.get("content_hash") == content_hash
+        )
+        if not is_current:
+            raise VectorStoreIncompleteError(
+                "Indexed chunk metadata differs from the source manifest."
+            )
+        chunks.append(
+            StoredDocumentChunk(
+                chunk_id,
+                chunk_index,
+                text,
+                str(metadata.get("locator_type") or ""),
+                str(metadata.get("locator_value") or ""),
+                content_hash,
+            )
+        )
+    return chunks
+
+
 def get_embedding_model() -> SentenceTransformer:
+    """Return the lazily initialized multilingual E5 embedding model."""
     global _model
     if _model is None:
         _model = SentenceTransformer(EMBEDDING_MODEL_NAME)
@@ -26,16 +121,17 @@ def get_embedding_model() -> SentenceTransformer:
 
 
 def get_chroma_client() -> Any:
+    """Return the explicitly configured Chroma client or raise an operational error."""
     global _ephemeral_client
     mode = os.getenv("CHROMA_MODE", "auto").lower()
 
-    # 1. Ephemeral local in-memory mode
     if mode == "ephemeral":
         if _ephemeral_client is None:
             _ephemeral_client = chromadb.EphemeralClient()
         return _ephemeral_client
+    if mode not in {"auto", "cloud", "local"}:
+        raise ValueError(f"Unsupported CHROMA_MODE: {mode}")
 
-    # 2. Chroma Cloud mode
     cloud_api_key = os.getenv("CHROMA_CLOUD_API_KEY") or os.getenv("CHROMA_API_KEY", "")
     tenant = os.getenv("CHROMA_CLOUD_TENANT") or os.getenv("CHROMA_TENANT", "")
     database = os.getenv("CHROMA_CLOUD_DATABASE") or os.getenv(
@@ -43,23 +139,18 @@ def get_chroma_client() -> Any:
     )
     host = os.getenv("CHROMA_HOST", "")
 
-    if mode == "cloud" or cloud_api_key or "trychroma.com" in host:
-        if cloud_api_key and tenant:
-            try:
-                return chromadb.CloudClient(
-                    tenant=tenant,
-                    database=database,
-                    api_key=cloud_api_key,
-                )
-            except Exception as error:
-                logger.error(
-                    "Failed to connect to Chroma Cloud (tenant=%s, db=%s): %s",
-                    tenant,
-                    database,
-                    error,
-                )
+    cloud_requested = mode == "cloud" or (
+        mode == "auto" and (cloud_api_key or tenant or "trychroma.com" in host)
+    )
+    if cloud_requested:
+        if not cloud_api_key or not tenant:
+            raise VectorStoreUnavailableError("Chroma Cloud configuration is incomplete.")
+        try:
+            return chromadb.CloudClient(tenant=tenant, database=database, api_key=cloud_api_key)
+        except Exception as error:
+            logger.error("chroma_cloud_unavailable code=%s", type(error).__name__)
+            raise VectorStoreUnavailableError("Configured Chroma Cloud is unavailable.") from error
 
-    # 3. Local Self-hosted Server / Docker mode
     host = os.getenv("CHROMA_SERVER_HOST", "localhost")
     port = int(os.getenv("CHROMA_SERVER_HTTP_PORT", "8000"))
     try:
@@ -67,15 +158,13 @@ def get_chroma_client() -> Any:
         client.get_user_identity()
         return client
     except Exception as error:
-        logger.warning(
-            "Could not connect to Chroma server at %s:%s (%s). Falling back to EphemeralClient.",
+        logger.error(
+            "chroma_server_unavailable host=%s port=%s code=%s",
             host,
             port,
-            error,
+            type(error).__name__,
         )
-        if _ephemeral_client is None:
-            _ephemeral_client = chromadb.EphemeralClient()
-        return _ephemeral_client
+        raise VectorStoreUnavailableError("Configured Chroma server is unavailable.") from error
 
 
 def get_active_collection_name() -> str:
@@ -84,6 +173,7 @@ def get_active_collection_name() -> str:
 
 
 def get_or_create_collection(client: Any, collection_name: str | None = None) -> Any:
+    """Return a cosine-distance Chroma collection for the configured index."""
     target_name = collection_name or get_active_collection_name()
     return client.get_or_create_collection(
         name=target_name,
@@ -124,7 +214,9 @@ def store_document_chunks(
 
     for chunk in chunks:
         chunk_id = f"{document_id}_{chunk.chunk_index}"
-        prefixed_text = f"passage: {chunk.text}"
+        heading = chunk.section_heading
+        passage_context = f"{heading}\n" if heading and not chunk.text.startswith(heading) else ""
+        prefixed_text = f"passage: {passage_context}{chunk.text}"
         embedding = model.encode(prefixed_text).tolist()
 
         ids.append(chunk_id)
@@ -144,6 +236,7 @@ def store_document_chunks(
             "document_content_hash": document_content_hash,
             # R-19: source_group = document_id for P0
             "source_group": document_id,
+            "chunking_version": CHUNKING_VERSION,
         }
         if chunk.section_heading:
             meta["section_heading"] = chunk.section_heading

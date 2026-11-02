@@ -29,7 +29,8 @@ public class IngestionResultConsumer {
                 message.documentId(), message.success(), message.chunkCount());
         DocumentStatus newStatus = message.success() ? DocumentStatus.PROCESSED : DocumentStatus.FAILED;
         try {
-            documentService.updateIngestionResult(message.documentId(), newStatus, message.chunkCount());
+            documentService.updateIngestionResult(message.documentId(), newStatus, message.chunkCount(),
+                    message.indexedCharacterCount());
         } catch (Exception e) {
             log.error("Failed to update ingestion result for documentId={}", message.documentId(), e);
         }

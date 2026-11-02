@@ -34,7 +34,7 @@ public class DocumentIngestionProducer {
             );
         } catch (Exception e) {
             log.error("Failed to publish RabbitMQ ingestion message for documentId: {}", message.documentId(), e);
-            // Non-blocking fallback: exception logged, document status remains PENDING for retry
+            throw new IllegalStateException("Ingestion message could not be published.", e);
         }
     }
 }

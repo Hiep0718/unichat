@@ -3,7 +3,7 @@ import { AppState } from 'react-native';
 import { streamChatResponse } from '../../lib/sse-client';
 import { getSessionSnapshot, subscribeSession } from '../../lib/session-store';
 import { generateIdempotencyKey } from '../../lib/idempotency';
-import { cancelChatOperation, waitForChatOperation } from './chat-transport';
+import { cancelChatOperation, fetchActiveWorkspaceSummary, waitForChatOperation } from './chat-transport';
 import { chatApi } from './chat-api';
 import type { MessageItem } from '../../types/api';
 import type { AskQuestionPayload, CitationItem, QuestionResponse, SseThoughtPayload, StreamQuestionCallbacks } from './chat-types';
@@ -45,8 +45,10 @@ export function useChatStream({ workspaceId, conversationId: initialId, onConver
     setMessages((previous) => [...previous.filter((message) => message.id !== result.messageId), {
       id: result.messageId, conversationId: result.conversationId, sender: 'ASSISTANT', content,
       operationId: result.operationId ?? null,
+      workspaceSummaryId: result.workspaceSummaryId ?? null,
       citations: result.redacted ? [] : result.citations, sections: result.redacted ? [] : result.sections ?? [],
       knowledgeMode: result.knowledgeMode ?? 'STRICT', redacted: result.redacted ?? false,
+      warningMessage: result.redacted ? null : result.warningMessage ?? null,
       refusalCode: result.refusalCode, createdAt: new Date().toISOString(),
     }]); clearProvisional();
   }, [bindConversation, clearProvisional]);
@@ -55,6 +57,8 @@ export function useChatStream({ workspaceId, conversationId: initialId, onConver
     onMetadata: (metadata) => { if (!current(request)) return; request.operationId = metadata.operationId ?? null;
       if (metadata.conversationId) bindConversation(metadata.conversationId); },
     onThought: (step) => { if (current(request)) setThoughtSteps((previous) => [...previous, step]); },
+    onProgress: (progress) => { if (!current(request)) return; setIsThinking(false);
+      setStreamingAnswer(`Đang tóm tắt toàn bộ tài liệu: ${progress.documentsCompleted}/${progress.documentsTotal} tài liệu, ${progress.chunksProcessed}/${progress.chunksTotal} chunks.`); },
     onToken: (delta) => { if (!current(request)) return; answer.current += delta; setStreamingAnswer(answer.current); setIsThinking(false); },
     onReset: () => { if (current(request)) clearProvisional(); },
     onFinal: (result) => { if (current(request)) final(result); },
@@ -67,11 +71,12 @@ export function useChatStream({ workspaceId, conversationId: initialId, onConver
       clearProvisional(); setIsStreaming(false); setError(failure instanceof Error ? failure.message : 'Không thể hoàn tất yêu cầu');
     }
   }, [workspaceId, callbacks, clearProvisional, current]);
-  const sendMessage = useCallback(async (text: string, expanded = false) => {
+  const sendMessage = useCallback(async (text: string, expanded = false, taskType?: 'WORKSPACE_SUMMARY') => {
     const question = text.normalize('NFC').trim();
     if (pending.current || question.length < 3 || question.length > 2000) return;
     const request: PendingAsk = { key: generateIdempotencyKey(), generation: getSessionSnapshot().generation,
-      binding: { question, ...(activeId.current ? { conversationId: activeId.current } : {}), allowExternalKnowledge: expanded },
+      binding: { question, ...(activeId.current ? { conversationId: activeId.current } : {}), allowExternalKnowledge: expanded,
+        ...(taskType ? { taskType } : {}) },
       operationId: null, controller: new AbortController() };
     pending.current = request;
     setMessages((previous) => [...previous, { id: `user-${request.key}`, conversationId: activeId.current ?? '',
@@ -82,18 +87,51 @@ export function useChatStream({ workspaceId, conversationId: initialId, onConver
   const retry = useCallback(async () => {
     const request = pending.current;
     if (!request || isStreaming || !current(request)) return;
-    request.controller = new AbortController(); setIsStreaming(true); setError(null); await execute(request);
-  }, [execute, isStreaming, current]);
+    request.controller = new AbortController(); setIsStreaming(true); setError(null);
+    if (!request.operationId) { await execute(request); return; }
+    try {
+      const result = await waitForChatOperation(workspaceId, request.operationId, request.controller.signal,
+        callbacks(request).onProgress);
+      if (current(request)) { final(result); finish(); }
+    } catch (failure: unknown) {
+      if (current(request) && !request.controller.signal.aborted) {
+        setIsStreaming(false); setError(failure instanceof Error ? failure.message : 'Không thể khôi phục kết quả');
+      }
+    }
+  }, [workspaceId, execute, isStreaming, current, callbacks, final, finish]);
   const resume = useCallback(async () => {
     const request = pending.current;
     if (!request || !request.controller.signal.aborted || !current(request)) return;
     request.controller = new AbortController();
     if (!request.operationId) { await execute(request); return; }
-    try { const result = await waitForChatOperation(workspaceId, request.operationId, request.controller.signal);
+    try { const result = await waitForChatOperation(workspaceId, request.operationId, request.controller.signal,
+      callbacks(request).onProgress);
       if (current(request)) { final(result); finish(); } }
     catch (failure: unknown) { if (current(request) && !request.controller.signal.aborted) {
       clearProvisional(); setIsStreaming(false); setError(failure instanceof Error ? failure.message : 'Không thể khôi phục kết quả'); } }
   }, [workspaceId, execute, final, finish, clearProvisional, current]);
+  const recoverActiveSummary = useCallback(async (selectedConversationId?: string) => {
+    const generation = getSessionSnapshot().generation;
+    try {
+      const operation = await fetchActiveWorkspaceSummary(workspaceId, selectedConversationId);
+      if (!operation?.operationId || pending.current || !mounted.current || generation !== getSessionSnapshot().generation) return;
+      const request: PendingAsk = { key: operation.operationId, generation,
+        binding: { question: 'Tóm tắt toàn bộ tài liệu', taskType: 'WORKSPACE_SUMMARY' },
+        operationId: operation.operationId, controller: new AbortController() };
+      pending.current = request;
+      if (operation.conversationId) { activeId.current = operation.conversationId;
+        setConversationId(operation.conversationId); }
+      setIsStreaming(true); setIsThinking(false);
+      const result = await waitForChatOperation(workspaceId, operation.operationId, request.controller.signal,
+        callbacks(request).onProgress);
+      if (current(request)) { final(result); finish(); }
+    } catch (failure: unknown) {
+      if (mounted.current && generation === getSessionSnapshot().generation) {
+        setIsStreaming(false);
+        setError(failure instanceof Error ? failure.message : 'Không thể khôi phục bản tóm tắt.');
+      }
+    }
+  }, [workspaceId, callbacks, current, final, finish]);
   useEffect(() => {
     mounted.current = true;
     const identity = { generation: getSessionSnapshot().generation };
@@ -113,15 +151,16 @@ export function useChatStream({ workspaceId, conversationId: initialId, onConver
     pending.current?.controller.abort(); pending.current = null;
     activeId.current = initialId ?? null; setConversationId(initialId ?? null); setMessages([]); clearProvisional(); setIsStreaming(false);
     setLoadingHistory(Boolean(initialId)); setHasOlder(false);
-    if (!initialId) return;
+    if (!initialId) { void recoverActiveSummary(); return; }
     void chatApi.getMessages(workspaceId, initialId).then((page) => {
       if (!request.active || request.generation !== getSessionSnapshot().generation) return;
       history.current = { page: 1, snapshot: page.snapshotSequence, loading: false };
       setMessages(page.content); setHasOlder(page.totalPages > 1); setLoadingHistory(false);
+      void recoverActiveSummary(initialId);
     }).catch((failure: unknown) => { if (request.active && request.generation === getSessionSnapshot().generation) {
       setError(failure instanceof Error ? failure.message : 'Không tải được lịch sử'); setLoadingHistory(false); } });
     return () => { request.active = false; };
-  }, [workspaceId, initialId, clearProvisional]);
+  }, [workspaceId, initialId, clearProvisional, recoverActiveSummary]);
   const loadOlder = useCallback(async () => {
     const id = activeId.current;
     if (!id || !hasOlder || history.current.loading) return;

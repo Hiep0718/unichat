@@ -11,8 +11,6 @@ interface ChatHeaderProps {
   hasDrawerOpen?: boolean | undefined;
   onToggleStudio?: (() => void) | undefined;
   isStudioOpen?: boolean | undefined;
-  onToggleHistory?: (() => void) | undefined;
-  isHistoryOpen?: boolean | undefined;
 }
 
 function ChatIdentity({
@@ -57,16 +55,7 @@ function ChatIdentity({
   );
 }
 
-function ChatActions({
-  messageCount,
-  onNewChat,
-  onToggleDrawer,
-  hasDrawerOpen,
-  onToggleStudio,
-  isStudioOpen,
-  onToggleHistory,
-  isHistoryOpen,
-}: ChatHeaderProps) {
+function ChatActions({ messageCount, onNewChat, onToggleDrawer, hasDrawerOpen, onToggleStudio, isStudioOpen }: ChatHeaderProps) {
   return (
       <div className="chat-header__actions">
         <div className="chat-header__info-pill" title="Mô hình thực được ghi trên từng câu trả lời đã lưu">
@@ -79,35 +68,13 @@ function ChatActions({
           <span>{messageCount} tin nhắn</span>
         </div>
 
-        {onToggleHistory && (
-          <button
-            type="button"
-            className={`chat-header__btn chat-header__btn--toggle ${
-              isHistoryOpen ? 'chat-header__btn--active' : ''
-            }`}
-            onClick={onToggleHistory}
-            title="Các cuộc trò chuyện trước"
-            aria-pressed={isHistoryOpen}
-          >
-            <span className="material-symbols-outlined">history</span>
-            <span>Lịch sử</span>
-          </button>
-        )}
-
-        {onToggleStudio && (
-          <button
-            type="button"
-            className={`chat-header__btn chat-header__btn--toggle ${
-              isStudioOpen ? 'chat-header__btn--active' : ''
-            }`}
-            onClick={onToggleStudio}
-            title="Đóng/Mở NotebookLM Knowledge Studio"
-            aria-pressed={isStudioOpen}
-          >
-            <span className="material-symbols-outlined">auto_awesome</span>
-            <span>Studio</span>
-          </button>
-        )}
+        {onToggleStudio && <button type="button"
+          className={`chat-header__btn ${isStudioOpen ? 'chat-header__btn--active' : ''}`}
+          onClick={onToggleStudio} title="Đóng/Mở NotebookLM Knowledge Studio"
+          style={{ background: isStudioOpen ? '#0284c7' : 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
+            color: '#ffffff', fontWeight: 600, gap: '6px' }}>
+          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>auto_awesome</span><span>Studio</span>
+        </button>}
 
         <button
           type="button"

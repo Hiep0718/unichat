@@ -22,7 +22,7 @@ $script:Svcs = [ordered]@{
     }
     'core-api'   = @{
         Title = 'Core API'; Port = 8082; Color = '#2ECC71'; Tag = '[CORE  ]'
-        Health = 'http://127.0.0.1:8082/actuator/health'; TimeoutSec = 60
+        Health = 'http://127.0.0.1:8082/actuator/health'; TimeoutSec = 180
         State = 'QUEUED'; Attempt = 0; Skip = $false
     }
     'frontend'   = @{

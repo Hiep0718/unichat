@@ -63,6 +63,24 @@ class ProviderAttemptServiceTest {
         service.record(request);
         verifyNoInteractions(admission, entities);
     }
+    @Test void shouldReplayQueryPlanStartWithoutDiagnosticAdmission() {
+        var request = request("QUERY_PLAN", "START");
+        when(repository.lockById(request.attemptId())).thenReturn(Optional.of(attempt));
+        service.record(request);
+        verifyNoInteractions(admission, entities);
+    }
+    @Test void shouldInsertQueryPlanStartWithoutDiagnosticAdmission() {
+        var request = request("QUERY_PLAN", "START");
+        when(repository.lockById(request.attemptId())).thenReturn(Optional.empty(), Optional.of(attempt));
+        Query query = mock(Query.class); when(entities.createNativeQuery(anyString())).thenReturn(query);
+        when(query.setParameter(anyString(), any())).thenReturn(query);
+
+        service.record(request);
+
+        verifyNoInteractions(admission);
+        verify(query).executeUpdate();
+        assertNotNull(request.operationId());
+    }
     @Test void shouldRejectFutureTimestampsBeforeAdmission() {
         var request = new ProviderAttemptRequest(UUID.randomUUID(), null, "KEY_PROBE", "hive", "hive-primary",
                 "deepseek-ai/deepseek-v4.1-flash", "START", null, Instant.now().plusSeconds(120), null, null, null, null);
@@ -70,7 +88,9 @@ class ProviderAttemptServiceTest {
         verifyNoInteractions(admission, entities, repository);
     }
     private ProviderAttemptRequest request(String purpose, String phase) {
-        return new ProviderAttemptRequest(UUID.randomUUID(), "CHAT".equals(purpose) ? UUID.randomUUID() : null,
+        boolean operationScoped = "CHAT".equals(purpose) || "COMPACTION".equals(purpose)
+                || "QUERY_PLAN".equals(purpose);
+        return new ProviderAttemptRequest(UUID.randomUUID(), operationScoped ? UUID.randomUUID() : null,
                 purpose, "hive", "hive-primary", "deepseek-ai/deepseek-v4.1-flash", phase,
                 "END".equals(phase) ? "SUCCESS" : null, Instant.now(), null, null, null, null);
     }

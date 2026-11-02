@@ -1,5 +1,7 @@
 # Hợp đồng API P0 — UniChat
 
+Kết quả chat được xác thực có thể bao gồm `providerModel`, là model đã tạo câu trả lời; trường này có thể null khi không có lượt sinh hoặc nguồn bị ẩn. Trường được cung cấp cho kết quả trực tiếp, khôi phục operation và lịch sử hội thoại.
+
 ## Metadata
 
 | Thuộc tính | Giá trị |
@@ -148,6 +150,9 @@ Question dài 3–2.000 ký tự; optional conversationId phải thuộc user/wo
 | intent | enum | Sáu intent |
 | strategyVersion | string | Phiên bản luật |
 | citations | array | documentId, fileName, locator, excerpt, score |
+| knowledgeMode | STRICT/EXPANDED | Chế độ người dùng đã chọn |
+| sections | array | Nội dung DOCUMENT; nguồn WEB chỉ xuất hiện sau khi có provider được duyệt |
+| warningMessage | string/null | Cảnh báo thiếu facet hoặc thông báo rõ khi chưa cấu hình web search |
 | refusalCode | string/null | Lý do ổn định cho client |
 | requestId | string | Đối soát log |
 
@@ -190,6 +195,10 @@ Mọi route yêu cầu service JWT gắn method/path/body hash/idempotency key, 
 | GET | /health/ready | Readiness của Chroma/model/provider config |
 
 Retrieval request bắt buộc workspaceId, allowedDocumentIds, question, strategyVersion và requestId. Hỗ trợ tùy chọn `conversationHistory` (tối đa 20 tin nhắn gần nhất) và `conversationSummary` (tóm tắt đã compact, tối đa 5000 ký tự) cho short-term conversation memory (ADR-021). Response trả thêm `compactedSummary` khi xảy ra compaction. AI Service từ chối nếu allowlist rỗng, bodyHash sai hoặc replay jti.
+
+Question planning dùng provider đã cấu hình, chỉ gửi câu hỏi và intent, không gửi chunks hoặc document metadata; attempt ghi riêng với purpose `QUERY_PLAN` và Core checkpoint theo operationId. Planner giới hạn 12 giây/512 output tokens và fallback về câu hỏi gốc nếu provider lỗi hoặc output sai schema. Pipeline truy hồi theo từng facet, giữ cùng allowlist, gộp kết quả ổn định, mở rộng chunk lân cận trong cùng tài liệu/version/hash và kiểm tra coverage trước generation. Nếu facet thiếu bằng chứng, câu trả lời phải nêu rõ giới hạn.
+
+Planner và retrieval cần V47 được áp dụng vào database Core đích trước khi chạy integration trực tiếp vì provider-attempt CHECK constraint hiện chưa nhận `QUERY_PLAN`. V47 chưa được áp dụng. `SEC-DEBT-001` vẫn Open; exception giới hạn cho phép Cloud-client retrieval testing, không cho phép self-host Chroma, thay đổi dependency/config hoặc production release. EXPANDED hiện chưa có web-search provider; cho tới khi provider được duyệt, response chỉ được dựa trên tài liệu và phải báo rõ web search chưa khả dụng.
 
 ## 9. Problem Details
 
@@ -268,7 +277,7 @@ Gửi và đọc tin nhắn, cùng tệp đính kèm, dùng **chung** các route
 
 Giữ `/admin/ai-studio/metrics`, `/test-key`, `/quick-prompt`; tất cả yêu cầu ADMIN. Probe body vẫn chỉ có keyId; provider quyết định probeType METADATA hoặc GENERATION. Hive probe dùng synthetic prompt tối đa128 token, không tự chạy khi tải trang. Quick prompt 1–2.000 ký tự không blank, model tối đa100 ký tự có thể chứa `/`; generation phải dùng đúng key/provider/model active, còn metrics filter vẫn nhận model lịch sử hợp lệ.
 
-Registry thêm activeProvider/activeModel/configuredModels và metadata provider/isActive/supportedModels cho mỗi key; historicalKeys chứa keyId/provider, tối đa100, chỉ dùng filter. Tokens không được báo giữ null. Không có quota/số dư/chi phí giả lập từ usage.
+Registry giữ activeProvider/activeModel làm alias tương thích của primary và thêm primaryProvider, fallbackProvider, fallbackModel. Mỗi key có provider/isActive/routingRole (`PRIMARY` hoặc `FALLBACK`)/supportedModels; historicalKeys chứa keyId/provider, tối đa100, chỉ dùng filter. Probe và quick prompt chỉ gọi target được chọn, không tự fallback. Tokens không được báo giữ null. Không có quota/số dư/chi phí giả lập từ usage.
 
 | Method | Route | Request / response |
 |---|---|---|
@@ -278,3 +287,10 @@ Registry thêm activeProvider/activeModel/configuredModels và metadata provider
 Ví dụ body cập nhật gate: `{"state":"DRAINING","expectedVersion":0}`. State nhận OPEN/DRAINING/VERIFYING. OPEN→VERIFYING không hợp lệ; DRAINING→VERIFYING chỉ khi cả hai count0. VERIFYING→OPEN là thao tác vận hành có chủ đích sau kiểm chứng. New chat bị chặn ở DRAINING/VERIFYING; ADMIN diagnostics bị chặn ở DRAINING. Response maintenance: HTTP503/RFC7807 code AI_MAINTENANCE, Retry-After30, không tạo message/quota mới. Replay idempotency, polling, cancel và xử lý operation cũ giữ hợp đồng hiện tại.
 
 Private RAG response thêm nullable provider chứa model thực để tương thích Core reader và lưu provider_model. Lỗi vận hành private blocking trả HTTP503 với errorCode/requestId; streaming reset rồi error với code/requestId, không result. Core chỉ nhận mã an toàn, đánh dấu FAILED và không assistant/summary/final/done. Domain refusals không nội dung vẫn được persist như kết quả hợp lệ; không forward error body provider tới client.
+# Workspace summary API additions
+
+- `POST /api/v1/workspaces/{workspaceId}/questions` (and `/questions/stream`) accepts optional `taskType`: `QUESTION` or `WORKSPACE_SUMMARY`. When `taskType` is omitted, Core API deterministically infers `WORKSPACE_SUMMARY` for collection-wide summary questions if `unichat.workspace-summary.enabled=true` (enforcing `allowExternalKnowledge=false`), and keeps `QUESTION` for scoped/topic summaries or when the flag is disabled.
+- `WORKSPACE_SUMMARY` requires `allowExternalKnowledge=false` when explicitly requested and returns `202` with an operation pointer.
+- Operation status includes task type, count-based progress and a canonical summary result when complete.
+- `GET /api/v1/workspaces/{workspaceId}/workspace-summaries/{summaryId}/documents?page=0&size=20` returns at most 100 per-document summaries with citations.
+- Private worker routes claim, report progress and complete a summary job. Each request is bound to the request ID and source fingerprint.

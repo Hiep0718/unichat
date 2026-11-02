@@ -21,6 +21,22 @@ public interface DocumentRepository extends JpaRepository<Document, UUID> {
     @Query("SELECT d FROM Document d WHERE d.workspaceId = :workspaceId AND d.status <> 'DELETING'")
     Page<Document> findByWorkspaceIdExcludingDeleting(@Param("workspaceId") UUID workspaceId, Pageable pageable);
 
+    /** Lists processed sources whose ingestion completeness proof is absent. */
+    @Query("SELECT d FROM Document d WHERE d.workspaceId = :workspaceId AND d.status = 'PROCESSED' "
+            + "AND (d.indexedChunkCount IS NULL OR d.indexedCharacterCount IS NULL "
+            + "OR d.ingestionCompletedAt IS NULL)")
+    Page<Document> findMissingManifests(@Param("workspaceId") UUID workspaceId, Pageable pageable);
+
+    /** Counts processed documents still lacking a verified ingestion manifest. */
+    @Query("SELECT COUNT(d) FROM Document d WHERE d.workspaceId = :workspaceId AND d.status = 'PROCESSED' "
+            + "AND (d.indexedChunkCount IS NULL OR d.indexedCharacterCount IS NULL "
+            + "OR d.ingestionCompletedAt IS NULL)")
+    long countMissingManifests(@Param("workspaceId") UUID workspaceId);
+
+    /** Counts failed ingestion results that still block a complete summary. */
+    @Query("SELECT COUNT(d) FROM Document d WHERE d.workspaceId = :workspaceId AND d.status = 'FAILED'")
+    long countFailedIngestion(@Param("workspaceId") UUID workspaceId);
+
     /**
      * Finds a document by workspace ID and document ID.
      */

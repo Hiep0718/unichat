@@ -90,7 +90,7 @@ export const KnowledgeStudio: React.FC<KnowledgeStudioProps> = ({
           <div className="unichat-tools-section">
             <div className="unichat-section-title">
               <span className="material-symbols-outlined">handyman</span>
-              <span>Tạo sản phẩm tri thức</span>
+              <span>TẠO SẢN PHẨM TRI THỨC</span>
             </div>
 
             <div className="unichat-tools-list">

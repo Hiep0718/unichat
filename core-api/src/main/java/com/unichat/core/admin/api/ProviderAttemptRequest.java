@@ -12,7 +12,7 @@ import jakarta.validation.constraints.Size;
 public record ProviderAttemptRequest(
         @NotNull UUID attemptId,
         UUID operationId,
-        @NotBlank @Pattern(regexp = "CHAT|COMPACTION|ADMIN_PROMPT|KEY_PROBE") String purpose,
+        @NotBlank @Pattern(regexp = "CHAT|COMPACTION|QUERY_PLAN|WORKSPACE_SUMMARY|ADMIN_PROMPT|KEY_PROBE") String purpose,
         @NotBlank @Size(max = 40) String provider,
         @NotBlank @Size(max = 100) String keyId,
         @NotBlank @Size(max = 100) String model,

@@ -41,7 +41,13 @@ def _build_connection_params(rabbitmq_url: str) -> pika.ConnectionParameters:
     )
 
 
-def publish_ingestion_result(document_id: str, success: bool, chunk_count: int, error_message: str | None = None) -> None:
+def publish_ingestion_result(
+    document_id: str,
+    success: bool,
+    chunk_count: int,
+    error_message: str | None = None,
+    indexed_character_count: int = 0,
+) -> None:
     """Publish document processing outcome to RabbitMQ reply queue."""
     settings = get_settings()
     try:
@@ -53,6 +59,7 @@ def publish_ingestion_result(document_id: str, success: bool, chunk_count: int, 
             "documentId": document_id,
             "success": success,
             "chunkCount": chunk_count,
+            "indexedCharacterCount": indexed_character_count,
             "errorMessage": error_message,
         }
 

@@ -3,6 +3,9 @@ import type { AiStudioKey } from '../admin-api';
 /** Checks the configured provider/key/model binding before enabling diagnostics. */
 export function isDiagnosticSelectionValid(key: AiStudioKey | undefined, model: string,
   activeProvider: string | null | undefined, configuredModels: readonly string[]): boolean {
+  const hasRoutingRole = key?.routingRole === 'PRIMARY' || key?.routingRole === 'FALLBACK';
+  const isLegacyPrimary = !key?.routingRole && key?.provider === activeProvider;
   return Boolean(activeProvider && key?.isConfigured && key.isActive === true
-    && key.provider === activeProvider && configuredModels.includes(model) && key.supportedModels?.includes(model));
+    && (hasRoutingRole || isLegacyPrimary)
+    && configuredModels.includes(model) && key.supportedModels?.includes(model));
 }

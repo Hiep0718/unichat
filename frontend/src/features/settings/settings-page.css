@@ -1,0 +1,115 @@
+.settings-page {
+  width: min(100%, 72rem);
+  height: 100%;
+  margin: 0 auto;
+  padding: 36px clamp(20px, 4vw, 56px) 56px;
+  overflow-y: auto;
+}
+
+.settings-page__header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 24px;
+}
+
+.settings-page__eyebrow {
+  color: var(--color-secondary);
+  font: var(--font-label-sm);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.settings-page__title {
+  color: var(--color-on-surface);
+  font: var(--font-headline-xl);
+  letter-spacing: var(--letter-spacing-headline-xl);
+}
+
+.settings-page__subtitle {
+  color: var(--color-on-surface-variant);
+  font: var(--font-body-lg);
+}
+
+.settings-page__tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  padding: 6px;
+  overflow-x: auto;
+  background: var(--color-surface-container-low);
+  border-radius: var(--radius-xl);
+}
+
+.settings-page__tab {
+  min-height: 40px;
+  padding: 9px 16px;
+  color: var(--color-on-surface-variant);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  font: var(--font-label-md);
+  white-space: nowrap;
+  transition: background var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.settings-page__tab:hover {
+  color: var(--color-on-surface);
+  background: var(--color-surface-container-lowest);
+}
+
+.settings-page__tab[aria-selected='true'] {
+  color: var(--color-on-primary);
+  background: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.settings-page__tab:focus-visible {
+  outline: 3px solid var(--color-secondary-fixed);
+  outline-offset: 2px;
+}
+
+.settings-page__panel {
+  width: 100%;
+  min-height: 20rem;
+  padding: clamp(18px, 3vw, 28px);
+  background: var(--color-surface-container-lowest);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-md);
+}
+
+.settings-page__panel > .settings-section,
+.settings-page__panel > .settings-tab {
+  width: 100%;
+  max-width: none;
+}
+
+.settings-page .settings-form__save-btn {
+  align-self: flex-end;
+}
+
+@media (max-width: 640px) {
+  .settings-page {
+    padding: 24px 16px 40px;
+  }
+
+  .settings-page__title {
+    font: var(--font-headline-lg-mobile);
+  }
+
+  .settings-page__tabs {
+    margin-inline: -4px;
+  }
+
+  .settings-page__panel {
+    padding: 16px;
+    border-radius: var(--radius-xl);
+  }
+
+  .settings-page .settings-form__save-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

@@ -24,6 +24,9 @@ public class ChatService {
     public ChatOperationResponse ask(ChatActor actor,UUID workspaceId,AskQuestionRequest request,UUID key,String requestId) {
         var reservation=operations.reserve(actor,workspaceId,request,key,requestId);
         if (!reservation.created()) return operations.status(actor,workspaceId,reservation.operation().id());
+        if (reservation.operation().taskType() == com.unichat.core.chat.api.ChatTaskType.WORKSPACE_SUMMARY) {
+            return operations.status(actor,workspaceId,reservation.operation().id());
+        }
         var future=runner.start(reservation.operation(),false,(event,payload) -> { });
         try { return future.get(25,TimeUnit.SECONDS); }
         catch (TimeoutException error) { return operations.status(actor,workspaceId,reservation.operation().id()); }

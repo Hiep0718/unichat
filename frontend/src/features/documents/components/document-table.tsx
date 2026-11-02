@@ -11,15 +11,16 @@ import { splitPdfFile } from '../utils/pdf-splitter';
 import { ContributionModal } from './contribution-modal';
 import { PdfSplitModal } from './pdf-split-modal';
 import { SyncVectorModal } from './sync-vector-modal';
+import { DocumentDeleteModal } from './document-delete-modal';
 import { LoadingInline } from '../../../components/loading-screen';
 import { Icon } from '../../../components/icon';
 import { countReady, duplicatedNames } from '../document-status';
 import { DocumentPagination } from './document-pagination';
 import { DocumentRows } from './document-rows';
 import { DocumentToast } from './document-toast';
+import { DocumentUploadZone } from './document-upload-zone';
 
 import type { DocumentNotice } from './document-toast';
-import { DocumentUploadZone } from './document-upload-zone';
 import './document-table.css';
 
 interface DocumentTableProps {
@@ -90,6 +91,9 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({
   const [notificationToast, setNotificationToast] = useState<DocumentNotice | null>(null);
   // Files waiting for the contributor to describe them before upload starts.
   const [pendingContribution, setPendingContribution] = useState<File[] | null>(null);
+  const [documentToDelete, setDocumentToDelete] = useState<DocumentResponse | null>(null);
+  const [deletingDocumentId, setDeletingDocumentId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -306,16 +310,37 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({
     setIsSyncModalOpen(true);
   };
 
-  const handleDelete = async (documentId: string) => {
-    if (!confirm('Bạn có chắc muốn xóa tài liệu này?')) return;
+  const handleDelete = (doc: DocumentResponse) => {
+    setDeleteError(null);
+    setDocumentToDelete(doc);
+  };
+
+  const confirmDelete = async () => {
+    if (!documentToDelete || deletingDocumentId) return;
+    const selectedDocument = documentToDelete;
+    setDeletingDocumentId(selectedDocument.id);
+    setDeleteError(null);
     try {
-      await deleteWorkspaceDocument(workspaceId, documentId);
+      await deleteWorkspaceDocument(workspaceId, selectedDocument.id);
+    } catch (err: unknown) {
+      setDeleteError(err instanceof Error ? err.message : 'Không thể xóa tài liệu');
+      setDeletingDocumentId(null);
+      return;
+    }
+    // Dropped from the cached list before the refetch lands, so the row goes
+    // the moment the server confirms rather than one round trip later.
+    setDocuments(documents.filter((doc) => doc.id !== selectedDocument.id));
+    setDocumentToDelete(null);
+    setDeletingDocumentId(null);
+    try {
       const updated = await fetchWorkspaceDocuments(workspaceId);
       setDocuments(updated.content || []);
     } catch (err: unknown) {
-      // Said above the list rather than through alert(), which interrupts to
-      // report something the card can state in place.
-      setError(err instanceof Error ? err.message : 'Không xoá được tài liệu');
+      setError(
+        err instanceof Error
+          ? `Đã gửi yêu cầu xóa nhưng không thể tải lại danh sách: ${err.message}`
+          : 'Đã gửi yêu cầu xóa nhưng không thể tải lại danh sách.'
+      );
     }
   };
 
@@ -352,6 +377,21 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({
             setSplitProgressText(null);
             if (fileInputRef.current) fileInputRef.current.value = '';
           }}
+        />
+      )}
+
+      {documentToDelete && (
+        <DocumentDeleteModal
+          key={documentToDelete.id}
+          documentName={documentToDelete.originalName}
+          isDeleting={deletingDocumentId === documentToDelete.id}
+          error={deleteError}
+          onCancel={() => {
+            if (deletingDocumentId) return;
+            setDocumentToDelete(null);
+            setDeleteError(null);
+          }}
+          onConfirm={() => void confirmDelete()}
         />
       )}
 
@@ -414,6 +454,7 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({
           uploading={uploadingDocs}
           duplicates={duplicates}
           canEdit={canEdit}
+          deleting={deletingDocumentId !== null}
           onDelete={handleDelete}
         />
       )}

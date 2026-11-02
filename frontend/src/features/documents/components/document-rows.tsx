@@ -32,7 +32,10 @@ interface DocumentRowsProps {
   /** Names more than one file carries, so the rows can say which. */
   readonly duplicates: ReadonlySet<string>;
   readonly canEdit: boolean;
-  readonly onDelete: (documentId: string) => void;
+  /** True while a removal is in flight, so no second one can start. */
+  readonly deleting: boolean;
+  /** Receives the whole row, because the confirmation names the file. */
+  readonly onDelete: (document: DocumentResponse) => void;
 }
 
 export function DocumentRows({
@@ -40,6 +43,7 @@ export function DocumentRows({
   uploading,
   duplicates,
   canEdit,
+  deleting,
   onDelete,
 }: DocumentRowsProps) {
   return (
@@ -86,7 +90,8 @@ export function DocumentRows({
                   <button
                     type="button"
                     className="doc-row__delete"
-                    onClick={() => onDelete(doc.id)}
+                    onClick={() => onDelete(doc)}
+                    disabled={deleting}
                     title="Xoá tệp"
                     aria-label={`Xoá ${doc.originalName}`}
                   >

@@ -24,7 +24,15 @@ Thay đổi quan trọng nằm ở cách định vị và trọng tâm nghiên c
 - Trong khóa luận, nhóm không triển khai toàn bộ nền tảng mà chỉ triển khai module đầu tiên: **Adaptive Knowledge Retrieval & Reasoning**.
 - Điểm mới không còn là "ứng dụng RAG để đọc tài liệu", mà là điều chỉnh chiến lược retrieval theo loại câu hỏi, metadata và độ tin cậy của bằng chứng.
 
-Workspace hiện chủ yếu là tài liệu thiết kế và kế hoạch, chưa có codebase ứng dụng hoàn chỉnh. Vì vậy, đây là thời điểm có chi phí thấp để đổi định hướng. Ảnh hưởng hiện tại tập trung vào tài liệu, backlog, mô hình dữ liệu, hợp đồng API và cách đánh giá; chưa phát sinh chi phí di chuyển mã nguồn lớn.
+Snapshot as-built ngày 24/10/2026 cho thấy UniChat đã có codebase đa dịch vụ và các phần mở rộng sản phẩm. Vì vậy, phần so sánh này được dùng để giải thích quyết định kiến trúc và đóng góp P0, không phải để mô tả trạng thái “chưa có ứng dụng”.
+
+### Thuật ngữ và vai trò thống nhất
+
+- **Người dùng (USER)**: người dùng đã xác thực, có thể tham gia một hoặc nhiều Workspace.
+- **Chủ sở hữu (OWNER)**, **Biên tập viên (EDITOR)** và **Thành viên (VIEWER)**: vai trò của một Người dùng trong từng Workspace.
+- **Quản trị viên hệ thống (ADMIN)**: quản trị người dùng, Workspace và vận hành toàn hệ thống.
+- **Sinh viên** và **giảng viên**: persona bối cảnh giáo dục, không phải role kỹ thuật riêng trong MVP.
+- **Workspace**: thuật ngữ sản phẩm duy nhất cho không gian chứa tài liệu, thành viên, thảo luận và quyền truy cập; không dùng lẫn với Knowledge Space trong use case.
 
 ## 3. UniChat ban đầu là gì?
 
@@ -44,24 +52,26 @@ Theo phạm vi và SRS trước khi đổi định hướng, UniChat ban đầu 
 
 ## 4. AI Knowledge Platform là gì trong UniChat?
 
-AI Knowledge Platform của UniChat là nền tảng biến tài liệu học tập phân tán thành các Knowledge Space có thể tổ chức, truy xuất, kiểm chứng và phát triển theo thời gian.
+AI Knowledge Platform của UniChat là nền tảng biến tài liệu học tập phân tán thành các Workspace có thể tổ chức, truy xuất, kiểm chứng và phát triển theo thời gian, đồng thời hỗ trợ cộng tác giữa các thành viên.
 
 Trong định hướng này:
 
-- Workspace là phiên bản triển khai hiện tại của Knowledge Space.
+- Workspace là đơn vị sản phẩm hiện tại để tổ chức tài liệu, thành viên và hoạt động cộng đồng.
 - Tài liệu không chỉ là file để chatbot đọc mà là nguồn hình thành kho tri thức.
 - Metadata, cấu trúc tài liệu, nguồn trích dẫn và quan hệ giữa nội dung trở thành tài sản cốt lõi.
 - Retrieval là năng lực nền tảng và có thể thay đổi theo mục đích câu hỏi.
-- Chat là một giao diện sử dụng nền tảng, không phải toàn bộ sản phẩm.
+- Chat AI là một giao diện sử dụng nền tảng, không phải toàn bộ sản phẩm.
+- Bảng tin cộng đồng, thảo luận, phản hồi, cảm xúc, lưu bài, thông báo, tìm kiếm hợp nhất và Work Chat là các chức năng sản phẩm đã triển khai.
 - Knowledge Map, Knowledge Graph, Knowledge Quality và Knowledge Evolution là các module phát triển sau MVP.
 
 ```mermaid
 flowchart LR
-    Source["Tài liệu học tập phân tán"] --> Space["Knowledge Space"]
+    Source["Tài liệu học tập phân tán"] --> Space["Workspace"]
     Space --> Organize["Tổ chức và gắn metadata"]
     Organize --> Retrieve["Adaptive Retrieval"]
     Retrieve --> Verify["Kiểm chứng bằng citation"]
     Verify --> Learn["Hỏi đáp và hỗ trợ học tập"]
+    Space --> Community["Bảng tin, thảo luận và Work Chat"]
     Organize --> Future["Map, Graph, Quality, Evolution"]
 ```
 
@@ -71,7 +81,7 @@ flowchart LR
 |---|---|---|---|
 | Định vị | Trợ lý hỏi đáp tài liệu học tập | UNICHAT - NỀN TẢNG QUẢN TRỊ VÀ KHAI THÁC TRI THỨC HỌC TẬP ỨNG DỤNG AI | Tên đề tài và phần giới thiệu phải nhấn mạnh tri thức, không chỉ chat |
 | Vấn đề trung tâm | Khó tìm câu trả lời trong nhiều tài liệu | Tri thức phân tán, trùng lặp, khó tổ chức, truy xuất và kiểm chứng | Bài toán rộng hơn và có giá trị sản phẩm dài hạn hơn |
-| Đơn vị cốt lõi | Conversation và tài liệu upload | Knowledge Space, tài liệu, metadata và lịch sử khai thác | Workspace được giữ lại nhưng được giải thích như Knowledge Space |
+| Đơn vị cốt lõi | Conversation và tài liệu upload | Workspace, tài liệu, metadata và lịch sử khai thác | Workspace là đơn vị sản phẩm và quyền truy cập |
 | Vai trò của chat | Trải nghiệm chính của sản phẩm | Một giao diện truy cập nền tảng | UI vẫn có chat nhưng kiến trúc không phụ thuộc hoàn toàn vào chat |
 | Cách retrieval | Semantic search với Top-K tương đối cố định | Chiến lược thay đổi theo intent, metadata, phạm vi và độ tin cậy | Cần Intent Detector và Retrieval Strategy Selector |
 | Xử lý bằng chứng | Lấy chunk liên quan rồi đưa vào LLM | Gom bằng chứng, kiểm tra đủ/thiếu trước khi sinh đáp án | Evidence Gate trở thành thành phần rõ ràng |
@@ -105,7 +115,7 @@ Kiến trúc này tối ưu cho một luồng hỏi đáp. Thành phần AI ch�
 flowchart LR
     User["Người dùng"] --> Interface["Web và Chat Interface"]
     Interface --> Core["Core Platform API"]
-    Core --> Space["Knowledge Space và Permission"]
+    Core --> Space["Workspace và Permission"]
     Core --> AI["AI Knowledge Service"]
     AI --> Intent["Intent Detection"]
     Intent --> Strategy["Retrieval Strategy"]
@@ -133,9 +143,9 @@ Thay đổi kiến trúc tập trung trong AI Knowledge Service. Core Platform A
 - Dữ liệu nghiệp vụ: PostgreSQL.
 - Vector index: ChromaDB.
 - File storage: local trong khóa luận, có interface nâng cấp MinIO.
-- LLM Provider: Gemini API, có phương án Ollama.
+- LLM Provider: Hive là provider đang cấu hình, dùng DeepSeek V4.1 Flash; Gemini chỉ được dùng theo rollback thủ công, không fallback tự động trong Hive mode.
 - Định dạng bắt buộc: PDF, DOCX và TXT.
-- Chức năng nền: auth, Workspace, document management, chat history, citation và admin cơ bản.
+- Chức năng nền: auth, Workspace, quản lý tài liệu, Bảng tin cộng đồng, Work Chat, chat history, citation và admin cơ bản.
 - Bảo mật: Core API kiểm tra quyền trước khi AI Service retrieval.
 - Chống hallucination: không đủ bằng chứng thì từ chối hoặc hỏi lại.
 
@@ -164,10 +174,11 @@ Hệ thống cũ trở thành **lát cắt triển khai đầu tiên** của n�
 - PostgreSQL thêm RetrievalTrace, EvaluationCase và EvaluationResult.
 - Core API tiếp tục là ranh giới authorization duy nhất.
 
-### 8.4. Frontend
+### 8.4. Frontend và trải nghiệm cộng đồng
 
-- Màn hình chính ưu tiên Knowledge Space/Workspace và tài liệu trước khi vào chat.
+- Màn hình chính ưu tiên Workspace và tài liệu trước khi vào chat.
 - Citation phải đủ rõ để người dùng kiểm chứng nguồn.
+- Bảng tin, thảo luận, phản hồi, cảm xúc, lưu bài, thông báo và Work Chat phải được trình bày như chức năng sản phẩm ngang hàng với chat AI.
 - Không cần xây Knowledge Map hoặc Graph trong MVP.
 
 ### 8.5. Kiểm thử và đánh giá
@@ -201,7 +212,7 @@ Chỉ số cần ghi nhận gồm intent classification correctness, retrieval s
 ### Bắt buộc triển khai
 
 - Auth và phân quyền USER/ADMIN.
-- Workspace/Knowledge Space và quyền truy cập.
+- Workspace và quyền truy cập.
 - Upload, quản lý và xử lý PDF/DOCX/TXT.
 - Chunking, embedding, ChromaDB và metadata nguồn.
 - Intent Detection v1 với tập loại câu hỏi hữu hạn.
@@ -219,7 +230,7 @@ Chỉ số cần ghi nhận gồm intent classification correctness, retrieval s
 - Knowledge Evolution và so sánh phiên bản thông minh.
 - Multi-agent debate hoặc nhiều nhánh reasoning song song.
 - OCR, voice, LMS, mobile app, native PPTX/XLSX.
-- Community Knowledge, quiz, flashcard và study plan đầy đủ.
+- Knowledge Map/Graph, quiz, flashcard và study plan đầy đủ.
 
 Các nội dung này phù hợp với roadmap nhưng sẽ làm khóa luận mất trọng tâm nếu triển khai đồng thời.
 
@@ -250,7 +261,7 @@ Kết quả cần so sánh theo từng nhóm câu hỏi. Nếu Adaptive Retrieva
 
 ## 13. Cách trình bày ngắn gọn với giảng viên hướng dẫn
 
-> UniChat được định hướng dài hạn là một AI Knowledge Platform cho giáo dục đại học, nơi tài liệu được tổ chức thành các Knowledge Space và có thể được truy xuất, kiểm chứng, mở rộng theo thời gian. Trong phạm vi khóa luận, nhóm không xây toàn bộ nền tảng mà triển khai module Adaptive Knowledge Retrieval & Reasoning. Module này mở rộng RAG truyền thống bằng cách nhận diện loại câu hỏi, điều chỉnh chiến lược retrieval, đánh giá độ đầy đủ của bằng chứng, trả lời có citation và từ chối khi không đủ căn cứ.
+> UniChat được định hướng dài hạn là một AI Knowledge Platform cho giáo dục đại học, nơi tài liệu được tổ chức thành các Workspace và có thể được truy xuất, kiểm chứng, mở rộng theo thời gian. Trong phạm vi khóa luận, nhóm không xây toàn bộ nền tảng mà triển khai module Adaptive Knowledge Retrieval & Reasoning. Module này mở rộng RAG truyền thống bằng cách nhận diện loại câu hỏi, điều chỉnh chiến lược retrieval, đánh giá độ đầy đủ của bằng chứng, trả lời có citation và từ chối khi không đủ căn cứ.
 
 Thông điệp này vừa thể hiện tầm nhìn sản phẩm, vừa giữ lời hứa triển khai ở mức thực tế.
 
@@ -271,3 +282,9 @@ Sự thay đổi từ RAG Chatbot sang AI Knowledge Platform là thay đổi v�
 - Thiết kế sơ lược AI Knowledge Platform.
 - Architecture Decision, File Plan, Decisions Log và Codebase Analysis.
 - Nội dung thảo luận định hướng sản phẩm do người dùng cung cấp.
+
+## Phụ lục A. Snapshot as-built 24/10/2026
+
+Nguồn ưu tiên của cập nhật này là commit `ff0cf3e`, migrations, contracts, test plan và specification trong repository. Core API là nơi duy nhất quyết định authorization; AI Service chỉ nhận tập `documentId` đã được phép. Ingestion chạy bất đồng bộ qua RabbitMQ; Core API, PostgreSQL, ChromaDB, RabbitMQ và AI Service là dịch vụ private.
+
+Phạm vi P0 vẫn là **Adaptive Knowledge Retrieval & Reasoning**. Các năng lực đã hiện diện gồm React web, Expo mobile, community discussions, direct work chat, Studio Notes, SSE streaming, history/memory và admin AI controls. Những năng lực này là phần mở rộng sản phẩm, không thay cho tiêu chí đánh giá P0. OCR tài liệu scan, LMS, voice và mindmap/diagram generation vẫn được ghi là roadmap khi chưa có evidence phát hành tương ứng.

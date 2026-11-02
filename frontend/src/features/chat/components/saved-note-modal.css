@@ -18,8 +18,8 @@
   width: 100%;
   max-width: 720px;
   max-height: 85vh;
-  background: var(--nen);
-  border: 1px solid var(--ke);
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
   border-radius: 20px;
   box-shadow: 0 20px 48px -8px rgba(15, 23, 42, 0.22);
   display: flex;
@@ -30,8 +30,8 @@
 
 .unichat-saved-note-modal__header {
   padding: 16px 20px;
-  background: var(--nen);
-  border-bottom: 1px solid var(--ke);
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border-bottom: 1px solid #e2e8f0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -45,23 +45,23 @@
 
 .unichat-saved-note-modal__icon {
   font-size: 22px;
-  color: var(--muc);
+  color: #0284c7;
   padding: 8px;
   border-radius: 10px;
-  background: var(--be-mat);
-  border: 1px solid var(--muc);
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
 }
 
 .unichat-saved-note-modal__title {
   font-size: 16px;
   font-weight: 700;
-  color: var(--muc);
+  color: #0f172a;
   margin: 0 0 2px 0;
 }
 
 .unichat-saved-note-modal__time {
   font-size: 12px;
-  color: var(--muc-nhat);
+  color: #64748b;
 }
 
 .unichat-saved-note-modal__close {
@@ -73,13 +73,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--muc-nhat);
+  color: #64748b;
   cursor: pointer;
 }
 
 .unichat-saved-note-modal__close:hover {
-  background: var(--color-surface-dim);
-  color: var(--muc);
+  background: #f1f5f9;
+  color: #0f172a;
 }
 
 .unichat-saved-note-toast {
@@ -88,10 +88,10 @@
   gap: 8px;
   margin: 12px 20px 0 20px;
   padding: 8px 14px;
-  background: var(--ws-ok-bg);
-  border: 1px solid var(--ws-ok-ink);
+  background: #dcfce7;
+  border: 1px solid #86efac;
   border-radius: 8px;
-  color: var(--ws-ok-ink);
+  color: #15803d;
   font-size: 13px;
   font-weight: 600;
 }
@@ -103,26 +103,26 @@
 }
 
 .unichat-saved-note-content {
-  background: var(--nen);
-  border: 1px solid var(--ke);
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
   border-radius: 12px;
   padding: 20px;
   font-size: 14px;
   line-height: 1.65;
-  color: var(--muc);
+  color: #1e293b;
 }
 
 .unichat-saved-note-content h1,
 .unichat-saved-note-content h2,
 .unichat-saved-note-content h3,
 .unichat-saved-note-content h4 {
-  color: var(--muc);
+  color: #0f172a;
   margin-top: 16px;
   margin-bottom: 8px;
   font-weight: 700;
 }
 
-.unichat-saved-note-content h1 { font-size: 20px; border-bottom: 1px solid var(--ke); padding-bottom: 6px; }
+.unichat-saved-note-content h1 { font-size: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; }
 .unichat-saved-note-content h2 { font-size: 17px; }
 .unichat-saved-note-content h3 { font-size: 15px; }
 
@@ -150,37 +150,37 @@
 .unichat-saved-note-content th,
 .unichat-saved-note-content td {
   padding: 8px 12px;
-  border: 1px solid var(--dieu-khien);
+  border: 1px solid #cbd5e1;
   text-align: left;
 }
 
 .unichat-saved-note-content th {
-  background: var(--color-surface-dim);
+  background: #f1f5f9;
   font-weight: 700;
 }
 
 .unichat-saved-note-content blockquote {
   margin: 12px 0;
   padding: 8px 14px;
-  background: var(--be-mat);
-  border-left: 4px solid var(--muc);
-  color: var(--muc);
+  background: #f0f9ff;
+  border-left: 4px solid #0284c7;
+  color: #0c4a6e;
   border-radius: 4px;
 }
 
 .unichat-saved-note-content code {
   font-family: monospace;
   font-size: 12px;
-  background: var(--ke);
+  background: #e2e8f0;
   padding: 2px 6px;
   border-radius: 4px;
-  color: var(--muc);
+  color: #0f172a;
 }
 
 .unichat-saved-note-modal__footer {
   padding: 14px 20px;
-  border-top: 1px solid var(--ke);
-  background: var(--nen);
+  border-top: 1px solid #e2e8f0;
+  background: #ffffff;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -193,11 +193,11 @@
 }
 
 .unichat-btn--danger-ghost {
-  color: var(--color-error);
+  color: #dc2626;
   background: transparent;
-  border: 1px solid var(--color-error);
+  border: 1px solid #fca5a5;
 }
 
 .unichat-btn--danger-ghost:hover {
-  background: var(--nen);
+  background: #fef2f2;
 }

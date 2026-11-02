@@ -1,5 +1,4 @@
 import type { DocumentResponse } from '../../documents/document-api';
-
 import './chat-welcome.css';
 
 interface ChatWelcomeProps {
@@ -8,57 +7,25 @@ interface ChatWelcomeProps {
   onSelectPrompt: (prompt: string) => void;
 }
 
-/**
- * Bốn cách mở đầu một cuộc hỏi.
- *
- * Mỗi mục có một nhãn ngắn và một câu hỏi đầy đủ. Nhãn là thứ mắt quét qua;
- * câu hỏi là thứ được gửi đi. Trước đây vai trò đó do một biểu tượng trong ô
- * vuông nhuộm màu đảm nhiệm, mà một biểu tượng thì không nói được "so sánh"
- * khác "tóm tắt" ở chỗ nào.
- */
 const PROMPTS = [
-  { tag: 'Giải thích', label: 'Giải thích một khái niệm trong tài liệu và chỉ rõ nguồn trích dẫn.' },
-  { tag: 'So sánh', label: 'So sánh các phương pháp được trình bày trong tài liệu.' },
-  { tag: 'Tóm tắt', label: 'Tóm tắt các ý chính có bằng chứng trong tài liệu.' },
-  { tag: 'Phân tích', label: 'Phân tích một vấn đề dựa trên bằng chứng trong tài liệu.' },
-] as const;
+  { icon: 'menu_book', label: 'Giải thích một khái niệm trong tài liệu và chỉ rõ nguồn trích dẫn.' },
+  { icon: 'compare_arrows', label: 'So sánh các phương pháp được trình bày trong tài liệu.' },
+  { icon: 'summarize', label: 'Tóm tắt toàn bộ tài liệu trong kho tri thức.' },
+  { icon: 'psychology', label: 'Phân tích một vấn đề dựa trên bằng chứng trong tài liệu.' },
+];
 
-/**
- * Màn mở đầu của một cuộc hội thoại, khi chưa có tin nhắn nào.
- *
- * Không suy đoán nội dung kho tài liệu từ tên tệp: chỉ nói có bao nhiêu tệp
- * đang nằm trong phạm vi, và giao kèo mà câu trả lời phải tuân theo.
- */
-export function ChatWelcome({
-  workspaceName = 'Kho tri thức',
-  documents = [],
-  onSelectPrompt,
-}: ChatWelcomeProps) {
-  const count = documents.length;
-
-  return (
-    <div className="chat-welcome">
-      <h1 className="chat-welcome__title">{workspaceName}</h1>
-
-      <p className="chat-welcome__contract">
-        Hỏi bất cứ điều gì về {count} tài liệu trong phạm vi này. Mỗi câu trả lời
-        đều kèm bằng chứng từ nguồn bạn được phép truy cập — và khi bằng chứng
-        không đủ, hệ thống nói thẳng là chưa trả lời được.
-      </p>
-
-      <div className="chat-welcome__prompts">
-        {PROMPTS.map((item) => (
-          <button
-            key={item.tag}
-            type="button"
-            className="chat-welcome__prompt"
-            onClick={() => onSelectPrompt(item.label)}
-          >
-            <span className="chat-welcome__prompt-tag">{item.tag}</span>
-            <span className="chat-welcome__prompt-text">{item.label}</span>
-          </button>
-        ))}
-      </div>
-    </div>
-  );
+/** Offers document questions without inferring corpus contents from file names. */
+export function ChatWelcome({ workspaceName = 'Kho tri thức', documents = [], onSelectPrompt }: ChatWelcomeProps) {
+  return <div className="chat-welcome">
+    <div className="chat-welcome__header"><h1 className="chat-welcome__title">Kho tri thức <span>{workspaceName}</span></h1>
+      <div className="chat-welcome__meta">📚 {documents.length} tài liệu trong danh sách hiện tại</div></div>
+    <div className="chat-welcome__overview"><p className="chat-welcome__overview-text">
+      Đặt câu hỏi cụ thể về tài liệu. Câu trả lời cần có bằng chứng từ nguồn bạn được phép truy cập.
+      Nếu thiếu bằng chứng, hệ thống sẽ yêu cầu làm rõ hoặc từ chối trả lời.</p></div>
+    <div className="chat-welcome__suggestions-zone"><p>Gợi ý câu hỏi:</p><div className="chat-welcome__grid">
+      {PROMPTS.map((item) => <button key={item.icon} type="button" className="chat-welcome__card" onClick={() => onSelectPrompt(item.label)}>
+        <div className="chat-welcome__card-icon"><span className="material-symbols-outlined">{item.icon}</span></div>
+        <span className="chat-welcome__card-text">{item.label}</span></button>)}
+    </div></div>
+  </div>;
 }

@@ -45,4 +45,20 @@ describe('MessageBubble', () => {
     expect(getByText(/GiaoTrinhAI.pdf/)).toBeTruthy();
     expect(getByText('95%')).toBeTruthy();
   });
+
+  it('should disclose missing web search when expanded evidence is unavailable', async () => {
+    const aiMsg: MessageItem = {
+      id: 'msg-a2',
+      conversationId: 'c1',
+      sender: 'ASSISTANT',
+      content: 'Câu trả lời dựa trên tài liệu.',
+      knowledgeMode: 'EXPANDED',
+      warningMessage: 'Chưa cấu hình tìm kiếm web; câu trả lời hiện chỉ dựa trên tài liệu.',
+      createdAt: '2026-10-03T00:00:01Z',
+    };
+
+    const { getByText } = await render(<MessageBubble message={aiMsg} />);
+
+    expect(getByText(/Chưa cấu hình tìm kiếm web/)).toBeTruthy();
+  });
 });

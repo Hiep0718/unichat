@@ -40,7 +40,7 @@ function doc(
 
 function renderRows(
   documents: DocumentResponse[],
-  options: { canEdit?: boolean; onDelete?: (id: string) => void } = {},
+  options: { canEdit?: boolean; onDelete?: (document: DocumentResponse) => void } = {},
 ) {
   return render(
     <DocumentRows
@@ -48,6 +48,7 @@ function renderRows(
       uploading={[]}
       duplicates={duplicatedNames(documents)}
       canEdit={options.canEdit ?? true}
+      deleting={false}
       onDelete={options.onDelete ?? vi.fn()}
     />,
   );
@@ -127,7 +128,7 @@ describe('DocumentRows', () => {
 
     // Assert
     expect(onDelete).toHaveBeenCalledTimes(1);
-    expect(onDelete).toHaveBeenCalledWith(target.id);
+    expect(onDelete).toHaveBeenCalledWith(target);
   });
 
   it('should show a file on its way up with its progress', () => {
@@ -140,6 +141,7 @@ describe('DocumentRows', () => {
         }]}
         duplicates={new Set()}
         canEdit
+        deleting={false}
         onDelete={vi.fn()}
       />,
     );

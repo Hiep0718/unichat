@@ -7,12 +7,20 @@ spring:
       max-file-size: 20MB
       max-request-size: 25MB
   datasource:
-
     url: ${POSTGRES_URL}
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
+    hikari:
+      maximum-pool-size: ${DB_MAX_POOL_SIZE:5}
+      minimum-idle: ${DB_MIN_IDLE:1}
+      connection-timeout: ${DB_CONNECTION_TIMEOUT_MS:30000}
+      initialization-fail-timeout: ${DB_INIT_FAIL_TIMEOUT_MS:30000}
+      max-lifetime: ${DB_MAX_LIFETIME_MS:600000}
+      keepalive-time: ${DB_KEEPALIVE_TIME_MS:120000}
   flyway:
     enabled: true
+    connect-retries: ${FLYWAY_CONNECT_RETRIES:3}
+    connect-retries-interval: ${FLYWAY_CONNECT_RETRIES_INTERVAL:2s}
     baseline-on-migrate: true
     # On, so a version number already taken on the shared database fails loudly
     # instead of this branch's migration being skipped in silence. The ignore

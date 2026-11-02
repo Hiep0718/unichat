@@ -4,6 +4,7 @@ import aiAvatar from '../../../assets/ai-avatar.png';
 import { CitationPanel } from './citation-panel';
 import { RefusalCard } from './refusal-card';
 import { ChatMarkdown } from './chat-markdown';
+import { WorkspaceSummaryDocuments } from '../workspace-summary-documents';
 import { canAskCommunity } from '../chat-refusal-policy';
 import type { QuestionResponse, CitationItem, SseThoughtPayload } from '../chat-api';
 import './chat-message-item.css';
@@ -16,6 +17,7 @@ export interface MessageItem {
 }
 interface MessageProps {
   readonly message: MessageItem;
+  readonly workspaceId?: string | undefined;
   readonly onSelectCitation?: ((citation: CitationItem) => void) | undefined;
   readonly onSelectPrompt?: ((prompt: string) => void) | undefined;
   readonly onSaveNote?: ((title: string, content: string, messageId?: string) => void) | undefined;
@@ -45,20 +47,30 @@ function PipelineSteps({ message }: { readonly message: MessageItem }) {
 }
 
 /** Keeps every external expansion visibly separated from document-supported sections. */
-function AssistantContent({ message }: { readonly message: MessageItem }) {
+function AssistantContent({
+  message,
+  onSelectCitation,
+}: {
+  readonly message: MessageItem;
+  readonly onSelectCitation?: ((citation: CitationItem) => void) | undefined;
+}) {
   const response = message.response;
   if (message.redacted || response?.redacted) return <p>Nội dung không còn khả dụng do quyền nguồn đã thay đổi.</p>;
   if (response && response.decision !== 'ANSWER') return <RefusalCard decision={response.decision}
     refusalReason={response.refusalReason ?? message.content} refusalCode={response.refusalCode} intent={response.intent} />;
   if (!response?.sections?.length) return <div className="chat-msg__markdown">
-    <ChatMarkdown content={message.content} provisional={Boolean(message.isStreaming)} />
+    <ChatMarkdown content={message.content} provisional={Boolean(message.isStreaming)}
+      citations={response?.citations} onSelectCitation={onSelectCitation} />
     {message.isStreaming && Boolean(message.content) && <span className="chat-msg__streaming-cursor" aria-hidden="true">▍</span>}
   </div>;
   return <div className="chat-msg__markdown">{response.sections.map((section, index) =>
-    <section key={index} className={`chat-answer-section--${section.type.toLowerCase()}`}>
-    <p><strong>{section.type === 'EXTERNAL' ? 'Kiến thức mở rộng, chưa được tài liệu kiểm chứng' : 'Dựa trên tài liệu được cấp quyền'}</strong></p>
-    <ChatMarkdown content={section.content} />
-  </section>)}</div>;
+    <section key={index} className={`chat-answer-section chat-answer-section--${section.type.toLowerCase()}`}>
+      <div className={`chat-answer-badge chat-answer-badge--${section.type.toLowerCase()}`}>
+        <Icon name={section.type === 'EXTERNAL' ? 'info' : 'verified'} size={15} />
+        <span>{section.type === 'EXTERNAL' ? 'Kiến thức mở rộng, chưa được tài liệu kiểm chứng' : 'Dựa trên tài liệu được cấp quyền'}</span>
+      </div>
+      <ChatMarkdown content={section.content} citations={response.citations} onSelectCitation={onSelectCitation} />
+    </section>)}</div>;
 }
 
 function MessageActions({ message, onSaveNote, onAskCommunity }: Pick<MessageProps, 'message' | 'onSaveNote' | 'onAskCommunity'>) {
@@ -81,8 +93,10 @@ function MessageActions({ message, onSaveNote, onAskCommunity }: Pick<MessagePro
 }
 
 /** Displays provisional labels, canonical sources and actions only for readable final answers. */
-export function ChatMessageItem({ message, onSelectCitation, onSaveNote, onAskCommunity }: MessageProps) {
+export function ChatMessageItem({ message, workspaceId, onSelectCitation, onSaveNote, onAskCommunity }: MessageProps) {
   const isThinking = message.role === 'ASSISTANT' && message.isStreaming && !message.content && !message.response;
+  const isEmptyAssistantFailure = message.role === 'ASSISTANT' && !message.isStreaming && !message.content && !message.response;
+  if (isEmptyAssistantFailure) return null;
 
   return <article className={`chat-msg chat-msg--${message.role.toLowerCase()}`} data-msg-id={message.id}>
     <div className="chat-msg__avatar" aria-hidden="true">{message.role === 'USER'
@@ -93,6 +107,10 @@ export function ChatMessageItem({ message, onSelectCitation, onSaveNote, onAskCo
           && <span className="chat-msg__model">{message.response.providerModel}</span>}
         {message.timestamp && <span className="chat-msg__time">{message.timestamp}</span>}</header>
       <PipelineSteps message={message} />
+      {message.role === 'ASSISTANT' && !message.redacted && !message.response?.redacted
+        && message.response?.warningMessage && (
+          <p className="chat-msg__warning" role="note">{message.response.warningMessage}</p>
+        )}
       {isThinking ? (
         <div className="chat-msg__bubble chat-msg__bubble--thinking" role="status">
           <div className="chat-msg__thinking-dots">
@@ -104,7 +122,7 @@ export function ChatMessageItem({ message, onSelectCitation, onSaveNote, onAskCo
         </div>
       ) : (
         <div className="chat-msg__bubble">
-          {message.role === 'USER' ? <p>{message.content}</p> : <AssistantContent message={message} />}
+          {message.role === 'USER' ? <p>{message.content}</p> : <AssistantContent message={message} onSelectCitation={onSelectCitation} />}
         </div>
       )}
       {message.isStreaming && Boolean(message.content) && (
@@ -115,6 +133,9 @@ export function ChatMessageItem({ message, onSelectCitation, onSaveNote, onAskCo
       {message.role === 'ASSISTANT' && !message.isStreaming && !message.redacted && !message.response?.redacted
         && Boolean(message.response?.citations.length) && <CitationPanel
           citations={message.response?.citations ?? []} onSelectCitation={onSelectCitation} />}
+      {workspaceId && message.response?.workspaceSummaryId && !message.redacted
+        && <WorkspaceSummaryDocuments workspaceId={workspaceId} summaryId={message.response.workspaceSummaryId}
+          />}
       <MessageActions message={message} onSaveNote={onSaveNote} onAskCommunity={onAskCommunity} />
     </div>
   </article>;

@@ -1,14 +1,15 @@
 """Anti-bias question generator reading chunks directly from ChromaDB (R-10 / R-21)."""
 
-import json
 from enum import StrEnum
 from typing import Any
 
-import structlog
+from chromadb.errors import NotFoundError
 
 from app.services.vector_store import COLLECTION_V2, get_chroma_client
 
-logger = structlog.get_logger(__name__)
+
+class EvaluationCorpusUnavailableError(RuntimeError):
+    """Raised when a frozen evaluation cannot read its authorized Chroma corpus."""
 
 
 class QuestionCategory(StrEnum):
@@ -18,23 +19,32 @@ class QuestionCategory(StrEnum):
     OUT_OF_SCOPE = "OUT_OF_SCOPE"
 
 
-def load_chunks_from_chroma(workspace_id: str, collection_name: str = COLLECTION_V2) -> list[dict[str, Any]]:
-    """Load all chunks for a workspace directly from ChromaDB (R-21 mitigation)."""
+def load_chunks_from_chroma(
+    workspace_id: str, collection_name: str = COLLECTION_V2
+) -> list[dict[str, Any]]:
+    """Load evaluation source chunks or raise when the corpus cannot be read."""
     client = get_chroma_client()
     try:
         col = client.get_collection(collection_name)
-        res = col.get(
-            where={"workspace_id": {"$eq": workspace_id}},
-            include=["documents", "metadatas"],
+    except NotFoundError as error:
+        raise EvaluationCorpusUnavailableError(
+            "Evaluation Chroma collection does not exist."
+        ) from error
+    res = col.get(
+        where={"workspace_id": {"$eq": workspace_id}},
+        include=["documents", "metadatas"],
+    )
+    items: list[dict[str, Any]] = []
+    if res and res.get("documents"):
+        for doc, meta, chunk_id in zip(
+            res["documents"], res["metadatas"], res["ids"], strict=True
+        ):
+            items.append({"chunk_id": chunk_id, "text": doc, "metadata": meta})
+    if not items:
+        raise EvaluationCorpusUnavailableError(
+            "Evaluation Chroma collection has no chunks for this workspace."
         )
-        items: list[dict[str, Any]] = []
-        if res and res.get("documents"):
-            for doc, meta, cid in zip(res["documents"], res["metadatas"], res["ids"]):
-                items.append({"chunk_id": cid, "text": doc, "metadata": meta})
-        return items
-    except Exception as e:
-        logger.warning("Could not fetch chunks from Chroma collection", error=str(e))
-        return []
+    return items
 
 
 def generate_draft_dataset(
@@ -57,7 +67,7 @@ def generate_draft_dataset(
     chunk_idx = 0
     num_chunks = len(chunks)
 
-    for i in range(n_direct):
+    for _ in range(n_direct):
         c_info = chunks[chunk_idx % num_chunks] if num_chunks > 0 else {}
         cases.append({
             "case_id": f"CASE-{case_counter:03d}",
@@ -71,7 +81,7 @@ def generate_draft_dataset(
         case_counter += 1
         chunk_idx += 1
 
-    for i in range(n_paraphrased):
+    for _ in range(n_paraphrased):
         c_info = chunks[chunk_idx % num_chunks] if num_chunks > 0 else {}
         cases.append({
             "case_id": f"CASE-{case_counter:03d}",

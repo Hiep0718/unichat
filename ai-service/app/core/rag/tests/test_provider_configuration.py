@@ -6,11 +6,14 @@ from typing import Any, Literal
 import pytest
 from pydantic import ValidationError
 
+from app.api.v1.health import _provider_readiness
 from app.core.provider_settings import HIVE_BASE_URL, HIVE_MODEL, ProviderSettings
 from app.core.rag.key_registry import (
     active_provider,
     configured_keys,
     configured_model,
+    fallback_provider,
+    provider_role,
     resolve_key,
 )
 from app.core.settings import Settings
@@ -19,9 +22,43 @@ from app.core.settings import Settings
 def test_should_default_to_legacy_gemini_without_requiring_hive_credentials() -> None:
     assert ProviderSettings().llm_provider == "gemini"
     assert active_provider() == "gemini"
+    assert fallback_provider() is None
     assert configured_model() == "gemini-3.5-flash"
     assert configured_keys() == []
     assert resolve_key("unknown") is None
+
+
+def test_should_validate_explicit_gemini_primary_hive_fallback(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("GEMINI_API_KEY", "gemini-fixture")
+    monkeypatch.setenv("HIVE_API_KEY", "hive-fixture")
+    monkeypatch.setenv("LLM_FALLBACK_PROVIDER", "hive")
+    monkeypatch.setenv("ENABLE_PROVIDER_FALLBACK", "true")
+
+    configuration = ProviderSettings()
+
+    assert configuration.llm_provider == "gemini"
+    assert fallback_provider() == "hive"
+    assert provider_role("gemini") == "PRIMARY"
+    assert provider_role("hive") == "FALLBACK"
+    assert _provider_readiness() == (
+        "configured", "gemini", "gemini-3.5-flash", "hive", HIVE_MODEL,
+    )
+
+
+@pytest.mark.parametrize("overrides,error", [
+    ({"enable_provider_fallback": True}, "PROVIDER_FALLBACK_ROUTE_INVALID"),
+    ({"enable_provider_fallback": True, "llm_fallback_provider": "hive"},
+     "GEMINI_CREDENTIALS_REQUIRED"),
+    ({"enable_provider_fallback": True, "llm_fallback_provider": "hive",
+      "gemini_api_key": "gemini-fixture"}, "HIVE_CREDENTIALS_REQUIRED"),
+])
+def test_should_fail_closed_for_incomplete_fallback_route(
+    overrides: dict[str, Any], error: str,
+) -> None:
+    with pytest.raises(ValidationError, match=error):
+        ProviderSettings(_env_file=None, **overrides)
 
 
 def test_should_default_to_official_hive_endpoint_and_approved_model(

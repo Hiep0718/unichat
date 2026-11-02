@@ -7,13 +7,20 @@ import { typography } from '../../../design/typography';
 import { UCIcon } from '../../../components/uc-icon';
 import { MessageItem, CitationItem } from '../../../types/api';
 import { CitationCard } from './citation-card';
+import { WorkspaceSummaryDocuments } from './workspace-summary-documents';
 
 interface MessageBubbleProps {
   message: MessageItem;
+  workspaceId?: string;
   onPressCitation?: (citation: CitationItem) => void;
 }
 
-export function MessageBubble({ message, onPressCitation }: MessageBubbleProps) {
+function MessageWarning({ message }: { readonly message: MessageItem }) {
+  if (!message.warningMessage || message.redacted) return null;
+  return <Text style={styles.warning} accessibilityRole="text">{message.warningMessage}</Text>;
+}
+
+export function MessageBubble({ message, workspaceId, onPressCitation }: MessageBubbleProps) {
   const isUser = message.sender === 'USER';
   const [citationsExpanded, setCitationsExpanded] = useState(false);
 
@@ -48,6 +55,11 @@ export function MessageBubble({ message, onPressCitation }: MessageBubbleProps) 
       <View style={styles.markdownWrap}>
         <Markdown style={markdownStyles}>{message.content}</Markdown>
       </View>
+
+      <MessageWarning message={message} />
+      {workspaceId && message.workspaceSummaryId && !message.redacted &&
+        <WorkspaceSummaryDocuments workspaceId={workspaceId} summaryId={message.workspaceSummaryId}
+          />}
 
       {/* Compact Perplexity/Gemini Citations Strip */}
       {citations.length > 0 && (
@@ -163,6 +175,17 @@ const styles = StyleSheet.create({
   markdownWrap: {
     width: '100%',
     paddingLeft: 2,
+  },
+  warning: {
+    width: '100%',
+    marginTop: spacing.xs,
+    padding: spacing.sm,
+    borderLeftWidth: 3,
+    borderLeftColor: '#D97706',
+    borderRadius: 6,
+    backgroundColor: '#FFFBEB',
+    color: '#78350F',
+    ...typography.bodySm,
   },
   citationsSection: {
     marginTop: spacing.sm + 2,

@@ -14,6 +14,8 @@ from app.core.rag.key_registry import (
     active_provider,
     configured_keys,
     configured_model,
+    fallback_provider,
+    provider_role,
     resolve_key,
 )
 from app.core.rag.provider_gateway import ProviderFailure, generate
@@ -115,7 +117,8 @@ class AiTelemetryTracker:
                 "maskedKey": mask_key(key.secret),
                 "isConfigured": True,
                 "provider": key.provider,
-                "isActive": key.provider == active_provider(),
+                "isActive": provider_role(key.provider) is not None,
+                "routingRole": provider_role(key.provider),
                 "supportedModels": [configured_model(key.provider)],
             }
             for key in configured_keys()
@@ -137,13 +140,17 @@ class AiTelemetryTracker:
             ]
         models = sorted({str(record["model"]) for record in records if record.get("model")})
         successes = sum(record.get("outcome") == "SUCCESS" for record in records)
+        primary, fallback = active_provider(), fallback_provider()
         return {
             "status": "PARTIAL_DIAGNOSTIC" if records else "NO_DATA",
             "authoritative": False,
             "timeRangeDays": days,
             "keys": self.get_configured_keys(),
-            "activeProvider": active_provider(),
-            "activeModel": configured_model(),
+            "activeProvider": primary,
+            "activeModel": configured_model(primary),
+            "primaryProvider": primary,
+            "fallbackProvider": fallback,
+            "fallbackModel": configured_model(fallback) if fallback else None,
             "configuredModels": sorted({
                 configured_model(key.provider) for key in configured_keys()
             }),
@@ -178,7 +185,7 @@ class AiTelemetryTracker:
             }
         if policy is None:
             raise ValueError("ADMIN_POLICY_REQUIRED")
-        if selected.provider != active_provider():
+        if provider_role(selected.provider) is None:
             return {
                 "status": "ERROR",
                 "message": "Khóa không thuộc nhà cung cấp đang hoạt động.",
@@ -213,9 +220,11 @@ class AiTelemetryTracker:
         if not prompt.strip() or len(prompt) > 2000:
             raise ValueError("ADMIN_PROMPT_INVALID")
         started = time.perf_counter()
+        selected_model = model or configured_model(selected.provider)
         try:
             result = generate(
-                prompt, policy, purpose="ADMIN_PROMPT", selected_key=selected, model=model
+                prompt, policy, purpose="ADMIN_PROMPT",
+                selected_key=selected, model=selected_model,
             )
             usage = (
                 result.input_tokens + result.output_tokens
@@ -238,7 +247,7 @@ class AiTelemetryTracker:
                 "reply": None,
                 "tokensUsed": None,
                 "latencyMs": int((time.perf_counter() - started) * 1000),
-                "model": model or configured_model(),
+                "model": selected_model,
                 "keyId": key_id,
                 "error": True,
                 "errorCode": error.code,

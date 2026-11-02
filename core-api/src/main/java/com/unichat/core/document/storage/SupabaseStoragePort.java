@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpClient;
+import java.net.http.HttpClient.Version;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
@@ -29,6 +30,7 @@ public class SupabaseStoragePort implements StoragePort {
 
     private static final Logger log = LoggerFactory.getLogger(SupabaseStoragePort.class);
     private static final Duration TIMEOUT = Duration.ofSeconds(30);
+    private static final Duration UPLOAD_TIMEOUT = Duration.ofSeconds(60);
 
     private final String baseUrl;
     private final String serviceKey;
@@ -46,7 +48,12 @@ public class SupabaseStoragePort implements StoragePort {
     }
 
     private synchronized HttpClient client() {
-        if (httpClient == null) httpClient = HttpClient.newBuilder().connectTimeout(TIMEOUT).build();
+        if (httpClient == null) {
+            httpClient = HttpClient.newBuilder()
+                    .version(Version.HTTP_1_1)
+                    .connectTimeout(TIMEOUT)
+                    .build();
+        }
         return httpClient;
     }
 
@@ -57,7 +64,7 @@ public class SupabaseStoragePort implements StoragePort {
             URI uri = URI.create(baseUrl + "/object/" + bucket + "/" + storageKey);
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(uri)
-                    .timeout(TIMEOUT)
+                    .timeout(UPLOAD_TIMEOUT)
                     .header("Authorization", "Bearer " + serviceKey)
                     .header("apikey", serviceKey)
                     .header("Content-Type", "application/octet-stream")
@@ -71,8 +78,11 @@ public class SupabaseStoragePort implements StoragePort {
             }
             log.error("Supabase Storage upload failed: status={}, body={}", response.statusCode(), response.body());
             throw new InternalError();
-        } catch (IOException | InterruptedException e) {
+        } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
+            log.error("Supabase Storage upload error for key: {}", storageKey, e);
+            throw new InternalError();
+        } catch (IOException e) {
             log.error("Supabase Storage upload error for key: {}", storageKey, e);
             throw new InternalError();
         }

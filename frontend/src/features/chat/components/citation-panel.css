@@ -1,146 +1,261 @@
 /* ==========================================================================
-   Rãnh bằng chứng
-
-   Nguồn của câu trả lời, đặt ở lề bên cạnh chính câu trả lời đó. Sách in đặt
-   bộ máy chú giải ngoài lề vì người đọc đối chiếu luận điểm với nguồn ngay
-   lúc đọc, không phải sau khi cuộn hết trang. Đây là cùng một bài toán.
-
-   Trước đây đây là một hàng pill nằm dưới câu trả lời: đọc ra như một thanh
-   công cụ, và giấu đi đúng thứ phân biệt sản phẩm này với mọi trợ lý khác.
-
-   Lưới hai cột được khai báo ở chat-page.css, nơi .chat-msg__content-zone
-   sống; file này chỉ lo phần bên trong rãnh.
+   Citation Panel & Refusal Card Styling — DESIGN.md Academic Precision
    ========================================================================== */
 
-.evidence-rail {
-  /* Nét kẻ lề. Đây là thứ duy nhất phân tách rãnh với cột đọc — không viền
-     bao, không nền, không bóng. */
-  border-inline-start: 1px solid var(--ke);
-  padding-inline-start: 18px;
-}
-
-.evidence-rail__title {
-  margin: 0 0 12px;
-  color: var(--muc-mo);
-  font: var(--font-label-sm);
-}
-
-.evidence-rail__list {
+.citation-panel {
+  margin-top: 12px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  gap: 8px;
 }
 
-.evidence-rail__entry {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 9px;
-  inline-size: 100%;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: inherit;
-  text-align: start;
+.citation-panel__header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font: var(--font-label-sm);
+  color: var(--color-secondary);
+  font-weight: 600;
+}
+
+.citation-panel__icon {
+  font-size: 16px;
+}
+
+.citation-pills-list {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.citation-pill-container {
+  position: relative;
+  display: inline-block;
+}
+
+.citation-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  background: var(--color-surface-container-lowest);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-full);
+  font: var(--font-label-sm);
+  color: var(--color-on-surface);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.citation-pill-btn:hover {
+  background: var(--color-secondary-fixed);
+  border-color: var(--color-secondary);
+  color: var(--color-on-secondary-fixed);
+  transform: translateY(-1px);
+}
+
+.citation-pill-icon {
+  font-size: 14px;
+  color: var(--color-secondary);
+}
+
+.citation-pill-name {
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.citation-pill-score {
+  padding: 1px 6px;
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--color-success);
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* ── Hover Popover ── */
+.citation-popover {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 360px;
+  padding: 14px 16px;
+  background: var(--color-surface-container-lowest);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  z-index: 999;
+  animation: citation-pop-fade 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   cursor: pointer;
 }
 
-/* Ký hiệu trích dẫn. Màu bão hòa duy nhất trên trang nằm ở đây, đúng như
-   một con số chú thích trong sách: nhỏ, lặp lại, và là thứ mắt bắt được. */
-.evidence-rail__mark {
-  min-inline-size: 17px;
-  padding-block: 1px;
-  border-radius: var(--radius-sm);
-  background: var(--nhan);
-  color: var(--nen);
-  font: var(--font-label-sm);
-  font-variant-numeric: tabular-nums;
-  text-align: center;
+.citation-popover::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: var(--color-surface-container-lowest) transparent transparent transparent;
 }
 
-.evidence-rail__text {
+@keyframes citation-pop-fade {
+  from { opacity: 0; transform: translate(-50%, 6px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.citation-popover__header {
   display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-inline-size: 0;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  gap: 8px;
 }
 
-.evidence-rail__file {
-  color: var(--muc);
+.citation-popover__filename {
   font: var(--font-label-md);
-  overflow-wrap: anywhere;
-}
-
-.evidence-rail__locator {
-  color: var(--muc-nhat);
-  font: var(--font-label-sm);
-}
-
-/* Trích đoạn gốc, đặt trong mặt chữ dùng để đọc: nó là văn bản của tài liệu
-   chứ không phải nhãn của giao diện. Cắt ở ba dòng vì rãnh là chỗ để nhận ra
-   nguồn, còn đọc đủ thì mở tài liệu. */
-.evidence-rail__excerpt {
-  display: -webkit-box;
-  margin-block-start: 3px;
+  color: var(--color-on-surface);
+  white-space: nowrap;
   overflow: hidden;
-  color: var(--muc-nhat);
-  font: 400 13px/20px var(--font-doc);
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
+  text-overflow: ellipsis;
 }
 
-.evidence-rail__score {
+.citation-popover__score {
+  font: var(--font-label-sm);
+  font-size: 11px;
+  color: var(--color-success);
+  background: rgba(16, 185, 129, 0.15);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.citation-popover__locator {
   display: flex;
   align-items: center;
-  gap: 7px;
-  margin-block-start: 5px;
-}
-
-/* Thanh đo, không phải huy hiệu. Độ khớp là một đại lượng liên tục, nên vẽ
-   nó thành độ dài đọc nhanh hơn là một con số trong viên thuốc. */
-.evidence-rail__score-bar {
-  block-size: 2px;
-  min-inline-size: 2px;
-  max-inline-size: 54px;
-  flex: 0 0 auto;
-  border-radius: var(--radius-full);
-  background: var(--nhan);
-}
-
-.evidence-rail__score-value {
-  color: var(--muc-mo);
+  gap: 4px;
   font: var(--font-label-sm);
-  font-variant-numeric: tabular-nums;
+  color: var(--color-secondary);
+  margin-bottom: 8px;
 }
 
-.evidence-rail__entry:hover .evidence-rail__file,
-.evidence-rail__entry:focus-visible .evidence-rail__file {
-  text-decoration: underline;
-  text-underline-offset: 3px;
+.citation-popover__locator .material-symbols-outlined { font-size: 14px; }
+
+.citation-popover__excerpt {
+  font: var(--font-body-md);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-on-surface-variant);
+  font-style: italic;
+  max-height: 120px;
+  overflow-y: auto;
+  background: var(--color-surface-container-low);
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--color-secondary);
 }
 
-.evidence-rail__entry:focus-visible {
-  outline: 2px solid var(--nhan);
-  outline-offset: 3px;
+.citation-popover__footer {
+  margin-top: 10px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--color-outline-variant);
+  font: var(--font-label-sm);
+  color: var(--color-secondary);
+  text-align: right;
 }
 
-/* Dưới ngưỡng này không còn lề để viết vào: rãnh về dưới câu trả lời, giữ
-   nét kẻ nhưng xoay thành kẻ ngang. */
-@media (max-width: 1100px) {
-  .evidence-rail {
-    border-inline-start: 0;
-    border-block-start: 1px solid var(--ke);
-    padding-block-start: 16px;
-    padding-inline-start: 0;
-  }
+/* ── Refusal Card ── */
+.refusal-card {
+  margin-top: 12px;
+  padding: 16px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
 
-  .evidence-rail__list {
-    gap: 14px;
-  }
+.refusal-card--refuse {
+  background: var(--color-error-container);
+  border: 1px solid rgba(186, 26, 26, 0.3);
+  color: var(--color-on-error-container);
+}
 
-  .evidence-rail__excerpt {
-    -webkit-line-clamp: 2;
-  }
+.refusal-card--clarify {
+  background: #fefce8;
+  border: 1px solid #fef08a;
+  color: #713f12;
+}
+
+.refusal-card__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.refusal-card__title {
+  font: var(--font-label-md);
+  font-weight: 700;
+}
+
+.refusal-card__reason {
+  font: var(--font-body-md);
+  line-height: 1.5;
+}
+
+/* ── Knowledge-gap escalation (refusal → community question) ── */
+.refusal-card__escalation {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.refusal-card__escalation-text {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font: var(--font-body-sm);
+  line-height: 1.5;
+  opacity: 0.85;
+}
+
+.refusal-card__escalation-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.refusal-card__escalation-btn {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: var(--radius-lg);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font: var(--font-label-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.refusal-card__escalation-btn:hover {
+  opacity: 0.9;
+}
+
+.refusal-card__escalation-btn:active {
+  transform: scale(0.98);
+}
+
+.refusal-card__escalation-btn .material-symbols-outlined {
+  font-size: 18px;
 }

@@ -1,7 +1,7 @@
 import React from 'react';
 import { friendlyChatError } from '../chat-failures';
 import { isKnowledgeGap } from '../chat-refusal-policy';
-import './refusal-card.css';
+import './citation-panel.css';
 
 export interface RefusalCardProps {
   decision: 'CLARIFY' | 'REFUSE';

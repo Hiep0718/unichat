@@ -231,8 +231,8 @@ test.describe('Automation Suite 06 — Master E2E Lifecycle: Short-term Conversa
     await expect(chatNavBtn).toBeVisible({ timeout: 10000 });
     await chatNavBtn.click();
 
-    const chatInput = page.locator('.chat-input-form__field');
-    const sendBtn = page.locator('.chat-input-form__submit-btn');
+    const chatInput = page.locator('.chat-composer__field');
+    const sendBtn = page.locator('.chat-composer__send[type="submit"]');
     await expect(chatInput).toBeVisible({ timeout: 10000 });
 
     // ──────────────────────────────────────────────────────────────────────────
