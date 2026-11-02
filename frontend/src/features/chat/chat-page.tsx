@@ -6,6 +6,7 @@ import { ChatMessageItem } from './components/chat-message-item';
 import { ChatInputForm } from './components/chat-input-form';
 import { ChatStudioPanels } from './components/chat-studio-panels';
 import { ChatPolicyNotice } from './components/chat-policy-notice';
+import { ChatSessionStatus } from './components/chat-session-status';
 import { useChatSession } from './use-chat-session';
 import { useChatNotes } from './use-chat-notes';
 import { readCurrentCitation } from './read-citation';
@@ -46,6 +47,8 @@ function ChatSessionPage({ workspaceId = '', conversationId: initialId }: ChatPa
   const chat = useChatSession(workspaceId, initialId);
   const notes = useChatNotes(workspaceId, chat.conversationId, chat.messages);
   const [documents, setDocuments] = useState<DocumentResponse[]>([]);
+  const [documentTotal, setDocumentTotal] = useState<number | undefined>(undefined);
+  const [singlePageCorpus, setSinglePageCorpus] = useState(false);
   const [selected, setSelected] = useState<CitationItem | null>(null);
   const [studio, setStudio] = useState(false);
   const [citationError, setCitationError] = useState<string | null>(null);
@@ -55,8 +58,16 @@ function ChatSessionPage({ workspaceId = '', conversationId: initialId }: ChatPa
     const lifecycle = { active: true };
     if (!workspaceId) return;
     void fetchWorkspaceDocuments(workspaceId, 0, 20).then((page) => {
-      if (lifecycle.active) setDocuments(page.content);
-    }).catch(() => { if (lifecycle.active) setDocuments([]); });
+      if (!lifecycle.active) return;
+      setDocuments(page.content);
+      setDocumentTotal(typeof page.totalElements === 'number' ? page.totalElements : undefined);
+      setSinglePageCorpus((page.totalPages ?? 1) <= 1);
+    }).catch(() => {
+      if (!lifecycle.active) return;
+      setDocuments([]);
+      setDocumentTotal(undefined);
+      setSinglePageCorpus(false);
+    });
     return () => { lifecycle.active = false; };
   }, [workspaceId]);
   useEffect(() => { end.current?.scrollIntoView?.({ block: 'end' }); }, [chat.messages]);
@@ -70,24 +81,30 @@ function ChatSessionPage({ workspaceId = '', conversationId: initialId }: ChatPa
     catch (failure: unknown) { if (generation === getSessionSnapshot().generation) setCitationError(failure instanceof Error ? failure.message : 'Không mở được nguồn'); }
   };
   const policyBlocked = workspace.workspace?.cloudAllowed === false;
+  const readySources = singlePageCorpus ? documents.filter((item) => item.status === 'PROCESSED').length : undefined;
   const send = (question: string, expanded = false) => { if (workspaceId && !policyBlocked) void chat.send(question, expanded); };
   return <div className={`chat-layout ${studio ? 'chat-layout--studio-open' : ''}`}>
     <div className="chat-page"><ChatHeader workspaceId={workspaceId} workspaceName={workspace?.workspace?.name}
       conversationTitle={chat.title} messageCount={chat.messages.length} onNewChat={() => { chat.reset(); setSelected(null); }}
       onToggleStudio={() => setStudio((value) => !value)} isStudioOpen={studio} hasDrawerOpen={Boolean(selected)} />
       <div className="chat-page__main-content"><div className="chat-page__chat-area">
+        {policyBlocked && (
+          <div className="chat-page__policy-banner">
+            <ChatPolicyNotice workspaceId={workspaceId} isOwner={workspace.isOwner} />
+          </div>
+        )}
         <div className="chat-page__messages-body">
-          {policyBlocked && <ChatPolicyNotice workspaceId={workspaceId} isOwner={workspace.isOwner} />}
-          {chat.initialLoading && <p role="status">Đang tải lịch sử hội thoại…</p>}
-          {chat.older && <button type="button" onClick={() => void chat.loadOlder()}>Tải tin nhắn cũ hơn</button>}
+          <ChatSessionStatus initialLoading={chat.initialLoading} hasOlder={chat.older}
+            error={chat.error ?? notes.error ?? citationError} canRetry={chat.canRetry}
+            onLoadOlder={() => void chat.loadOlder()} onRetry={() => void chat.retry()} />
           {!chat.initialLoading && !chat.messages.length && <ChatWelcome workspaceName={workspace?.workspace?.name} documents={documents} onSelectPrompt={send} />}
-          {chat.messages.map((message) => <ChatMessageItem key={message.id} message={message} onSelectCitation={selectCitation}
+          {chat.messages.map((message) => <ChatMessageItem key={message.id} message={message} workspaceId={workspaceId} onSelectCitation={selectCitation}
             onSaveNote={(title, content, sourceId) => void notes.save(title, content, sourceId)}
             onAskCommunity={(answer) => setDraft(communityDraft(answer, chat.messages))} />)}
-          {(chat.error || notes.error || citationError) && <p role="alert">{chat.error ?? notes.error ?? citationError}</p>}
-          {chat.canRetry && <button type="button" onClick={() => void chat.retry()}>Kiểm tra lại yêu cầu này</button>}
           <div ref={end} />
-        </div><ChatInputForm onSend={send} loading={chat.loading} disabled={policyBlocked} onCancel={() => void chat.cancel()} />
+        </div><ChatInputForm onSend={send} workspaceName={workspace?.workspace?.name}
+          readySourceCount={readySources} totalSourceCount={documentTotal}
+          loading={chat.loading} disabled={policyBlocked} onCancel={() => void chat.cancel()} />
       </div>{studio && <ChatStudioPanels workspaceId={workspaceId} workspaceName={workspace?.workspace?.name}
         messages={chat.messages} selectedCitation={selected} onSelectCitation={selectCitation} onClearCitation={() => setSelected(null)}
         notes={notes} onClose={() => setStudio(false)} onSend={send} />}</div>

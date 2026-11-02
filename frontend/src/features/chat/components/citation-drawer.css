@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Citation Drawer — Compact Design (max content, min chrome)
+   Citation Drawer — Modern RAG Source & Excerpt Reader
    ========================================================================== */
 
 .citation-drawer {
@@ -29,40 +29,59 @@
 
 /* ── Single Compact Header Bar ── */
 .citation-drawer__header {
-  height: 44px;
-  padding: 0 10px 0 14px;
+  height: 52px;
+  padding: 0 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--color-surface-container-lowest, #f8fafc);
+  background: #ffffff;
   border-bottom: 1px solid var(--color-outline-variant, #e2e8f0);
   flex-shrink: 0;
-  gap: 8px;
+  gap: 10px;
 }
 
 .citation-drawer__title-zone {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   min-width: 0;
   flex: 1;
 }
 
-.citation-drawer__icon {
-  font-size: 18px;
-  color: var(--color-primary, #00687a);
+.citation-drawer__icon-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #f0f9ff;
+  border: 1px solid #e0f2fe;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
 }
 
+.citation-drawer__icon {
+  font-size: 18px;
+  color: var(--color-primary, #0284c7);
+}
+
+.citation-drawer__file-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
 .citation-drawer__filename {
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 700;
   color: var(--color-on-surface, #0f172a);
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 140px;
+  max-width: 170px;
 }
 
 /* Inline badges in header */
@@ -70,7 +89,7 @@
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  padding: 2px 7px;
+  padding: 2px 8px;
   border-radius: var(--radius-full, 9999px);
   font-size: 11px;
   font-weight: 700;
@@ -79,9 +98,9 @@
 }
 
 .citation-drawer__badge--page {
-  background: #e0f2fe;
-  color: #0284c7;
-  border: 1px solid #bae6fd;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #dbeafe;
 }
 
 .citation-drawer__badge--score {
@@ -93,46 +112,119 @@
 .citation-drawer__header-actions {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   flex-shrink: 0;
 }
 
+/* ── View Mode Segmented Toggle ── */
+.citation-drawer__view-toggle {
+  display: inline-flex;
+  align-items: center;
+  background: #e2e8f0;
+  padding: 2px;
+  border-radius: var(--radius-md, 8px);
+  gap: 2px;
+}
+
+.citation-drawer__toggle-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition-fast, 0.15s ease);
+}
+
+.citation-drawer__toggle-tab .material-symbols-outlined {
+  font-size: 14px;
+}
+
+.citation-drawer__toggle-tab--active {
+  background: #ffffff;
+  color: var(--color-primary, #00687a);
+  font-weight: 700;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* ── Compact Header Icon Buttons ── */
+.citation-drawer__icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-md, 6px);
+  border: 1px solid var(--color-outline-variant, #cbd5e1);
+  background: var(--color-surface-container-lowest, #ffffff);
+  color: var(--color-on-surface, #475569);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all var(--transition-fast, 0.15s ease);
+  flex-shrink: 0;
+}
+
+.citation-drawer__icon-btn:hover {
+  background: #e0f2fe;
+  color: #0369a1;
+  border-color: #7dd3fc;
+}
+
+.citation-drawer__icon-btn--close:hover {
+  background: #fee2e2;
+  color: #b91c1c;
+  border-color: #fca5a5;
+}
+
+.citation-drawer__icon-btn .material-symbols-outlined {
+  font-size: 16px;
+  line-height: 1;
+}
+
+/* Legacy action button support */
 .citation-drawer__action-btn,
 .citation-drawer__close-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
+  gap: 5px;
+  min-height: 28px;
+  padding: 3px 8px;
   border-radius: var(--radius-md, 6px);
-  border: 1px solid transparent;
-  background: transparent;
-  color: var(--color-on-surface-variant, #64748b);
+  border: 1px solid var(--color-outline-variant, #cbd5e1);
+  background: var(--color-surface-container-lowest, #ffffff);
+  color: var(--color-on-surface, #334155);
   cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
   transition: all var(--transition-fast, 0.15s ease);
 }
 
 .citation-drawer__action-btn:hover,
 .citation-drawer__close-btn:hover {
-  background: var(--color-surface-container, #e2e8f0);
-  color: var(--color-on-surface, #0f172a);
-  border-color: var(--color-outline-variant, #cbd5e1);
+  background: var(--color-secondary-fixed, #e0f2fe);
+  color: var(--color-on-secondary-fixed, #075985);
+  border-color: var(--color-secondary, #0284c7);
 }
 
-.citation-drawer__action-btn .material-symbols-outlined,
-.citation-drawer__close-btn .material-symbols-outlined {
-  font-size: 18px;
-}
-
-/* ── Content Body — Takes all remaining space ── */
+/* ── Content Body ── */
 .citation-drawer__body {
   flex: 1;
   overflow-y: auto;
-  padding: 12px;
+  padding: 14px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  background: #ffffff;
+  background: #f8fafc;
 }
 
 .citation-drawer__body::-webkit-scrollbar {
@@ -149,67 +241,244 @@
 }
 
 /* ── PDF Viewer Pane ── */
-.citation-drawer__viewer-pane {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  min-height: 450px;
-}
-
 .citation-drawer__iframe {
   width: 100%;
   flex: 1;
-  min-height: 400px;
+  min-height: 480px;
   border: 1px solid var(--color-outline-variant, #cbd5e1);
   border-radius: var(--radius-lg, 8px);
+  background: #ffffff;
 }
 
-/* ── Knowledge Reader Pane ── */
-.citation-drawer__reader-pane {
+/* ── States ── */
+.citation-drawer__state {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+}
+
+.citation-drawer__state--loading {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.citation-drawer__state-spinner {
+  animation: citation-drawer-spin 1.2s linear infinite;
+  font-size: 20px;
+  color: #0284c7;
+}
+
+@keyframes citation-drawer-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.citation-drawer__state--error {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fee2e2;
+}
+
+/* ── Redesigned Modern Chunk Card (Academic Quote Block) ── */
+.citation-drawer__excerpt-container {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 14px;
 }
 
-.citation-drawer__doc-container {
+.citation-drawer__chunk-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  box-shadow: 0 4px 18px -2px rgba(15, 23, 42, 0.05);
+  overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+
+.citation-drawer__chunk-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #ffffff;
+  border-bottom: 1px solid #f1f5f9;
+  gap: 12px;
+}
+
+.citation-drawer__chunk-meta {
+  display: flex;
+  align-items: center;
   gap: 10px;
+  min-width: 0;
+  flex: 1;
 }
 
-.citation-drawer__context-box {
-  background: var(--color-surface-container-lowest, #f8fafc);
-  border: 1px dashed var(--color-outline-variant, #cbd5e1);
-  border-radius: var(--radius-lg, 10px);
-  padding: 10px 12px;
-  font-size: 12px;
-  color: var(--color-outline, #64748b);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+.citation-drawer__quote-icon-pill {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: #e0f2fe;
+  color: #0284c7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
-.citation-drawer__context-box p {
-  margin: 0;
-  line-height: 1.5;
+.citation-drawer__quote-icon-pill .citation-drawer__chunk-icon {
+  font-size: 16px;
+  color: #0284c7;
 }
 
-.citation-drawer__line-num {
-  display: block;
-  font-size: 10px;
+.citation-drawer__chunk-titles {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.citation-drawer__chunk-title {
+  font-size: 13px;
   font-weight: 700;
-  color: var(--color-outline, #94a3b8);
-  margin-bottom: 3px;
-  letter-spacing: 0.5px;
+  color: #0f172a;
+  white-space: nowrap;
 }
 
-/* ── Highlight Container (Cited Excerpt) ── */
-.citation-drawer__highlight-container {
-  background: #fefce8;
-  border: 1.5px solid #fde047;
-  border-radius: var(--radius-xl, 12px);
-  padding: 12px;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 16px rgba(234, 179, 8, 0.12);
+.citation-drawer__chunk-locator {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #0369a1;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.citation-drawer__copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 7px;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.citation-drawer__copy-btn:hover {
+  border-color: #0284c7;
+  color: #0284c7;
+  background: #f0f9ff;
+}
+
+.citation-drawer__copy-btn .material-symbols-outlined {
+  font-size: 15px;
+}
+
+.citation-drawer__copy-btn--copied {
+  border-color: #a7f3d0;
+  color: #059669;
+  background: #ecfdf5;
+  font-weight: 700;
+}
+
+/* Scholarly Blockquote Container */
+.citation-drawer__chunk-content {
+  margin: 12px 14px;
+  padding: 16px 18px;
+  background: #f8fafc;
+  border-left: 3.5px solid #0284c7;
+  border-radius: 8px;
   position: relative;
+}
+
+.citation-drawer__chunk-text {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.75;
+  color: #1e293b;
+  font-style: normal;
+  font-weight: 400;
+  white-space: pre-wrap;
+  word-break: break-word;
+  letter-spacing: -0.005em;
+  font-family: inherit;
+}
+
+.citation-drawer__chunk-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: #ffffff;
+  border-top: 1px solid #f1f5f9;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.citation-drawer__verify-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: #ecfdf5;
+  border: 1px solid #d1fae5;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #047857;
+}
+
+.citation-drawer__verify-badge .material-symbols-outlined {
+  font-size: 15px;
+  color: #059669;
+}
+
+.citation-drawer__jump-pdf-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #0284c7;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.citation-drawer__jump-pdf-btn:hover {
+  background: #e0f2fe;
+}
+
+.citation-drawer__jump-pdf-btn .material-symbols-outlined {
+  font-size: 15px;
+}
+
+/* Fallback highlight container for backward compatibility */
+.citation-drawer__highlight-container {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-left: 3.5px solid var(--color-primary, #00687a);
+  border-radius: var(--radius-xl, 12px);
+  padding: 14px;
+  box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.05);
 }
 
 .citation-drawer__highlight-badge {
@@ -218,56 +487,18 @@
   gap: 5px;
   font-size: 11px;
   font-weight: 700;
-  color: #a16207;
+  color: #0369a1;
   margin-bottom: 8px;
-}
-
-.citation-drawer__highlight-badge .material-symbols-outlined {
-  font-size: 15px;
-  color: #ca8a04;
 }
 
 .citation-drawer__highlight-body {
   font-size: 13.5px;
-  line-height: 1.6;
-  color: #713f12;
-  font-weight: 500;
-  font-style: italic;
-  background: rgba(254, 240, 138, 0.4);
-  padding: 10px 12px;
-  border-radius: var(--radius-md, 8px);
-  border-left: 3px solid #eab308;
-}
-
-.citation-drawer__highlight-box--pulse {
-  animation: highlight-pulse 1.2s ease-in-out 2;
-}
-
-@keyframes highlight-pulse {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.4);
-    transform: scale(1);
-  }
-  50% {
-    box-shadow: 0 0 0 8px rgba(234, 179, 8, 0.2);
-    transform: scale(1.02);
-  }
-}
-
-/* ── File Note (error/info) ── */
-.citation-drawer__file-note {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  color: #94a3b8;
-  padding: 6px 10px;
-  background: var(--color-surface-container-lowest, #f8fafc);
-  border-radius: var(--radius-md, 6px);
-}
-
-.citation-drawer__file-note .material-symbols-outlined {
-  font-size: 14px;
+  line-height: 1.7;
+  color: #1e293b;
+  font-weight: 400;
+  font-style: normal;
+  white-space: pre-wrap;
+  margin: 0;
 }
 
 /* Responsive collapse on mobile / small screens */

@@ -7,13 +7,13 @@
 | Phase | design-architecture |
 | Task | TASK-004 |
 | Version | 1.0 |
-| Trạng thái | Approved — source of truth; Chroma-backed implementation not ready |
+| Trạng thái | Approved — Cloud-client retrieval test scope; SEC-DEBT-001 remains open |
 | Owner | Hoàng Phi Hùng |
 | Reviewer | Nguyễn Thanh Hiệp |
 
 ## 1. Mục tiêu và giới hạn
 
-Adaptive Retrieval v1 chọn chiến lược truy hồi bằng luật xác định, giải thích được và có phiên bản. P0 không dùng LLM để phân loại intent, không web-search, không hybrid search, không reranker và không tự thay đổi threshold trong production.
+Adaptive Retrieval v1 chọn intent bằng luật xác định, giải thích được và có phiên bản; provider planner chỉ phân tách câu hỏi thành tối đa bốn facet truy hồi. P0 không tự thay đổi threshold trong production. Web adapter vẫn chưa được chọn; không được diễn giải kiến thức nhớ sẵn của model thành kết quả web có nguồn.
 
 Đầu vào gồm câu hỏi, workspaceId, danh sách documentId đã được Core API cấp quyền, conversation summary tối đa một lượt và strategyVersion. Đầu ra gồm intent, ruleId, confidence, retrieval strategy, evidence decision, answer hoặc refusal, citations và retrieval trace.
 
@@ -24,6 +24,13 @@ Adaptive Retrieval v1 chọn chiến lược truy hồi bằng luật xác đị
 3. Tạo bản chữ thường giữ nguyên dấu để lưu trace.
 4. Tạo shadow text bỏ dấu chỉ để so luật; không dùng shadow text để sinh câu trả lời.
 5. Không ghi nguyên câu hỏi vào log vận hành; chỉ lưu hash, độ dài và trace được phép.
+6. Giữ nguyên câu hỏi gốc cho generation. Chỉ khi câu hỏi có dấu hiệu follow-up và `safe_context` cung cấp history/summary hợp lệ mới thêm một contextual query có giới hạn.
+7. Câu hỏi gốc và contextual query dùng cùng embedding model/prefix, allowlist tài liệu và filter workspace/status; contextual query không mở rộng quyền hoặc trở thành bằng chứng.
+8. Planner chỉ nhận câu hỏi gốc và intent, không nhận tài liệu, chunks, conversation history, document IDs hay quyền; nếu planner lỗi, dùng câu hỏi gốc như một facet.
+   Provider planner mặc định tắt bằng `QUERY_PLANNER_ENABLED=false`; chỉ bật sau khi V47 đã được phê duyệt và áp dụng trên đúng Core database mục tiêu.
+9. Retrieval chạy từng facet cùng biến thể truy vấn dưới cùng workspace/allowlist, sau đó gộp candidate theo chunk ID bằng RRF; candidate tốt nhất của mỗi facet được giữ trước khi lấp ngân sách context.
+10. Coverage chỉ tính candidate truy hồi trực tiếp theo facet. Neighbor cùng tài liệu có thể thêm ngữ cảnh, nhưng không tự chứng minh facet còn thiếu.
+11. Neighbor chỉ được đọc với workspace/document/status/ingestion version/content hash hiện hành; locator và content hash của từng chunk vẫn độc lập.
 
 ## 3. Taxonomy và thứ tự ưu tiên
 
@@ -63,7 +70,7 @@ OUT_OF_SCOPE chỉ áp dụng khi yêu cầu rõ ràng nằm ngoài năng lực.
 | REASONING | 12 | 0,62 | 8 | 2 | 0,68 |
 | OUT_OF_SCOPE | 0 | Không áp dụng | 0 | 0 | Từ chối ngay |
 
-Similarity dùng cosine trên collection unichat_chunks_v1. Mọi truy vấn bắt buộc lọc workspaceId, documentId thuộc allowedDocumentIds, documentStatus PROCESSED và ingestionVersion hiện hành.
+Similarity dùng cosine trên collection Cloud đang cấu hình `unichat_chunks_v2` (v1 fallback). Mọi truy vấn bắt buộc lọc workspaceId, documentId thuộc allowedDocumentIds và documentStatus PROCESSED; candidate chỉ được dùng khi ingestionVersion và document hash khớp Core snapshot. Neighbor fetch chỉ đọc trong cùng document, workspace, version và hash.
 
 ## 6. Evidence Gate
 
@@ -79,13 +86,20 @@ Quyết định:
 - REFUSE: OUT_OF_SCOPE; không có chunk hợp lệ; thiếu source group bắt buộc; hoặc evidenceScore thấp hơn gate.
 - ANSWER: đủ source group, evidenceScore đạt gate và citation validator đạt yêu cầu.
 
-Refusal phải nói rõ tài liệu hiện có chưa đủ bằng chứng và gợi ý cách thu hẹp câu hỏi. Không được dùng kiến thức nền để lấp khoảng trống.
+Với intent DEFINITION, chunk chỉ chứa heading/tên khái niệm không phải bằng chứng định nghĩa trực tiếp và bị loại trước khi tính Evidence Gate. Nếu sau bước này không còn chunk hỗ trợ, hệ thống phải REFUSE rõ ràng và không gọi generator.
+
+Refusal phải nói rõ tài liệu hiện có chưa đủ bằng chứng và gợi ý cách thu hẹp câu hỏi. Chế độ STRICT không được dùng kiến thức nền để lấp khoảng trống. Chế độ EXPANDED vẫn phải vượt Evidence Gate bằng tài liệu được cấp quyền trước khi gọi generator; kiến thức nền không được tính là bằng chứng hoặc thay đổi quyết định gate.
 
 ## 7. Sinh câu trả lời và citation
 
 - Generator nhận duy nhất câu hỏi đã chuẩn hóa, chunks được cấp quyền và metadata locator.
 - Output phải là JSON có schema: answer, claims, citationIds, refusal, refusalReason.
+- Câu trả lời trả lời trực tiếp trọng tâm, bao quát các phần câu hỏi và tổng hợp các chi tiết liên quan mà bằng chứng được cấp quyền hỗ trợ; không chỉ liệt kê tên chương/slide hoặc nhắc lại citation.
+- Độ dài tương xứng với câu hỏi và lượng bằng chứng. Nếu tài liệu chỉ có tiêu đề hoặc thiếu chi tiết, phải nêu rõ giới hạn thay vì suy đoán hay trình bày như thể đã tóm tắt đầy đủ.
+- Generation dùng ngôn ngữ câu hỏi trừ khi người dùng yêu cầu ngôn ngữ khác.
 - Mỗi claim thực tế phải tham chiếu ít nhất một citationId.
+- Nguồn được tham chiếu phải trực tiếp hỗ trợ claim; heading/tên khái niệm đơn độc không được dùng như citation chứng minh định nghĩa.
+- Chế độ STRICT chỉ sinh section DOCUMENT. Chế độ EXPANDED cũng truy hồi tài liệu trước; web-search chỉ được bật sau khi chọn/duyệt provider, chỉ cho facet thiếu và phải có citation WEB riêng. Khi chưa có web provider, không tuyên bố đã tìm web; generation chỉ dùng bằng chứng tài liệu và hiển thị cảnh báo rõ.
 - Citation validator kiểm tra documentId thuộc allowedDocumentIds, chunk tồn tại, excerpt khớp content hash và locator hợp lệ.
 - Nếu output sai schema hoặc citation không hợp lệ, thử lại đúng một lần với cùng evidence.
 - Lần hai vẫn sai thì REFUSE; không mở rộng corpus hoặc đổi model ngầm.
@@ -93,9 +107,9 @@ Refusal phải nói rõ tài liệu hiện có chưa đủ bằng chứng và g�
 
 ## 8. Provider và fallback
 
-Theo ADR-022, cấu hình chuyển đổi chọn Hive/DeepSeek V4.1 Flash làm provider chính; Gemini chỉ dùng khi rollback cấu hình rõ ràng. Chế độ Hive không fallback sang Gemini/Ollama và không retry transport ngầm. Môi trường chưa đặt LLM_PROVIDER giữ Gemini; fallback Ollama cũ chỉ tồn tại khi bật rõ cho chế độ Gemini.
+Theo ADR-024, CHAT/COMPACTION dùng route tối đa ba lần gọi: Gemini primary, Gemini secondary nếu có, rồi Hive fallback. Chỉ timeout, HTTP 429/5xx và lỗi mạng đã phân loại được chuyển target; HTTP 400/401/403, cấu hình, safety, evidence, citation/schema, policy và cancellation kết thúc ngay. QUERY_PLAN chỉ dùng Gemini rồi fallback quyết định về câu hỏi gốc; ADMIN_PROMPT/KEY_PROBE chỉ gọi đúng target được chọn. Ollama không nằm trong route mới và chỉ còn tương thích legacy khi fallback provider bị tắt rõ ràng.
 
-Generation JSON/citation sai được retry đúng một lần với cùng evidence/provider/key/model. HTTP/auth/network/protocol failures kết thúc operation FAILED, không lưu assistant answer hoặc phát completion giả. Evidence/citation/safety refusal là domain result riêng, không đổi thành lỗi mạng. Model thực đi qua private response vào lịch sử.
+Generation JSON/citation sai được retry đúng một lần với cùng evidence và target vừa sinh thành công; retry validation không được chuyển provider/key/model. Khi route cạn hoặc gặp lỗi không transient, operation FAILED, không lưu assistant answer hoặc phát completion giả. Evidence/citation/safety refusal là domain result riêng, không đổi thành lỗi mạng. Model thực đi qua private response vào lịch sử.
 
 Cancellation tới cả compaction và CHAT; chỉ invalid compaction output được tiếp tục bằng context bounded. Public disconnect chỉ detach subscriber; private disconnect/cancel/Core denial/deadline ngăn xử lý tiếp. Hive parser đọc transport chunks không tích lũy fixed-size trước kiểm cancellation và không đưa reasoning_content lên UI.
 
@@ -114,9 +128,9 @@ Calibration chỉ dùng 60 case development, 10 case mỗi intent và tách theo
 
 ## 10. Retrieval trace bắt buộc
 
-Trace lưu requestId, userId đã pseudonymize, workspaceId, intent, ruleId, confidence, strategyVersion, allowedDocumentCount, retrieved chunk IDs, scores, coverage, evidenceScore, decision, refusalCode, provider, latency, token usage và timestamp UTC.
+Trace lưu requestId, userId đã pseudonymize, workspaceId, intent, ruleId, confidence, strategyVersion, allowedDocumentCount, số query variants và cờ `contextualQueryUsed`, retrieved chunk IDs, scores, coverage, evidenceScore, decision, refusalCode, provider, latency, token usage và timestamp UTC.
 
-Trace không lưu toàn văn chunk hoặc câu hỏi trong log sự kiện. Dữ liệu nghiên cứu có quyền riêng được lưu trong bảng chuyên biệt và áp dụng retention.
+Trace không lưu query/context nguyên văn, toàn văn chunk hoặc câu hỏi trong log sự kiện. Dữ liệu nghiên cứu có quyền riêng được lưu trong bảng chuyên biệt và áp dụng retention.
 
 ## 11. Tiêu chí chấp nhận
 
@@ -128,3 +142,5 @@ Trace không lưu toàn văn chunk hoặc câu hỏi trong log sự kiện. Dữ
 - AC-AR-06: Cùng input và config tạo cùng intent, strategy và evidence decision.
 - AC-AR-07: Mọi run có configHash và trace đầy đủ.
 - AC-AR-08: Holdout không xuất hiện trong calibration hoặc prompt.
+- AC-AR-09: Follow-up query chỉ dùng context đã qua `safe_context`, giữ nguyên câu hỏi gốc cho generation và áp dụng cùng allowlist cho mọi query variant.
+- AC-AR-10: Chỉ collection không tồn tại mới trả tập candidate rỗng; lỗi kết nối, embedding hoặc query phải đi qua nhánh lỗi vận hành.

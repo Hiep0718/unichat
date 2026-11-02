@@ -1,6 +1,7 @@
 """Offline probes and durable control acknowledgements fail closed."""
 
 import time
+from datetime import UTC, datetime, timedelta
 from unittest.mock import Mock, patch
 
 import pytest
@@ -20,10 +21,12 @@ def test_should_probe_hive_through_generation_with_truthful_metadata(
     key = ProviderKey("hive-primary", "PRIMARY", "fixture-secret", "hive")
     result = ProviderResult("HIVE_OK", "hive", "configured-model", key.key_id)
     with patch("app.services.provider_probes.resolve_key", return_value=key):
-        with patch("app.services.provider_probes.active_provider", return_value="hive"):
-            with patch("app.services.provider_probes.generate", return_value=result,
-                       side_effect=failure) as generation:
-                response = probe_key(key.secret, key.key_id, fake_policy())
+        with patch("app.services.provider_probes.provider_role", return_value="PRIMARY"):
+            with patch("app.services.provider_probes.configured_model",
+                       return_value="configured-model"):
+                with patch("app.services.provider_probes.generate", return_value=result,
+                           side_effect=failure) as generation:
+                    response = probe_key(key.secret, key.key_id, fake_policy())
     assert response["probeType"] == "GENERATION"
     assert response["status"] == ("ERROR" if failure else "HEALTHY")
     assert response["keyId"] == key.key_id
@@ -31,17 +34,17 @@ def test_should_probe_hive_through_generation_with_truthful_metadata(
     assert generation.call_args.kwargs["selected_key"] == key
 
 
-@pytest.mark.parametrize("resolved,active,code", [
-    (None, "hive", "PROVIDER_KEY_UNKNOWN"),
-    (ProviderKey("hive-primary", "PRIMARY", "different", "hive"), "hive", "PROVIDER_KEY_UNKNOWN"),
-    (ProviderKey("hive-primary", "PRIMARY", "fixture-secret", "hive"), "gemini",
+@pytest.mark.parametrize("resolved,role,code", [
+    (None, "PRIMARY", "PROVIDER_KEY_UNKNOWN"),
+    (ProviderKey("hive-primary", "PRIMARY", "different", "hive"), "PRIMARY", "PROVIDER_KEY_UNKNOWN"),
+    (ProviderKey("hive-primary", "PRIMARY", "fixture-secret", "hive"), None,
      "PROVIDER_SELECTION_INVALID"),
 ])
 def test_should_reject_unowned_probe_selection_before_provider_call(
-    resolved: ProviderKey | None, active: str, code: str,
+    resolved: ProviderKey | None, role: str | None, code: str,
 ) -> None:
     with patch("app.services.provider_probes.resolve_key", return_value=resolved):
-        with patch("app.services.provider_probes.active_provider", return_value=active):
+        with patch("app.services.provider_probes.provider_role", return_value=role):
             with patch("app.services.provider_probes.generate") as generation:
                 with pytest.raises(ProviderFailure, match=code):
                     probe_key("fixture-secret", "hive-primary", fake_policy())
@@ -51,7 +54,7 @@ def test_should_reject_unowned_probe_selection_before_provider_call(
 def test_should_propagate_core_denial_from_hive_probe_without_healthy_result() -> None:
     key = ProviderKey("hive-primary", "PRIMARY", "fixture-secret", "hive")
     with patch("app.services.provider_probes.resolve_key", return_value=key):
-        with patch("app.services.provider_probes.active_provider", return_value="hive"):
+        with patch("app.services.provider_probes.provider_role", return_value="PRIMARY"):
             with patch("app.services.provider_probes.generate",
                        side_effect=ServiceSecurityError("CORE_POLICY_DENIED")):
                 with pytest.raises(ServiceSecurityError, match="CORE_POLICY_DENIED"):
@@ -63,6 +66,39 @@ def test_should_allow_administrative_checkpoint_without_chat_operation(purpose: 
     context = GenerationPolicy("request-id", None, True, time.time() + 120)
     with patch("app.core.rag.generation_policy.call_core") as core:
         assert 0 < context.checkpoint(purpose) <= 30
+    core.assert_not_called()
+
+
+def test_should_bound_query_plan_checkpoint_to_twelve_seconds() -> None:
+    context = GenerationPolicy("request-id", "operation-id", True, time.time() + 120)
+    response = {
+        "allowed": True,
+        "cloudAllowed": True,
+        "deadlineAt": (datetime.now(UTC) + timedelta(seconds=60)).isoformat(),
+    }
+
+    with patch("app.core.rag.generation_policy.call_core", return_value=response) as core:
+        timeout = context.checkpoint("QUERY_PLAN", "attempt-id")
+
+    assert 0 < timeout <= 12
+    assert core.call_args.args[1]["purpose"] == "QUERY_PLAN"
+
+
+def test_should_allow_hive_chat_more_time_without_exceeding_core_deadline() -> None:
+    context = GenerationPolicy("request-id", "operation-id", True, time.time() + 120)
+    result = {"allowed": True, "cloudAllowed": True,
+              "deadlineAt": (datetime.now(UTC) + timedelta(seconds=50)).isoformat()}
+    with patch("app.core.rag.generation_policy.call_core", return_value=result):
+        timeout = context.checkpoint("CHAT", "attempt-id", 75)
+
+    assert 30 < timeout <= 50
+
+
+def test_should_reject_query_plan_without_operation_before_core_call() -> None:
+    context = GenerationPolicy("request-id", None, True, time.time() + 120)
+    with patch("app.core.rag.generation_policy.call_core") as core:
+        with pytest.raises(GenerationPolicyError, match="OPERATION_POLICY_REQUIRED"):
+            context.checkpoint("QUERY_PLAN")
     core.assert_not_called()
 
 

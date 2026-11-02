@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.SimpleTransactionStatus;
+import org.springframework.test.util.ReflectionTestUtils;
 import static org.mockito.Mockito.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -14,6 +15,7 @@ import tools.jackson.databind.ObjectMapper;
 import com.unichat.core.admin.service.AuditService;
 import com.unichat.core.admin.service.AiAdmissionService;
 import com.unichat.core.chat.api.AskQuestionRequest;
+import com.unichat.core.chat.api.ChatTaskType;
 import com.unichat.core.chat.domain.ChatOperation;
 import com.unichat.core.chat.domain.ChatOperationRepository;
 import com.unichat.core.common.error.NotFoundError;
@@ -35,13 +37,67 @@ class ChatOperationServiceTest {
         when(transactions.getTransaction(any())).thenAnswer(invocation -> new SimpleTransactionStatus());
         when(repository.expire(any(),any())).thenReturn(List.of());
         when(access.read(ChatFixture.ACTOR,ChatFixture.WORKSPACE)).thenReturn(ChatFixture.sources(true));
-        service=new ChatOperationService(repository,conversations,messages,access,json,limits,audit,ChatFixture.CLOCK,transactions,admission);
+        service=new ChatOperationService(repository,conversations,messages,access,json,limits,audit,ChatFixture.CLOCK,transactions,admission,
+                mock(WorkspaceSummaryJobService.class));
     }
     private ChatOperation operation(String state) {
         var base=ChatFixture.operation(true);
         return new ChatOperation(base.id(),base.actor(),base.key(),ChatBinding.from(ChatFixture.WORKSPACE,request).hash(json),
                 base.workspaceId(),null,base.conversationId(),base.userMessageId(),null,base.question(),base.expanded(),base.requestId(),
                 state,base.sources(),base.errorCode(),base.deadlineAt(),base.leaseUntil(),base.expiresAt());
+    }
+    @Test void shouldRediscoverOnlyTheActorsActiveWorkspaceSummary() {
+        var base=operation("RUNNING");
+        var summary=new ChatOperation(base.id(),base.actor(),base.key(),base.bindingHash(),
+                base.workspaceId(),base.originalConversationId(),base.conversationId(),base.userMessageId(),
+                null,base.question(),false,ChatTaskType.WORKSPACE_SUMMARY,base.requestId(),"RUNNING",
+                base.sources(),null,base.deadlineAt(),base.leaseUntil(),base.expiresAt());
+        when(repository.findActiveSummary(ChatFixture.ACTOR.userId(),ChatFixture.WORKSPACE,base.conversationId()))
+                .thenReturn(Optional.of(summary));
+        when(repository.findById(summary.id())).thenReturn(Optional.of(summary));
+        when(repository.summaryProgress(summary.id())).thenReturn(Optional.empty());
+
+        var result=service.activeSummary(ChatFixture.ACTOR,ChatFixture.WORKSPACE,base.conversationId());
+
+        assertTrue(result.isPresent());
+        assertEquals(ChatTaskType.WORKSPACE_SUMMARY,result.orElseThrow().taskType());
+        verify(repository).findActiveSummary(ChatFixture.ACTOR.userId(),ChatFixture.WORKSPACE,base.conversationId());
+    }
+    @Test void shouldRejectCompletedSummaryAfterSourceFingerprintChanges() {
+        var base=operation("COMPLETED");
+        var summary=new ChatOperation(base.id(),base.actor(),base.key(),base.bindingHash(),
+                base.workspaceId(),base.originalConversationId(),base.conversationId(),base.userMessageId(),
+                UUID.randomUUID(),base.question(),false,ChatTaskType.WORKSPACE_SUMMARY,base.requestId(),"COMPLETED",
+                base.sources(),null,base.deadlineAt(),base.leaseUntil(),base.expiresAt());
+        var changed=new ChatSourceSnapshot(ChatFixture.WORKSPACE,1,2,true,"c".repeat(64),base.sources().sources());
+        when(repository.findById(summary.id())).thenReturn(Optional.of(summary));
+        when(access.readWorkspaceSummary(ChatFixture.ACTOR,ChatFixture.WORKSPACE)).thenReturn(changed);
+
+        var error=assertThrows(ChatOperationError.class,
+                () -> service.status(ChatFixture.ACTOR,ChatFixture.WORKSPACE,summary.id()));
+
+        assertEquals("SUMMARY_SOURCE_SNAPSHOT_CHANGED",error.getCode());
+    }
+    @Test void shouldReserveInferredWorkspaceSummaryAgainstTheWholeWorkspaceSnapshot() {
+        ReflectionTestUtils.setField(service,"workspaceSummaryEnabled",true);
+        when(access.readWorkspaceSummary(ChatFixture.ACTOR,ChatFixture.WORKSPACE)).thenReturn(ChatFixture.sources(true));
+        when(conversations.reserve(any(),any(),any())).thenReturn(UUID.randomUUID());
+        var ask=new AskQuestionRequest("Tóm tắt toàn bộ tài liệu",null,false,null);
+
+        var reservation=service.reserve(ChatFixture.ACTOR,ChatFixture.WORKSPACE,ask,UUID.randomUUID(),"request-summary");
+
+        assertEquals(ChatTaskType.WORKSPACE_SUMMARY,reservation.operation().taskType());
+        verify(access).readWorkspaceSummary(ChatFixture.ACTOR,ChatFixture.WORKSPACE);
+        verify(access,never()).read(ChatFixture.ACTOR,ChatFixture.WORKSPACE);
+    }
+    @Test void shouldAnswerInferredSummaryAsQuestionWhenSummaryPipelineDisabled() {
+        when(conversations.reserve(any(),any(),any())).thenReturn(UUID.randomUUID());
+        var ask=new AskQuestionRequest("Tóm tắt toàn bộ tài liệu",null,false,null);
+
+        var reservation=service.reserve(ChatFixture.ACTOR,ChatFixture.WORKSPACE,ask,UUID.randomUUID(),"request-question");
+
+        assertEquals(ChatTaskType.QUESTION,reservation.operation().taskType());
+        verify(access,never()).readWorkspaceSummary(any(),any());
     }
     @Test void shouldKeepOriginalNullConversationBindingOnRetry() {
         var operation=operation("RUNNING");

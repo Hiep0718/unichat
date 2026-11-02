@@ -1,0 +1,68 @@
+# -----------------------------------------------------------------------------
+# Build context filter for UniChat images (context = repository root).
+# Docker matches patterns from the context root, so nested folders need `**/`.
+# -----------------------------------------------------------------------------
+
+# VCS, IDE and local tooling
+.git
+.github
+.vscode
+**/.idea
+.tools
+.tmp
+.local-tmp
+.local-archive
+.agents
+.audit
+.pipeline
+.repository-reorganization
+docs
+data
+automation-tests
+
+# Mobile is not deployed to EC2; keep only its manifest so the root npm
+# workspace lockfile stays consistent during `npm ci --workspace=frontend`.
+mobile/**
+!mobile/package.json
+
+# Secrets: never bake into images, mount at runtime instead
+**/.env
+**/.env.*
+.service-keys
+**/*.pem
+**/*.key
+
+# JavaScript build output and Windows-built dependencies
+**/node_modules
+**/dist
+**/coverage
+**/*.tsbuildinfo
+**/playwright-report
+**/test-results
+**/blob-report
+frontend/e2e
+frontend/debug.log
+
+# Java build output
+**/target
+**/*.class
+
+# Python environments, caches and local artifacts
+**/.venv
+**/__pycache__
+**/*.py[cod]
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+**/htmlcov
+**/.coverage
+**/coverage.xml
+ai-service/data
+ai-service/app/data
+ai-service/.pytest-temp-*
+ai-service/.pytest-tmp-*
+ai-service/torchinductor_*
+
+# Logs
+**/logs
+**/*.log

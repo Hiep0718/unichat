@@ -12,6 +12,15 @@ const MESSAGES: Readonly<Record<string, string>> = {
   PROVIDER_UNCONFIGURED: 'Nhà cung cấp AI chưa được cấu hình. Vui lòng liên hệ quản trị viên.',
   PROVIDER_KEY_UNKNOWN: 'Khóa nhà cung cấp AI không còn khả dụng. Vui lòng tải lại.',
   CHAT_OPERATION_CANCELLED: 'Yêu cầu AI đã được hủy.',
+  WORKSPACE_SUMMARY_DISABLED: 'Tính năng tóm tắt toàn bộ tài liệu hiện chưa được bật.',
+  SUMMARY_SCOPE_NOT_AUTHORIZED: 'Bạn cần quyền đọc tất cả tài liệu trong Workspace để tóm tắt.',
+  SUMMARY_MANIFEST_MISSING: 'Một số tài liệu cần đồng bộ Vector DB trước khi tóm tắt.',
+  SUMMARY_SOURCES_NOT_READY: 'Có tài liệu chưa xử lý xong. Vui lòng thử lại sau.',
+  SUMMARY_WORKSPACE_EMPTY: 'Workspace chưa có tài liệu để tóm tắt.',
+  SUMMARY_SOURCE_SNAPSHOT_CHANGED: 'Tài liệu hoặc quyền truy cập đã thay đổi. Vui lòng tạo bản tóm tắt mới.',
+  SUMMARY_INCOMPLETE: 'Không thể xác minh đầy đủ nội dung tài liệu. Vui lòng đồng bộ Vector DB.',
+  SUMMARY_PROCESSING_FAILED: 'Tóm tắt chưa hoàn tất. Vui lòng thử lại sau.',
+  RETRIEVAL_UNAVAILABLE: 'Kho dữ liệu tạm thời không khả dụng. Vui lòng thử lại.',
 };
 
 /** Friendly failure retaining the machine code and request identity for recovery. */

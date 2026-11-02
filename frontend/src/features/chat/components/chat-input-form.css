@@ -1,0 +1,298 @@
+/* ── Chat composer: context-aware RAG command bar anchored to the chat area ── */
+.chat-input-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 24px 32px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  z-index: 30;
+  background: linear-gradient(to top, rgba(248, 250, 252, 0.98) 68%, rgba(248, 250, 252, 0.82) 86%, rgba(248, 250, 252, 0) 100%);
+  pointer-events: none;
+}
+
+.chat-composer {
+  width: 100%;
+  max-width: 820px;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border: 1px solid #d5dde7;
+  border-radius: 18px;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04), 0 14px 32px -12px rgba(15, 23, 42, 0.14);
+  pointer-events: auto;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
+}
+
+.chat-composer:hover:not(.chat-composer--disabled):not(:focus-within) {
+  border-color: #b8c5d6;
+}
+
+.chat-composer:focus-within {
+  border-color: var(--color-secondary, #00687a);
+  box-shadow: 0 0 0 3.5px rgba(0, 104, 122, 0.12), 0 16px 36px -14px rgba(0, 104, 122, 0.24);
+}
+
+.chat-composer--expanded:focus-within {
+  border-color: #0284c7;
+  box-shadow: 0 0 0 3.5px rgba(2, 132, 199, 0.13), 0 16px 36px -14px rgba(2, 132, 199, 0.24);
+}
+
+.chat-composer--disabled {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  box-shadow: none;
+  opacity: 0.78;
+}
+
+.chat-composer__field {
+  width: 100%;
+  min-height: 46px;
+  max-height: 192px;
+  resize: none;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 14px 18px 6px;
+  font: var(--font-body-md);
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--color-on-surface, #0f172a);
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.chat-composer__field::placeholder {
+  color: #94a3b8;
+}
+
+.chat-composer__field:disabled {
+  cursor: not-allowed;
+}
+
+.chat-composer__field::-webkit-scrollbar {
+  width: 5px;
+}
+
+.chat-composer__field::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.chat-composer__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 6px 10px 9px 12px;
+}
+
+.chat-composer__context {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+
+.chat-composer__corpus {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  font: var(--font-label-sm);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #475569;
+  white-space: nowrap;
+}
+
+.chat-composer__corpus--pending {
+  background: #f0f9ff;
+  border-color: #bae6fd;
+  color: #0369a1;
+}
+
+.chat-composer__corpus--empty {
+  background: #fffbeb;
+  border-color: #fde68a;
+  color: #b45309;
+}
+
+.chat-composer__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.chat-composer__hint {
+  font: var(--font-label-sm);
+  font-size: 11px;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+.chat-composer__counter {
+  font: var(--font-label-sm);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: #64748b;
+}
+
+.chat-composer__counter--warn {
+  color: #b45309;
+  font-weight: 600;
+}
+
+.chat-composer__counter--limit {
+  color: #b91c1c;
+  font-weight: 700;
+}
+
+.chat-composer__send {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 9px;
+  border: none;
+  border-radius: 11px;
+  background: linear-gradient(135deg, #00687a 0%, #0284c7 100%);
+  color: #ffffff;
+  font: var(--font-label-sm);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(2, 132, 199, 0.24);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.chat-composer__send:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 14px rgba(2, 132, 199, 0.34);
+}
+
+.chat-composer__send:disabled {
+  background: #e2e8f0;
+  color: #94a3b8;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.chat-composer__send--stop {
+  padding: 0 13px;
+  background: #0f172a;
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.2);
+}
+
+.chat-composer__send--stop:hover:not(:disabled) {
+  background: #1e293b;
+  box-shadow: 0 5px 14px rgba(15, 23, 42, 0.28);
+}
+
+.chat-composer__send:focus-visible,
+.knowledge-mode-switch__option:focus-visible {
+  outline: 2px solid var(--color-secondary, #00687a);
+  outline-offset: 2px;
+}
+
+.chat-composer__note {
+  width: 100%;
+  max-width: 820px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0 8px;
+  font: var(--font-label-sm);
+  font-size: 11.5px;
+  color: #64748b;
+  pointer-events: auto;
+}
+
+.chat-composer__shortcut {
+  margin-left: auto;
+  white-space: nowrap;
+  color: #94a3b8;
+}
+
+.chat-composer__shortcut kbd {
+  font-family: inherit;
+  font-size: 10.5px;
+  padding: 1px 5px;
+  border: 1px solid #e2e8f0;
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #64748b;
+}
+
+/* ── Knowledge scope segmented control ── */
+.knowledge-mode-switch {
+  display: inline-flex;
+  padding: 3px;
+  gap: 2px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 11px;
+}
+
+.knowledge-mode-switch__option {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  font: var(--font-label-sm);
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.knowledge-mode-switch__option:hover:not(:disabled):not(.knowledge-mode-switch__option--active) {
+  color: #0f172a;
+}
+
+.knowledge-mode-switch__option--active {
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08), 0 1px 1px rgba(15, 23, 42, 0.04);
+}
+
+.knowledge-mode-switch__option--strict {
+  color: #0f766e;
+}
+
+.knowledge-mode-switch__option--expanded {
+  color: #0284c7;
+}
+
+.knowledge-mode-switch__option:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+@media (max-width: 720px) {
+  .chat-input-container {
+    padding: 18px 12px 10px;
+  }
+
+  .chat-composer__shortcut,
+  .chat-composer__corpus {
+    display: none;
+  }
+}

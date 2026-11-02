@@ -12,11 +12,11 @@ from app.core.rag.hive_sse import HiveCompletion
 from app.core.rag.key_registry import ProviderKey
 from app.core.rag.provider_contracts import GenerationCancelled, ProviderFailure
 from app.core.rag.provider_gateway import generate
-from app.core.rag.retrieval_engine import RetrievedChunkCandidate
+from app.core.rag.question_planner import QuestionPlanningResult, fallback_question_plan
 from app.core.rag.stream_provider import _execute_stream
 from app.core.rag.tests.test_generation_lifecycle import answer
 from app.core.service_security import ServiceSecurityError
-from app.tests.plan_v2_fixtures import candidate, payload
+from app.tests.plan_v2_fixtures import payload
 from app.tests.test_llm_provider_fallback import fake_policy
 
 
@@ -29,23 +29,41 @@ def test_should_skip_preparation_after_private_cancellation() -> None:
 
 
 def test_should_skip_retrieval_when_preparation_is_already_cancelled() -> None:
-    with patch("app.core.rag.answer_pipeline.retrieve_chunks") as retrieval:
-        with pytest.raises(GenerationCancelled):
-            prepare_answer(RetrievalAnswerRequest.model_validate(payload()), lambda: True)
+    with patch("app.core.rag.answer_pipeline.retrieve_planned_evidence") as retrieval:
+        with patch(
+            "app.core.rag.answer_pipeline.plan_question",
+            return_value=QuestionPlanningResult(
+                fallback_question_plan("RAG là gì?"), "FALLBACK", "test"
+            ),
+        ):
+            with pytest.raises(GenerationCancelled):
+                prepare_answer(RetrievalAnswerRequest.model_validate(payload()), lambda: True)
     retrieval.assert_not_called()
 
 
 def test_should_stop_preparation_after_retrieval_cancels() -> None:
     closed = threading.Event()
 
-    def retrieve(*arguments: object) -> list[RetrievedChunkCandidate]:
+    def retrieve(*arguments: object) -> object:
+        assert len(arguments) == 8
+        assert arguments[1] == [payload()["allowedDocumentIds"][0]]
         closed.set()
-        return [candidate()]
+        raise GenerationCancelled("RETRIEVAL_CANCELLED")
 
-    with patch("app.core.rag.answer_pipeline.retrieve_chunks", side_effect=retrieve):
-        with patch("app.core.rag.answer_pipeline.evaluate_evidence") as evidence:
-            with pytest.raises(GenerationCancelled):
-                prepare_answer(RetrievalAnswerRequest.model_validate(payload()), closed.is_set)
+    with patch(
+        "app.core.rag.answer_pipeline.plan_question",
+        return_value=QuestionPlanningResult(
+            fallback_question_plan("RAG là gì?"), "FALLBACK", "test"
+        ),
+    ):
+        with patch(
+            "app.core.rag.answer_pipeline.retrieve_planned_evidence", side_effect=retrieve
+        ):
+            with patch("app.core.rag.answer_pipeline.evaluate_evidence") as evidence:
+                with pytest.raises(GenerationCancelled):
+                    prepare_answer(
+                        RetrievalAnswerRequest.model_validate(payload()), closed.is_set
+                    )
     evidence.assert_not_called()
 
 
@@ -56,7 +74,7 @@ def test_should_preserve_control_failure_when_attempt_end_is_unacknowledged(
 ) -> None:
     context = fake_policy()
     context.record.side_effect = [None, ServiceSecurityError("private provider body")]
-    with patch("app.core.rag.provider_gateway.configured_keys",
+    with patch("app.core.rag.provider_routing.configured_keys",
                return_value=[ProviderKey("primary", "PRIMARY", "secret")]):
         with patch("app.core.rag.provider_gateway._gemini", side_effect=original):
             with pytest.raises(type(original)) as caught:

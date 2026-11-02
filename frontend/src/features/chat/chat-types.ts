@@ -20,6 +20,7 @@ export interface AnswerSection {
 /** Canonical persisted result; provisional text never constitutes this response. */
 export interface QuestionResponse {
   messageId: string; conversationId: string; operationId?: string | undefined;
+  workspaceSummaryId?: string | undefined;
   decision: 'ANSWER' | 'CLARIFY' | 'REFUSE'; answer: string | null;
   intent: string; strategyVersion: string; citations: CitationItem[];
   knowledgeMode?: 'STRICT' | 'EXPANDED' | undefined;
@@ -32,12 +33,25 @@ export interface QuestionResponse {
 /** Immutable original request binding, excluding a subsequently created conversation ID. */
 export interface AskQuestionPayload {
   question: string; conversationId?: string | undefined; allowExternalKnowledge?: boolean | undefined;
+  taskType?: 'QUESTION' | 'WORKSPACE_SUMMARY' | undefined;
+}
+export interface WorkspaceSummaryResult {
+  summaryId: string; messageId: string; overview: string; overviewChunkIds?: string[];
+  crossDocumentInsights: Array<{ text: string; documentIds: string[]; chunkIds: string[] }>;
+  documentCount: number; processedChunkCount: number;
+}
+export interface ChatProgress {
+  stage: string; documentsTotal: number; documentsCompleted: number;
+  chunksTotal: number; chunksProcessed: number; providerCallsCompleted: number;
 }
 /** Owner-only operation status used after transport interruption. */
 export interface ChatOperation {
   readonly operationId: string; readonly conversationId: string | null;
   readonly state: 'RUNNING' | 'COMPLETED' | 'FAILED' | 'CANCELLED';
   readonly result: QuestionResponse | null; readonly errorCode: string | null;
+  readonly taskType?: 'QUESTION' | 'WORKSPACE_SUMMARY';
+  readonly summaryResult?: WorkspaceSummaryResult | null;
+  readonly progress?: ChatProgress | null;
 }
 export interface SseMetadataPayload {
   operationId?: string | undefined; conversationId?: string | undefined;
@@ -61,6 +75,7 @@ export interface StreamQuestionCallbacks {
   onFinal?: ((result: QuestionResponse) => void) | undefined;
   onDone?: ((done: SseDonePayload) => void) | undefined;
   onError?: ((error: Error) => void) | undefined;
+  onProgress?: ((progress: ChatProgress) => void) | undefined;
 }
 /** Transport identity retained for retries, detach and cancellation. */
 export interface ChatRequestOptions { readonly idempotencyKey?: string | undefined; readonly signal?: AbortSignal | undefined }

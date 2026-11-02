@@ -2,6 +2,14 @@
   align-items: flex-start;
 }
 
+.chat-msg__model {
+  color: #005569;
+  background: #e9f5f6;
+  border-radius: 999px;
+  padding: 2px 8px;
+  overflow-wrap: anywhere;
+}
+
 .chat-msg--user .chat-msg__content-zone {
   align-items: flex-end;
 }
@@ -14,6 +22,17 @@
 
 .chat-msg__content-zone .chat-thoughts {
   width: 100%;
+}
+
+.chat-msg__warning {
+  width: 100%;
+  margin: 0 0 8px;
+  padding: 9px 12px;
+  border-left: 3px solid #d97706;
+  border-radius: 6px;
+  background: #fffbeb;
+  color: #78350f;
+  font-size: 0.875rem;
 }
 
 .chat-thoughts > summary.chat-thoughts__header {
@@ -40,6 +59,77 @@
 
 .chat-msg__content-zone > .chat-msg__actions {
   flex-wrap: wrap;
+}
+
+/* ── Structured Answer Sections & Trust Badges ── */
+.chat-answer-section {
+  margin-bottom: 14px;
+}
+
+.chat-answer-section:last-child {
+  margin-bottom: 0;
+}
+
+.chat-answer-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 700;
+  border-radius: 9999px;
+  padding: 3px 10px;
+  margin-bottom: 10px;
+  user-select: none;
+  letter-spacing: 0.01em;
+}
+
+.chat-answer-badge .material-symbols-outlined {
+  font-size: 15px;
+}
+
+.chat-answer-badge--document {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.chat-answer-badge--external {
+  background: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+/* ── Interactive Inline Citation Badges ── */
+.chat-citation-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: baseline;
+  font-family: inherit;
+  font-size: 0.78em;
+  font-weight: 700;
+  line-height: 1;
+  color: #0284c7;
+  background: #e0f2fe;
+  border: 1px solid #bae6fd;
+  border-radius: 9999px;
+  padding: 2px 6px;
+  margin: 0 2px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all var(--transition-fast, 0.15s ease);
+}
+
+.chat-citation-badge:hover {
+  background: #0284c7;
+  color: #ffffff;
+  border-color: #0284c7;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
+}
+
+.chat-citation-badge:active {
+  transform: translateY(0);
 }
 
 @media (max-width: 640px) {

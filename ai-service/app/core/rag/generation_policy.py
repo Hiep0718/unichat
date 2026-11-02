@@ -8,7 +8,10 @@ from typing import Any, Literal
 from app.core.private_core import call_core
 from app.core.service_security import ServiceSecurityError
 
-Purpose = Literal["CHAT", "COMPACTION", "ADMIN_PROMPT", "KEY_PROBE"]
+Purpose = Literal[
+    "CHAT", "COMPACTION", "QUERY_PLAN", "WORKSPACE_SUMMARY", "ADMIN_PROMPT", "KEY_PROBE"
+]
+QUERY_PLAN_MAX_OUTPUT_TOKENS = 512
 
 
 class GenerationPolicyError(ServiceSecurityError):
@@ -24,7 +27,8 @@ class GenerationPolicy:
     cloud_allowed: bool
     deadline: float
 
-    def checkpoint(self, purpose: Purpose, attempt_id: str | None = None) -> float:
+    def checkpoint(self, purpose: Purpose, attempt_id: str | None = None,
+                   attempt_limit: float | None = None) -> float:
         """Recheck Core policy before every attempt and emitted answer batch."""
         if not self.cloud_allowed or time.time() >= self.deadline:
             raise GenerationPolicyError(
@@ -46,14 +50,13 @@ class GenerationPolicy:
         )
         if result.get("allowed") is not True or result.get("cloudAllowed") is not True:
             raise GenerationPolicyError("CORE_POLICY_DENIED")
-        try:
-            deadline = datetime.fromisoformat(str(result["deadlineAt"]).replace("Z", "+00:00"))
-            remaining = min(self.deadline, deadline.timestamp()) - time.time()
-        except (KeyError, ValueError, TypeError) as error:
-            raise GenerationPolicyError("CORE_POLICY_INVALID") from error
+        remaining = _remaining_seconds(result, self.deadline)
         if remaining <= 0:
             raise GenerationPolicyError("DEADLINE_EXCEEDED")
-        return min(30.0, remaining)
+        timeout = 12.0 if purpose == "QUERY_PLAN" else 30.0
+        if purpose == "CHAT" and attempt_limit is not None:
+            timeout = min(max(attempt_limit, 30.0), 120.0)
+        return min(timeout, remaining)
 
     def record(self, payload: dict[str, Any]) -> None:
         """Require durable START/END ingestion; content and raw keys are excluded."""
@@ -67,6 +70,14 @@ class GenerationPolicy:
             from app.services.ai_telemetry import telemetry_tracker
 
             telemetry_tracker.record_event(payload)
+
+
+def _remaining_seconds(result: dict[str, Any], local_deadline: float) -> float:
+    try:
+        deadline = datetime.fromisoformat(str(result["deadlineAt"]).replace("Z", "+00:00"))
+        return min(local_deadline, deadline.timestamp()) - time.time()
+    except (KeyError, ValueError, TypeError) as error:
+        raise GenerationPolicyError("CORE_POLICY_INVALID") from error
 
 
 def attempt_event(

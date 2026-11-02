@@ -15,6 +15,14 @@ public class ChatOperationController {
     private final ChatOperationService operations;
     /** Uses the same lifecycle as both ask transports. */
     public ChatOperationController(ChatOperationService operations) { this.operations=operations; }
+    /** Finds an already admitted summary after a web or mobile reload. */
+    @GetMapping("/active-summary")
+    public ResponseEntity<ChatOperationResponse> activeSummary(@AuthenticationPrincipal Jwt jwt,
+            @PathVariable UUID workspaceId, @RequestParam(required = false) UUID conversationId) {
+        return operations.activeSummary(ChatActor.from(jwt), workspaceId, conversationId)
+                .map(result -> ResponseEntity.ok().header("Cache-Control", "no-store").body(result))
+                .orElseGet(() -> ResponseEntity.noContent().build());
+    }
     /** Returns a current authorized result; RUNNING responses include a polling interval. */
     @GetMapping("/{operationId}")
     public ResponseEntity<ChatOperationResponse> status(@AuthenticationPrincipal Jwt jwt,

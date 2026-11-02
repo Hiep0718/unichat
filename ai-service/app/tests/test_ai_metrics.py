@@ -22,8 +22,9 @@ from app.tests.plan_v2_fixtures import api_client
 @pytest.fixture(autouse=True)
 def clear_keys(monkeypatch: pytest.MonkeyPatch) -> None:
     for name in ("GEMINI_API_KEY", "GEMINI_API_KEYS", "GEMINI_API_KEY_2",
-                 "GEMINI_API_KEY_SECONDARY"):
-        monkeypatch.setenv(name, "")
+                 "GEMINI_API_KEY_SECONDARY", "HIVE_API_KEY", "HIVE_API_KEY_2",
+                 "HIVE_API_KEYS", "LLM_FALLBACK_PROVIDER", "ENABLE_PROVIDER_FALLBACK"):
+        monkeypatch.delenv(name, raising=False)
 
 
 def test_should_mask_credentials() -> None:
@@ -99,6 +100,23 @@ def test_should_keep_selected_secondary_identity_and_actual_key(monkeypatch: pyt
     assert provider.call_args.kwargs["purpose"] == "ADMIN_PROMPT"
     assert provider.call_args.args[0] == "Only direct admin prompt"
     assert [key.key_id for key in configured_keys()] == ["gemini-primary", "gemini-secondary"]
+
+
+def test_should_report_primary_and_fallback_roles(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    monkeypatch.setenv("GEMINI_API_KEY", "gemini-test-key")
+    monkeypatch.setenv("HIVE_API_KEY", "hive-test-key")
+    monkeypatch.setenv("LLM_FALLBACK_PROVIDER", "hive")
+    monkeypatch.setenv("ENABLE_PROVIDER_FALLBACK", "true")
+    tracker = AiTelemetryTracker(str(tmp_path / "metrics.json"))
+
+    metrics = tracker.get_metrics(days=7)
+
+    roles = {key["provider"]: key["routingRole"] for key in metrics["keys"]}
+    assert metrics["primaryProvider"] == "gemini"
+    assert metrics["fallbackProvider"] == "hive"
+    assert roles == {"hive": "FALLBACK", "gemini": "PRIMARY"}
 
 
 def test_should_probe_metadata_using_selected_secondary_key(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:

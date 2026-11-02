@@ -10,7 +10,7 @@ interface ChatWelcomeProps {
 const PROMPTS = [
   { icon: 'menu_book', label: 'Giải thích một khái niệm trong tài liệu và chỉ rõ nguồn trích dẫn.' },
   { icon: 'compare_arrows', label: 'So sánh các phương pháp được trình bày trong tài liệu.' },
-  { icon: 'summarize', label: 'Tóm tắt các ý chính có bằng chứng trong tài liệu.' },
+  { icon: 'summarize', label: 'Tóm tắt toàn bộ tài liệu trong kho tri thức.' },
   { icon: 'psychology', label: 'Phân tích một vấn đề dựa trên bằng chứng trong tài liệu.' },
 ];
 

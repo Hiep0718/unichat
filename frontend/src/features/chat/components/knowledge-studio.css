@@ -851,14 +851,41 @@
 }
 
 .unichat-citation-detail-inline .citation-drawer__header {
-  height: 40px;
-  padding: 0 8px 0 12px;
+  height: auto;
+  min-height: 44px;
+  padding: 8px 12px;
+  align-items: center;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
   border-radius: var(--radius-lg, 12px) var(--radius-lg, 12px) 0 0;
+}
+
+.unichat-citation-detail-inline .citation-drawer__title-zone {
+  flex: 1 1 200px;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .unichat-citation-detail-inline .citation-drawer__filename {
   font-size: 12px;
-  max-width: 100px;
+  max-width: 160px;
+}
+
+.unichat-citation-detail-inline .citation-drawer__header-actions {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  gap: 6px;
+}
+
+.unichat-citation-detail-inline .citation-drawer__action-btn,
+.unichat-citation-detail-inline .citation-drawer__close-btn {
+  min-height: 30px;
+  padding: 4px 8px;
 }
 
 .unichat-citation-detail-inline .citation-drawer__body {
@@ -868,4 +895,3 @@
 .unichat-citation-detail-inline .citation-drawer__iframe {
   min-height: 300px;
 }
-

@@ -5,16 +5,26 @@ import { getSessionSnapshot, assertSessionGeneration } from '../../lib/session-s
 import { SseFrameParser } from '../../lib/sse-protocol';
 import { ChatEventReceiver } from './chat-events';
 import { friendlyChatError, isTerminalChatFailure } from './chat-failures';
-import type { AskQuestionPayload, ChatOperation, ChatRequestOptions, QuestionResponse, StreamQuestionCallbacks } from './chat-types';
+import type { AskQuestionPayload, ChatOperation, ChatProgress, ChatRequestOptions, QuestionResponse, StreamQuestionCallbacks } from './chat-types';
 export type * from './chat-types';
 
 const questionSchema = z.object({ question: z.string().min(3).max(2000),
-  conversationId: z.string().uuid().optional(), allowExternalKnowledge: z.boolean().default(false) });
+  conversationId: z.string().uuid().optional(), allowExternalKnowledge: z.boolean().default(false),
+  taskType: z.enum(['QUESTION', 'WORKSPACE_SUMMARY']).optional() }).superRefine((value, context) => {
+    if (value.taskType === 'WORKSPACE_SUMMARY' && value.allowExternalKnowledge) {
+      context.addIssue({ code: 'custom', message: 'Tóm tắt Workspace chỉ dùng tài liệu.' });
+    }
+  });
 const keySchema = z.string().uuid();
 
 /** Reads an owner-only operation after an interrupted transport. */
 export function fetchChatOperation(workspaceId: string, operationId: string): Promise<ChatOperation> {
   return fetchJson(`/workspaces/${workspaceId}/chat-operations/${operationId}`);
+}
+/** Discovers an admitted summary so reload recovery needs no browser storage. */
+export function fetchActiveWorkspaceSummary(workspaceId: string, conversationId?: string): Promise<ChatOperation | null> {
+  const query = conversationId ? `?conversationId=${encodeURIComponent(conversationId)}` : '';
+  return fetchJson(`/workspaces/${workspaceId}/chat-operations/active-summary${query}`);
 }
 /** Requests explicit server cancellation, unlike detaching a subscriber. */
 export function cancelChatOperation(workspaceId: string, operationId: string): Promise<ChatOperation> {
@@ -31,15 +41,35 @@ function wait(milliseconds: number, signal?: AbortSignal): Promise<void> {
   });
 }
 
+function summaryResponse(operation: ChatOperation): QuestionResponse | null {
+  if (!operation.summaryResult) return null;
+  return {
+    messageId: operation.summaryResult.messageId,
+    workspaceSummaryId: operation.summaryResult.summaryId,
+    conversationId: operation.conversationId ?? '',
+    operationId: operation.operationId, decision: 'ANSWER', answer: operation.summaryResult.overview,
+    intent: 'WORKSPACE_SUMMARY', strategyVersion: 'workspace-summary-v1', citations: [],
+    refusalCode: null, requestId: operation.operationId,
+  };
+}
+
 /** Polls the same operation within the server deadline; never starts a new ask. */
-export async function waitForChatOperation(workspaceId: string, operationId: string, signal?: AbortSignal): Promise<QuestionResponse> {
-  const deadline = Date.now() + 125_000;
+export async function waitForChatOperation(workspaceId: string, operationId: string, signal?: AbortSignal,
+  onProgress?: (progress: ChatProgress) => void): Promise<QuestionResponse> {
+  const deadline = Date.now() + 245_000;
   const generation = getSessionSnapshot().generation;
-  while (Date.now() < deadline) {
+  let isWorkspaceSummary = false;
+  while (isWorkspaceSummary || Date.now() < deadline) {
     if (signal?.aborted) throw new DOMException('Đã ngắt theo dõi', 'AbortError');
     const operation = await fetchChatOperation(workspaceId, operationId);
+    isWorkspaceSummary = operation.taskType === 'WORKSPACE_SUMMARY';
+    if (operation.progress) onProgress?.(operation.progress);
     assertSessionGeneration(generation);
     if (operation.state === 'COMPLETED' && operation.result) return operation.result;
+    if (operation.state === 'COMPLETED') {
+      const result = summaryResponse(operation);
+      if (result) return result;
+    }
     if (operation.state !== 'RUNNING') throw friendlyChatError({ code: operation.errorCode });
     await wait(2_000, signal);
   }
@@ -55,6 +85,11 @@ export async function askWorkspaceQuestion(workspaceId: string, payload: AskQues
   });
   const result = await readApiResponse<QuestionResponse | ChatOperation>(response).catch((failure: unknown) => { throw friendlyChatError(failure); });
   if (response.status === 202) return waitForChatOperation(workspaceId, (result as ChatOperation).operationId, options.signal);
+  const operation = result as ChatOperation;
+  if (operation.taskType === 'WORKSPACE_SUMMARY') {
+    const summary = summaryResponse(operation);
+    if (summary) return summary;
+  }
   return result as QuestionResponse;
 }
 
@@ -100,7 +135,9 @@ export async function askWorkspaceQuestionStream(workspaceId: string, payload: A
     if (response.status === 202) {
       const status = await readApiResponse<ChatOperation>(response);
       operation.id = status.operationId;
-      deliverResult(await waitForChatOperation(workspaceId, status.operationId, options.signal), guarded);
+      guarded.onMetadata?.({ operationId: status.operationId,
+        conversationId: status.conversationId ?? undefined });
+      deliverResult(await waitForChatOperation(workspaceId, status.operationId, options.signal, guarded.onProgress), guarded);
       return;
     }
     await consumeStream(response, guarded, generation);
@@ -110,7 +147,7 @@ export async function askWorkspaceQuestionStream(workspaceId: string, payload: A
     if (isTerminalChatFailure(error)) { const failure = friendlyChatError(error); callbacks.onReset?.(); callbacks.onError?.(failure); throw failure; }
     callbacks.onReset?.();
     try {
-      const result = operation.id ? await waitForChatOperation(workspaceId, operation.id, options.signal)
+      const result = operation.id ? await waitForChatOperation(workspaceId, operation.id, options.signal, guarded.onProgress)
         : await askWorkspaceQuestion(workspaceId, binding, { idempotencyKey: key, ...options });
       assertSessionGeneration(generation);
       deliverResult(result, guarded);

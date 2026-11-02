@@ -42,7 +42,7 @@ export async function navigateToWorkspaceChat(
   await chatNavBtn.click();
 
   // Wait for chat input to be ready
-  const chatInput = page.locator('.chat-input-form__field');
+  const chatInput = page.locator('.chat-composer__field');
   await chatInput.waitFor({ state: 'visible', timeout: NAV_TIMEOUT_MS });
 }
 
@@ -62,7 +62,7 @@ export async function startNewChat(page: Page): Promise<void> {
     await newChatBtn.click();
     await page.waitForTimeout(500);
     // Wait for chat input to be ready
-    await page.locator('.chat-input-form__field').waitFor({
+    await page.locator('.chat-composer__field').waitFor({
       state: 'visible',
       timeout: 10_000,
     });
@@ -72,7 +72,7 @@ export async function startNewChat(page: Page): Promise<void> {
     const workspaceMatch = currentUrl.match(/\/workspaces\/([^/]+)/);
     if (workspaceMatch) {
       await page.goto(`/workspaces/${workspaceMatch[1]}/chat`);
-      await page.locator('.chat-input-form__field').waitFor({
+      await page.locator('.chat-composer__field').waitFor({
         state: 'visible',
         timeout: NAV_TIMEOUT_MS,
       });

@@ -4,32 +4,46 @@ Ngày cập nhật: 2026-07-10
 
 ## 1. Định vị hệ thống
 
-UniChat được thiết kế như một AI Knowledge Platform cho môi trường đại học. Giá trị chính của hệ thống không nằm ở việc tạo một chatbot đọc file, mà ở việc biến tài liệu học tập phân tán thành các Knowledge Space có thể quản lý, truy xuất, kiểm chứng và mở rộng theo thời gian.
+UniChat được thiết kế như một AI Knowledge Platform cho môi trường đại học. Giá trị chính của hệ thống không nằm ở việc tạo một chatbot đọc file, mà ở việc biến tài liệu học tập phân tán thành các Workspace có thể quản lý, truy xuất, kiểm chứng và chia sẻ trong cộng đồng người dùng.
 
-Trong phạm vi khóa luận, hệ thống không triển khai toàn bộ nền tảng tri thức. Phạm vi triển khai ban đầu là module Adaptive Knowledge Retrieval & Reasoning, đóng vai trò lát cắt đầu tiên của nền tảng: người dùng tạo Workspace/Knowledge Space, upload tài liệu, hệ thống xử lý tài liệu, gắn metadata, nhận diện ý định câu hỏi ở mức cơ bản, chọn chiến lược truy xuất phù hợp, trả lời có citation và từ chối khi thiếu bằng chứng.
+Trong phạm vi khóa luận, hệ thống không triển khai toàn bộ nền tảng tri thức. Phạm vi nghiên cứu chính là module Adaptive Knowledge Retrieval & Reasoning; phạm vi sản phẩm còn có Workspace, bảng tin cộng đồng và Work Chat. Người dùng tạo Workspace, upload tài liệu, trao đổi với thành viên, đặt câu hỏi trên nguồn được phép, nhận câu trả lời có citation và được từ chối khi thiếu bằng chứng.
 
 ## 2. Nguyên tắc thiết kế
 
-- Knowledge-first: tài liệu được tổ chức và xử lý thành kho tri thức trước khi người dùng hỏi.
+- Workspace-first: tài liệu, thành viên, thảo luận và quyền truy cập được tổ chức trong cùng một Workspace.
 - Chat là giao diện, không phải toàn bộ sản phẩm.
-- Workspace trong phạm vi triển khai hiện tại là hiện thực kỹ thuật của Knowledge Space.
+- Workspace là thuật ngữ sản phẩm thống nhất; không dùng Student/Teacher để chỉ role kỹ thuật.
+- Mọi người dùng đã xác thực đều được gọi là **Người dùng (USER)**. Quyền trong Workspace được gọi theo vai trò **Chủ sở hữu (OWNER)**, **Biên tập viên (EDITOR)** và **Thành viên (VIEWER)**. Sinh viên và giảng viên chỉ là persona bối cảnh giáo dục, không phải role kỹ thuật của MVP.
 - Core API kiểm tra quyền trước khi AI/RAG Service truy xuất dữ liệu.
 - AI/RAG Service không quyết định phân quyền người dùng, chỉ xử lý yêu cầu đã được Core API giới hạn theo workspaceId/documentId.
 - Retrieval không dùng một Top-K cố định cho mọi câu hỏi; hệ thống có Adaptive Retrieval v1 theo loại câu hỏi.
 - Câu trả lời học thuật phải có citation hoặc phải từ chối/hỏi lại khi thiếu bằng chứng.
 - Các năng lực Knowledge Map, Knowledge Graph, Knowledge Quality và Knowledge Evolution là hướng mở rộng sau module đầu tiên.
 
+### 2.1. Phạm vi sản phẩm cộng đồng
+
+UniChat không chỉ là giao diện hỏi đáp với AI. Các chức năng xã hội đã có trong ứng dụng được mô tả bằng các thuật ngữ thống nhất sau:
+
+- **Bảng tin cộng đồng**: người dùng xem bài viết, đăng bài hoặc đặt câu hỏi, bình luận/trả lời, bày tỏ cảm xúc, lưu bài viết, ghim bài và theo dõi trạng thái đã đọc.
+- **Thông báo và tương tác thành viên**: người dùng nhận thông báo khi được nhắc tên, có phản hồi hoặc có hoạt động liên quan đến bài viết của mình.
+- **Work Chat**: người dùng nhắn tin trực tiếp 1-1 bằng văn bản với thành viên cùng Workspace.
+- **Tìm kiếm hợp nhất**: người dùng tìm bài viết và tài liệu trong các Workspace mà mình là thành viên.
+- **Quản trị cộng đồng**: Chủ sở hữu/biên tập viên Workspace quản lý thành viên, vai trò, bài viết và đóng góp tài liệu; Quản trị viên hệ thống quản lý người dùng và theo dõi báo cáo.
+
+AI/RAG là một năng lực được tích hợp vào các điểm tương tác phù hợp, ví dụ trả lời câu hỏi trong Workspace hoặc phản hồi `@AI` trong bài viết. Nó không thay thế bảng tin, thảo luận và nhắn tin giữa người với người.
+
 ## 3. Kiến trúc tổng quan
 
 ```mermaid
 flowchart TB
-    User["Sinh viên / Giảng viên"] --> Web["Frontend Web App\nReact + Vite + Tailwind"]
-    Admin["Admin"] --> Web
+    User["Người dùng (USER)"] --> Web["Frontend Web App\nReact + Vite + Tailwind"]
+    Owner["Chủ sở hữu / biên tập viên Workspace"] --> Web
+    Admin["Quản trị viên hệ thống (ADMIN)"] --> Web
 
     Web --> Core["Core Platform API\nSpring Boot + Security + JWT"]
 
     Core --> Auth["Auth & RBAC"]
-    Core --> Space["Knowledge Space / Workspace Service"]
+    Core --> Space["Workspace Service"]
     Core --> DocMeta["Document Metadata Service"]
     Core --> ChatHistory["Conversation, Message, Citation History"]
     Core --> Eval["Evaluation & Admin Service"]
@@ -39,7 +53,7 @@ flowchart TB
     AI --> Ingestion["Document Ingestion\nExtract, Clean, Chunk, Metadata"]
     AI --> Adaptive["Adaptive Retrieval & Reasoning\nIntent Detection, Strategy Selector, Evidence Gate"]
     AI --> Citation["Citation Builder"]
-    AI --> Provider["LLM Provider Adapter\nGemini API / Ollama"]
+    AI --> Provider["LLM Provider Adapter\nHive (DeepSeek V4.1 Flash); Gemini manual rollback"]
 
     Core --> Postgres[("PostgreSQL\nBusiness Data")]
     Core --> Storage[("Local File Storage\nMinIO later")]
@@ -53,13 +67,13 @@ flowchart TB
 
 | Lớp | Thành phần | Vai trò |
 |---|---|---|
-| Presentation | Frontend Web App | Giao diện đăng nhập, Knowledge Space/Workspace, tài liệu, hỏi đáp, citation, lịch sử và admin dashboard. |
+| Presentation | Frontend Web App | Giao diện đăng nhập, Workspace, bảng tin, Work Chat, tài liệu, hỏi đáp, citation, lịch sử và admin dashboard. |
 | Core Platform | Core API Service | Xác thực, phân quyền, nghiệp vụ Workspace, metadata tài liệu, lịch sử chat, citation history, admin và evaluation records. |
 | AI Knowledge | AI Knowledge Service | Xử lý tài liệu, chunking, embedding, intent detection, adaptive retrieval, prompt assembly, citation và gọi LLM. |
 | Business Data | PostgreSQL | Lưu user, role, workspace, document metadata, conversation, message, citation, evaluation case/result. |
 | Knowledge Index | ChromaDB | Lưu embedding và metadata chunk để truy xuất theo ngữ nghĩa, workspaceId, documentId, pageNumber, chunkIndex. |
 | Storage | Local File Storage | Lưu file gốc trong phạm vi khóa luận; thiết kế interface để nâng cấp MinIO/S3-compatible storage. |
-| Provider | Gemini API / Ollama | Sinh câu trả lời dựa trên context đã truy xuất, thông qua provider adapter để tránh phụ thuộc cứng. |
+| Provider | Hive (DeepSeek V4.1 Flash); Gemini manual rollback | Sinh câu trả lời dựa trên context đã truy xuất qua provider adapter. Hive mode không tự động fallback sang Gemini/Ollama. |
 
 ## 5. Module MVP: Adaptive Knowledge Retrieval & Reasoning
 
@@ -92,7 +106,7 @@ flowchart LR
 
 ## 6. Luồng xử lý tài liệu
 
-1. Người dùng upload PDF/DOCX/TXT vào Knowledge Space/Workspace.
+1. Người dùng upload PDF/DOCX/TXT vào Workspace.
 2. Core API xác thực JWT, kiểm tra quyền Workspace, validate file type/size.
 3. Core API lưu file gốc vào storage và metadata vào PostgreSQL với trạng thái uploaded/processing.
 4. Core API gửi documentId, workspaceId và storagePath sang AI Knowledge Service.
@@ -117,8 +131,8 @@ flowchart LR
 
 | Entity | Bắt buộc trong module đầu tiên | Vai trò |
 |---|---:|---|
-| User | Có | Tài khoản, role, trạng thái. |
-| Workspace / KnowledgeSpace | Có | Đơn vị tổ chức tài liệu và phạm vi truy xuất. |
+| User | Có | Tài khoản, trạng thái; role kỹ thuật là USER hoặc ADMIN. |
+| Workspace | Có | Đơn vị tổ chức tài liệu, thành viên, thảo luận và phạm vi truy xuất. |
 | WorkspaceMember | Có | Chia sẻ Workspace và kiểm tra quyền. |
 | Document | Có | Metadata file upload, trạng thái xử lý, storagePath. |
 | ChunkMetadata | Có | Metadata chunk dùng cho citation, permission filter và retrieval. |
@@ -137,7 +151,7 @@ flowchart LR
 | Nhóm API | Endpoint gợi ý | Vai trò |
 |---|---|---|
 | Auth | POST /api/auth/register, POST /api/auth/login | Đăng ký, đăng nhập, nhận JWT. |
-| Workspace | /api/workspaces | CRUD Knowledge Space/Workspace, chia sẻ, kiểm tra quyền. |
+| Workspace | /api/workspaces | CRUD Workspace, chia sẻ, kiểm tra quyền. |
 | Document | /api/workspaces/{workspaceId}/documents | Upload, list, delete, status. |
 | Ask | POST /api/workspaces/{workspaceId}/questions | Gửi câu hỏi, nhận answer + citations + refusal flag. |
 | History | /api/workspaces/{workspaceId}/conversations | Lịch sử hội thoại và citation. |
@@ -169,9 +183,13 @@ Các module sau không nên đưa vào phạm vi triển khai đầu tiên, như
 - Knowledge Evolution: so sánh phiên bản tài liệu, phát hiện nội dung mới/xóa/thay đổi.
 - Knowledge Curation: duplicate detection, contradiction detection, version suggestion.
 - AI Study Assistant: study plan, quiz, flashcard, FAQ.
-- Community Knowledge: bookmark, comment, câu hỏi liên quan, mức độ sử dụng.
+- Community Knowledge nâng cao: bookmark, comment, câu hỏi liên quan, mức độ sử dụng và các mô hình tri thức cộng đồng.
 - OCR, native PPTX/XLSX, streaming, reranker, hybrid search, LMS integration.
 
 ## 12. Kết luận thiết kế
 
 Thiết kế mới giúp UniChat có hai lớp rõ ràng: tầm nhìn dài hạn là AI Knowledge Platform, phạm vi khóa luận là module Adaptive Knowledge Retrieval & Reasoning. Cách này giữ đề tài có tính mới so với RAG truyền thống nhưng vẫn đủ thực tế để triển khai trong thời gian khóa luận.
+
+## 13. Bổ sung as-built 24/10/2026
+
+Luồng triển khai hiện hành là: client web/Expo -> Core API (xác thực, authorization, document allow-list) -> AI Service (retrieval/reasoning) -> Core API re-check -> SSE/citations. Upload/approval được Core API publish sang RabbitMQ; AI Service xử lý, ghi ChromaDB và trả trạng thái. Storage là adapter Local/Supabase tùy cấu hình, do đó tài liệu không kết luận provider đang chạy. Community, work chat, Studio Notes và admin AI Studio được triển khai như các extension có kiểm soát.

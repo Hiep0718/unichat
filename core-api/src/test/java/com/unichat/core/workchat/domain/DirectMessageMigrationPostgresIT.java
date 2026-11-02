@@ -30,10 +30,11 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Proves the additive repair against isolated legacy schemas and the real Hibernate entity. */
+/** Proves the post-V45 additive repair against isolated schemas and the real Hibernate entity. */
 @Testcontainers
 class DirectMessageMigrationPostgresIT {
-    private static final String MIGRATION_RESOURCE = "db/migration/V38__restore_direct_messages_read_at.sql";
+    private static final String MIGRATION_RESOURCE =
+            "db/migration/V46__restore_direct_messages_read_at_after_v45.sql";
     private static final Instant CREATED_AT = Instant.parse("2026-10-10T10:00:00Z");
     private static final Instant READ_AT = Instant.parse("2026-10-10T10:01:00Z");
     private static final String MESSAGE_BODY = "Tin nhắn tiếng Việt còn nguyên nội dung";
@@ -42,19 +43,19 @@ class DirectMessageMigrationPostgresIT {
     final PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:18.4");
 
     @Test
-    void shouldRepairBaseline37SchemaWithoutChangingExistingMessages() {
+    void shouldRepairBaseline45SchemaWithoutChangingExistingMessages() {
         DataSource source = legacySchema();
         JdbcTemplate database = new JdbcTemplate(source);
         UUID messageId = insertMessage(database);
         Map<String, Object> originalMessage = messageSnapshot(database, messageId);
-        Flyway flyway = baseline37(source);
+        Flyway flyway = baseline45(source);
 
         assertEquals(1, flyway.migrate().migrationsExecuted);
 
         assertReadAtContract(database);
         assertEquals(originalMessage, messageSnapshot(database, messageId));
         assertNull(database.queryForObject("SELECT read_at FROM direct_messages WHERE id=?", Object.class, messageId));
-        assertEquals("38", flyway.info().current().getVersion().getVersion());
+        assertEquals("46", flyway.info().current().getVersion().getVersion());
         assertEquals(0, flyway.migrate().migrationsExecuted);
     }
 
@@ -66,7 +67,7 @@ class DirectMessageMigrationPostgresIT {
         UUID messageId = insertMessage(database);
         database.update("UPDATE direct_messages SET read_at=? WHERE id=?", utc(READ_AT), messageId);
         Map<String, Object> originalMessage = database.queryForMap("SELECT * FROM direct_messages WHERE id=?", messageId);
-        Flyway flyway = baseline37(source);
+        Flyway flyway = baseline45(source);
 
         flyway.migrate();
         executeRepair(source);
@@ -101,7 +102,7 @@ class DirectMessageMigrationPostgresIT {
                 () -> withValidatedFactory(source, sessionFactory -> { }));
         assertTrue(missingColumn.getMessage().contains("read_at"));
 
-        baseline37(source).migrate();
+        baseline45(source).migrate();
 
         withValidatedFactory(source, sessionFactory -> verifyEntityRoundTrip(sessionFactory, messageId));
         assertEquals(READ_AT, readReceipt(database, messageId));
@@ -116,7 +117,8 @@ class DirectMessageMigrationPostgresIT {
         withValidatedFactory(source, sessionFactory -> assertTrue(sessionFactory.isOpen()));
 
         assertReadAtContract(database);
-        assertEquals(1L, database.queryForObject("SELECT count(*) FROM flyway_schema_history WHERE version='38' AND success", Long.class));
+        assertEquals(1L, database.queryForObject(
+                "SELECT count(*) FROM flyway_schema_history WHERE version='46' AND success", Long.class));
     }
 
     @Test
@@ -127,7 +129,7 @@ class DirectMessageMigrationPostgresIT {
         UUID messageId = insertMessage(database);
         database.update("UPDATE direct_messages SET read_at=? WHERE id=?", "legacy receipt", messageId);
 
-        baseline37(source).migrate();
+        baseline45(source).migrate();
 
         SchemaManagementException incompatibleColumn = assertThrows(SchemaManagementException.class,
                 () -> withValidatedFactory(source, sessionFactory -> { }));
@@ -169,9 +171,9 @@ class DirectMessageMigrationPostgresIT {
         return new DriverManagerDataSource(postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword());
     }
 
-    private Flyway baseline37(DataSource source) {
+    private Flyway baseline45(DataSource source) {
         Flyway flyway = Flyway.configure().dataSource(source).locations("classpath:db/migration")
-                .baselineVersion("37").load();
+                .baselineVersion("45").load();
         flyway.baseline();
         return flyway;
     }

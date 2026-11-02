@@ -20,8 +20,8 @@ public class ProviderMetricsRepository {
                 + "COUNT(*) FILTER (WHERE outcome='ERROR') AS errors, COUNT(*) FILTER (WHERE ended_at IS NULL) AS pending, "
                 + "COUNT(*) FILTER (WHERE error_code='PROVIDER_HTTP_429') AS error429, "
                 + "COUNT(*) FILTER (WHERE error_code='PROVIDER_HTTP_503') AS error503, "
-                + "CASE WHEN COUNT(input_tokens)=COUNT(*) THEN SUM(input_tokens) END AS input_tokens, "
-                + "CASE WHEN COUNT(output_tokens)=COUNT(*) THEN SUM(output_tokens) END AS output_tokens "
+                + "CASE WHEN COUNT(input_tokens) > 0 THEN SUM(input_tokens) END AS input_tokens, "
+                + "CASE WHEN COUNT(output_tokens) > 0 THEN SUM(output_tokens) END AS output_tokens "
                 + "FROM provider_attempts WHERE started_at>=? AND started_at<=? "
                 + "AND (?::text IS NULL OR key_id=?) AND (?::text IS NULL OR model=?) "
                 + "GROUP BY day,model ORDER BY day,model", Timestamp.from(start), Timestamp.from(end), keyId, keyId, model, model);
@@ -31,6 +31,7 @@ public class ProviderMetricsRepository {
         return database.queryForMap("SELECT COUNT(DISTINCT operation_id) FILTER (WHERE purpose='CHAT') AS logical_chats, "
                 + "COUNT(*) FILTER (WHERE purpose='CHAT') AS chat_attempts, "
                 + "COUNT(*) FILTER (WHERE purpose='COMPACTION') AS compaction_attempts, "
+                + "COUNT(*) FILTER (WHERE purpose='QUERY_PLAN') AS query_plan_attempts, "
                 + "COUNT(*) FILTER (WHERE purpose='ADMIN_PROMPT') AS admin_prompt_attempts, "
                 + "COUNT(*) FILTER (WHERE purpose='KEY_PROBE') AS key_probe_attempts "
                 + "FROM provider_attempts WHERE started_at>=? AND started_at<=? "

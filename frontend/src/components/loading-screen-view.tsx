@@ -16,8 +16,6 @@ export function LoadingScreenView({ message, brandTitle, fullScreen, visible = t
       role="status" aria-live="polite" aria-busy={visible} aria-hidden={visible ? undefined : true}
       style={{ visibility: visible ? 'visible' : 'hidden' }}>
       <div className="loading-screen__emblem-container" aria-hidden="true">
-        <div className="loading-screen__ring--outer" />
-        <div className="loading-screen__ring" />
         <img src={aiAvatar} alt="" className="loading-screen__logo-img" />
       </div>
       <div className="loading-screen__content">

@@ -82,6 +82,8 @@ def test_retrieve_chunks_mocked() -> None:
             "documents": [["Retrieved text"]],
             "distances": [[0.15]],
             "metadatas": [[{
+                "workspace_id": "ws1",
+                "document_status": "PROCESSED",
                 "document_id": "doc1",
                 "locator_type": "PDF_PAGE",
                 "locator_value": "page:1",

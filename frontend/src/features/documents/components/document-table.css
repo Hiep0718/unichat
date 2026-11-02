@@ -178,6 +178,11 @@
   color: var(--color-on-error-container);
 }
 
+.document-delete-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* ── Toast Notification Styling (Fixed Top-Right Corner) ── */
 .doc-toast {
   position: fixed;

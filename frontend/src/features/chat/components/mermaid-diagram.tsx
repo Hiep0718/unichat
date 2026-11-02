@@ -7,18 +7,24 @@ export function MermaidDiagram({ chart, isStreaming = false }: { readonly chart:
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
     const lifecycle = { cancelled: false, url: null as string | null };
-    if (isStreaming || chart.length > 30_000) return;
+    if (!chart.trim() || chart.length > 30_000) return;
     void renderDiagram(id, chart).then((svg) => {
       if (lifecycle.cancelled) return;
       lifecycle.url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
       setImage(lifecycle.url); setError(null);
-    }).catch(() => { if (!lifecycle.cancelled) setError('Không thể hiển thị sơ đồ. Bạn có thể đọc mã bên dưới.'); });
+    }).catch(() => {
+      if (!lifecycle.cancelled && !isStreaming) {
+        setError('Không thể hiển thị sơ đồ. Bạn có thể đọc mã bên dưới.');
+      }
+    });
     return () => { lifecycle.cancelled = true; if (lifecycle.url) URL.revokeObjectURL(lifecycle.url); };
   }, [id, chart, isStreaming]);
-  if (isStreaming) return <pre><code>{chart}</code></pre>;
-  if (error) return <div role="status"><p>{error}</p><pre><code>{chart}</code></pre></div>;
-  return <figure className="mermaid-container">{image ? <><img src={image} alt="Sơ đồ từ câu trả lời AI" />
-    <a href={image} download="so-do-unichat.svg">Tải SVG</a></> : <p>Đang dựng sơ đồ…</p>}</figure>;
+  if (image) {
+    return <figure className="mermaid-container"><img src={image} alt="Sơ đồ từ câu trả lời AI" />
+      <a href={image} download="so-do-unichat.svg">Tải SVG</a></figure>;
+  }
+  if (error && !isStreaming) return <div role="status"><p>{error}</p><pre><code>{chart}</code></pre></div>;
+  return <figure className="mermaid-container mermaid-container--loading"><p>Đang dựng sơ đồ…</p></figure>;
 }
 
 async function renderDiagram(id: string, chart: string): Promise<string> {

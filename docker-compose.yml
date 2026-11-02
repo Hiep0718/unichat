@@ -1,0 +1,180 @@
+# =============================================================================
+# UniChat EC2 application stack (mobile is not deployed).
+# Managed services stay in the cloud: Supabase PostgreSQL + Storage, CloudAMQP,
+# Chroma Cloud, Gemini/Hive. Only the gateway port is published publicly.
+#
+#   cp .env.production.example .env   # fill in values
+#   ./infra/scripts/generate-keys.sh  # service + JWT key pairs
+#   docker compose up -d --build
+# =============================================================================
+
+name: unichat
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  ai-service:
+    build:
+      context: .
+      dockerfile: infra/docker/ai-service.Dockerfile
+    image: ${IMAGE_REGISTRY:-unichat}/ai-service:${IMAGE_TAG:-dev}
+    restart: unless-stopped
+    logging: *default-logging
+    environment:
+      # "staging" keeps production-like behaviour while allowing plain HTTP to
+      # Core on the private Docker network (APP_ENV=production demands https://).
+      APP_ENV: ${AI_APP_ENV:-staging}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:?Set FRONTEND_ORIGIN in .env}
+      CORE_API_BASE_URL: http://core-api:8082
+      CORE_SERVICE_KEY_ID: ${CORE_SERVICE_KEY_ID:-core-service-v1}
+      AI_SERVICE_KEY_ID: ${AI_SERVICE_KEY_ID:-ai-service-v1}
+      CORE_SERVICE_PUBLIC_KEY_PATH: /app/.service-keys/core-service-public.pem
+      AI_SERVICE_PRIVATE_KEY_PATH: /app/.service-keys/ai-service-private.pem
+      RABBITMQ_URL: ${RABBITMQ_URL:?Set RABBITMQ_URL in .env}
+      # Chroma Cloud: both naming styles are read by vector_store.py.
+      CHROMA_MODE: ${CHROMA_MODE:-cloud}
+      CHROMA_CLOUD_API_KEY: ${CHROMA_CLOUD_API_KEY:-}
+      CHROMA_CLOUD_TENANT: ${CHROMA_CLOUD_TENANT:-}
+      CHROMA_CLOUD_DATABASE: ${CHROMA_CLOUD_DATABASE:-}
+      CHROMA_API_KEY: ${CHROMA_API_KEY:-}
+      CHROMA_TENANT: ${CHROMA_TENANT:-}
+      CHROMA_DATABASE: ${CHROMA_DATABASE:-}
+      CHROMA_HOST: ${CHROMA_HOST:-}
+      CHUNKING_COLLECTION: ${CHUNKING_COLLECTION:-unichat_chunks_v2}
+      STORAGE_PROVIDER: ${STORAGE_PROVIDER:-supabase}
+      STORAGE_DIR: /app/data/storage
+      SUPABASE_STORAGE_URL: ${SUPABASE_STORAGE_URL:-}
+      SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_KEY:-}
+      SUPABASE_STORAGE_BUCKET: ${SUPABASE_STORAGE_BUCKET:-documents}
+      LLM_PROVIDER: ${LLM_PROVIDER:-gemini}
+      LLM_FALLBACK_PROVIDER: ${LLM_FALLBACK_PROVIDER:-hive}
+      ENABLE_PROVIDER_FALLBACK: ${ENABLE_PROVIDER_FALLBACK:-true}
+      ENABLE_OLLAMA_FALLBACK: "false"
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_API_KEY_2: ${GEMINI_API_KEY_2:-}
+      GEMINI_API_KEYS: ${GEMINI_API_KEYS:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.5-flash}
+      HIVE_BASE_URL: ${HIVE_BASE_URL:-https://api-cdn.thehive.ai/api/v3}
+      HIVE_MODEL: ${HIVE_MODEL:-deepseek-ai/deepseek-v4.1-flash-1017}
+      HIVE_API_KEY: ${HIVE_API_KEY:-}
+      HIVE_API_KEY_2: ${HIVE_API_KEY_2:-}
+      HIVE_API_KEYS: ${HIVE_API_KEYS:-}
+      HIVE_MAX_TOKENS: ${HIVE_MAX_TOKENS:-4096}
+      HIVE_TEMPERATURE: ${HIVE_TEMPERATURE:-0.2}
+      HIVE_TOP_P: ${HIVE_TOP_P:-0.9}
+      HIVE_REASONING_EFFORT: ${HIVE_REASONING_EFFORT:-low}
+      HIVE_READ_IDLE_TIMEOUT_SECONDS: ${HIVE_READ_IDLE_TIMEOUT_SECONDS:-5}
+      HIVE_CHAT_ATTEMPT_TIMEOUT_SECONDS: ${HIVE_CHAT_ATTEMPT_TIMEOUT_SECONDS:-75}
+      QUERY_PLANNER_ENABLED: ${QUERY_PLANNER_ENABLED:-false}
+      WORKSPACE_SUMMARY_ENABLED: ${WORKSPACE_SUMMARY_ENABLED:-false}
+      WORKSPACE_SUMMARY_INPUT_CHAR_BUDGET: ${WORKSPACE_SUMMARY_INPUT_CHAR_BUDGET:-6000}
+    volumes:
+      - hf-cache:/home/unichat/.cache/huggingface
+      - ./.service-keys:/app/.service-keys:ro
+    deploy:
+      resources:
+        limits:
+          memory: ${AI_SERVICE_MEM_LIMIT:-2g}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8001/internal/v1/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    networks: [app]
+
+  core-api:
+    build:
+      context: .
+      dockerfile: infra/docker/core-api.Dockerfile
+    image: ${IMAGE_REGISTRY:-unichat}/core-api:${IMAGE_TAG:-dev}
+    restart: unless-stopped
+    logging: *default-logging
+    environment:
+      CORE_API_PORT: "8082"
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      POSTGRES_URL: ${POSTGRES_URL:?Set POSTGRES_URL in .env}
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      RABBITMQ_URL: ${RABBITMQ_URL:?Set RABBITMQ_URL in .env}
+      AI_SERVICE_BASE_URL: http://ai-service:8001
+      STORAGE_PROVIDER: ${STORAGE_PROVIDER:-supabase}
+      FILE_STORAGE_ROOT: /app/data/storage
+      SUPABASE_STORAGE_URL: ${SUPABASE_STORAGE_URL:-}
+      SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_KEY:-}
+      SUPABASE_STORAGE_BUCKET: ${SUPABASE_STORAGE_BUCKET:-documents}
+      CORE_SERVICE_KEY_ID: ${CORE_SERVICE_KEY_ID:-core-service-v1}
+      AI_SERVICE_KEY_ID: ${AI_SERVICE_KEY_ID:-ai-service-v1}
+      CORE_SERVICE_PRIVATE_KEY_PATH: /app/.service-keys/core-service-private.pem
+      AI_SERVICE_PUBLIC_KEY_PATH: /app/.service-keys/ai-service-public.pem
+      # Persistent RS256 user-token keys: sessions survive container restarts.
+      # JwtKeyProvider reads `security.jwt.private-key-location`, hence this name.
+      JWT_PUBLIC_KEY_LOCATION: file:/app/.service-keys/jwt-public.pem
+      SECURITY_JWT_PRIVATE_KEY_LOCATION: file:/app/.service-keys/jwt-private.pem
+      # "local" = plain HTTP (non-Secure cookies, no CSRF). Use "production" only behind HTTPS.
+      UNICHAT_SECURITY_PROFILE: ${UNICHAT_SECURITY_PROFILE:-local}
+      SERVER_FORWARD_HEADERS_STRATEGY: framework
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:?Set CORS_ALLOWED_ORIGINS in .env}
+      UNICHAT_FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:?Set FRONTEND_ORIGIN in .env}
+      OTP_HMAC_SECRET: ${OTP_HMAC_SECRET:?Set OTP_HMAC_SECRET (>= 32 chars) in .env}
+      UNICHAT_WORKSPACE_SUMMARY_ENABLED: ${UNICHAT_WORKSPACE_SUMMARY_ENABLED:-false}
+      MAIL_HOST: ${MAIL_HOST:-smtp.gmail.com}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+    volumes:
+      - ./.service-keys:/app/.service-keys:ro
+    depends_on:
+      ai-service:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: ${CORE_API_MEM_LIMIT:-1g}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS -H 'X-Forwarded-Proto: https' http://127.0.0.1:8082/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 90s
+    ports:
+      # Loopback only, for SSH-tunnel debugging; never exposed publicly.
+      - "127.0.0.1:8082:8082"
+    networks: [app]
+
+  frontend:
+    build:
+      context: .
+      dockerfile: infra/docker/frontend.Dockerfile
+    image: ${IMAGE_REGISTRY:-unichat}/frontend:${IMAGE_TAG:-dev}
+    restart: unless-stopped
+    logging: *default-logging
+    depends_on:
+      core-api:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 128m
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1/healthz || exit 1"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+    ports:
+      - "${HTTP_PORT:-80}:80"
+    networks: [app]
+
+networks:
+  app:
+    name: unichat-app
+
+volumes:
+  # Embedding model weights (~1.1 GB), downloaded once on first use.
+  hf-cache:
+    name: unichat-hf-cache

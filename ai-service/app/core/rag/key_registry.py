@@ -2,8 +2,11 @@
 
 import hashlib
 from dataclasses import dataclass, field
+from typing import Literal
 
 from app.core.provider_settings import ProviderSettings
+
+ProviderRole = Literal["PRIMARY", "FALLBACK"]
 
 
 @dataclass(frozen=True)
@@ -50,8 +53,23 @@ def configured_keys() -> list[ProviderKey]:
 
 
 def active_provider() -> str:
-    """Return the environment-selected provider; legacy unset selection is Gemini."""
+    """Return the primary provider; legacy unset selection is Gemini."""
     return ProviderSettings().llm_provider
+
+
+def fallback_provider() -> str | None:
+    """Return the enabled fallback provider, otherwise no automatic fallback."""
+    config = ProviderSettings()
+    if not config.enable_provider_fallback:
+        return None
+    return config.llm_fallback_provider or None
+
+
+def provider_role(provider: str) -> ProviderRole | None:
+    """Return PRIMARY or FALLBACK for a provider in the active route."""
+    if provider == active_provider():
+        return "PRIMARY"
+    return "FALLBACK" if provider == fallback_provider() else None
 
 
 def configured_model(provider: str | None = None) -> str:

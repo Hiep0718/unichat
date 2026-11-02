@@ -1,25 +1,54 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Added a feature-flagged, asynchronous workspace-wide summary path with ingestion-manifest validation, deterministic Chroma chunk reads, hierarchical summaries, cited per-document artifacts, progress and paginated result APIs.
+- Added explicit workspace-summary actions and long-running operation polling to the web and mobile chat transport layers.
+- Added document-level resume checkpoints, bounded RabbitMQ retries, a verified worker heartbeat, reload recovery and paginated document summaries on web and mobile.
+- Added a workspace-scoped manifest repair API for legacy processed documents.
+- Added deterministic natural-language routing (`WorkspaceSummaryIntentDetector` + `ChatTaskRouter`) in Core API so collection-wide summary questions automatically reserve `WORKSPACE_SUMMARY` when the summary pipeline is enabled and fall back to Adaptive Retrieval `SUMMARY` when disabled, removing hardcoded summary buttons from web and mobile chat inputs.
+- Redesigned the web chat composer (`ChatInputForm` + `KnowledgeModeSwitch`) into a multi-line, context-aware command bar displaying the active workspace prompt, authorized corpus scope badge, accessible knowledge-mode radio switch, IME-safe `Enter`/`Shift+Enter` handling and progressive character limit feedback.
+
+### Fixed
+
+- Included the actual provider model in canonical live chat results so the UI can identify the model immediately.
+- Preserved Markdown diagram fences when appending citations and instructed the assistant to produce source-backed Mermaid for diagram requests.
+- Reduced Gemini structured-output schema complexity while keeping application-side answer and citation validation.
+- Reloaded local service environment on each restart so provider configuration changes take effect.
+- Qualified summary outbox SQL columns and increased the configurable Hive chat attempt budget while retaining Core's operation deadline and stream idle timeout.
+- Routed the workspace Vector DB action through Core manifest repair, and added reauthorized summary citation locators with PDF page navigation on web.
+- Flattened Chroma source filters and added bounded progressive over-fetch with strict source-version post-validation to address compatible query construction and filtered retrieval gaps.
+
 All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project adheres to Semantic Versioning after the first tagged release.
 
 ## [Unreleased]
 
+- Restored Gemini as the primary generation provider with two-key rotation and bounded Hive fallback for typed transient failures, while preserving Adaptive RAG evidence and citation controls.
+
 ### Fixed
 
+- Wired the bounded question planner into per-facet document retrieval, merged ranked evidence while preserving source locators, checked facet coverage before generation, and expanded context only with current adjacent chunks from the same authorized document.
+- Displayed retrieval coverage and web-availability warnings in web and mobile chat; EXPANDED requests remain document-grounded until an approved web-search provider can return separately cited results.
+- Improved document-only RAG answers to address every part of the question with source-supported explanations instead of returning only chapter or slide titles; insufficient source detail is stated explicitly without external-knowledge fallback.
+- Prevented high-similarity title-only chunks from passing definition Evidence Gate or appearing as supporting citations; definition answers now receive only substantive retrieved evidence.
 - Updated Hive generation defaults to the official CDN V3 endpoint and the approved DeepSeek V4.1 Flash `-1017` model identifier.
 - Aligned Hive DeepSeek requests with `max_completion_tokens` and added actionable client messages for incompatible requests and paused/underfunded organizations.
 - Preserved actual generation model attribution through private RAG responses and distinguished provider transport failures from completed evidence refusals.
 - Propagated private stream cancellation through compaction and generation without cancelling durable operations on a public subscriber disconnect.
 - Reconnected AI chat messages, processing steps, answer content and action buttons to their existing styles; restored the message avatars and responsive action layout.
 - Unified full-screen session, lazy-route and workspace loading into one persistent indicator so phase transitions update the message without restarting the loading animation.
+- Simplified the full-screen loading screen by removing rotating square frames and logo bobbing while preserving the static brand mark and loading dots.
 - Reconnected the AI chat composer and admin controls/tables to their component styles so they no longer render as browser-default form elements.
 - Mobile development now rejects incomplete API origins and derives the Core API host from Expo's reachable host when no valid URL is configured; the web session-verification state now has a branded responsive loading screen.
-- Added a forward migration to restore a missing nullable `direct_messages.read_at` column and resolve Core API startup schema validation failures while preserving existing read receipts.
+- Added V46 to restore the nullable `direct_messages.read_at` column after V45 removed it, resolving Core API schema validation failures without defaults, backfills, or read-receipt loss.
 
 ### Changed
 
+- Made the disabled-AI workspace notice a persistent, high-contrast banner below the chat header, with an owner link directly to AI & privacy settings and an explanation of cloud data processing.
 - Kept the canonical readiness status at `NOT READY` until two-machine evidence is merged.
 - Aligned the JWT public-key example with `JWT_PUBLIC_KEY_LOCATION` and removed speculative JWT/refresh-token variables from the active environment contract.
 - Hardened the Windows Maven Wrapper path handling for non-symlink Maven homes.
@@ -31,6 +60,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+- Added bounded contextual retrieval for explicit follow-up questions while preserving the original question for generation and applying the same authorized-document filter.
+- Added lossless, locator-homogeneous text chunks with versioned metadata and heading-aware embeddings that keep cited source text unchanged.
+- Made configured Chroma connection/query failures return operational errors instead of silently producing empty evidence through an ephemeral fallback.
+- Made evaluation draft generation fail explicitly when its Chroma corpus is unavailable instead of producing cases from empty evidence.
 - Hive DeepSeek generation adapter using the existing HTTPX dependency, bounded SSE parsing, explicit provider configuration and manual Gemini rollback.
 - PostgreSQL-backed AI admission states and ADMIN controls for draining active requests before provider cutover; prepared V40 migration requires separate application approval.
 - Provider-aware diagnostics, nullable token usage, friendly Hive/maintenance errors and a controlled generation key probe.
@@ -47,4 +80,4 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 - Environment-only secrets and private AI/data service boundaries.
 - Structured error logs retain request context and sanitized stack traces without exception messages.
-- ChromaDB Critical finding remains deferred as SEC-DEBT-001 and blocks Chroma-backed work or deployment.
+- ChromaDB Critical finding remains deferred as SEC-DEBT-001; its scoped exception permits read-only Cloud-client retrieval tests only. Self-host changes, dependency/configuration changes and production release remain blocked.

@@ -27,10 +27,10 @@ function ContextSnapshot() {
   return <output data-testid="context-snapshot">{JSON.stringify(workspace)}</output>;
 }
 
-function renderShell() {
+function renderShell(initialEntry = '/workspaces/workspace-1/settings') {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   render(<QueryClientProvider client={queryClient}>
-    <MemoryRouter initialEntries={['/workspaces/workspace-1/settings']}>
+    <MemoryRouter initialEntries={[initialEntry]}>
       <Routes><Route path="/workspaces/:workspaceId/settings" element={<WorkspaceShell />} /></Routes>
     </MemoryRouter>
   </QueryClientProvider>);
@@ -48,6 +48,8 @@ afterEach(() => { cleanup(); vi.clearAllMocks(); });
 describe('WorkspaceShell', () => {
   it('should preserve AI policy and version in context and use returned metadata on subsequent tabs', async () => {
     const user = renderShell();
+    expect(await screen.findByRole('main')).toHaveClass('settings-page');
+    expect(screen.getByRole('tab', { name: 'Thông tin chung' })).toHaveClass('settings-page__tab');
     await user.click(await screen.findByRole('tab', { name: 'AI & Quyền riêng tư' }));
     expect(screen.getByTestId('context-snapshot')).toHaveTextContent('"cloudAllowed":false');
     await user.click(screen.getByRole('checkbox'));
@@ -73,6 +75,13 @@ describe('WorkspaceShell', () => {
     expect(screen.getByRole('checkbox')).toBeDisabled();
     expect(screen.queryByRole('tab', { name: 'Vùng nguy hiểm' })).not.toBeInTheDocument();
     expect(updateWorkspace).not.toHaveBeenCalled();
+  });
+
+  it('should open the AI privacy tab from its direct settings link', async () => {
+    renderShell('/workspaces/workspace-1/settings?tab=privacy');
+    expect(await screen.findByRole('tab', { name: 'AI & Quyền riêng tư' }))
+      .toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('checkbox', { name: 'Cho phép xử lý bằng AI' })).toBeInTheDocument();
   });
 
   it('should show a safe error when workspace metadata cannot be loaded', async () => {

@@ -4,15 +4,18 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import com.unichat.core.admin.service.AuditService;
 import com.unichat.core.admin.service.AiAdmissionService;
 import com.unichat.core.chat.api.AskQuestionRequest;
 import com.unichat.core.chat.api.ChatOperationResponse;
+import com.unichat.core.chat.api.ChatOperationProgress;
 import com.unichat.core.chat.api.QuestionResponse;
 import com.unichat.core.chat.domain.ChatOperation;
 import com.unichat.core.chat.domain.ChatOperationRepository;
@@ -32,19 +35,27 @@ public class ChatOperationService {
     private final Clock clock;
     private final TransactionTemplate transaction;
     private final AiAdmissionService admission;
+    private final WorkspaceSummaryJobService summaryJobs;
+    @Value("${unichat.workspace-summary.enabled:false}")
+    private boolean workspaceSummaryEnabled;
     /** Coordinates durable operation state and current authorization. */
     public ChatOperationService(ChatOperationRepository operations, ChatConversationStore conversations,
             ChatMessageStore messages, ChatAccessService access, ChatJson json, RateLimitService rates,
-            AuditService audit, Clock clock, PlatformTransactionManager manager, AiAdmissionService admission) {
+            AuditService audit, Clock clock, PlatformTransactionManager manager, AiAdmissionService admission,
+            WorkspaceSummaryJobService summaryJobs) {
         this.operations=operations; this.conversations=conversations; this.messages=messages; this.access=access;
         this.json=json; this.rates=rates; this.audit=audit; this.clock=clock; this.transaction=new TransactionTemplate(manager);
         this.admission=admission;
+        this.summaryJobs=summaryJobs;
     }
     /** Indicates whether this caller reserved a new operation or found an existing binding. */
     public record Reservation(ChatOperation operation, boolean created) { }
-    /** Reserves one turn; same-key retries are never charged again or sent to the provider. */
+    /**
+     * Reserves one turn; same-key retries are never charged again or sent to the provider.
+     * A turn without an explicit task type is routed by {@link ChatTaskRouter} from the question intent.
+     */
     public Reservation reserve(ChatActor actor, UUID workspaceId, AskQuestionRequest request, UUID key, String requestId) {
-        ChatBinding binding=ChatBinding.from(workspaceId,request);
+        ChatBinding binding=ChatTaskRouter.route(workspaceId,request,workspaceSummaryEnabled);
         return Objects.requireNonNull(transaction.execute(status -> reserveLocked(actor,binding,key,requestId)));
     }
     private Reservation reserveLocked(ChatActor actor, ChatBinding binding, UUID key, String requestId) {
@@ -52,7 +63,14 @@ public class ChatOperationService {
         var control=admission.lockShared();
         operations.lockActor(actor.userId());
         expire(actor.userId(),now);
-        ChatSourceSnapshot snapshot=access.read(actor,binding.workspaceId());
+        if (binding.taskType() == com.unichat.core.chat.api.ChatTaskType.WORKSPACE_SUMMARY
+                && !workspaceSummaryEnabled) {
+            throw new ChatOperationError("WORKSPACE_SUMMARY_DISABLED", HttpStatus.SERVICE_UNAVAILABLE,
+                    "Tính năng tóm tắt Workspace hiện chưa được bật.");
+        }
+        ChatSourceSnapshot snapshot = binding.taskType() == com.unichat.core.chat.api.ChatTaskType.WORKSPACE_SUMMARY
+                ? access.readWorkspaceSummary(actor, binding.workspaceId())
+                : access.read(actor,binding.workspaceId());
         var existing=operations.findByKey(actor.userId(),key);
         if (existing.isPresent()) return replayBinding(existing.get(),binding,now);
         admission.requireChat(control);
@@ -61,28 +79,52 @@ public class ChatOperationService {
         if (operations.busy(conversationId)) throw conflict("CONVERSATION_BUSY","Hội thoại đang xử lý một câu hỏi khác.");
         rates.consume(actor.userId().toString(),"chat.ask",20,Duration.ofMinutes(1));
         UUID userMessage=messages.user(conversationId,binding.question(),now);
+        long runtimeSeconds = binding.taskType() == com.unichat.core.chat.api.ChatTaskType.WORKSPACE_SUMMARY
+                ? Duration.ofHours(2).toSeconds() : 240;
+        long initialLeaseSeconds = binding.taskType() == com.unichat.core.chat.api.ChatTaskType.WORKSPACE_SUMMARY
+                ? 300 : 90;
         ChatOperation operation=new ChatOperation(UUID.randomUUID(),actor,key,binding.hash(json),binding.workspaceId(),
-                binding.conversationId(),conversationId,userMessage,null,binding.question(),binding.expanded(),requestId,"RUNNING",
-                snapshot,null,now.plusSeconds(120),now.plusSeconds(45),now.plus(Duration.ofHours(24)));
+                binding.conversationId(),conversationId,userMessage,null,binding.question(),binding.expanded(),binding.taskType(),
+                requestId,"RUNNING",snapshot,null,now.plusSeconds(runtimeSeconds),now.plusSeconds(initialLeaseSeconds),now.plus(Duration.ofHours(24)));
         operations.insert(operation,now);
         return new Reservation(operation,true);
     }
     private Reservation replayBinding(ChatOperation existing, ChatBinding binding, Instant now) {
         if (!existing.expiresAt().isAfter(now)) throw new ChatOperationError("IDEMPOTENCY_EXPIRED",HttpStatus.GONE,"Khóa yêu cầu đã hết hạn. Hãy tạo yêu cầu mới.");
+        if (existing.taskType() != binding.taskType()) {
+            throw conflict("IDEMPOTENCY_BINDING_MISMATCH", "Khóa yêu cầu đã được dùng cho loại tác vụ khác.");
+        }
         if (!existing.bindingHash().equals(binding.hash(json))) throw conflict("IDEMPOTENCY_CONFLICT","Khóa yêu cầu đã được dùng với nội dung khác.");
         conversations.requireOwner(existing.actor().userId(),existing.workspaceId(),existing.conversationId(),false);
         return new Reservation(existing,false);
     }
+    /** Finds a durable in-flight summary without storing operation IDs on a device. */
+    public Optional<ChatOperationResponse> activeSummary(ChatActor actor, UUID workspaceId, UUID conversationId) {
+        access.read(actor, workspaceId);
+        return operations.findActiveSummary(actor.userId(), workspaceId, conversationId)
+                .map(operation -> status(actor, workspaceId, operation.id()));
+    }
+
     /** Reads owner-only current status and reconstructs authorized canonical results. */
     public ChatOperationResponse status(ChatActor actor, UUID workspaceId, UUID operationId) {
         return Objects.requireNonNull(transaction.execute(status -> {
             operations.lockActor(actor.userId());
             expire(actor.userId(),Instant.now(clock));
             ChatOperation operation=owned(actor,workspaceId,operationId);
-            var current=access.read(actor,workspaceId);
+            boolean summary = operation.taskType() == com.unichat.core.chat.api.ChatTaskType.WORKSPACE_SUMMARY;
+            var current=summary && "COMPLETED".equals(operation.state())
+                    ? access.readWorkspaceSummary(actor,workspaceId) : access.read(actor,workspaceId);
+            if (summary && "COMPLETED".equals(operation.state())
+                    && !current.fingerprint().equals(operation.sources().fingerprint())) {
+                throw conflict("SUMMARY_SOURCE_SNAPSHOT_CHANGED", "Nguồn tài liệu của bản tóm tắt đã thay đổi.");
+            }
             conversations.requireOwner(actor.userId(),workspaceId,operation.conversationId(),false);
-            QuestionResponse result="COMPLETED".equals(operation.state()) ? messages.result(operation,current) : null;
-            return new ChatOperationResponse(operation.id(),operation.state(),operation.conversationId(),result,operation.errorCode());
+            QuestionResponse result="COMPLETED".equals(operation.state()) && !summary ? messages.result(operation,current) : null;
+            ChatOperationProgress progress = operation.taskType() == com.unichat.core.chat.api.ChatTaskType.WORKSPACE_SUMMARY
+                    ? operations.summaryProgress(operation.id()).orElse(null) : null;
+            return new ChatOperationResponse(operation.id(),operation.state(),operation.conversationId(),result,
+                    operation.errorCode(), operation.taskType(), progress,
+                    summary && "COMPLETED".equals(operation.state()) ? summaryJobs.result(operation.id()) : null);
         }));
     }
     /** Cancel is idempotent and never replaces a completed result. */

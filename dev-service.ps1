@@ -152,8 +152,6 @@ function Start-ServiceProcess {
     }
 }
 
-Import-DotEnv
-
 Write-Host ""
 Write-Host "  === $($cfg.Title) (Port $($cfg.Port)) ===" -ForegroundColor Cyan
 Write-Host ""
@@ -175,6 +173,7 @@ while ($true) {
     Set-Status 'starting'
 
     try {
+        Import-DotEnv
         $proc = Start-ServiceProcess
         if ($null -eq $proc) {
             # Cloud or skipped service process — keep tab open listening for commands

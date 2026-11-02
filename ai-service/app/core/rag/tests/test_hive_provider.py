@@ -43,7 +43,7 @@ def transport(chunks: Iterable[bytes]) -> tuple[Mock, Mock, Mock]:
 
 
 @pytest.mark.parametrize("purpose,schema", [("CHAT", {}), ("COMPACTION", None),
-                                           ("KEY_PROBE", None)])
+                                           ("QUERY_PLAN", {}), ("KEY_PROBE", None)])
 def test_should_always_stream_raw_identity_and_close_resources(
     monkeypatch: pytest.MonkeyPatch, purpose: Purpose, schema: dict[str, Any] | None,
 ) -> None:
@@ -65,7 +65,10 @@ def test_should_always_stream_raw_identity_and_close_resources(
     assert headers["Accept-Encoding"] == "identity"
     assert body["model"] == MODEL
     assert body["stream"] is True and "stream_options" not in body
-    assert body["max_completion_tokens"] == (128 if purpose == "KEY_PROBE" else 4096)
+    expected_tokens = (
+        128 if purpose == "KEY_PROBE" else 512 if purpose == "QUERY_PLAN" else 4096
+    )
+    assert body["max_completion_tokens"] == expected_tokens
     assert "max_tokens" not in body
     assert body["reasoning_effort"] == ("none" if purpose == "KEY_PROBE" else "low")
     assert ("response_format" in body) is (schema is not None)

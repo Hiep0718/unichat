@@ -69,7 +69,7 @@
 
 Collection: unichat_chunks_v2 (v1 fallback), distance cosine, embedding dimension 768.
 
-Mỗi record có chunkId, workspaceId, documentId, ingestionVersion, chunkIndex, sourceGroup, locatorType, locatorValue, contentHash, extractorVersion và normalized text. Query luôn có allowedDocumentIds; không dùng Chroma làm nguồn quyền.
+Mỗi record có chunkId, workspaceId, documentId, ingestionVersion, chunkIndex, `chunking_version`, sourceGroup, locatorType, locatorValue, contentHash, extractorVersion và normalized text. Query luôn có allowedDocumentIds; không dùng Chroma làm nguồn quyền. Heading có thể được đưa vào embedding để tăng ngữ cảnh nhưng không được thêm vào nội dung chunk dùng làm citation.
 
 Embedding model: intfloat/multilingual-e5-base revision d128750597153bb5987e10b1c3493a34e5a4502a. Query thêm prefix query:, chunk thêm prefix passage:.
 
@@ -109,3 +109,5 @@ Reservation mới và diagnostic START giữ shared lock trên singleton trong t
 Drain kiểm cả chat_operations RUNNING và provider_attempts thiếu ended_at, không tự loại pending theo tuổi. DRAINING→VERIFYING yêu cầu cả hai count0. Thiếu bảng/row hoặc lỗi đọc gate phải fail closed. Apply migration và cập nhật trạng thái live chỉ được thực hiện trong phạm vi vận hành đã được duyệt.
 
 Retention provider_attempts chỉ xóa bản ghi đã có ended_at và nằm ngoài cửa sổ giữ dữ liệu. Pending chưa kết thúc vẫn giữ kể cả quá retention; việc xóa theo tuổi không được làm gate báo nhầm đã drain. Reconciliation pending cần bằng chứng và quy trình riêng, không tự sinh END hoặc sửa outcome.
+
+`provider_attempts.purpose` sau V47 gồm `CHAT`, `COMPACTION`, `QUERY_PLAN`, `ADMIN_PROMPT` và `KEY_PROBE`. `QUERY_PLAN` là một lần gọi provider có operationId bắt buộc; chỉ lưu metadata đo lường, không lưu câu hỏi, prompt hay nội dung tài liệu. Áp dụng migration cần phê duyệt vận hành riêng.

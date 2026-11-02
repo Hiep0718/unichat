@@ -94,7 +94,7 @@ phê duyệt và hashing subtask chưa đạt DoD.
 |---|---|---|
 | Mandatory blocker for `READY — CORE-001` | Hardening merge; protection active; required checks; issue/milestone; evidence hai máy; collaborator fresh-clone; PostgreSQL/Core health; Maven Wrapper; JWT environment | Failure giữ `NOT READY` |
 | Repository regression evidence | Frontend lint/typecheck/unit/build; Playwright; AI Ruff/mypy/pytest/coverage và non-Chroma health; Compose validation; repository CI | Failure block readiness/merge nhưng không phải CORE feature DoD |
-| Deferred/scoped `SEC-DEBT-001` | Chroma startup, compatibility, CRUD/retrieval integration, remediation và Chroma-dependent deployment | Không block non-Chroma CORE-001 trừ khi làm hỏng shared mandatory infrastructure |
+| Deferred/scoped `SEC-DEBT-001` | Critical advisory của `chromadb==1.5.9`; CloudClient/retrieval chỉ được tiếp tục trong test scope giới hạn. Self-host server, dependency/version change và production release vẫn bị chặn. | Không block Cloud retrieval test trong approved scope; không phải security closure hoặc production approval |
 
 ### Mandatory evidence trên mỗi máy
 
@@ -121,7 +121,9 @@ Evidence không được phụ thuộc cache của máy hiện tại.
 - AI `/internal/v1/health` là non-Chroma repository baseline.
 - Frontend được xác minh qua build và Playwright.
 - Chroma container running không chứng minh client/server compatibility.
-- Chroma-only compatibility/retrieval failure gắn với `SEC-DEBT-001`.
+- Chroma Cloud retrieval test phải dùng allowlist Core và không ghi/xóa collection hiện có.
+- Không dùng Chroma Cloud operation thành công để kết luận advisory đã được khắc phục.
+- Self-host Chroma server failure/configuration gắn với `SEC-DEBT-001`.
 - Chỉ block CORE-001 nếu Chroma làm shared mandatory infrastructure không chạy;
   evidence phải nêu chính xác shared gate bị ảnh hưởng.
 

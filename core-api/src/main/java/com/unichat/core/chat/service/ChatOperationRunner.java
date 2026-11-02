@@ -65,10 +65,13 @@ public class ChatOperationRunner {
         operations.checkpoint(operation.id());
         int summaryVersion=messages.summaryVersion(operation.conversationId());
         var heartbeat=heartbeats.scheduleAtFixedRate(() -> heartbeat(operation),10,10,TimeUnit.SECONDS);
+        var firstTokenSeen=new java.util.concurrent.atomic.AtomicBoolean(false);
         try {
             var raw=gateway.answer(operation,request(operation),streaming,(event,payload) -> {
-                operations.checkpoint(operation.id());
-                if ("token".equals(event)) operations.firstToken(operation.id());
+                if ("pipeline-step".equals(event)) operations.checkpoint(operation.id());
+                if ("token".equals(event) && firstTokenSeen.compareAndSet(false,true)) {
+                    operations.firstToken(operation.id());
+                }
                 output.accept(event,"pipeline-step".equals(event)?ChatPublicProgress.from(payload):payload);
             });
             operations.checkpoint(operation.id());

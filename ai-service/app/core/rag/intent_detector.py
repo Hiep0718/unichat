@@ -116,7 +116,14 @@ def _load_rules() -> list[tuple[IntentEnum, str, str, list[str]]]:
         (
             IntentEnum.SUMMARY,
             "RULE_SUMMARY_ALL",
-            r"(tom tat|tong quan|y chinh|noi dung chinh|tom luoc)",
+            r"(tom tat|tong quan|y chinh|noi dung chinh|tom luoc|khai quat"
+            r"|\bliet ke\b|danh sach cac|bao gom nhung gi|gom nhung gi"
+            r"|(cac|nhung) .+ (de cap|trinh bay|co) trong "
+            r"(tai lieu|bai giang|giao trinh|chuong|slide)"
+            r"|trong (tai lieu|bai giang|giao trinh|slide) .* "
+            r"(co nhung|gom nhung|de cap nhung|de cap cac|bao gom)"
+            r"|(co nhung|gom nhung) (loai|kien truc|mo hinh|phong cach"
+            r"|phuong phap|thanh phan|chu de|phan|chuong) nao)",
             [],
         ),
         (IntentEnum.DEFINITION, "RULE_DEF_WHAT", r"(la gi|dinh nghia|khai niem|the nao la)", []),

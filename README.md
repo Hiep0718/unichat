@@ -26,6 +26,8 @@ Không commit, push, thay đổi GitHub, merge hoặc deploy nếu chưa có ph�
 
 Chỉ frontend và Core API được expose. AI Service, PostgreSQL, ChromaDB, RabbitMQ và Ollama nằm trên private network.
 
+Retrieval giữ nguyên câu hỏi gốc để sinh câu trả lời; câu hỏi nối tiếp có tham chiếu rõ có thể dùng thêm một truy vấn ngữ cảnh giới hạn từ lịch sử đã xác thực nguồn. Mọi truy vấn tiếp tục bị giới hạn bởi danh sách tài liệu Core API cấp quyền. Chunk văn bản giữ provenance theo locator và phiên bản thuật toán; OCR/hiểu sơ đồ local chưa được bật cho đến khi lựa chọn engine và ngân sách được phê duyệt.
+
 ## Runtime mục tiêu
 
 - Node.js 24.18.0 LTS và npm đi kèm.
@@ -45,11 +47,11 @@ Runtime portable nằm trong `.tools` và không được commit.
 
 Test không được gọi network ngoài hệ thống.
 
-## Generation qua Hive
+## Generation qua Gemini với Hive dự phòng
 
-Cấu hình mẫu chọn Hive qua `https://api-cdn.thehive.ai/api/v3` với model `deepseek-ai/deepseek-v4.1-flash-1017`; Secret Key chỉ đặt ở môi trường AI Service. Giữ SDK Gemini cho rollback cấu hình, không tự chuyển provider khi Hive lỗi. Khi chưa đặt `LLM_PROVIDER`, mã vẫn dùng mặc định Gemini để tương thích môi trường cũ. Không dùng lại khóa đã chia sẻ trong chat hoặc ảnh.
+Cấu hình mẫu chọn Gemini làm primary với tối đa hai khóa, sau đó mới chuyển sang Hive qua `https://api-cdn.thehive.ai/api/v3` khi gặp timeout, 429, 5xx hoặc lỗi mạng đã phân loại. Lỗi xác thực, cấu hình, safety, evidence, schema/citation và cancellation không kích hoạt fallback. Secret chỉ đặt ở môi trường AI Service; không dùng lại khóa đã chia sẻ trong chat hoặc ảnh.
 
-Hive phục vụ generation, compaction và kiểm tra quản trị; embedding E5 và dữ liệu vector không đổi. Usage không được provider báo vẫn là chưa biết, không phải 0 token hoặc số dư tài khoản. Nút kiểm tra khóa chạy một yêu cầu generation ngắn khi admin bấm và có thể dùng credit.
+Gemini phục vụ generation, compaction và query planning; Hive là fallback cuối cho generation/compaction. Embedding E5, Adaptive RAG, evidence gate và citation validator không đổi. Usage không được provider báo vẫn là chưa biết, không phải 0 token hoặc số dư tài khoản. Nút kiểm tra khóa chỉ gọi đúng provider/key/model được admin chọn và có thể dùng credit.
 
 Gate PostgreSQL quản lý `OPEN` / `DRAINING` / `VERIFYING`, cho phép ngừng nhận câu hỏi mới nhưng giữ polling, cancel và operation đang chạy. Migration V40 được chuẩn bị cho gate; **không khởi động lại Core hoặc áp dụng migration vào DB dùng chung trước phê duyệt**, vì Flyway chạy khi startup. Tài liệu cutover/rollback tại [Hive generation runbook](docs/runbooks/hive-generation.md); việc có mã hỗ trợ không xác nhận môi trường live đã chuyển provider.
 
@@ -82,7 +84,7 @@ Trong development, mobile dùng host mà Expo cung cấp để gọi Core API tr
 
 PostgreSQL, Document Storage và RabbitMQ sử dụng cloud (Supabase / CloudAMQP), không cần chạy local.
 
-Nếu Core API dừng vì thiếu `direct_messages.read_at`, kiểm tra schema và lịch sử Flyway trước khi khởi động lại. Migration V38 bổ sung cột nullable này và giữ nguyên dữ liệu đã có. Với DB dùng chung, cần phê duyệt migration trước khi chạy Core vì Flyway tự áp dụng migration khi khởi động; không sửa lịch sử cũ hoặc tắt Hibernate schema validation để bỏ qua lỗi.
+Nếu Core API dừng vì thiếu `direct_messages.read_at`, kiểm tra schema và lịch sử Flyway trước khi khởi động lại. Migration V46 khôi phục cột nullable sau V45 mà không đặt mặc định, backfill hoặc thay đổi dữ liệu đã có; V38 và các migration cũ vẫn giữ nguyên. Với DB dùng chung, cần phê duyệt migration trước khi chạy Core vì Flyway tự áp dụng migration khi khởi động; không sửa lịch sử cũ hoặc tắt Hibernate schema validation để bỏ qua lỗi.
 
 ## Kiểm tra
 

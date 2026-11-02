@@ -9,5 +9,11 @@ public record IngestionResultMessage(
         UUID documentId,
         boolean success,
         int chunkCount,
-        String errorMessage
-) {}
+        String errorMessage,
+        long indexedCharacterCount
+) {
+    /** Keeps compatibility with older ingestion result producers during rollout. */
+    public IngestionResultMessage(UUID documentId, boolean success, int chunkCount, String errorMessage) {
+        this(documentId, success, chunkCount, errorMessage, 0L);
+    }
+}

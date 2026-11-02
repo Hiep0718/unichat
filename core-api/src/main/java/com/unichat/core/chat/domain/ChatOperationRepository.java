@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -11,6 +12,9 @@ import org.springframework.stereotype.Repository;
 import com.unichat.core.chat.service.ChatActor;
 import com.unichat.core.chat.service.ChatJson;
 import com.unichat.core.chat.service.ChatSourceSnapshot;
+import com.unichat.core.chat.api.ChatTaskType;
+import com.unichat.core.chat.api.ChatOperationProgress;
+import com.unichat.core.shared.servicesecurity.RequestBinding;
 
 /** Parameterized persistence and conditional terminal transitions for chat operations. */
 @Repository
@@ -32,6 +36,31 @@ public class ChatOperationRepository {
     public Optional<ChatOperation> findById(UUID id) {
         return database.query("SELECT * FROM chat_operations WHERE id = ?", this::map, id).stream().findFirst();
     }
+    /** Finds the caller's latest active workspace summary for reload recovery. */
+    public Optional<ChatOperation> findActiveSummary(UUID actorId, UUID workspaceId, UUID conversationId) {
+        String base = """
+                SELECT * FROM chat_operations WHERE actor_id=? AND workspace_id=?
+                AND task_type='WORKSPACE_SUMMARY' AND state='RUNNING'
+                """;
+        if (conversationId != null) {
+            return database.query(base + " AND conversation_id=? ORDER BY created_at DESC LIMIT 1",
+                    this::map, actorId, workspaceId, conversationId).stream().findFirst();
+        }
+        return database.query(base + " ORDER BY created_at DESC LIMIT 1",
+                this::map, actorId, workspaceId).stream().findFirst();
+    }
+    /** Reads bounded progress counters for a summary operation. */
+    public Optional<ChatOperationProgress> summaryProgress(UUID operationId) {
+        return database.query("""
+                SELECT stage,documents_total,documents_completed,chunks_total,chunks_processed,
+                GREATEST(provider_calls_completed, (SELECT count(*) FROM provider_attempts
+                    WHERE operation_id=job.operation_id AND purpose='WORKSPACE_SUMMARY'
+                    AND outcome='SUCCESS')) AS provider_calls_completed
+                FROM workspace_summary_jobs job WHERE operation_id=?
+                """, (row,index) -> new ChatOperationProgress(row.getString("stage"), row.getInt("documents_total"),
+                row.getInt("documents_completed"), row.getLong("chunks_total"), row.getLong("chunks_processed"),
+                row.getInt("provider_calls_completed")), operationId).stream().findFirst();
+    }
     /** Locks the operation before completion/cancel; whichever terminal commit wins stays terminal. */
     public ChatOperation lock(UUID id) {
         return database.queryForObject("SELECT * FROM chat_operations WHERE id = ? FOR UPDATE", this::map, id);
@@ -49,14 +78,42 @@ public class ChatOperationRepository {
     public void insert(ChatOperation operation, Instant now) {
         database.update("""
                 INSERT INTO chat_operations(id, actor_id, idempotency_key, binding_hash, workspace_id,
-                original_conversation_id, conversation_id, user_message_id, question, expanded, session_id,
+                original_conversation_id, conversation_id, user_message_id, question, expanded, task_type, session_id,
                 security_version, request_id, state, source_fingerprint, source_snapshot, created_at,
-                deadline_at, lease_until, expires_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,'RUNNING',?,?::jsonb,?,?,?,?)
+                deadline_at, lease_until, expires_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,'RUNNING',?,?::jsonb,?,?,?,?)
                 """, operation.id(), operation.actor().userId(), operation.key(), operation.bindingHash(), operation.workspaceId(),
                 operation.originalConversationId(), operation.conversationId(), operation.userMessageId(), operation.question(),
-                operation.expanded(), operation.actor().sessionId(), operation.actor().securityVersion(), operation.requestId(),
+                operation.expanded(), operation.taskType().name(), operation.actor().sessionId(), operation.actor().securityVersion(), operation.requestId(),
                 operation.sources().fingerprint(), json.write(operation.sources()), Timestamp.from(now),
                 Timestamp.from(operation.deadlineAt()), Timestamp.from(operation.leaseUntil()), Timestamp.from(operation.expiresAt()));
+        if (operation.taskType() == ChatTaskType.WORKSPACE_SUMMARY) {
+            insertWorkspaceSummaryJob(operation, now);
+        }
+    }
+
+    private void insertWorkspaceSummaryJob(ChatOperation operation, Instant now) {
+        long chunkTotal = operation.sources().sources().stream()
+                .mapToLong(source -> source.indexedChunkCount() == null ? 0 : source.indexedChunkCount()).sum();
+        String configHash = RequestBinding.hash("workspace-summary-v1".getBytes(StandardCharsets.UTF_8));
+        database.update("""
+                INSERT INTO workspace_summary_jobs(operation_id,workspace_id,source_fingerprint,config_hash,
+                stage,documents_total,chunks_total,lease_until,created_at,updated_at)
+                VALUES(?,?,?,?,'QUEUED',?,?,NULL,?,?)
+                """, operation.id(), operation.workspaceId(), operation.sources().fingerprint(), configHash,
+                operation.sources().sources().size(), chunkTotal, Timestamp.from(operation.leaseUntil()),
+                Timestamp.from(now), Timestamp.from(now));
+        for (var source : operation.sources().sources()) {
+            database.update("""
+                    INSERT INTO workspace_summary_documents(operation_id,document_id,ingestion_version,
+                    content_hash,expected_chunk_count,status,updated_at) VALUES(?,?,?,?,?,'PENDING',?)
+                    """, operation.id(), source.documentId(), source.ingestionVersion(), source.contentHash(),
+                    source.indexedChunkCount(), Timestamp.from(now));
+        }
+        database.update("""
+                INSERT INTO workspace_summary_outbox(id,operation_id,request_id,source_fingerprint,config_hash)
+                VALUES(?,?,?,?,?)
+                """, UUID.randomUUID(), operation.id(), operation.requestId(),
+                operation.sources().fingerprint(), configHash);
     }
     /** Performs a terminal compare-and-set inside the caller's transaction. */
     public boolean terminal(UUID id, String state, UUID messageId, String errorCode, Instant now) {
@@ -88,7 +145,7 @@ public class ChatOperationRepository {
         return new ChatOperation(uuid(row,"id"), new ChatActor(uuid(row,"actor_id"), uuid(row,"session_id"), row.getLong("security_version")),
                 uuid(row,"idempotency_key"), row.getString("binding_hash"), uuid(row,"workspace_id"), uuid(row,"original_conversation_id"),
                 uuid(row,"conversation_id"), uuid(row,"user_message_id"), uuid(row,"result_message_id"), row.getString("question"),
-                row.getBoolean("expanded"), row.getString("request_id"), row.getString("state"),
+                row.getBoolean("expanded"), ChatTaskType.valueOf(row.getString("task_type")), row.getString("request_id"), row.getString("state"),
                 json.read(row.getString("source_snapshot"), ChatSourceSnapshot.class), row.getString("error_code"),
                 row.getTimestamp("deadline_at").toInstant(), row.getTimestamp("lease_until").toInstant(), row.getTimestamp("expires_at").toInstant());
     }

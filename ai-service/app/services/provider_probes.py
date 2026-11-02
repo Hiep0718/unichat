@@ -9,7 +9,7 @@ from google import genai
 from google.genai import types
 
 from app.core.rag.generation_policy import GenerationPolicy, attempt_event
-from app.core.rag.key_registry import active_provider, configured_model, resolve_key
+from app.core.rag.key_registry import configured_model, provider_role, resolve_key
 from app.core.rag.provider_gateway import ProviderFailure, classify_failure, generate
 
 
@@ -18,12 +18,12 @@ def probe_key(secret: str, key_id: str, policy: GenerationPolicy) -> dict[str, A
     key = resolve_key(key_id)
     if key is None or key.secret != secret:
         raise ProviderFailure("PROVIDER_KEY_UNKNOWN")
-    if key.provider != active_provider():
+    if provider_role(key.provider) is None:
         raise ProviderFailure("PROVIDER_SELECTION_INVALID")
     if key.provider == "hive":
         return _probe_hive(key_id, policy)
     timeout = policy.checkpoint("KEY_PROBE")
-    attempt_id, model = str(uuid.uuid4()), configured_model()
+    attempt_id, model = str(uuid.uuid4()), configured_model(key.provider)
     event = attempt_event(policy, attempt_id, "KEY_PROBE", "gemini", key_id, model, "START")
     policy.record(event)
     started = time.perf_counter()
