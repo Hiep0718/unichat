@@ -225,3 +225,11 @@ hiện hành.
 - Web/mobile: provider-neutral admin diagnostics, independent history filters, admission controls, nullable usage and friendly error/refusal presentation; offline component/transport/Playwright tests.
 - Documentation: ADR-022, provider configuration sample, API/data/retrieval/test specs và Hive runbook. Giữ baseline/decisions/evidence trong .pipeline; không ghi đè dirty work của task khác.
 - Delivery excludes shared migration apply, live env/restart, real provider smoke, package installation và Git operations until separately approved.
+
+## 15. Gemini primary với Hive fallback — approved extension
+
+- AI Service: `provider_routing.py` sở hữu route state/target pinning; gateway chỉ advance khi typed failure transient và giới hạn ba attempts.
+- Provider registry/readiness/telemetry: công bố primary/fallback role, model và chỉ cho phép ADMIN diagnostics với target thuộc route.
+- Core/Web: chuyển tiếp metadata route, hiển thị Gemini → Hive và giữ activeProvider/activeModel làm alias tương thích.
+- Adaptive RAG, retrieval, evidence/citation validation, authorization và persistence ownership không thay đổi.
+- Delivery không gồm sửa `.env` runtime, restart, provider smoke thật, commit, push hoặc deploy nếu chưa có approval riêng.

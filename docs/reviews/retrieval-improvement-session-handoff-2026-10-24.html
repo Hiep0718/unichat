@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RETRIEVAL IMPROVEMENT SESSION HANDOFF 2026 10 24</title>
+  <style>
+    
+:root {
+  --bg-color: #0d1117;
+  --text-color: #c9d1d9;
+  --accent-color: #58a6ff;
+  --border-color: #30363d;
+  --code-bg: #161b22;
+  --blockquote-bg: #151b23;
+  --alert-note-bg: rgba(56, 139, 253, 0.15);
+  --alert-note-border: #388bfd;
+  --alert-tip-bg: rgba(63, 185, 80, 0.15);
+  --alert-tip-border: #3fb950;
+  --alert-warning-bg: rgba(210, 153, 34, 0.15);
+  --alert-warning-border: #d29922;
+  --alert-caution-bg: rgba(248, 81, 73, 0.15);
+  --alert-caution-border: #f85149;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text-color);
+  background-color: var(--bg-color);
+  margin: 0;
+  padding: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+.container {
+  width: 100%;
+  max-width: 900px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #f0f6fc;
+  font-weight: 600;
+  line-height: 1.25;
+  margin-top: 24px;
+  margin-bottom: 16px;
+}
+
+h1 { font-size: 2em; padding-bottom: 0.3em; border-bottom: 1px solid var(--border-color); }
+h2 { font-size: 1.5em; padding-bottom: 0.3em; border-bottom: 1px solid var(--border-color); }
+h3 { font-size: 1.25em; }
+
+p, ul, ol {
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+a {
+  color: var(--accent-color);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+  font-size: 85%;
+  background-color: rgba(110, 118, 129, 0.4);
+  padding: 0.2em 0.4em;
+  border-radius: 6px;
+}
+
+pre {
+  background-color: var(--code-bg);
+  padding: 16px;
+  border-radius: 6px;
+  overflow: auto;
+  border: 1px solid var(--border-color);
+}
+
+pre code {
+  background-color: transparent;
+  padding: 0;
+  font-size: 100%;
+  color: #e6edf3;
+  border-radius: 0;
+}
+
+blockquote {
+  margin: 0 0 16px 0;
+  padding: 0 1em;
+  color: #8b949e;
+  border-left: 0.25em solid #30363d;
+  background-color: var(--blockquote-bg);
+  padding: 8px 16px;
+  border-radius: 0 6px 6px 0;
+}
+
+table {
+  border-spacing: 0;
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+table th, table td {
+  padding: 6px 13px;
+  border: 1px solid var(--border-color);
+}
+
+table tr {
+  background-color: var(--bg-color);
+  border-top: 1px solid var(--border-color);
+}
+
+table tr:nth-child(2n) {
+  background-color: #161b22;
+}
+
+table th {
+  font-weight: 600;
+  background-color: #161b22;
+}
+
+hr {
+  height: 0.25em;
+  padding: 0;
+  margin: 24px 0;
+  background-color: var(--border-color);
+  border: 0;
+}
+
+/* Alert styles */
+.alert {
+  padding: 15px;
+  margin-bottom: 20px;
+  border: 1px solid transparent;
+  border-left-width: 5px;
+  border-radius: 4px;
+}
+
+.alert-note {
+  background-color: var(--alert-note-bg);
+  border-color: var(--alert-note-border);
+}
+
+.alert-tip {
+  background-color: var(--alert-tip-bg);
+  border-color: var(--alert-tip-border);
+}
+
+.alert-warning {
+  background-color: var(--alert-warning-bg);
+  border-color: var(--alert-warning-border);
+}
+
+.alert-caution {
+  background-color: var(--alert-caution-bg);
+  border-color: var(--alert-caution-border);
+}
+
+.alert-title {
+  font-weight: bold;
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  color: #fff;
+}
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Retrieval improvement plan — review handoff</h1>
+<p><strong>Updated:</strong> 2026-10-24</p>
+<p><strong>Purpose:</strong> Give an independent reviewer a concise, complete account of the retrieval-improvement planning work, its current approval boundary, evidence, and open review items.</p>
+<h2>1. Why this work exists</h2>
+<p>The product concerns raised were:</p>
+<ol>
+<li>AI answers can be overly cautious or refuse questions even when a useful answer may be possible.</li>
+<li>Follow-up questions are not handled flexibly because contextual retrieval depends on a bounded set of lexical cues.</li>
+<li>A Vietnamese question may need to retrieve an English definition (and vice versa).</li>
+<li>The full application path must work—not only retrieval code—including ingestion, authorization, provider calls, persistence, and frontend delivery.</li>
+<li>PDFs may contain scanned text, slides, images, and diagrams. OCR/diagram processing was explicitly kept deferred in the approved scope.</li>
+</ol>
+<p>The plan is intended to diagnose these behaviors with evidence before changing retrieval, Evidence Gate thresholds, prompts, or models. It does not promise that any individual model or retrieval change will improve quality.</p>
+<h2>2. Work covered by this handoff</h2>
+<p>This handoff covers the planning, feasibility, and review work in this workstream. Source implementation and runtime configuration were inspected read-only where needed for feasibility/review, but not modified. No database, vector index, service, provider, or corpus was accessed or changed.</p>
+<h3>Plan artifacts updated</h3>
+<p>All paths in this subsection are under <code>.pipeline/retrieval-optimization/improvement-plan/</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Artifact</th>
+<th>What it contains / changed for this work</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>requirements.md</code></td>
+<td>Records the approved design/evaluation-preparation scope, canonical-evaluator requirement, separate evaluator/production approval gates, and distinct current-stack versus post-implementation E2E evidence.</td>
+</tr>
+<tr>
+<td><code>task-breakdown.md</code></td>
+<td>Orders design, evaluator approval, canonical harness implementation, data/baseline work, production approval, implementation, and post-implementation E2E acceptance explicitly.</td>
+</tr>
+<tr>
+<td><code>file-plan.md</code></td>
+<td>Extends the existing evaluator modules and benchmark entrypoint instead of creating a parallel stack; proposed tests remain under configured pytest roots.</td>
+</tr>
+<tr>
+<td><code>architecture-decision.md</code></td>
+<td>Defines canonical evaluator ownership, the cluster-aware evaluation protocol, approval ordering, and separate readiness/E2E gates.</td>
+</tr>
+<tr>
+<td><code>questions.md</code></td>
+<td>Records the canonical evaluator, protocol supersession, approval boundaries, and still-unapproved live checks.</td>
+</tr>
+<tr>
+<td><code>review-report.md</code></td>
+<td>Retains review history and records the correction response as <code>PENDING<em>RE</em>REVIEW</code>; it does not self-approve the plan.</td>
+</tr>
+<tr>
+<td><code>feasibility-assessment.md</code></td>
+<td>Separates currently approved design preparation, evaluator implementation after approval, current-stack readiness, and post-implementation E2E evidence.</td>
+</tr>
+</tbody>
+</table>
+<h3>Project logs updated</h3>
+<ul>
+<li><code>.pipeline/decisions-log.md</code> records the plan corrections, operational feasibility decisions, and latest review blocker.</li>
+<li><code>.pipeline/activity-log.md</code> records the assessment and review actions.</li>
+<li><code>.pipeline/pipeline-state.json</code> was intentionally left unchanged because it belongs to a separate pipeline work item.</li>
+</ul>
+<h3>Existing work not performed or re-reviewed here</h3>
+<p>Earlier project work already present in the workspace includes text chunking, contextual-query, vector-store, and chat-related code changes. Those were not made or reviewed as part of this handoff. Do not attribute them to this planning/review work; review their own diffs and evidence separately if they are in scope.</p>
+<h2>3. Decisions and approval boundaries</h2>
+<ul>
+<li>The user approved the improvement scope for <strong>detailed design/evaluation preparation only</strong>.</li>
+<li>There is <strong>no authorized evaluation corpus or gold question set</strong> at present. Synthetic fixtures can test evaluator mechanics but cannot establish real retrieval or answer quality.</li>
+<li>Implementation, corpus acquisition or processing, provider calls, package/model downloads, production data access, threshold changes, re-ingestion, deployment, commits, and pushes require separate approval as applicable.</li>
+<li>OCR, scanned-PDF extraction, and diagram understanding remain deferred.</li>
+<li>Core API remains the sole authorization authority. Query variants must preserve the exact Core-provided document/workspace allowlist; Core revalidates sources before persistence/return.</li>
+<li>No real provider, database, Chroma instance, RabbitMQ broker, storage bucket, <code>.env</code>, or production service was contacted. Actual runtime state is unknown.</li>
+</ul>
+<h2>4. Feasibility conclusion and evidence</h2>
+<p><strong>Conclusion: conditionally feasible, but not currently proven empirically or operationally.</strong></p>
+<ul>
+<li>An offline evaluator and deterministic synthetic tests can be prepared, subject to explicit implementation approval. They only establish harness/code-path behavior.</li>
+<li>Follow-up and cross-language improvements cannot be demonstrated until an authorized, labeled corpus and cases exist.</li>
+<li>Reduced refusal rate is not, by itself, a success measure. The evaluation must identify whether a failure is in intent/clarification, retrieval, Evidence Gate, provider generation, citation/output validation, or Core persistence/validation.</li>
+<li>The current AI readiness endpoint checks Chroma client creation and provider configuration; it does not prove embedding weights are available, provider credentials work, the RabbitMQ consumer is running, or indexing succeeds.</li>
+<li>Embedding model loading is lazy. RabbitMQ consumer startup failure is logged while the AI app may continue running. Failed ingestion messages are rejected without requeue; the inspected ingestion queue has no explicit dead-letter arguments, although a DLQ queue is declared elsewhere. Actual broker policy and recovery behavior are unverified.</li>
+<li>Text extraction currently does not provide OCR/diagram understanding. The deferred multimodal requirement will not be met by executing this plan.</li>
+<li>These observations are code/config/runbook findings, not proof that a live environment is broken.</li>
+</ul>
+<p>The feasibility report contains the detailed service flow, expected outcomes, evidence tiers, and caveats: <code>.pipeline/retrieval-optimization/improvement-plan/feasibility-assessment.md</code>.</p>
+<h2>5. Current correction and review status</h2>
+<p>The first review found three issues:</p>
+<ol>
+<li>Proposed tests were outside pytest discovery roots.</li>
+<li>Approval state conflicted across plan files.</li>
+<li>Statistical and human-rating methodology was underspecified.</li>
+</ol>
+<p>The plan first corrected test discovery, approval wording, and the missing statistical/human-rating protocol. A focused re-review then found that the implementation sequence still crossed the approval boundary:</p>
+<blockquote>
+<p><code>file-plan.md</code> step 1 says to “Implement dataset schema and pure metrics using synthetic tests only,” but implementation is not approved. This conflicts with the design/evaluation-preparation-only approval boundary.</p>
+
+</blockquote>
+<p>The subsequent session review expanded this into five findings: approval ordering across multiple artifacts, a duplicate/unwired evaluator design, conflict with source-of-truth evaluation specifications, absence of a post-implementation E2E gate, and weak auditability for Git-ignored artifacts.</p>
+<p>The user authorized corrections. The plan now:</p>
+<ol>
+<li>places explicit evaluator and production implementation approval gates before their respective code changes;</li>
+<li>extends the existing <code>app/evaluation</code> modules and <code>benchmark_suite.py</code> instead of introducing a parallel evaluator;</li>
+<li>synchronizes ADR-023 and <code>docs/specifications/test-plan.md</code> with the cluster-aware 10,000-resample/Krippendorff protocol;</li>
+<li>separates current-stack readiness from post-implementation ingestion-to-answer E2E acceptance; and</li>
+<li>records hashes for the ignored planning artifacts.</li>
+</ol>
+<p><strong>Current status:</strong> <code>PENDING<em>RE</em>REVIEW</code>. The prior <code>CHANGES_REQUIRED</code> verdict remains part of review history, but its findings have been addressed. No implementation, corpus processing, live checks, or delivery action is authorized by these documentation corrections.</p>
+<p>Other relevant evidence:</p>
+<ul>
+<li>AI Service pytest roots are <code>app/tests</code> and <code>app/core/rag/tests</code> in <code>ai-service/pyproject.toml</code>.</li>
+<li>The file plan’s proposed test paths are under <code>app/tests</code>; its collection command should be checked from the <code>ai-service</code> working directory.</li>
+<li>No code tests, live smoke tests, or runtime checks were run in this plan-only work.</li>
+</ul>
+<h2>6. Suggested checklist for the next reviewer</h2>
+<p>Review the corrected artifacts together, rather than approving <code>file-plan.md</code> in isolation:</p>
+<ol>
+<li><strong>Approval ordering:</strong> verify that design-only work stops before evaluator approval and that production changes stop before the later production approval.</li>
+<li><strong>Canonical evaluator:</strong> verify that <code>dataset.py</code> plus the existing metrics/runner/report/storage/benchmark entrypoint form one authoritative path and that the draft/simulated path cannot emit a product-quality report.</li>
+<li><strong>Protocol consistency:</strong> confirm ADR-023, the project test plan, scoped ADR, dataset contract, and report contract use the same cluster/bootstrap/rating rules.</li>
+<li><strong>Sequence/dependency consistency:</strong> confirm data, baseline, development candidates, threshold freeze, holdout, production approval, implementation, and post-implementation E2E are ordered consistently.</li>
+<li><strong>Pytest collection and entrypoint integration:</strong> distinguish path discoverability from actually collecting/running the future tests; require an integration test for the normal benchmark entrypoint.</li>
+<li><strong>Operational claims:</strong> keep current-stack readiness separate from candidate acceptance; require actual embedding load, provider authentication when approved, persistent Chroma, signed Core→AI, source validation, durable completion/replay, frontend completion, and RabbitMQ/storage recovery.</li>
+<li><strong>Queue recovery:</strong> inspect broker topology/policies before concluding whether <code>nack(requeue=False)</code> drops, retries, or dead-letters a message.</li>
+<li><strong>Authorization/privacy and deferred scope:</strong> preserve the exact Core allowlist and source validation; keep OCR/diagram work deferred and raw prompts/chunks/documents out of operational logs.</li>
+</ol>
+<h2>7. Validation performed for this handoff</h2>
+<ul>
+<li>Read the plan, feasibility report, and review record.</li>
+<li>Confirmed the plan’s pytest test paths against the configured discovery roots.</li>
+<li>Confirmed <code>.pipeline/</code> is Git-ignored. This handoff can identify the exact current-workspace artifacts through the hash manifest below, but it is not content-portable by itself; an external reviewer still needs the corresponding artifact files or a tracked snapshot.</li>
+<li>No tests or live services were run. This is a documentation handoff, not evidence of runtime readiness.</li>
+</ul>
+<h2>8. Scoped artifact hash manifest</h2>
+<p>The SHA-256 values below lock the exact corrected artifacts reviewed in this workspace. They must be regenerated whenever any scoped artifact changes.</p>
+<p>&lt;!-- HASH<em>MANIFEST</em>START --&gt;</p>
+<table>
+<thead>
+<tr>
+<th>Artifact</th>
+<th>SHA-256</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.pipeline/retrieval-optimization/improvement-plan/requirements.md</code></td>
+<td><code>1df07128e0d41719c1d16eacd65a66ccb466276b1fb0269f3db026dcee23bd77</code></td>
+</tr>
+<tr>
+<td><code>.pipeline/retrieval-optimization/improvement-plan/task-breakdown.md</code></td>
+<td><code>7cd28c192edb1fd5f92ab6359d3ed85117309b71526c4c32c190708441ff8bc1</code></td>
+</tr>
+<tr>
+<td><code>.pipeline/retrieval-optimization/improvement-plan/file-plan.md</code></td>
+<td><code>672145aa5184c1861514c9ffc61a3d83bff473902fdc3a6e70c46fe9c3e9594b</code></td>
+</tr>
+<tr>
+<td><code>.pipeline/retrieval-optimization/improvement-plan/architecture-decision.md</code></td>
+<td><code>da0c53dba1e549b4e76c887116ab6483ca600a964d0d14fdf5b5d7444a8f40a7</code></td>
+</tr>
+<tr>
+<td><code>.pipeline/retrieval-optimization/improvement-plan/questions.md</code></td>
+<td><code>a8dc16c942034f2006bd29f2bebad3e2780d8a80ed5b2696f938503f3597eaae</code></td>
+</tr>
+<tr>
+<td><code>.pipeline/retrieval-optimization/improvement-plan/review-report.md</code></td>
+<td><code>111d5fe0e6b76f4a8d2d4faf628f1af59e893f8556bd2650023ed412a75fa90e</code></td>
+</tr>
+<tr>
+<td><code>.pipeline/retrieval-optimization/improvement-plan/feasibility-assessment.md</code></td>
+<td><code>46df30fab3bf518b00fdf8ae6d078436f566fc7b5437e34d6a9c86c833e2d26b</code></td>
+</tr>
+<tr>
+<td><code>.pipeline/retrieval-optimization/improvement-plan/correction-summary.md</code></td>
+<td><code>738e3b3ce0541ebc1cbadef5036e71150cb283a910915dab6bb8d977cb5bff54</code></td>
+</tr>
+<tr>
+<td><code>docs/specifications/architecture-decision.md</code></td>
+<td><code>326d2ba4508bbd63c20de944816014dc8cbd64e1d2dc36f80b24a0c6ad6ad6d8</code></td>
+</tr>
+<tr>
+<td><code>docs/specifications/test-plan.md</code></td>
+<td><code>3c2e86b455c2282cc756ae8d38b41984191d5bd49af840b17a74d92ca63d840a</code></td>
+</tr>
+</tbody>
+</table>
+<p>&lt;!-- HASH<em>MANIFEST</em>END --&gt;</p>
+
+  </div>
+</body>
+</html>

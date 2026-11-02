@@ -153,6 +153,12 @@ Decision: evaluator phải dùng corpus/question set cố định, có quyền s
 
 Reason: paraphrase song ngữ, biến thể nhiều lượt và case cùng tài liệu không độc lập; bootstrap theo từng case sẽ đánh giá thấp độ bất định. Protocol cũ 1.000 bootstrap/Cohen kappa/fixed 120 cases không còn phù hợp khi chưa có gold dataset và khi tỷ lệ double-rating có thể nhỏ hơn 100%. Thay đổi này chỉ cập nhật hợp đồng thiết kế; triển khai evaluator, xử lý corpus và chạy provider vẫn cần phê duyệt riêng.
 
+## ADR-024 — Gemini primary với Hive fallback có giới hạn
+
+Decision: supersede thứ tự provider của ADR-011/ADR-022 cho route mới. CHAT và COMPACTION gọi Gemini primary, Gemini secondary nếu cấu hình, rồi Hive fallback, tối đa ba attempts. Chỉ timeout, HTTP 429/5xx và lỗi mạng đã phân loại được advance. QUERY_PLAN chỉ dùng Gemini rồi trả về câu hỏi gốc khi thất bại; ADMIN_PROMPT và KEY_PROBE chỉ gọi target admin chọn. Validation retry giữ nguyên provider/key/model vừa thành công. Ollama không thuộc route mới; chế độ legacy vẫn được hỗ trợ khi provider fallback bị tắt rõ ràng.
+
+Reason: Gemini giữ vai trò core như thiết kế ban đầu và hai khóa chia tải/failover, trong khi Hive cung cấp khả năng phục hồi có kiểm soát. Typed failover ngăn lỗi xác thực, safety, evidence, citation/schema, policy hoặc cancellation bị che khuất, đồng thời không thay đổi Adaptive RAG và ranh giới authorization của Core.
+
 ## Consequences
 
 - Runtime đã được cung cấp theo version đã khóa; mỗi máy vẫn phải cung cấp evidence độc lập trước `READY — CORE-001`.

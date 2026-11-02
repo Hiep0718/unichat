@@ -32,6 +32,7 @@ UI component ưu tiên interaction unit test và E2E happy path; không đặt m
 - Không skip test; quarantine phải có issue, owner và deadline.
 - Integration DB dùng Testcontainers PostgreSQL; AI adapter dùng ephemeral/fake Chroma phù hợp contract.
 - Provider fake trả fixture JSON; CI chặn outbound network.
+- Đánh giá trực tiếp trên Chroma Cloud là bài staging read-only được gọi riêng, không thuộc CI tự động và bắt buộc dùng document allowlist do Core cấp. Không ghi, sửa hoặc xóa collection Cloud hiện có.
 
 ## 3. Traceability acceptance criteria
 
@@ -146,3 +147,11 @@ Compile, typecheck, lint, unit, integration và E2E đều pass; core logic cove
 - PostgreSQL gate races: shared reservation/START đối đầu exclusive state update, replay trước block, stale version409, same-state no-op, DRAINING counts RUNNING/pending, unknown pending giữ nguyên. Database tests dùng disposable instance, không shared Supabase.
 - ADMIN/web/mobile: gate RBAC, status/transition/audit/maintenance header, model/key selection tách history filter, GENERATION notice, missing usage không hiển thị0, friendly provider failures không evidence escalation.
 - CI chưa có Playwright job; lưu riêng evidence E2E local với mocked network. Real Hive smoke cần approval/credit và fixture được phép, không dùng legacy synthetic research evaluation để kết luận chất lượng.
+
+## 12. Gemini primary / Hive fallback acceptance — ADR-024
+
+- Route unit tests: Gemini primary → Gemini secondary → Hive, tối đa ba attempts; target thành công được pin cho validation retry.
+- Failure matrix: chỉ timeout/429/5xx/network advance; 400/401/403, safety, evidence, citation/schema, policy, config và cancel không fallback.
+- Purpose matrix: CHAT/COMPACTION dùng route; QUERY_PLAN chỉ Gemini rồi deterministic original-query fallback; ADMIN_PROMPT/KEY_PROBE exact target.
+- Registry/readiness/admin tests: primary/fallback metadata nhất quán xuyên AI Service, Core và Web; không provider call thật trong test.
+- RAG regression: retrieval, evidence coverage, citation validation, model attribution, history và compaction giữ nguyên contract.

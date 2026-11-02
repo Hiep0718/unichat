@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PROJECT STATUS REVIEW 2026 10 24</title>
+  <style>
+    
+:root {
+  --bg-color: #0d1117;
+  --text-color: #c9d1d9;
+  --accent-color: #58a6ff;
+  --border-color: #30363d;
+  --code-bg: #161b22;
+  --blockquote-bg: #151b23;
+  --alert-note-bg: rgba(56, 139, 253, 0.15);
+  --alert-note-border: #388bfd;
+  --alert-tip-bg: rgba(63, 185, 80, 0.15);
+  --alert-tip-border: #3fb950;
+  --alert-warning-bg: rgba(210, 153, 34, 0.15);
+  --alert-warning-border: #d29922;
+  --alert-caution-bg: rgba(248, 81, 73, 0.15);
+  --alert-caution-border: #f85149;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text-color);
+  background-color: var(--bg-color);
+  margin: 0;
+  padding: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+.container {
+  width: 100%;
+  max-width: 900px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #f0f6fc;
+  font-weight: 600;
+  line-height: 1.25;
+  margin-top: 24px;
+  margin-bottom: 16px;
+}
+
+h1 { font-size: 2em; padding-bottom: 0.3em; border-bottom: 1px solid var(--border-color); }
+h2 { font-size: 1.5em; padding-bottom: 0.3em; border-bottom: 1px solid var(--border-color); }
+h3 { font-size: 1.25em; }
+
+p, ul, ol {
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+a {
+  color: var(--accent-color);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+  font-size: 85%;
+  background-color: rgba(110, 118, 129, 0.4);
+  padding: 0.2em 0.4em;
+  border-radius: 6px;
+}
+
+pre {
+  background-color: var(--code-bg);
+  padding: 16px;
+  border-radius: 6px;
+  overflow: auto;
+  border: 1px solid var(--border-color);
+}
+
+pre code {
+  background-color: transparent;
+  padding: 0;
+  font-size: 100%;
+  color: #e6edf3;
+  border-radius: 0;
+}
+
+blockquote {
+  margin: 0 0 16px 0;
+  padding: 0 1em;
+  color: #8b949e;
+  border-left: 0.25em solid #30363d;
+  background-color: var(--blockquote-bg);
+  padding: 8px 16px;
+  border-radius: 0 6px 6px 0;
+}
+
+table {
+  border-spacing: 0;
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+table th, table td {
+  padding: 6px 13px;
+  border: 1px solid var(--border-color);
+}
+
+table tr {
+  background-color: var(--bg-color);
+  border-top: 1px solid var(--border-color);
+}
+
+table tr:nth-child(2n) {
+  background-color: #161b22;
+}
+
+table th {
+  font-weight: 600;
+  background-color: #161b22;
+}
+
+hr {
+  height: 0.25em;
+  padding: 0;
+  margin: 24px 0;
+  background-color: var(--border-color);
+  border: 0;
+}
+
+/* Alert styles */
+.alert {
+  padding: 15px;
+  margin-bottom: 20px;
+  border: 1px solid transparent;
+  border-left-width: 5px;
+  border-radius: 4px;
+}
+
+.alert-note {
+  background-color: var(--alert-note-bg);
+  border-color: var(--alert-note-border);
+}
+
+.alert-tip {
+  background-color: var(--alert-tip-bg);
+  border-color: var(--alert-tip-border);
+}
+
+.alert-warning {
+  background-color: var(--alert-warning-bg);
+  border-color: var(--alert-warning-border);
+}
+
+.alert-caution {
+  background-color: var(--alert-caution-bg);
+  border-color: var(--alert-caution-border);
+}
+
+.alert-title {
+  font-weight: bold;
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  color: #fff;
+}
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Báo cáo rà soát hiện trạng dự án UniChat</h1>
+<p><strong>Ngày rà soát:</strong> 24/10/2026  </p>
+<p><strong>Phạm vi:</strong> source hiện tại trong workspace, tài liệu đặc tả, migration, test inventory và quality gates chạy tại máy hiện tại  </p>
+<p><strong>Commit nền:</strong> <code>ff0cf3e4be0f007ee7648db9b4be0873878648e3</code>  </p>
+<p><strong>Nhánh:</strong> <code>feat/plan-v2-auth-chat-admin-security</code> — ahead remote 1 commit  </p>
+<p><strong>Kết luận tổng thể:</strong> <strong>NOT READY cho production; đã có một bản triển khai chức năng rộng, phù hợp để tiếp tục hardening và kiểm thử tích hợp.</strong></p>
+<h2>1. Cách hiểu trạng thái trong báo cáo</h2>
+<table>
+<thead>
+<tr>
+<th>Trạng thái</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>✅ Đã kiểm chứng</td>
+<td>Có source và quality gate phù hợp đã chạy thành công tại lần rà soát này.</td>
+</tr>
+<tr>
+<td>🟡 Đã có code</td>
+<td>Có UI/API/service nhưng chưa có bằng chứng end-to-end hoặc gate của toàn chuỗi chưa qua.</td>
+</tr>
+<tr>
+<td>🟠 Hoàn thành một phần</td>
+<td>Luồng chính đã có nhưng còn nhánh nghiệp vụ, test, tích hợp hoặc vận hành chưa hoàn tất.</td>
+</tr>
+<tr>
+<td>🔴 Chưa sẵn sàng</td>
+<td>Có blocker về correctness, security, test hoặc môi trường vận hành.</td>
+</tr>
+<tr>
+<td>⚪ Thiết kế/deferred</td>
+<td>Mới có đặc tả/kế hoạch hoặc đã chủ động hoãn.</td>
+</tr>
+</tbody>
+</table>
+<p>“Có endpoint/màn hình” không được coi là “đã hoàn thành” nếu chưa có bằng chứng chạy xuyên suốt qua các dependency thật.</p>
+<h2>2. Tóm tắt điều hành</h2>
+<p>UniChat hiện là monorepo gồm Web React, Mobile Expo/React Native, Core API Spring Boot và AI Service FastAPI. Source đã bao phủ hầu hết nghiệp vụ chính của một AI Knowledge Platform: xác thực, workspace, tài liệu, Adaptive RAG, cộng đồng học tập, nhắn tin trực tiếp, quản trị và đánh giá AI.</p>
+<p>Điểm mạnh hiện tại:</p>
+<ul>
+<li>Core API có phạm vi nghiệp vụ rộng; <code>mvn verify</code> đã build thành công và chạy <strong>331/331 test</strong>.</li>
+<li>Web vượt qua lint, TypeScript typecheck và production build.</li>
+<li>Mobile vượt qua lint, typecheck và <strong>94/94 test</strong>.</li>
+<li>Kiến trúc quyền đúng định hướng: Core API giữ authorization; AI Service nhận allowlist tài liệu.</li>
+<li>RAG đã có intent detection, evidence gate, citation/provenance, streaming, operation persistence và provider controls.</li>
+</ul>
+<p>Các lý do chưa thể công nhận hoàn thành/production-ready:</p>
+<ol>
+<li>Trạng thái tài liệu mâu thuẫn: README ghi <code>READY</code>, trong khi CHANGELOG và master data ghi <code>NOT READY</code>.</li>
+<li><code>SEC-DEBT-001</code> về Chroma vẫn mở và tài liệu chính thức ghi chặn Chroma-backed deployment.</li>
+<li>AI Service fail Ruff với <strong>63 lỗi</strong>; full pytest không hoàn tất vì treo tại TestClient sau 17 test pass.</li>
+<li>Frontend có <strong>216/218 test pass</strong>, còn 2 test fail.</li>
+<li>Bốn PostgreSQL integration test <code>*IT</code> không được Maven Surefire/Failsafe chạy trong <code>mvn verify</code>.</li>
+<li>E2E web chỉ có 5 spec, chưa bao phủ phần lớn critical user flow.</li>
+<li>Working tree có <strong>63 file thay đổi/untracked</strong>; kết quả đang rà soát chưa phải một baseline sạch, tái lập được.</li>
+</ol>
+<h2>3. Ma trận chức năng hiện tại</h2>
+<table>
+<thead>
+<tr>
+<th>Nhóm chức năng</th>
+<th>Những gì đã có trong source</th>
+<th>Bằng chứng hiện tại</th>
+<th>Đánh giá</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Xác thực và phiên</td>
+<td>CSRF, đăng ký, đăng nhập, refresh rotation, đăng xuất, quên/đặt lại mật khẩu, JWT RS256</td>
+<td>Core auth tests pass; có Web và Mobile UI</td>
+<td>🟡 Đã có code; thiếu E2E auth thực</td>
+</tr>
+<tr>
+<td>Tài khoản cá nhân</td>
+<td>Xem/sửa hồ sơ, display name, avatar, đổi mật khẩu</td>
+<td>Core tests pass; Web/Mobile screen có sẵn</td>
+<td>🟡 Chưa có E2E đầy đủ</td>
+</tr>
+<tr>
+<td>Workspace</td>
+<td>Tạo, xem, sửa, explore, join, privacy/visibility, cover, thống kê</td>
+<td>Core tests pass; Web/Mobile UI có sẵn</td>
+<td>🟠 Delete mới chuyển <code>DELETING</code>, chưa có full delete saga</td>
+</tr>
+<tr>
+<td>Thành viên và vai trò</td>
+<td>Danh sách, thêm/mời, đổi vai trò, xóa thành viên, kiểm tra quyền</td>
+<td>Core member/security tests pass</td>
+<td>🟡 Thiếu DB/live E2E</td>
+</tr>
+<tr>
+<td>Quản lý tài liệu</td>
+<td>Upload, danh sách, chi tiết, download, trạng thái job, xóa</td>
+<td>Web + Core đã có; storage adapters có test</td>
+<td>🟠 Chưa chứng minh full upload→queue→index→retrieval</td>
+</tr>
+<tr>
+<td>Đóng góp/phê duyệt tài liệu</td>
+<td>Pending list/count, approve, reject, contribution context</td>
+<td>Web + Core endpoint đã có</td>
+<td>🟡 Thiếu E2E và DB integration gate</td>
+</tr>
+<tr>
+<td>Chat AI/RAG</td>
+<td>Hội thoại, lịch sử, hỏi đáp, SSE stream, poll/cancel, idempotency, retry/failure mapping</td>
+<td>Core chat tests pass; Web/Mobile client có test</td>
+<td>🟠 AI gate chưa sạch; chưa có live RAG smoke</td>
+</tr>
+<tr>
+<td>Adaptive Retrieval</td>
+<td>Intent, query theo ngữ cảnh, E5 embedding, allowlist, evidence gate, citation validation</td>
+<td>Nhiều unit test/source; thay đổi retrieval còn dirty</td>
+<td>🔴 Chưa chứng minh với Chroma/provider thật</td>
+</tr>
+<tr>
+<td>Trích dẫn và provenance</td>
+<td>Locator, citation drawer/sheet, kiểm tra source version/quyền</td>
+<td>Core + client source/test đã có</td>
+<td>🟠 Chưa có ingestion→citation E2E</td>
+</tr>
+<tr>
+<td>Cộng đồng/MXH học tập</td>
+<td>Feed, post/discussion CRUD, reply, accepted answer, reaction, bookmark, mention, notification, read/pin</td>
+<td>Core services và Web UI đã có</td>
+<td>🟡 Phạm vi source rộng nhưng gần như chưa có E2E</td>
+</tr>
+<tr>
+<td>Tệp đính kèm và AI reply cộng đồng</td>
+<td>Attachment, summary, compose suggestion, gọi AI trong discussion</td>
+<td>Core/Web đã có test mức module</td>
+<td>🟠 Phụ thuộc AI/ingestion chưa được chứng minh xuyên suốt</td>
+</tr>
+<tr>
+<td>Tìm kiếm cộng đồng</td>
+<td>Unified search và UI kết quả</td>
+<td>Core service test + Web UI</td>
+<td>🟡 Chưa có E2E/search relevance evidence</td>
+</tr>
+<tr>
+<td>Work Chat 1-1</td>
+<td>Contact directory, tạo hội thoại, gửi/đọc tin, presence, WebSocket/STOMP</td>
+<td>Core tests pass; Web UI tests tồn tại</td>
+<td>🟡 Chưa có realtime E2E nhiều client</td>
+</tr>
+<tr>
+<td>Lịch sử hội thoại</td>
+<td>List, pagination, detail, delete, studio notes</td>
+<td>Core/Web/Mobile source có sẵn</td>
+<td>🟡 Client tests có nhưng thiếu live persistence E2E</td>
+</tr>
+<tr>
+<td>Admin người dùng</td>
+<td>List/filter, khóa/mở, đổi role, self-protection</td>
+<td>Core tests pass; Web admin UI</td>
+<td>🟡 Chưa có E2E RBAC</td>
+</tr>
+<tr>
+<td>Admin workspace/tài liệu</td>
+<td>List, visibility, delete workspace, retry document</td>
+<td>Core/Web đã có</td>
+<td>🟠 Delete saga và retry integration chưa hoàn tất</td>
+</tr>
+<tr>
+<td>Audit và metrics</td>
+<td>Audit events, system metrics, AI metrics</td>
+<td>Endpoint/UI có sẵn</td>
+<td>🟡 Chưa chứng minh retention/ops trên deployment thật</td>
+</tr>
+<tr>
+<td>AI Studio</td>
+<td>Verify key, quick prompt, admission state/control</td>
+<td>Core tests pass; Web có UI</td>
+<td>🟠 Một frontend test của admission control đang fail</td>
+</tr>
+<tr>
+<td>Evaluation</td>
+<td>Tạo dataset, run, result, report, UI evaluation</td>
+<td>API/module có sẵn</td>
+<td>🔴 Dataset 120 case là draft động; answer đánh giá còn mô phỏng, chưa phải gold benchmark</td>
+</tr>
+<tr>
+<td>Health/readiness</td>
+<td>Core health; AI live/ready</td>
+<td>Endpoint có sẵn</td>
+<td>🟠 AI ready chưa kiểm tra provider auth, model weights, RabbitMQ consumer và indexing E2E</td>
+</tr>
+</tbody>
+</table>
+<h2>4. Chi tiết theo ứng dụng</h2>
+<h3>4.1 Web Frontend</h3>
+<p>Web có khoảng <strong>36 route declaration</strong> cho landing, auth, feed/post, chat, workspace, documents, members, settings, evaluation, profile/account, work chat và admin.</p>
+<p>Kết quả kiểm chứng:</p>
+<ul>
+<li>✅ ESLint pass.</li>
+<li>✅ TypeScript typecheck pass.</li>
+<li>✅ Production build pass; Vite cảnh báo một số chunk lớn hơn 500 kB.</li>
+<li>🟠 Unit/component test: <strong>216 pass, 2 fail, tổng 218</strong>.</li>
+<li>Landing test bị kẹt ở loading screen, không thấy heading mong đợi.</li>
+<li>AI admission control không render nút “Chuyển sang VERIFYING” như test mong đợi.</li>
+<li>🔴 Coverage report không được tạo vì suite fail.</li>
+<li>🟠 Chỉ có 5 Playwright spec: homepage, loading, style tin nhắn, Hive flow và workspace AI policy.</li>
+</ul>
+<p>Các critical flow chưa có E2E rõ ràng: register/login/reset password, workspace CRUD/member, document upload/approval/delete, community posting/reply/notification, direct messaging, admin CRUD/RBAC và evaluation.</p>
+<h3>4.2 Core API</h3>
+<p>Core có <strong>24 controller</strong> và khoảng <strong>103 HTTP mapping annotation</strong>. Các module lớn gồm auth, user, workspace, document, chat, community, work chat, admin, audit, health và private service security.</p>
+<p>Kết quả kiểm chứng:</p>
+<ul>
+<li>✅ <code>mvn verify</code> build JAR thành công.</li>
+<li>✅ <strong>331 test pass, 0 fail, 0 error</strong>.</li>
+<li>🟠 JaCoCo line coverage khoảng <strong>55.0%</strong> và branch coverage khoảng <strong>46.0%</strong>, thấp hơn chuẩn 80% cho core business logic.</li>
+<li>🔴 Bốn PostgreSQL integration test có hậu tố <code>*IT</code> không được chạy; POM không cấu hình Maven Failsafe. Vì vậy kết quả 331 test chưa chứng minh migration/repository trên PostgreSQL thật.</li>
+<li>🟠 Migration có V38 và V46 cùng phục hồi <code>direct<em>messages.read</em>at</code>; V46 đang untracked và tên cho biết “after V45” trong khi repository không có V41–V45. Cần xác minh lịch sử Flyway trên database mục tiêu trước khi merge/deploy.</li>
+<li>🟠 Xóa workspace mới đánh dấu <code>DELETING</code>; source còn TODO cho full delete saga.</li>
+</ul>
+<h3>4.3 AI Service</h3>
+<p>AI Service có <strong>16 route decorator</strong> cho health, retrieval/stream, metrics, key verification, quick prompt, evaluation và vector/storage status.</p>
+<p>Năng lực đã có trong source:</p>
+<ul>
+<li>Extraction PDF/DOCX/TXT, chunking, embedding và Chroma adapter.</li>
+<li>Contextual query, conversation memory, intent detection, adaptive retrieval và evidence gate.</li>
+<li>Gemini/Hive/Ollama-oriented provider abstraction, generation controls và failure taxonomy.</li>
+<li>Citation validation, retrieval trace, metrics/evaluation storage và RabbitMQ ingestion consumer/publisher.</li>
+</ul>
+<p>Kết quả kiểm chứng:</p>
+<ul>
+<li>✅ mypy strict pass trên <strong>102 source files</strong>.</li>
+<li>🔴 Ruff fail với <strong>63 lỗi</strong>: import order/position, line length, unused import, exception chaining, silent continue và các rule khác.</li>
+<li>🔴 Pytest thu thập <strong>351 test</strong> nhưng full suite không hoàn tất. Sau 17 test pass, suite treo tại request TestClient không xác thực; đã tái hiện khi đổi thư mục tạm vào workspace.</li>
+<li>🔴 Không có coverage đáng tin cậy cho lần rà soát này.</li>
+<li>🔴 <code>SEC-DEBT-001</code> và compatibility Chroma client/server vẫn chưa được đóng.</li>
+<li>🟠 Chưa có OCR/diagram extraction; retrieval hiện chủ yếu dựa vào text extraction.</li>
+</ul>
+<h3>4.4 Mobile</h3>
+<p>Mobile đã có screen cho login/register/forgot password, đổi mật khẩu, tài khoản, feed, workspace mine/explore/detail, documents, danh sách hội thoại và AI chat.</p>
+<p>Kết quả kiểm chứng:</p>
+<ul>
+<li>✅ ESLint pass.</li>
+<li>✅ TypeScript typecheck pass.</li>
+<li>✅ <strong>25/25 suite, 94/94 test pass</strong> sau khi đặt Jest cache trong workspace.</li>
+<li>🟠 Chưa chạy Expo native build/device smoke.</li>
+<li>🟠 Chưa ngang feature parity với Web: không thấy admin, quản trị member/settings đầy đủ, post detail/create đầy đủ hoặc Work Chat 1-1 chuyên biệt.</li>
+</ul>
+<h2>5. Hạ tầng, dữ liệu và bảo mật</h2>
+<ul>
+<li>Kiến trúc private-network cho AI Service, PostgreSQL, ChromaDB, RabbitMQ và Ollama đã được mô tả đúng hướng.</li>
+<li>Core API giữ authorization và chuyển <code>allowedDocumentIds</code> sang AI Service; đây là boundary phù hợp.</li>
+<li>Test hiện tại chủ yếu là unit/module/mocked integration; chưa có bằng chứng live stack cho PostgreSQL + RabbitMQ + storage + Chroma + embedding + provider.</li>
+<li>AI <code>/health/ready</code> chưa đủ để kết luận hệ thống phục vụ RAG được: chưa xác thực provider, tải model, trạng thái consumer và dữ liệu collection mục tiêu.</li>
+<li>Chroma critical debt còn mở; vì vậy không nên public/deploy luồng Chroma-backed.</li>
+<li>Runtime documentation ghi Java 21, trong khi Core POM đặt <code>java.version=17</code>; cần thống nhất toolchain được hỗ trợ.</li>
+</ul>
+<h2>6. Độ đầy đủ của kiểm thử</h2>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Inventory</th>
+<th>Kết quả hiện tại</th>
+<th>Khoảng trống chính</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>---</td>
+<td>---:</td>
+<td>---</td>
+<td>---</td>
+</tr>
+<tr>
+<td>Frontend unit/component</td>
+<td>36 file</td>
+<td>216/218 test pass</td>
+<td>2 test fail; chưa có coverage</td>
+</tr>
+<tr>
+<td>Frontend E2E</td>
+<td>5 spec</td>
+<td>Không chạy trong review này</td>
+<td>Phủ rất ít critical flow</td>
+</tr>
+<tr>
+<td>Mobile</td>
+<td>25 file</td>
+<td>94/94 pass</td>
+<td>Chưa native device/build smoke</td>
+</tr>
+<tr>
+<td>Core unit/module</td>
+<td>57 <code>*Test.java</code></td>
+<td>331/331 pass</td>
+<td>Coverage line 55%, branch 46%</td>
+</tr>
+<tr>
+<td>Core PostgreSQL integration</td>
+<td>4 <code>*IT.java</code></td>
+<td>Không được Maven chạy</td>
+<td>Thiếu Failsafe/gate DB</td>
+</tr>
+<tr>
+<td>AI</td>
+<td>37 file, 351 test collected</td>
+<td>17 pass rồi treo; không có verdict toàn suite</td>
+<td>Ruff fail, TestClient hang, không có coverage</td>
+</tr>
+<tr>
+<td>Live system</td>
+<td>Chưa có gate tái lập</td>
+<td>Chưa kiểm chứng</td>
+<td>Auth→upload→ingest→RAG→citation; realtime; admin; recovery</td>
+</tr>
+</tbody>
+</table>
+<h2>7. Những gì có thể coi là đã hoàn thành</h2>
+<p>Chỉ nên công nhận “đã hoàn thành ở mức module” cho:</p>
+<ol>
+<li>Core API build và bộ 331 unit/module test hiện được Surefire nhận diện.</li>
+<li>Mobile lint, typecheck và 94 test hiện có.</li>
+<li>Web lint, typecheck và production build.</li>
+<li>Kiến trúc route/controller và phần lớn UI/API của auth, workspace, community, work chat và admin.</li>
+</ol>
+<p>Không nên công nhận “đã hoàn thành end-to-end” cho bất kỳ chuỗi nghiệp vụ phụ thuộc database/service ngoài nào tại thời điểm này, vì bằng chứng live/integration còn thiếu.</p>
+<h2>8. Công việc còn lại theo ưu tiên</h2>
+<h3>P0 — Chặn công nhận READY</h3>
+<ol>
+<li>Chọn một canonical status và đồng bộ README, CHANGELOG, master data; với bằng chứng hiện tại phải là <code>NOT READY</code>.</li>
+<li>Sửa 63 lỗi Ruff và nguyên nhân AI pytest treo; chạy đủ 351 test và coverage ≥80% cho core logic.</li>
+<li>Đóng/remediate <code>SEC-DEBT-001</code>; chứng minh compatibility và security của Chroma client/server.</li>
+<li>Cấu hình Failsafe hoặc gate tương đương để chạy 4 PostgreSQL <code>*IT</code>; xác minh toàn bộ Flyway chain trên fresh DB và upgrade DB.</li>
+<li>Sửa 2 frontend test fail, tạo coverage report và đạt policy phù hợp.</li>
+<li>Tạo live smoke cô lập: auth → workspace → upload → RabbitMQ → extraction/chunk/embed → Chroma → chat → citation → persistence/replay.</li>
+</ol>
+<h3>P1 — Hoàn thiện sản phẩm</h3>
+<ol>
+<li>Hoàn tất workspace delete saga và document retry/recovery.</li>
+<li>Bổ sung E2E cho auth, workspace/member, documents, community, Work Chat, admin và evaluation.</li>
+<li>Thay draft/simulated evaluation bằng gold dataset được duyệt, grading protocol và paired baseline/adaptive report tái lập.</li>
+<li>Kiểm thử WebSocket presence/read receipt với nhiều client và reconnect.</li>
+<li>Hoàn tất mobile feature parity theo phạm vi sản phẩm đã chốt và chạy native build/device smoke.</li>
+</ol>
+<h3>P2 — Chất lượng và hiệu năng</h3>
+<ol>
+<li>Giảm các bundle/chunk Web lớn hơn 500 kB bằng code splitting có đo lường.</li>
+<li>Bổ sung OCR/diagram/table extraction nếu thesis/product scope yêu cầu multimodal retrieval.</li>
+<li>Nâng coverage Core từ 55% line/46% branch lên chuẩn đã công bố.</li>
+<li>Đồng bộ Java 17/21, tài liệu runtime, pipeline state và runbook.</li>
+</ol>
+<h2>9. Kết luận cuối</h2>
+<p>Project <strong>không còn ở giai đoạn prototype đơn giản</strong>: phạm vi source đã đủ lớn để thể hiện rõ một AI Knowledge Platform có yếu tố mạng xã hội học tập. Tuy nhiên, “nhiều chức năng đã có code” chưa đồng nghĩa với “đã hoàn thành”. Baseline hiện tại phù hợp nhất với mô tả:</p>
+<blockquote>
+<p><strong>Feature-rich implementation, module-level verification tốt ở Core/Mobile, nhưng integration/AI/security/readiness chưa đạt để release.</strong></p>
+
+</blockquote>
+<p>Trạng thái khuyến nghị: <strong>NOT READY — tiếp tục hardening theo P0 trước khi demo bằng dependency thật hoặc triển khai.</strong></p>
+<h2>10. Metadata thực thi review</h2>
+<table>
+<thead>
+<tr>
+<th>Thuộc tính</th>
+<th>Giá trị</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Execution mode</td>
+<td>in-process</td>
+</tr>
+<tr>
+<td>Sub-agent available</td>
+<td>yes</td>
+</tr>
+<tr>
+<td>Sub-agent used</td>
+<td>no</td>
+</tr>
+<tr>
+<td>Fallback reason</td>
+<td>Chính sách phiên hiện tại không cho phép tự spawn khi người dùng chưa yêu cầu delegation</td>
+</tr>
+<tr>
+<td>Tool discovery</td>
+<td>pre-exposed</td>
+</tr>
+<tr>
+<td>Source mutation</td>
+<td>Không sửa source; chỉ tạo báo cáo</td>
+</tr>
+<tr>
+<td>Commit/push/deploy</td>
+<td>Không thực hiện</td>
+</tr>
+</tbody>
+</table>
+
+  </div>
+</body>
+</html>
