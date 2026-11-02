@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 
 import { Icon } from '../../../components/icon';
 import { authApi } from '../api/auth-api';
+import { RETURN_PARAM, safeReturnTo, withReturnTo } from '../return-to';
 import type { ApiError } from '../../../lib/api-client';
 import './login-form.css';
 
@@ -14,11 +15,13 @@ export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const returnTo = searchParams.get(RETURN_PARAM);
 
   const loginMutation = useMutation({
     mutationFn: authApi.login,
     onSuccess: () => {
-      navigate('/workspaces');
+      navigate(safeReturnTo(returnTo));
     },
     onError: (error: ApiError) => {
       setErrorMsg(error.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
@@ -38,9 +41,9 @@ export function LoginForm() {
   return (
     <div className="login-card">
       <div className="login-card__header">
-        <h2 className="login-card__title">Đăng nhập vào UniChat</h2>
+        <h2 className="login-card__title">Chào mừng trở lại</h2>
         <p className="login-card__subtitle">
-          Truy cập không gian làm việc RAG của bạn
+          Đăng nhập để tiếp tục vào không gian học tập của bạn.
         </p>
       </div>
 
@@ -102,13 +105,17 @@ export function LoginForm() {
           </label>
         </div>
 
-        <button 
-          className="login-form__submit" 
+        <button
+          className="login-form__submit"
           type="submit"
           disabled={loginMutation.isPending}
         >
-          {loginMutation.isPending ? 'Đang xử lý...' : 'Đăng nhập'}
-          {!loginMutation.isPending && <Icon name="arrow_forward" size={18} />}
+          {loginMutation.isPending ? 'Đang xử lý...' : (
+            <>
+              Đăng nhập
+              <Icon name="arrow_forward" size={18} rounded />
+            </>
+          )}
         </button>
 
 
@@ -117,7 +124,7 @@ export function LoginForm() {
       <div className="login-card__footer">
         <p>
           Chưa có tài khoản?{' '}
-          <Link to="/register" className="login-card__link">Đăng ký</Link>
+          <Link to={withReturnTo('/register', returnTo)} className="login-card__link">Đăng ký</Link>
         </p>
       </div>
     </div>

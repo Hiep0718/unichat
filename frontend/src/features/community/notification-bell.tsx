@@ -141,7 +141,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ onOpenChange
         aria-expanded={open}
       >
         <span className="side-nav__icon-wrap">
-          <Icon name="notifications" size={20} />
+          <Icon name="notifications" size={20} rounded />
           {unreadCount > 0 && (
             <span className="notification-bell__badge">
               {unreadCount > 9 ? '9+' : unreadCount}

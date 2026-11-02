@@ -48,8 +48,8 @@
 }
 
 .overview-tab__stat-icon--members {
-  color: #065f46;
-  background: #ecfdf5;
+  color: var(--ws-ok-ink);
+  background: var(--nen);
 }
 
 .overview-tab__stat-icon--conversations {
@@ -141,7 +141,7 @@
 
 .overview-tab__description-empty {
   font-style: italic;
-  color: var(--color-outline);
+  color: var(--muc-nhat);
 }
 
 /* ─── Visibility badge ───────────────────────────────────── */
@@ -162,13 +162,13 @@
 }
 
 .overview-tab__visibility--shared {
-  color: #1e40af;
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
+  color: var(--muc);
+  background: var(--nen);
+  border: 1px solid var(--muc);
 }
 
 .overview-tab__visibility--public {
-  color: #065f46;
-  background: #ecfdf5;
-  border: 1px solid #a7f3d0;
+  color: var(--ws-ok-ink);
+  background: var(--nen);
+  border: 1px solid var(--ws-ok-bg);
 }

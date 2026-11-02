@@ -8,7 +8,7 @@ jest.mock('../../../src/lib/api-client', () => ({
 describe('workspaceApi', () => {
   const mockFetchJson = apiClient.fetchJson as jest.MockedFunction<typeof apiClient.fetchJson>;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     jest.clearAllMocks();
   });
 

@@ -18,10 +18,9 @@
   justify-content: space-between;
   gap: 24px;
   padding: 32px 36px;
-  background: linear-gradient(135deg, #0b192c 0%, #1e293b 100%);
+  background: var(--muc);
   border-radius: var(--radius-2xl, 20px);
-  color: #ffffff;
-  box-shadow: 0 12px 32px -8px rgba(11, 25, 44, 0.35);
+  color: var(--nen);
   overflow: hidden;
 }
 
@@ -48,12 +47,11 @@
   width: 60px;
   height: 60px;
   border-radius: var(--radius-xl, 16px);
-  background: linear-gradient(135deg, #00687a 0%, #0284c7 100%);
-  color: #ffffff;
+  background: var(--muc);
+  color: var(--nen);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8px 24px rgba(2, 132, 199, 0.3);
   flex-shrink: 0;
 }
 
@@ -74,7 +72,7 @@
   font: var(--font-headline-lg);
   font-size: 26px;
   font-weight: 800;
-  color: #ffffff;
+  color: var(--nen);
   margin: 0;
   letter-spacing: -0.4px;
 }
@@ -92,32 +90,32 @@
 
 .ws-overview-badge--public {
   background: rgba(56, 189, 248, 0.16);
-  color: #38bdf8;
+  color: var(--muc);
   border: 1px solid rgba(56, 189, 248, 0.3);
 }
 
 .ws-overview-badge--shared {
   background: rgba(251, 191, 36, 0.16);
-  color: #fbbf24;
+  color: var(--ws-warn-ink);
   border: 1px solid rgba(251, 191, 36, 0.3);
 }
 
 .ws-overview-badge--private {
   background: rgba(148, 163, 184, 0.16);
-  color: #cbd5e1;
+  color: var(--dieu-khien);
   border: 1px solid rgba(148, 163, 184, 0.3);
 }
 
 .ws-overview-badge--role {
   background: rgba(255, 255, 255, 0.1);
-  color: #f1f5f9;
+  color: var(--color-surface-dim);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: var(--radius-md, 8px);
 }
 
 .ws-overview-hero__desc {
   font-size: 14px;
-  color: #94a3b8;
+  color: var(--muc-mo);
   margin: 0;
   line-height: 1.6;
   max-width: 620px;
@@ -129,7 +127,7 @@
   gap: 8px;
   padding: 10px 18px;
   background: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
+  color: var(--nen);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: var(--radius-lg, 12px);
   font: var(--font-label-md);
@@ -159,18 +157,17 @@
   align-items: center;
   gap: 14px;
   padding: 16px 20px;
-  background: #ffffff;
-  border: 1.5px solid var(--color-outline-variant, #e2e8f0);
+  background: var(--nen);
+  border: 1.5px solid var(--color-outline-variant, var(--ke));
   border-radius: var(--radius-xl, 14px);
-  box-shadow: 0 2px 10px -2px rgba(15, 23, 42, 0.04);
 }
 
 .ws-overview-stat-card__icon-box {
   width: 42px;
   height: 42px;
   border-radius: var(--radius-lg, 12px);
-  background: var(--color-surface-container-low, #f1f5f9);
-  color: var(--color-secondary, #0284c7);
+  background: var(--color-surface-container-low, var(--color-surface-dim));
+  color: var(--color-secondary, var(--muc));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -186,12 +183,12 @@
 .ws-overview-stat-card__value {
   font-size: 14px;
   font-weight: 800;
-  color: var(--color-on-surface, #0f172a);
+  color: var(--color-on-surface, var(--muc));
 }
 
 .ws-overview-stat-card__label {
   font-size: 12px;
-  color: var(--color-on-surface-variant, #64748b);
+  color: var(--color-on-surface-variant, var(--muc-nhat));
 }
 
 /* ── Main Feature Hubs Grid ── */
@@ -216,29 +213,25 @@
 
 /* Primary AI Hub Card */
 .ws-hub-card--primary {
-  background: linear-gradient(135deg, #00687a 0%, #0284c7 100%);
-  color: #ffffff;
-  box-shadow: 0 8px 24px -4px rgba(0, 104, 122, 0.3);
+  background: var(--nhan);
+  color: var(--nhan-muc);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .ws-hub-card--primary:hover {
   transform: translateY(-4px);
-  box-shadow: 0 16px 36px -6px rgba(0, 104, 122, 0.45);
 }
 
 /* Secondary Hub Cards */
 .ws-hub-card--secondary {
-  background: #ffffff;
-  border: 1.5px solid var(--color-outline-variant, #e2e8f0);
-  color: var(--color-on-surface, #0f172a);
-  box-shadow: 0 4px 16px -4px rgba(15, 23, 42, 0.05);
+  background: var(--nen);
+  border: 1.5px solid var(--color-outline-variant, var(--ke));
+  color: var(--color-on-surface, var(--muc));
 }
 
 .ws-hub-card--secondary:hover {
-  border-color: var(--color-secondary, #0284c7);
+  border-color: var(--color-secondary, var(--muc));
   transform: translateY(-4px);
-  box-shadow: 0 12px 28px -4px rgba(2, 132, 199, 0.14);
 }
 
 .ws-hub-card__header {
@@ -259,12 +252,12 @@
 
 .ws-hub-card--primary .ws-hub-card__icon-box {
   background: rgba(255, 255, 255, 0.2);
-  color: #ffffff;
+  color: var(--nen);
 }
 
 .ws-hub-card--secondary .ws-hub-card__icon-box {
-  background: #e0f2fe;
-  color: #0284c7;
+  background: var(--be-mat);
+  color: var(--muc);
 }
 
 .ws-hub-card__title {
@@ -276,11 +269,11 @@
 }
 
 .ws-hub-card--primary .ws-hub-card__title {
-  color: #ffffff;
+  color: var(--nen);
 }
 
 .ws-hub-card--secondary .ws-hub-card__title {
-  color: #0f172a;
+  color: var(--muc);
 }
 
 .ws-hub-card__desc {
@@ -295,7 +288,7 @@
 }
 
 .ws-hub-card--secondary .ws-hub-card__desc {
-  color: #64748b;
+  color: var(--muc-nhat);
 }
 
 .ws-hub-card__footer {
@@ -319,20 +312,19 @@
 }
 
 .ws-hub-card--primary .ws-hub-card__action-text {
-  color: #ffffff;
+  color: var(--nen);
 }
 
 .ws-hub-card--secondary .ws-hub-card__action-text {
-  color: #0284c7;
+  color: var(--muc);
 }
 
 /* ── Security & Policy Section ── */
 .ws-overview-security-card {
-  background: #ffffff;
-  border: 1.5px solid var(--color-outline-variant, #e2e8f0);
+  background: var(--nen);
+  border: 1.5px solid var(--color-outline-variant, var(--ke));
   border-radius: var(--radius-2xl, 18px);
   padding: 28px 32px;
-  box-shadow: 0 4px 16px -4px rgba(15, 23, 42, 0.04);
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -348,8 +340,8 @@
   width: 40px;
   height: 40px;
   border-radius: var(--radius-lg, 12px);
-  background: #f0fdf4;
-  color: #16a34a;
+  background: var(--nen);
+  color: var(--ws-ok-ink);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -358,7 +350,7 @@
 .ws-overview-security-card__title {
   font-size: 16px;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--muc);
   margin: 0;
 }
 
@@ -373,13 +365,13 @@
   align-items: flex-start;
   gap: 10px;
   padding: 14px 16px;
-  background: var(--color-surface-container-low, #f8fafc);
-  border: 1px solid var(--color-outline-variant, #e2e8f0);
+  background: var(--color-surface-container-low, var(--nen));
+  border: 1px solid var(--color-outline-variant, var(--ke));
   border-radius: var(--radius-lg, 12px);
 }
 
 .ws-security-item__icon {
-  color: #16a34a;
+  color: var(--ws-ok-ink);
   font-size: 20px;
   flex-shrink: 0;
   margin-top: 1px;
@@ -387,7 +379,7 @@
 
 .ws-security-item__text {
   font-size: 13px;
-  color: #334155;
+  color: var(--muc-nhat);
   line-height: 1.5;
   margin: 0;
 }

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { TopicPicker } from '../workspaces/components/topic-picker';
 import { settingsErrorMessage, useSettingsSave } from './use-settings-save';
 
 import type { FormEvent } from 'react';
@@ -12,11 +13,12 @@ export function GeneralForm({ workspace, canEdit }: {
 }) {
   const [name, setName] = useState(workspace.name);
   const [description, setDescription] = useState(workspace.description);
+  const [topics, setTopics] = useState<readonly string[]>(workspace.topics);
   const mutation = useSettingsSave(workspace.id);
   const handleSave = (event: FormEvent) => {
     event.preventDefault();
     if (!canEdit || mutation.isPending) return;
-    mutation.mutate({ name, description, expectedVersion: workspace.version });
+    mutation.mutate({ name, description, topics: [...topics], expectedVersion: workspace.version });
   };
 
   return (
@@ -33,6 +35,10 @@ export function GeneralForm({ workspace, canEdit }: {
             onChange={(event) => setDescription(event.target.value)} disabled={!canEdit || mutation.isPending}
             maxLength={1000} rows={3} />
         </label>
+        <div className="settings-form__field">
+          <span>Chủ đề</span>
+          <TopicPicker value={topics} onChange={setTopics} disabled={!canEdit || mutation.isPending} />
+        </div>
         {mutation.isError && <p className="settings-form__error" role="alert">{settingsErrorMessage(mutation.error)}</p>}
         {mutation.isSuccess && <p className="settings-form__success" role="status">Cập nhật thông tin thành công.</p>}
         {canEdit && <button className="settings-form__save-btn" type="submit" disabled={mutation.isPending}>

@@ -1,16 +1,10 @@
 import { useState } from 'react';
 
+import { VISIBILITY_OPTIONS } from '../workspaces/workspace-visibility';
 import { settingsErrorMessage, useSettingsSave } from './use-settings-save';
 
 import type { FormEvent } from 'react';
-import type { WorkspaceVisibility } from '../workspaces/workspace-schema';
 import type { SettingsWorkspace } from './use-settings-save';
-
-const VISIBILITY_OPTIONS: readonly { value: WorkspaceVisibility; title: string; description: string }[] = [
-  { value: 'PRIVATE', title: 'Riêng tư', description: 'Chỉ thành viên được mời mới truy cập được' },
-  { value: 'SHARED', title: 'Chia sẻ', description: 'Thành viên được mời có thể truy cập qua link' },
-  { value: 'PUBLIC', title: 'Công khai', description: 'Bất kỳ ai đăng nhập đều có thể xem' },
-];
 
 /** Lets the owner save workspace visibility with optimistic locking. */
 export function AccessForm({ workspace }: { readonly workspace: SettingsWorkspace }) {
@@ -33,7 +27,7 @@ export function AccessForm({ workspace }: { readonly workspace: SettingsWorkspac
                 value={option.value} checked={visibility === option.value} disabled={mutation.isPending}
                 onChange={() => setVisibility(option.value)} />
               <span className="settings-form__radio-info">
-                <span className="settings-form__radio-title">{option.title}</span>
+                <span className="settings-form__radio-title">{option.label}</span>
                 <span className="settings-form__radio-desc">{option.description}</span>
               </span>
             </label>

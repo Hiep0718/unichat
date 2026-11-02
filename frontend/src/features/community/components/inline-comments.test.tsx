@@ -1,8 +1,10 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { FeedCard } from './feed-card';
 import * as communityApi from '../community-api';
+import * as authContext from '../../auth/auth-context';
+import * as feedApi from '../feed-api';
 
 import type { ReactionSummary, ReplyResponse } from '../community-api';
 import type { FeedPostResponse } from '../feed-api';
@@ -13,6 +15,15 @@ const noReactions: ReactionSummary = { counts: {}, total: 0, myReaction: null };
 // Vitest `globals` is disabled project-wide, so RTL auto-cleanup is not installed.
 afterEach(cleanup);
 afterEach(() => vi.restoreAllMocks());
+
+/** Signed in as someone who is not the post's author, unless a test says so. */
+function signedInAs(userId: string) {
+  vi.spyOn(authContext, 'useAuth').mockReturnValue({
+    user: { id: userId },
+  } as ReturnType<typeof authContext.useAuth>);
+}
+
+beforeEach(() => signedInAs('someone-else'));
 
 const post: FeedPostResponse = {
   id: 'p1',
@@ -28,7 +39,7 @@ const post: FeedPostResponse = {
   replyCount: 1,
   reactions: noReactions,
   backgroundKey: null,
-  hasAcceptedAnswer: false,
+  acceptedReplyId: null,
   isBookmarked: false,
   createdAt: new Date().toISOString(),
   attachments: [],
@@ -204,5 +215,81 @@ describe('FeedCard inside a group', () => {
 
     // Assert
     expect(screen.getByText('Đã ghim')).toBeInTheDocument();
+  });
+});
+
+describe('accepting an answer from the feed', () => {
+  it('should offer the control to the asker without leaving the feed', async () => {
+    // Arrange: the button used to exist only on the post's own page, so the
+    // asker had to navigate away from the answer they were reading.
+    signedInAs(post.authorId);
+    vi.spyOn(communityApi, 'fetchReplies').mockResolvedValue([reply]);
+    renderCard();
+
+    // Act
+    fireEvent.click(screen.getByText(/1 bình luận/));
+
+    // Assert
+    expect(await screen.findByText(/Chấp nhận/)).toBeInTheDocument();
+  });
+
+  it('should not offer it to anyone but the asker', async () => {
+    // Arrange: only the person who asked knows whether it is settled.
+    signedInAs('a-bystander');
+    vi.spyOn(communityApi, 'fetchReplies').mockResolvedValue([reply]);
+    renderCard();
+
+    // Act
+    fireEvent.click(screen.getByText(/1 bình luận/));
+    await screen.findByText('Thử EXPLAIN ANALYZE xem');
+
+    // Assert
+    expect(screen.queryByText(/Chấp nhận/)).not.toBeInTheDocument();
+  });
+
+  it('should take the answer back when the accepted reply is chosen again', async () => {
+    // Arrange: accepting used to be one-way, so a misclick was permanent.
+    signedInAs(post.authorId);
+    vi.spyOn(communityApi, 'fetchReplies').mockResolvedValue([reply]);
+    const clear = vi.spyOn(feedApi, 'clearAcceptedReply').mockResolvedValue();
+    render(
+      <FeedCard
+        post={{ ...post, acceptedReplyId: reply.id }}
+        onOpen={() => {}}
+        onNavigate={() => {}}
+        onBookmark={() => {}}
+      />,
+    );
+
+    // Act
+    fireEvent.click(screen.getByText(/1 bình luận/));
+    fireEvent.click(await screen.findByText(/Bỏ chấp nhận/));
+
+    // Assert
+    await waitFor(() =>
+      expect(clear).toHaveBeenCalledWith(post.workspaceId, post.id));
+  });
+
+  it('should move the question back to unresolved once taken back', async () => {
+    // Arrange
+    signedInAs(post.authorId);
+    vi.spyOn(communityApi, 'fetchReplies').mockResolvedValue([reply]);
+    vi.spyOn(feedApi, 'clearAcceptedReply').mockResolvedValue();
+    render(
+      <FeedCard
+        post={{ ...post, acceptedReplyId: reply.id, replyCount: 1 }}
+        onOpen={() => {}}
+        onNavigate={() => {}}
+        onBookmark={() => {}}
+      />,
+    );
+    fireEvent.click(screen.getByText(/1 bình luận/));
+
+    // Act
+    fireEvent.click(await screen.findByText(/Bỏ chấp nhận/));
+
+    // Assert: the card's own chip follows, without refetching the feed.
+    await waitFor(() =>
+      expect(screen.getByText('Đang thảo luận')).toBeInTheDocument());
   });
 });

@@ -1,12 +1,13 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { colors, spacing, radii } from '../../../design/tokens';
-import { typography } from '../../../design/typography';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
+
+import { workplace, spacing, radii, animation } from '../../../design/tokens';
+import { shadows } from '../../../design/shadows';
 import { UCIcon } from '../../../components/uc-icon';
-import { UCGlassCard } from '../../../components/uc-glass-card';
+
 import { WorkspaceItem } from '../workspace-types';
-import { groupThemeFor } from '../group-theme';
+import { WorkspaceCover } from './workspace-cover';
 
 interface WorkspaceCardProps {
   workspace: WorkspaceItem;
@@ -16,6 +17,15 @@ interface WorkspaceCardProps {
   onJoin?: (id: string) => void;
 }
 
+/**
+ * A group in the dashboard list.
+ *
+ * The picture fills the head of the card rather than sitting beside it, and
+ * the name, visibility and counts are written over it — the arrangement the
+ * web uses, and the reason the group's picture had to come across with it.
+ * Mobile drew a flat gradient here, so every card looked like every other one
+ * and a member could not find a group by sight.
+ */
 export function WorkspaceCard({
   workspace,
   mode,
@@ -24,244 +34,221 @@ export function WorkspaceCard({
   onJoin,
 }: WorkspaceCardProps) {
   const isExplore = mode === 'explore';
-  const theme = groupThemeFor(workspace.id);
-  const initial = (workspace.name || 'W').trim().charAt(0).toUpperCase();
-
-  const handleCardPress = () => {
-    if (!isExplore && onPress) {
-      onPress(workspace.id);
-    }
-  };
+  const isPublic = workspace.visibility === 'PUBLIC';
 
   return (
-    <TouchableOpacity
-      activeOpacity={isExplore ? 1 : 0.85}
-      onPress={handleCardPress}
-      testID={`workspace-card-${workspace.id}`}
-      style={styles.touchable}
+    <Animated.View
+      entering={FadeInUp.delay(index * animation.staggerDelay).duration(
+        animation.durationMedium,
+      )}
+      style={styles.wrap}
     >
-      <UCGlassCard
-        variant="light"
+      <Pressable
+        onPress={() => (!isExplore ? onPress?.(workspace.id) : undefined)}
+        testID={`workspace-card-${workspace.id}`}
         style={styles.card}
-        entering="slide"
-        enteringIndex={index}
       >
-        {/* Dynamic Cover Banner with Mesh Gradient & Watermark Initial */}
-        <LinearGradient
-          colors={[theme.from, theme.via, theme.to]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.coverBanner}
-        >
-          {/* Subtle watermark letter glyph for authentic depth texture */}
-          <Text style={styles.watermarkGlyph} aria-hidden={true}>
-            {initial}
-          </Text>
+        {/* Ảnh phủ toàn thẻ, không còn là một dải 124px ở trên — cùng cách
+            thẻ trên web làm.
 
-          {/* Frosted Glass Header Badges */}
-          <View style={styles.coverBadgesRow}>
-            <View style={styles.avatarGlassBadge}>
-              <Text style={styles.avatarBadgeText}>{initial}</Text>
-            </View>
+            Dùng 'cover'. Bản trước phải dùng 'contain' vì ảnh bìa khi ấy là
+            3:1 còn thẻ gần vuông, nên 'cover' cắt mất hơn nửa và 'contain'
+            là cách duy nhất thấy trọn bức ảnh — đổi lại hai mép thẻ lộ mảng
+            màu phẳng. Bộ ảnh nay cắt lại ở 16/11, còn thẻ này rộng ~328 cao
+            ~214, tức ~1,5, nên 'cover' vừa lấp kín thẻ vừa giữ được ~95% bức
+            ảnh. Không còn phải đánh đổi giữa hai điều đó. */}
+        <View style={styles.coverFill} pointerEvents="none">
+          <WorkspaceCover
+            workspaceId={workspace.id}
+            name={workspace.name}
+            topics={workspace.topics}
+          />
+        </View>
 
-            <View style={styles.glassVisibilityBadge}>
-              <UCIcon
-                name={workspace.visibility === 'PUBLIC' ? 'public' : 'lock'}
-                size={12}
-                color="#FFFFFF"
-              />
-              <Text style={styles.glassVisibilityText}>
-                {workspace.visibility === 'PUBLIC' ? 'Công khai' : 'Riêng tư'}
+        {/* Lớp tối cho chữ đọc được trên bất kỳ bức ảnh nào. */}
+        <View style={styles.scrim} pointerEvents="none" />
+
+        <View style={styles.cover}>
+          <View style={styles.coverTop}>
+            <View style={styles.visibility}>
+              <UCIcon name={isPublic ? 'public' : 'lock'} size={12} color="#FFFFFF" />
+              <Text style={styles.visibilityText}>
+                {isPublic ? 'Công khai' : 'Riêng tư'}
               </Text>
             </View>
           </View>
-        </LinearGradient>
 
-        {/* Card Body */}
-        <View style={styles.cardBody}>
-          <Text style={styles.cardTitle} numberOfLines={1}>
+          <Text style={styles.coverName} numberOfLines={2}>
             {workspace.name}
           </Text>
-          <Text style={styles.cardDesc} numberOfLines={2}>
+        </View>
+
+        <View style={styles.body}>
+          <Text style={styles.desc} numberOfLines={2}>
             {workspace.description || 'Không gian học tập & nghiên cứu tài liệu.'}
           </Text>
 
-          {/* Footer Metadata & Action Pill */}
-          <View style={styles.cardFooter}>
-            <View style={styles.statsCluster}>
-              <View style={styles.statPill}>
-                <UCIcon name="description" size={13} color={colors.secondary} />
-                <Text style={styles.statPillText}>
+          <View style={styles.footer}>
+            <View style={styles.stats}>
+              <View style={styles.stat}>
+                <UCIcon name="description" size={13} color="rgba(255, 255, 255, 0.76)" />
+                <Text style={styles.statText}>
                   {workspace.documentCount || 0} tài liệu
                 </Text>
               </View>
 
-              <View style={styles.statPill}>
-                <UCIcon name="group" size={13} color={colors.outline} />
-                <Text style={styles.statPillText}>
+              <View style={styles.stat}>
+                <UCIcon name="group" size={13} color="rgba(255, 255, 255, 0.76)" />
+                <Text style={styles.statText}>
                   {workspace.memberCount || 1} thành viên
                 </Text>
               </View>
             </View>
 
             {isExplore ? (
-              <TouchableOpacity
+              <Pressable
                 style={styles.joinBtn}
                 onPress={() => onJoin?.(workspace.id)}
-                activeOpacity={0.8}
                 testID={`join-btn-${workspace.id}`}
               >
                 <Text style={styles.joinBtnText}>Tham gia</Text>
-                <UCIcon name="add" size={15} color="#FFFFFF" />
-              </TouchableOpacity>
+                <UCIcon name="add" size={15} color={workplace.accentInk} />
+              </Pressable>
             ) : (
               <View style={styles.openPill}>
-                <Text style={styles.openPillText}>Vào học</Text>
-                <UCIcon name="arrow-forward" size={13} color={colors.primary} />
+                <Text style={styles.openPillText}>Truy cập</Text>
+                <UCIcon name="arrow-forward" size={13} color={workplace.accent} />
               </View>
             )}
           </View>
         </View>
-      </UCGlassCard>
-    </TouchableOpacity>
+      </Pressable>
+    </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
-  touchable: {
+  wrap: {
     marginBottom: spacing.md,
   },
   card: {
-    borderRadius: radii['2xl'],
+    borderRadius: radii.xl,
     overflow: 'hidden',
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1.2,
-    borderColor: 'rgba(226, 232, 248, 0.9)',
+    backgroundColor: workplace.card,
+    ...shadows.card,
   },
-  coverBanner: {
-    height: 72,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    justifyContent: 'space-between',
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  watermarkGlyph: {
+
+  /** Ảnh và lớp tối trải kín thẻ, nằm dưới mọi nội dung. */
+  coverFill: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
+  scrim: {
     position: 'absolute',
-    right: 12,
-    bottom: -18,
-    fontSize: 88,
-    fontWeight: '900',
-    color: 'rgba(255, 255, 255, 0.18)',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(8, 12, 24, 0.52)',
   },
-  coverBadgesRow: {
+
+  /** Vùng chữ ở nửa trên, giờ đặt trên ảnh chứ không phải cạnh ảnh. */
+  cover: {
+    minHeight: 124,
+    padding: spacing.md,
+    justifyContent: 'space-between',
+  },
+  coverTop: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
   },
-  avatarGlassBadge: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.28)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.55)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarBadgeText: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: '#FFFFFF',
-  },
-  glassVisibilityBadge: {
+  visibility: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: 'rgba(0, 0, 0, 0.22)',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: radii.full,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.25)',
+    backgroundColor: 'rgba(0, 0, 0, 0.32)',
   },
-  glassVisibilityText: {
-    fontSize: 11,
-    fontWeight: '600',
+  visibilityText: {
     color: '#FFFFFF',
+    fontSize: 11,
+    fontFamily: 'Inter_600SemiBold',
   },
-  cardBody: {
+  coverName: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    lineHeight: 24,
+    letterSpacing: -0.3,
+    fontFamily: 'Inter_700Bold',
+  },
+
+  body: {
     padding: spacing.md,
-    backgroundColor: '#FFFFFF',
+    gap: spacing.md,
   },
-  cardTitle: {
-    ...typography.headlineMd,
-    color: colors.onSurface,
-    fontWeight: '700',
-    marginBottom: 4,
+  desc: {
+    color: 'rgba(255, 255, 255, 0.86)',
+    fontSize: 14,
+    lineHeight: 20,
   },
-  cardDesc: {
-    ...typography.bodySm,
-    color: colors.onSurfaceVariant,
-    lineHeight: 18,
-    marginBottom: spacing.md,
-  },
-  cardFooter: {
+
+  footer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: spacing.xs,
+    gap: spacing.sm,
+    paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(226, 232, 248, 0.6)',
+    borderTopColor: 'rgba(255, 255, 255, 0.18)',
   },
-  statsCluster: {
+  stats: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.xs + 2,
+    gap: 6,
     flexWrap: 'wrap',
   },
-  statPill: {
+  stat: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: colors.surfaceContainerLow,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: radii.full,
+    backgroundColor: 'rgba(255, 255, 255, 0.16)',
   },
-  statPillText: {
+  statText: {
+    color: 'rgba(255, 255, 255, 0.76)',
     fontSize: 11,
-    fontWeight: '500',
-    color: colors.onSurfaceVariant,
+    fontFamily: 'Inter_500Medium',
   },
+
   openPill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: colors.surfaceContainer,
     paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingVertical: 7,
     borderRadius: radii.full,
-    borderWidth: 1,
-    borderColor: 'rgba(144, 168, 255, 0.35)',
+    backgroundColor: workplace.accentSoft,
   },
   openPillText: {
+    color: workplace.accent,
     fontSize: 12,
-    fontWeight: '700',
-    color: colors.primary,
+    fontFamily: 'Inter_700Bold',
   },
   joinBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: colors.primary,
     paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingVertical: 7,
     borderRadius: radii.full,
+    backgroundColor: workplace.accent,
   },
   joinBtnText: {
+    color: workplace.accentInk,
     fontSize: 12,
-    fontWeight: '700',
-    color: '#FFFFFF',
+    fontFamily: 'Inter_700Bold',
   },
 });

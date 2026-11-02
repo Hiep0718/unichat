@@ -1,0 +1,104 @@
+/* ==========================================================================
+   Group rail — the column beside a group's posts
+   ========================================================================== */
+
+.group-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-content: start;
+}
+
+/* ---------- Thẻ trợ lý ----------
+   Dùng cặp token nghịch đảo chứ không đóng cứng một màu tối: ở nền tối cặp
+   này tự lật, nên thẻ vẫn là "nghịch với trang" ở cả hai chế độ thay vì chìm
+   vào nền. */
+.group-rail__ai {
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  background: var(--color-inverse-surface);
+  color: var(--color-inverse-on-surface);
+}
+
+.group-rail__ai-title {
+  margin: 0 0 8px;
+  font: var(--font-title-lg);
+  font-weight: 600;
+}
+
+.group-rail__ai-text {
+  margin: 0 0 16px;
+  /* Không dùng token mực của trang: chữ này nằm trên nền nghịch đảo, nên một
+     màu mực sáng hơn phải là chính màu nền nghịch đảo pha loãng. */
+  opacity: 0.78;
+  font: var(--font-body-sm);
+}
+
+.group-rail__ai-btn {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 16px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--color-inverse-on-surface);
+  color: var(--color-inverse-surface);
+  font: var(--font-label-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity var(--transition-fast);
+}
+
+.group-rail__ai-btn:hover {
+  opacity: 0.88;
+}
+
+.group-rail__ai-btn:focus-visible {
+  outline: 2px solid var(--color-inverse-on-surface);
+  outline-offset: 2px;
+}
+
+/* ---------- Thẻ thành viên ---------- */
+
+.group-rail__card {
+  padding: 18px 20px;
+  border: 1px solid var(--ws-line);
+  border-radius: var(--radius-lg);
+  background: var(--ws-card);
+}
+
+.group-rail__card-title {
+  margin: 0 0 14px;
+  color: var(--ws-ink-muted);
+  font: var(--font-label-sm);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.group-rail__members {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.group-rail__link {
+  flex-shrink: 0;
+  color: var(--ws-ink-soft);
+  font: var(--font-label-md);
+  text-decoration: none;
+}
+
+.group-rail__link:hover {
+  color: var(--ws-ink);
+  text-decoration: underline;
+}
+
+.group-rail__link:focus-visible {
+  outline: 2px solid var(--ws-ink);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}

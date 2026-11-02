@@ -39,6 +39,7 @@ const ChatPage = lazy(() => import('../features/chat/chat-page'));
 const ConversationListPage = lazy(() => import('../features/history/conversation-list-page'));
 const ConversationPage = lazy(() => import('../features/history/conversation-page'));
 const WorkspaceSettingsPage = lazy(() => import('../features/settings/settings-page'));
+const InvitePage = lazy(() => import('../features/workspaces/invite-page'));
 const EvaluationPage = lazy(() => import('../features/evaluation/evaluation-page'));
 const DiscussionPage = lazy(() => import('../features/community/discussion-page'));
 
@@ -71,6 +72,10 @@ export function AppRouter() {
           <Route path="/login" element={<GuestGuard><LoginPage /></GuestGuard>} />
           <Route path="/register" element={<GuestGuard><RegisterPage /></GuestGuard>} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          {/* Outside AuthGuard on purpose: whoever was sent this link may have
+              no account yet, and a login screen would not tell them what they
+              were invited to. Joining still requires a session. */}
+          <Route path="/invite/:token" element={<InvitePage />} />
 
           {/* Global Authenticated Shell Routes */}
           <Route element={<AuthGuard><AppShell /></AuthGuard>}>

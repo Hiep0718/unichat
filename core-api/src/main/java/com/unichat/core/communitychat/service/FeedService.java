@@ -210,7 +210,7 @@ public class FeedService {
                     d.getVoteScore(), d.getReplyCount(),
                     reactions.getOrDefault(d.getId(), ReactionSummary.empty()),
                     d.getBackgroundKey(),
-                    d.getAcceptedReplyId() != null,
+                    d.getAcceptedReplyId(),
                     bookmarkedIds.contains(d.getId()),
                     d.getCreatedAt(),
                     attachments.getOrDefault(d.getId(), List.of())

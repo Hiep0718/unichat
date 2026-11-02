@@ -11,7 +11,7 @@ function response(data: unknown): Response {
   return { ok: true, status: 200, text: async () => JSON.stringify(data) } as Response;
 }
 describe('NativeSession', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     jest.clearAllMocks(); records.clear(); invalidateSession();
     global.fetch = fetchMock;
     jest.mocked(storage.getItemAsync).mockImplementation(async (key) => records.get(key) ?? null);

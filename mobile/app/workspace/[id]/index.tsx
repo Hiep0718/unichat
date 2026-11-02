@@ -1,4 +1,12 @@
-import React, { useState, useEffect, useCallback } from 'react';
+/**
+ * Màn hình của một nhóm: dải bìa mang danh tính, rồi bốn mục thuộc về nhóm đó.
+ *
+ * Trước đây màn này là một thẻ số liệu cộng ba thẻ "Chức năng chính" dẫn sang
+ * các màn riêng, nên Tệp, Thành viên và Giới thiệu nằm rải rác hoặc không tồn
+ * tại. Giờ tất cả ở lại trong trang này; những đích đến thứ yếu — lịch sử hội
+ * thoại, xoá nhóm — nằm trong menu "..." ở góc, nơi dành cho việc rời đi.
+ */
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -6,30 +14,44 @@ import {
   ScrollView,
   RefreshControl,
   Alert,
+  StatusBar,
 } from 'react-native';
-import { useLocalSearchParams, router } from 'expo-router';
+import { useLocalSearchParams, router, useFocusEffect } from 'expo-router';
 
-import { colors, spacing, radii } from '../../../src/design/tokens';
+import { colors, spacing } from '../../../src/design/tokens';
 import { typography } from '../../../src/design/typography';
-import { UCIcon } from '../../../src/components/uc-icon';
-import { UCBadge } from '../../../src/components/uc-badge';
-import { UCButton } from '../../../src/components/uc-button';
-import { UCGlassCard } from '../../../src/components/uc-glass-card';
 import { UCScreenContainer } from '../../../src/components/uc-screen-container';
 import { UCSkeletonCard } from '../../../src/components/uc-skeleton';
 import { useToast } from '../../../src/lib/toast-context';
+import { useAuth } from '../../../src/features/auth/auth-context';
 import { workspaceApi } from '../../../src/features/workspaces/workspace-api';
-import { WorkspaceDetail } from '../../../src/features/workspaces/workspace-types';
-import { WorkspaceQuickAction } from '../../../src/features/workspaces/components/workspace-quick-action';
+import { GroupHero } from '../../../src/features/workspaces/components/group-hero';
+import { GroupTabBar } from '../../../src/features/workspaces/components/group-tab-bar';
+import { GroupAboutTab } from '../../../src/features/workspaces/components/group-about-tab';
+import { GroupMembersTab } from '../../../src/features/workspaces/components/group-members-tab';
+import { GroupPostsTab } from '../../../src/features/workspaces/components/group-posts-tab';
+import { GroupDocumentsTab } from '../../../src/features/workspaces/components/group-documents-tab';
 import { isValidUuid } from '../../../src/lib/uuid';
+
+import type { GroupTabKey } from '../../../src/features/workspaces/components/group-tab-bar';
+import type {
+  GroupMember,
+  WorkspaceDetail,
+} from '../../../src/features/workspaces/workspace-types';
 
 export default function WorkspaceDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { showToast } = useToast();
+  const { user } = useAuth();
+
   const [workspace, setWorkspace] = useState<WorkspaceDetail | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [refreshing, setRefreshing] = useState<boolean>(false);
-  const [deleting, setDeleting] = useState<boolean>(false);
+  const [members, setMembers] = useState<GroupMember[]>([]);
+  const [membersLoading, setMembersLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [tab, setTab] = useState<GroupTabKey>('posts');
+
+  const isOwner = workspace?.userRole === 'OWNER';
 
   const loadWorkspace = useCallback(async () => {
     if (!isValidUuid(id)) {
@@ -37,10 +59,12 @@ export default function WorkspaceDetailScreen() {
       return;
     }
     try {
-      const data = await workspaceApi.getWorkspace(id);
-      setWorkspace(data);
-    } catch (err: any) {
-      showToast({ message: err.message || 'Không thể tải thông tin không gian', type: 'error' });
+      setWorkspace(await workspaceApi.getWorkspace(id));
+    } catch (err: unknown) {
+      showToast({
+        message: err instanceof Error ? err.message : 'Không tải được thông tin nhóm',
+        type: 'error',
+      });
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -51,218 +75,203 @@ export default function WorkspaceDetailScreen() {
     loadWorkspace();
   }, [loadWorkspace]);
 
-  const onRefresh = () => {
-    setRefreshing(true);
-    loadWorkspace();
+  // Dải bìa chạy lên dưới thanh trạng thái, nên chữ trên thanh phải sáng; các
+  // màn khác vẫn nền sáng nên trả lại khi rời đi.
+  useFocusEffect(
+    useCallback(() => {
+      StatusBar.setBarStyle('light-content');
+      return () => StatusBar.setBarStyle('dark-content');
+    }, []),
+  );
+
+  // Chỉ nạp khi người xem thật sự mở mục Thành viên: Core API từ chối danh sách
+  // này với mọi vai trò khác chủ sở hữu, nên hỏi trước là chuốc lấy một lỗi.
+  useEffect(() => {
+    if (tab !== 'members' || !isOwner || !isValidUuid(id)) return;
+    let cancelled = false;
+    setMembersLoading(true);
+    workspaceApi
+      .getWorkspaceMembers(id)
+      .then((list) => {
+        if (!cancelled) setMembers(list);
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return;
+        showToast({
+          message: err instanceof Error ? err.message : 'Không tải được danh sách thành viên',
+          type: 'error',
+        });
+      })
+      .finally(() => {
+        if (!cancelled) setMembersLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [tab, isOwner, id, showToast]);
+
+  const tabs = useMemo(
+    () => [
+      { key: 'posts' as const, label: 'Bài viết', count: workspace?.postCount },
+      { key: 'documents' as const, label: 'Tệp', count: workspace?.documentCount },
+      { key: 'members' as const, label: 'Thành viên', count: workspace?.memberCount },
+      { key: 'about' as const, label: 'Giới thiệu' },
+    ],
+    [workspace?.postCount, workspace?.documentCount, workspace?.memberCount],
+  );
+
+  const askAssistant = () => router.push(`/workspace/${id}/chat/index` as never);
+
+  const handleMenu = () => {
+    const options: { text: string; style?: 'cancel' | 'destructive'; onPress?: () => void }[] = [
+      {
+        text: 'Lịch sử hội thoại',
+        onPress: () => router.push(`/workspace/${id}/conversations` as never),
+      },
+    ];
+    if (isOwner) {
+      options.push({ text: 'Xoá nhóm này', style: 'destructive', onPress: confirmDelete });
+    }
+    options.push({ text: 'Đóng', style: 'cancel' });
+    Alert.alert(workspace?.name ?? 'Nhóm', undefined, options);
   };
 
-  const handleDelete = () => {
+  const confirmDelete = () => {
     if (!id || !workspace) return;
     Alert.alert(
-      'Xóa không gian làm việc',
-      `Bạn có chắc chắn muốn xóa không gian "${workspace.name}"? Mọi tài liệu và cuộc trò chuyện sẽ bị xóa vĩnh viễn.`,
+      'Xoá nhóm',
+      `Bạn có chắc muốn xoá nhóm "${workspace.name}"? Mọi tài liệu và cuộc trò chuyện sẽ bị xoá vĩnh viễn.`,
       [
-        { text: 'Hủy', style: 'cancel' },
+        { text: 'Huỷ', style: 'cancel' },
         {
-          text: 'Xóa vĩnh viễn',
+          text: 'Xoá vĩnh viễn',
           style: 'destructive',
           onPress: async () => {
             try {
-              setDeleting(true);
               await workspaceApi.deleteWorkspace(id);
-              showToast({ message: 'Đã xóa không gian làm việc', type: 'success' });
+              showToast({ message: 'Đã xoá nhóm', type: 'success' });
               router.replace('/(tabs)');
-            } catch (err: any) {
-              showToast({ message: err.message || 'Không thể xóa không gian', type: 'error' });
-              setDeleting(false);
+            } catch (err: unknown) {
+              showToast({
+                message: err instanceof Error ? err.message : 'Không xoá được nhóm',
+                type: 'error',
+              });
             }
           },
         },
-      ]
+      ],
     );
   };
 
-  return (
-    <UCScreenContainer>
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-      >
-        {loading ? (
+  if (loading) {
+    return (
+      <UCScreenContainer>
+        <View style={styles.loadingBox}>
           <UCSkeletonCard />
-        ) : workspace ? (
-          <>
-            {/* Header info */}
-            <UCGlassCard variant="navy" style={styles.headerCard} glow>
-              <View style={styles.titleRow}>
-                <Text style={styles.workspaceName} numberOfLines={2}>
-                  {workspace.name}
-                </Text>
-                <UCBadge
-                  label={workspace.visibility === 'PUBLIC' ? 'Công khai' : 'Riêng tư'}
-                  variant={workspace.visibility === 'PUBLIC' ? 'secondary' : 'neutral'}
-                  size="sm"
-                />
-              </View>
+        </View>
+      </UCScreenContainer>
+    );
+  }
 
-              <Text style={styles.description}>
-                {workspace.description || 'Không gian học tập, tổng hợp kiến thức và hỏi đáp tài liệu.'}
-              </Text>
+  if (!workspace) {
+    return (
+      <UCScreenContainer>
+        <View style={styles.loadingBox}>
+          <Text style={styles.notFound}>Không tìm thấy nhóm này.</Text>
+        </View>
+      </UCScreenContainer>
+    );
+  }
 
-              <View style={styles.statsContainer}>
-                <View style={styles.statBox}>
-                  <UCIcon name="description" size={18} color="#57DFFE" />
-                  <Text style={styles.statNumber}>{workspace.documentCount || 0}</Text>
-                  <Text style={styles.statLabel}>Tài liệu</Text>
-                </View>
-                <View style={styles.statDivider} />
-                <View style={styles.statBox}>
-                  <UCIcon name="group" size={18} color="#57DFFE" />
-                  <Text style={styles.statNumber}>{workspace.memberCount || 1}</Text>
-                  <Text style={styles.statLabel}>Thành viên</Text>
-                </View>
-                <View style={styles.statDivider} />
-                <View style={styles.statBox}>
-                  <UCIcon name="shield" size={18} color="#57DFFE" />
-                  <Text style={styles.statNumber}>{workspace.userRole || 'MEMBER'}</Text>
-                  <Text style={styles.statLabel}>Vai trò</Text>
-                </View>
-              </View>
-            </UCGlassCard>
+  // Tệp và Bài viết tự cuộn bằng danh sách của chúng, nên không bọc thêm một
+  // ScrollView nữa: hai vùng cuộn lồng nhau thì không vùng nào cuộn đúng.
+  const scrolls = tab === 'about' || tab === 'members';
 
-            {/* Quick Actions */}
-            <Text style={styles.sectionTitle}>Chức năng chính</Text>
-            <View style={styles.actionGrid}>
-              <WorkspaceQuickAction
-                title="Hỏi đáp AI"
-                subtitle="Trò chuyện với AI dựa trên tài liệu"
-                actionText="Bắt đầu chat"
-                icon="chat"
-                iconBgColor="#EFF6FF"
-                actionColor={colors.primary}
-                onPress={() => router.push(`/workspace/${id}/chat/index` as any)}
-                testID="action-chat"
+  const header = (
+    <>
+      <GroupHero
+        workspace={workspace}
+        documentCount={workspace.documentCount}
+        memberCount={workspace.memberCount}
+        onBack={() => router.back()}
+        onMenu={handleMenu}
+        onAskAssistant={askAssistant}
+      />
+      <GroupTabBar tabs={tabs} active={tab} onChange={setTab} />
+    </>
+  );
+
+  return (
+    <UCScreenContainer surface="canvas">
+      {scrolls ? (
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => {
+                setRefreshing(true);
+                loadWorkspace();
+              }}
+            />
+          }
+        >
+          {header}
+          <View style={styles.tabBody}>
+            {tab === 'about' && (
+              <GroupAboutTab
+                workspace={workspace}
+                isOwner={isOwner}
+                onEditDescription={() =>
+                  showToast({
+                    message: 'Sửa mô tả nhóm hiện chỉ có trên bản web.',
+                    type: 'info',
+                  })
+                }
+                onAskAssistant={askAssistant}
               />
-
-              <WorkspaceQuickAction
-                title="Lịch sử hội thoại"
-                subtitle="Xem lại các phiên hỏi đáp đã lưu"
-                actionText="Xem lịch sử"
-                icon="history"
-                iconBgColor="#F5F3FF"
-                actionColor="#7C3AED"
-                onPress={() => router.push(`/workspace/${id}/conversations` as any)}
-                testID="action-history"
-              />
-
-              <WorkspaceQuickAction
-                title="Kho tài liệu"
-                subtitle="Xem và tải lên giáo trình, slide"
-                actionText="Quản lý tài liệu"
-                icon="folder"
-                iconBgColor="#ECFDF5"
-                actionColor={colors.secondary}
-                onPress={() => router.push(`/workspace/${id}/documents` as any)}
-                testID="action-documents"
-              />
-            </View>
-
-            {/* Delete Workspace Button (if owner) */}
-            {workspace.userRole === 'OWNER' && (
-              <View style={styles.dangerZone}>
-                <UCButton
-                  title="Xóa không gian này"
-                  variant="danger"
-                  onPress={handleDelete}
-                  loading={deleting}
-                />
-              </View>
             )}
-          </>
-        ) : (
-          <View style={styles.notFoundBox}>
-            <Text style={styles.notFoundText}>Không tìm thấy thông tin không gian làm việc.</Text>
+            {tab === 'members' && (
+              <GroupMembersTab
+                members={members}
+                loading={membersLoading}
+                isOwner={isOwner}
+                currentUserId={user?.id ?? ''}
+                onInvite={() =>
+                  showToast({
+                    message: 'Mời thành viên hiện chỉ có trên bản web.',
+                    type: 'info',
+                  })
+                }
+              />
+            )}
           </View>
-        )}
-      </ScrollView>
+        </ScrollView>
+      ) : (
+        <View style={styles.flex}>
+          {tab === 'posts' && <GroupPostsTab workspaceId={id} header={header} />}
+          {tab === 'documents' && (
+            <GroupDocumentsTab workspaceId={id} canEdit={isOwner} header={header} />
+          )}
+        </View>
+      )}
     </UCScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  scrollView: { flex: 1 },
-  scrollContent: { padding: spacing.lg, paddingBottom: 60 },
-  headerCard: {
-    padding: spacing.xl,
-    borderRadius: radii['2xl'],
-    marginBottom: spacing.xl,
+  flex: { flex: 1 },
+  scrollContent: { paddingBottom: 120 },
+  tabBody: {
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.md,
   },
-  titleRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    gap: spacing.sm,
-    marginBottom: spacing.sm,
+  loadingBox: {
+    padding: spacing.lg,
   },
-  workspaceName: {
-    ...typography.headlineLg,
-    color: '#FFFFFF',
-    flex: 1,
-    fontWeight: '700',
-  },
-  description: {
-    ...typography.bodyMd,
-    color: '#DCE1FF',
-    lineHeight: 22,
-    marginBottom: spacing.xl,
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: radii.xl,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.sm,
-  },
-  statBox: {
-    flex: 1,
-    alignItems: 'center',
-    gap: 2,
-  },
-  statDivider: {
-    width: 1,
-    height: 28,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-  },
-  statNumber: {
-    ...typography.labelMd,
-    color: '#FFFFFF',
-    fontWeight: '700',
-  },
-  statLabel: {
-    fontSize: 11,
-    color: '#90A8FF',
-  },
-  sectionTitle: {
-    ...typography.headlineMd,
-    color: colors.onSurface,
-    fontWeight: '700',
-    marginBottom: spacing.md,
-  },
-  actionGrid: {
-    gap: spacing.md,
-    marginBottom: spacing.xxl,
-  },
-  dangerZone: {
-    marginTop: spacing.md,
-  },
-  notFoundBox: {
-    padding: spacing.xl,
-    alignItems: 'center',
-  },
-  notFoundText: {
+  notFound: {
     ...typography.bodyMd,
     color: colors.onSurfaceVariant,
+    textAlign: 'center',
   },
 });

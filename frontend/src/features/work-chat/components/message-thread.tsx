@@ -4,51 +4,81 @@
  * Messages arrive newest-first from the server and are reversed for display,
  * so paging back through history stays a matter of appending to the array.
  */
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import { Icon } from '../../../components/icon';
-import { EntityAvatar } from '../../../components/entity-avatar';
-import { formatRelativeTime } from '../../../lib/format-time';
+import { CallButton } from '../../calls/components/call-button';
+import { CallLogEntry } from '../../calls/components/call-log-entry';
+import { ConversationAvatar } from './conversation-avatar';
+import { ChatComposer } from './chat-composer';
+import { MessageBubble } from './message-bubble';
+import type { CallHistoryEntryDto } from '../../calls/call-api';
 import type { Conversation, DirectMessage } from '../work-chat-api';
 import './message-thread.css';
 
 interface MessageThreadProps {
   readonly conversation: Conversation;
   readonly messages: readonly DirectMessage[];
-  readonly onSend: (body: string) => Promise<void>;
+  /** Calls in this conversation, merged into the thread by time. */
+  readonly calls?: readonly CallHistoryEntryDto[];
+  readonly onSend: (
+    body: string,
+    files: readonly File[],
+    onProgress?: (percent: number) => void,
+  ) => Promise<void>;
+  /** Shows or hides the settings panel. Only meaningful for a group. */
+  readonly onToggleSettings: () => void;
+  /** Whether that panel is currently open, so the button can say so. */
+  readonly settingsOpen: boolean;
 }
 
-export function MessageThread({ conversation, messages, onSend }: MessageThreadProps) {
-  const [draft, setDraft] = useState('');
-  const [sending, setSending] = useState(false);
-  const [failed, setFailed] = useState(false);
-
-  const ordered = useMemo(() => [...messages].reverse(), [messages]);
-
-  const submit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    const body = draft.trim();
-    if (!body || sending) {
-      return;
-    }
-    setSending(true);
-    setFailed(false);
-    try {
-      await onSend(body);
-      setDraft('');
-    } catch {
-      // The draft is kept so a failed send does not lose what was typed.
-      setFailed(true);
-    } finally {
-      setSending(false);
-    }
-  };
+export function MessageThread({
+  conversation,
+  messages,
+  calls = [],
+  onSend,
+  onToggleSettings,
+  settingsOpen,
+}: MessageThreadProps) {
+  // Messages and calls are interleaved by time rather than stacked in two
+  // groups: a call that happened mid-conversation belongs where it happened.
+  // Both arrive newest-first, so the merged list is reversed once at the end.
+  const ordered = useMemo(() => {
+    const entries = [
+      ...messages.map((message) => ({ at: message.createdAt, message, call: null })),
+      ...calls.map((call) => ({ at: call.startedAt, message: null, call })),
+    ];
+    entries.sort((a, b) => Date.parse(b.at) - Date.parse(a.at));
+    return entries.reverse();
+  }, [messages, calls]);
+  const isGroup = conversation.kind === 'GROUP';
 
   return (
     <section className="message-thread">
       <header className="message-thread__header">
-        <EntityAvatar name={conversation.otherUserName} size={34} shape="circle" />
-        <h2 className="message-thread__name">{conversation.otherUserName}</h2>
+        <ConversationAvatar conversation={conversation} size={34} />
+        <h2 className="message-thread__name">{conversation.title}</h2>
+
+        {/* One-to-one only: a group call needs a media server, which is not
+            built, so the button would promise something that fails. */}
+        {!isGroup && (
+          <CallButton conversationId={conversation.id} peerName={conversation.title} />
+        )}
+
+        {isGroup && (
+          <button
+            type="button"
+            className={`message-thread__members ${
+              settingsOpen ? 'message-thread__members--active' : ''
+            }`}
+            onClick={onToggleSettings}
+            aria-pressed={settingsOpen}
+            aria-label={settingsOpen ? 'Ẩn cài đặt nhóm' : 'Hiện cài đặt nhóm'}
+          >
+            <Icon name="group" size={18} />
+            {conversation.participants.length}
+          </button>
+        )}
       </header>
 
       <div className="message-thread__messages">
@@ -57,45 +87,22 @@ export function MessageThread({ conversation, messages, onSend }: MessageThreadP
             Chưa có tin nhắn. Gửi lời chào trước nhé.
           </p>
         ) : (
-          ordered.map((message) => (
-            <article
-              key={message.id}
-              className={`message-bubble ${message.mine ? 'message-bubble--mine' : ''}`}
-            >
-              <p className="message-bubble__body">{message.body}</p>
-              <time className="message-bubble__time" dateTime={message.createdAt}>
-                {formatRelativeTime(message.createdAt)}
-              </time>
-            </article>
-          ))
+          ordered.map((entry) =>
+            entry.call ? (
+              <CallLogEntry key={`call-${entry.call.id}`} entry={entry.call} />
+            ) : (
+              <MessageBubble
+                key={entry.message!.id}
+                conversationId={conversation.id}
+                message={entry.message!}
+                showSender={isGroup}
+              />
+            ),
+          )
         )}
       </div>
 
-      <form className="message-thread__composer" onSubmit={submit}>
-        {failed && (
-          <p className="message-thread__failed" role="alert">
-            Không gửi được. Thử lại nhé.
-          </p>
-        )}
-        <div className="message-thread__input-row">
-          <input
-            className="message-thread__input"
-            value={draft}
-            onChange={(event) => setDraft(event.target.value)}
-            placeholder="Nhập tin nhắn..."
-            maxLength={4000}
-            aria-label="Nội dung tin nhắn"
-          />
-          <button
-            type="submit"
-            className="message-thread__send"
-            disabled={!draft.trim() || sending}
-            aria-label="Gửi"
-          >
-            <Icon name="send" size={18} />
-          </button>
-        </div>
-      </form>
+      <ChatComposer onSend={onSend} />
     </section>
   );
 }

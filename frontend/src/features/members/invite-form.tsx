@@ -10,7 +10,7 @@ import { Icon } from '../../components/icon';
 import { inviteMemberSchema, ROLE_LABELS } from './member-schema';
 import type { InviteMemberInput } from './member-schema';
 
-import './member-table.css';
+import './invite-form.css';
 
 interface InviteFormProps {
   readonly isOpen: boolean;

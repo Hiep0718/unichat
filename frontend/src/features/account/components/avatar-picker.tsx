@@ -1,24 +1,32 @@
 /**
- * Choosing a profile picture, or a colour to stand in for one.
+ * Chọn ảnh đại diện, hoặc một màu thay cho ảnh.
  *
- * The letter avatar is the default rather than a placeholder to be replaced:
- * nobody has to upload anything to be recognisable, and the colour is there for
- * members who want to be distinguishable without a photo.
+ * Chữ cái là mặc định chứ không phải chỗ trống chờ thay: không ai phải tải gì
+ * lên mới nhận ra được, và màu ở đây dành cho người muốn phân biệt được mà
+ * không cần ảnh.
+ *
+ * Các ô màu lấy thẳng từ `AVATAR_COLOURS`, đúng bảng mà avatar dùng để vẽ.
+ * Bản trước khai màu riêng trong CSS và ba trong sáu ô cùng là `var(--muc)`,
+ * nên navy, teal, plum ra một ô đen giống hệt nhau và không ô nào mang màu
+ * nó sẽ đặt.
  */
 import { useRef, useState } from 'react';
 
 import { Icon } from '../../../components/icon';
 import { EntityAvatar } from '../../../components/entity-avatar';
+import { AVATAR_COLOURS } from '../../../components/avatar-colours';
 import { forgetAvatar } from '../../../components/avatar-image-cache';
 import { authApi } from '../../auth/api/auth-api';
-import type { AvatarColorKey } from '../../../components/entity-avatar';
+
+import type { AvatarColorKey } from '../../../components/avatar-colours';
 import type { UserResponse } from '../../auth/api/auth-api';
+
 import './avatar-picker.css';
 
-/** Must match the set the server accepts. */
+/** Phải khớp tập màu máy chủ chấp nhận. */
 const COLOURS: readonly AvatarColorKey[] = ['navy', 'teal', 'plum', 'moss', 'clay', 'slate'];
 
-const COLOUR_LABELS: Record<AvatarColorKey, string> = {
+const LABELS: Record<AvatarColorKey, string> = {
   navy: 'Xanh navy',
   teal: 'Xanh ngọc',
   plum: 'Tím mận',
@@ -29,7 +37,7 @@ const COLOUR_LABELS: Record<AvatarColorKey, string> = {
 
 interface AvatarPickerProps {
   readonly profile: UserResponse;
-  /** Called after any change, so the caller can refetch the profile. */
+  /** Gọi sau mỗi thay đổi, để nơi gọi tải lại hồ sơ. */
   readonly onChanged: () => void;
 }
 
@@ -38,13 +46,13 @@ export function AvatarPicker({ profile, onChanged }: AvatarPickerProps) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  /** Runs one change, keeping the cached picture and the form in step. */
+  /** Chạy một thay đổi, giữ ảnh trong bộ nhớ đệm và biểu mẫu khớp nhau. */
   const apply = async (change: () => Promise<void>) => {
     setBusy(true);
     setError(null);
     try {
       await change();
-      // Without this the replaced picture keeps showing until a full reload.
+      // Thiếu dòng này thì ảnh cũ còn hiện cho tới khi tải lại cả trang.
       forgetAvatar(profile.id);
       onChanged();
     } catch (err: unknown) {
@@ -56,28 +64,24 @@ export function AvatarPicker({ profile, onChanged }: AvatarPickerProps) {
 
   const onFileChosen = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    // Clearing the input lets the same file be picked again after a failure.
+    // Xóa ô chọn tệp để chọn lại đúng tệp đó được sau một lần lỗi.
     event.target.value = '';
-    if (file) {
-      void apply(() => authApi.uploadAvatar(file));
-    }
+    if (file) void apply(() => authApi.uploadAvatar(file));
   };
 
   return (
     <div className="avatar-picker">
-      <div className="avatar-picker__preview">
-        <EntityAvatar
-          name={profile.displayName}
-          size={76}
-          shape="circle"
-          userId={profile.id}
-          hasAvatar={profile.hasAvatar}
-          avatarColor={profile.avatarColor}
-        />
-      </div>
+      <EntityAvatar
+        name={profile.displayName}
+        size={64}
+        shape="circle"
+        userId={profile.id}
+        hasAvatar={profile.hasAvatar}
+        avatarColor={profile.avatarColor}
+      />
 
-      <div className="avatar-picker__controls">
-        <div className="avatar-picker__buttons">
+      <div className="avatar-picker__main">
+        <div className="avatar-picker__row">
           <button
             type="button"
             className="avatar-picker__upload"
@@ -87,16 +91,18 @@ export function AvatarPicker({ profile, onChanged }: AvatarPickerProps) {
             <Icon name="photo_camera" size={17} />
             {profile.hasAvatar ? 'Đổi ảnh' : 'Tải ảnh lên'}
           </button>
+
           {profile.hasAvatar && (
             <button
               type="button"
-              className="avatar-picker__remove"
+              className="avatar-picker__plain"
               onClick={() => void apply(authApi.removeAvatar)}
               disabled={busy}
             >
               Gỡ ảnh
             </button>
           )}
+
           <input
             ref={fileInput}
             type="file"
@@ -105,38 +111,40 @@ export function AvatarPicker({ profile, onChanged }: AvatarPickerProps) {
             className="avatar-picker__file"
             aria-label="Chọn ảnh đại diện"
           />
-        </div>
 
-        <fieldset className="avatar-picker__colours" disabled={busy}>
-          <legend className="avatar-picker__legend">
-            Màu chữ cái {profile.hasAvatar && '(dùng khi chưa có ảnh)'}
-          </legend>
-          <div className="avatar-picker__swatches">
+          <fieldset className="avatar-picker__colours" disabled={busy}>
+            <legend className="avatar-picker__legend">hoặc chọn màu:</legend>
             {COLOURS.map((colour) => (
               <button
                 key={colour}
                 type="button"
-                className={`avatar-picker__swatch avatar-picker__swatch--${colour} ${
-                  profile.avatarColor === colour ? 'avatar-picker__swatch--on' : ''
+                className={`avatar-picker__swatch${
+                  profile.avatarColor === colour ? ' avatar-picker__swatch--on' : ''
                 }`}
+                // Màu nội tuyến vì nó là dữ liệu, không phải kiểu dáng: nguồn
+                // duy nhất là bảng mà avatar vẽ ra, nên hai chỗ không thể lệch.
+                style={{ background: AVATAR_COLOURS[colour].bg }}
                 onClick={() => void apply(() => authApi.chooseAvatarColor(colour))}
                 aria-pressed={profile.avatarColor === colour}
-                aria-label={COLOUR_LABELS[colour]}
-                title={COLOUR_LABELS[colour]}
+                aria-label={LABELS[colour]}
+                title={LABELS[colour]}
               />
             ))}
             <button
               type="button"
-              className="avatar-picker__auto"
+              className="avatar-picker__plain"
               onClick={() => void apply(() => authApi.chooseAvatarColor(null))}
               disabled={profile.avatarColor === null}
             >
               Tự động
             </button>
-          </div>
-        </fieldset>
+          </fieldset>
+        </div>
 
-        <p className="avatar-picker__hint">
+        <p
+          className={`avatar-picker__hint${error ? ' avatar-picker__hint--bad' : ''}`}
+          role={error ? 'alert' : undefined}
+        >
           {error ?? 'PNG, JPEG hoặc WebP, tối đa 2 MiB. Ảnh sẽ được cắt vuông.'}
         </p>
       </div>

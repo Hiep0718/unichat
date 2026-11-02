@@ -1,84 +1,85 @@
-/**
- * "How it works" 4-step section on the landing page.
- */
+import { Link } from 'react-router-dom';
 
 import { Icon } from '../../../components/icon';
+import heroArt from '../../../assets/login-hero.jpg';
+
 import './how-it-works-section.css';
 
-interface Step {
-  readonly number: number;
-  readonly icon: string;
-  readonly title: string;
-  readonly description: string;
-  readonly color: string;
-}
-
-const STEPS: readonly Step[] = [
+/** Ba bước, theo đúng thứ tự một người mới đi qua chúng. */
+const STEPS = [
   {
-    number: 1,
-    icon: 'create_new_folder',
-    title: 'Tạo Workspace',
-    description: 'Khởi tạo không gian làm việc cho môn học hoặc đồ án của bạn.',
-    color: 'var(--color-primary)',
-  },
-  {
-    number: 2,
-    icon: 'upload_file',
+    no: '01',
     title: 'Tải tài liệu lên',
-    description: 'Upload PDF, Word, Slide bài giảng. Hệ thống tự động xử lý vector hóa.',
-    color: 'var(--color-secondary)',
+    body: 'Tạo Workspace cho môn học và tải giáo trình, bài giảng, tài liệu tham khảo vào đó.',
   },
   {
-    number: 3,
-    icon: 'forum',
+    no: '02',
     title: 'Đặt câu hỏi',
-    description: 'Hỏi bất cứ điều gì liên quan đến nội dung bằng tiếng Việt tự nhiên.',
-    color: 'var(--color-tertiary-container)',
+    body: 'Hỏi bằng tiếng Việt: tóm tắt một chương, giải thích một khái niệm hay so sánh hai lý thuyết.',
   },
   {
-    number: 4,
-    icon: 'fact_check',
-    title: 'Nhận câu trả lời',
-    description: 'AI tổng hợp câu trả lời chính xác, kèm theo trích dẫn trang tài liệu cụ thể.',
-    color: 'var(--color-success)',
+    no: '03',
+    title: 'Nhận câu trả lời có nguồn',
+    body: 'Đọc câu trả lời, bấm số trích dẫn để xem đoạn gốc và tiếp tục hỏi sâu hơn.',
   },
-];
+] as const;
 
-/**
- * Renders the 4-step "How it works" section.
- */
+/** Khối "Ba bước", kèm dải kêu gọi khép lại trang. */
 export function HowItWorksSection() {
   return (
-    <section className="how-it-works" id="how-it-works">
-      <div className="how-it-works__inner">
-        <h2 className="how-it-works__title">
-          4 bước đơn giản để làm chủ kiến thức
-        </h2>
+    <>
+      <section className="steps" id="how-it-works" aria-labelledby="steps-title">
+        <div className="steps__inner">
+          <div className="steps__head">
+            <div>
+              <p className="steps__eyebrow">Cách hoạt động</p>
+              <h2 id="steps-title" className="steps__title">Ba bước để bắt đầu</h2>
+            </div>
+            <p className="steps__note">
+              UniChat dùng công nghệ RAG: trước khi trả lời, AI tìm đúng những
+              đoạn liên quan trong tài liệu của bạn, rồi mới viết câu trả lời
+              dựa trên các đoạn đó.
+            </p>
+          </div>
 
-        <div className="how-it-works__steps">
-          {STEPS.map((step) => (
-            <StepCard key={step.number} step={step} />
-          ))}
+          <ol className="steps__list">
+            {STEPS.map((step, index) => (
+              <li
+                key={step.no}
+                className={`step${index === STEPS.length - 1 ? ' step--last' : ''}`}
+              >
+                <p className="step__no">{step.no}</p>
+                <h3 className="step__title">{step.title}</h3>
+                <p className="step__body">{step.body}</p>
+              </li>
+            ))}
+          </ol>
         </div>
-      </div>
-    </section>
-  );
-}
+      </section>
 
-function StepCard({ step }: { readonly step: Step }) {
-  return (
-    <div className="step-card">
-      <div className="step-card__icon-box">
-        <span
-          className="step-card__number"
-          style={{ background: step.color }}
-        >
-          {step.number}
-        </span>
-        <Icon name={step.icon} size={40} className="step-card__icon" style={{ color: step.color }} />
-      </div>
-      <h4 className="step-card__title">{step.title}</h4>
-      <p className="step-card__desc">{step.description}</p>
-    </div>
+      <section className="closing" aria-labelledby="closing-title">
+        <div className="closing__inner">
+          <img className="closing__art" src={heroArt} alt="" aria-hidden="true" />
+          <div className="closing__scrim" />
+
+          <div className="closing__copy">
+            <h2 id="closing-title" className="closing__title">
+              Bắt đầu học thông minh hơn ngay hôm nay
+            </h2>
+            <p className="closing__body">
+              Tạo tài khoản và tải lên tài liệu đầu tiên của bạn.
+            </p>
+          </div>
+
+          <div className="closing__actions">
+            <Link to="/register" className="closing__cta">
+              Bắt đầu
+              <Icon name="arrow_forward" size={17} rounded />
+            </Link>
+            <Link to="/login" className="closing__alt">Tôi đã có tài khoản</Link>
+          </div>
+        </div>
+      </section>
+    </>
   );
 }

@@ -35,7 +35,6 @@ public record ReactionSummary(
 
     /** Reaction types in display order, so every client agrees on the order. */
     public static List<ReactionType> displayOrder() {
-        return List.of(ReactionType.LIKE, ReactionType.LOVE,
-                ReactionType.INSIGHTFUL, ReactionType.CELEBRATE);
+        return List.of(ReactionType.values());
     }
 }

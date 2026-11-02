@@ -7,6 +7,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  type ScrollViewInstance,
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { colors, spacing } from '../../../../src/design/tokens';
@@ -32,7 +33,7 @@ export default function WorkspaceChatRoomScreen() {
     conversationId: string;
   }>();
   const { showToast } = useToast();
-  const scrollViewRef = useRef<ScrollView>(null);
+  const scrollViewRef = useRef<ScrollViewInstance>(null);
   const [workspace, setWorkspace] = useState<WorkspaceDetail | null>(null);
   const [documents, setDocuments] = useState<DocumentItem[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
@@ -91,7 +92,7 @@ export default function WorkspaceChatRoomScreen() {
   }, [messages, streamingAnswer, thoughtSteps]);
 
   return (
-    <UCScreenContainer gradient={false}>
+    <UCScreenContainer surface="canvas">
       <ChatHeader
         workspaceName={workspace?.name || 'Hội thoại AI'}
         documentCount={workspace?.documentCount || 0}

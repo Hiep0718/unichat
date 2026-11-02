@@ -2,10 +2,11 @@
 import { createContext, useContext, useMemo } from 'react';
 import type { ReactNode } from 'react';
 
-/** Effective workspace membership role. */
-export type WorkspaceRole = 'OWNER' | 'EDITOR' | 'VIEWER';
-/** Workspace visibility returned by Core API. */
-export type WorkspaceVisibility = 'PRIVATE' | 'SHARED' | 'PUBLIC';
+// Declared with the rest of the workspace types; re-exported because several
+// components already import them from here.
+import type { WorkspaceRole, WorkspaceVisibility } from './workspace-schema';
+
+export type { WorkspaceRole, WorkspaceVisibility };
 
 /** Authoritative workspace metadata shared by workspace routes. */
 export interface WorkspaceDetails {
@@ -13,6 +14,8 @@ export interface WorkspaceDetails {
   readonly name: string;
   readonly description: string;
   readonly visibility: WorkspaceVisibility;
+  /** What the group is about; empty for groups that predate topics. */
+  readonly topics: readonly string[];
   readonly role: WorkspaceRole;
   readonly ownerId?: string;
   readonly cloudAllowed: boolean;

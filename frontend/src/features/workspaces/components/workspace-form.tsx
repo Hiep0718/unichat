@@ -7,6 +7,8 @@ import { useCallback, useId, useState } from 'react';
 import { Icon } from '../../../components/icon';
 import { useCreateWorkspace } from '../workspace-hooks';
 import { createWorkspaceSchema } from '../workspace-schema';
+import { VISIBILITY_OPTIONS } from '../workspace-visibility';
+import { TopicPicker } from './topic-picker';
 
 import type { WorkspaceVisibility } from '../workspace-schema';
 
@@ -16,17 +18,6 @@ interface WorkspaceFormProps {
   readonly open: boolean;
   readonly onClose: () => void;
 }
-
-const VISIBILITY_OPTIONS: readonly {
-  value: WorkspaceVisibility;
-  icon: string;
-  label: string;
-  desc: string;
-}[] = [
-  { value: 'PRIVATE', icon: 'lock', label: 'Riêng tư', desc: 'Chỉ bạn có quyền truy cập' },
-  { value: 'SHARED', icon: 'group_add', label: 'Được chia sẻ', desc: 'Mời thành viên cụ thể' },
-  { value: 'PUBLIC', icon: 'public', label: 'Công khai', desc: 'Ai cũng có thể xem' },
-];
 
 /**
  * Renders a modal dialog with a form to create a new workspace.
@@ -38,6 +29,7 @@ export function WorkspaceForm({ open, onClose }: WorkspaceFormProps) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [visibility, setVisibility] = useState<WorkspaceVisibility>('PRIVATE');
+  const [topics, setTopics] = useState<readonly string[]>([]);
   const [fieldError, setFieldError] = useState('');
 
   const resetForm = useCallback(() => {
@@ -58,7 +50,7 @@ export function WorkspaceForm({ open, onClose }: WorkspaceFormProps) {
       e.preventDefault();
       setFieldError('');
 
-      const result = createWorkspaceSchema.safeParse({ name, description, visibility });
+      const result = createWorkspaceSchema.safeParse({ name, description, visibility, topics });
       if (!result.success) {
         const firstIssue = result.error.issues[0];
         setFieldError(firstIssue?.message ?? 'Dữ liệu không hợp lệ');
@@ -70,7 +62,7 @@ export function WorkspaceForm({ open, onClose }: WorkspaceFormProps) {
         onError: (err) => setFieldError(err.message),
       });
     },
-    [name, description, visibility, mutation, handleClose],
+    [name, description, visibility, topics, mutation, handleClose],
   );
 
   if (!open) {
@@ -154,11 +146,16 @@ export function WorkspaceForm({ open, onClose }: WorkspaceFormProps) {
                   <Icon name={opt.icon} size={20} />
                   <div>
                     <span className="workspace-form__visibility-label">{opt.label}</span>
-                    <span className="workspace-form__visibility-desc">{opt.desc}</span>
+                    <span className="workspace-form__visibility-desc">{opt.description}</span>
                   </div>
                 </label>
               ))}
             </div>
+          </fieldset>
+
+          <fieldset className="workspace-form__fieldset">
+            <legend className="workspace-form__label">Chủ đề</legend>
+            <TopicPicker value={topics} onChange={setTopics} disabled={mutation.isPending} />
           </fieldset>
 
           {fieldError && (

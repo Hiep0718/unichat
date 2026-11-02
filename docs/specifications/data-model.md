@@ -26,8 +26,10 @@
 |---|---|---|
 | users | id, email, passwordHash, systemRole, status, failedLoginCount, lockedUntil | email chuẩn hóa unique; role USER/ADMIN; status ACTIVE/LOCKED |
 | refresh_tokens | id, userId, familyId, tokenHash, expiresAt, usedAt, revokedAt, replacedById | tokenHash unique; không lưu token thô; rotation theo family |
-| workspaces | id, ownerId, name, description, visibility, cloudAllowed, permissionVersion, version | name 3–100; PRIVATE/SHARED/PUBLIC; owner luôn có membership OWNER |
+| workspaces | id, ownerId, name, description, visibility, cloudAllowed, permissionVersion, version | name 3–100; PRIVATE/SHARED/PUBLIC (ngữ nghĩa ở ADR-024); owner luôn có membership OWNER; workspace PRIVATE chỉ có đúng một membership ACTIVE |
 | workspace_members | workspaceId, userId, role, status, invitedById | PK(workspaceId,userId); role OWNER/EDITOR/VIEWER; status ACTIVE/REVOKED |
+| workspace_invites | id, workspaceId, tokenHash, role, createdById, createdAt, expiresAt, maxUses, usedCount, revokedAt | tokenHash SHA-256 unique, **không lưu token thô**; role CHECK chỉ VIEWER/EDITOR; usedCount tăng ở accept chứ không ở preview (ADR-025) |
+| workspace_topics | workspaceId, topic | PK(workspaceId,topic); tối đa 3 chủ đề mỗi workspace, ràng buộc ở tầng ứng dụng; giá trị từ enum WorkspaceTopic, không CHECK ở DB (ADR-027) |
 | documents | id, workspaceId, storageKey, originalName, mediaType, byteSize, sha256, status, ingestionVersion, pageOrBlockCount, version | storageKey unique; status PENDING/PROCESSING/PROCESSED/FAILED/DELETING |
 | conversations | id, workspaceId, userId, title, status, summary, summaryVersion | user chỉ truy cập conversation của mình và Workspace còn quyền; summary cập nhật qua optimistic locking trên summaryVersion (ADR-021) |
 | messages | id, conversationId, role, content, intent, refusalCode, providerModel, promptVersion, createdAt | role USER/ASSISTANT; content giữ Unicode; assistant có trace |
@@ -40,6 +42,10 @@
 | idempotency_records | actorId, routeKey, idempotencyKey, requestHash, responseStatus, responseBody, expiresAt | PK(actorId,routeKey,idempotencyKey); body khác trả 409 |
 | rate_limit_buckets | subjectKey, actionKey, windowStart, requestCount, expiresAt | PK(subjectKey,actionKey,windowStart) |
 | audit_events | id, occurredAt, requestId, actorId, action, targetType, targetId, workspaceId, outcome, metadata | append-only; metadata không chứa secret/nội dung tài liệu |
+| direct_conversations | id, kind, title, avatarStorageKey, createdBy, participantLow, participantHigh, createdAt, lastMessageAt | kind DIRECT/GROUP; CHECK ràng buộc hình dạng từng loại (DIRECT có cặp đã sắp thứ tự và không title, GROUP có title và không cặp); unique(participantLow,participantHigh) vẫn chặn trùng thread 1-1, và hai NULL không trùng nhau nên nhóm không bị ràng buộc; avatarStorageKey chỉ đặt cho GROUP, NULL với DIRECT vì thread 1-1 lấy ảnh của người đối diện |
+| conversation_participants | conversationId, userId, role, joinedAt, lastReadAt | PK(conversationId,userId); role OWNER/MEMBER; có cho **cả hai** loại hội thoại; lastReadAt là mốc nước đã đọc, thay cho cờ trên từng tin nhắn (ADR-023) |
+| direct_messages | id, conversationId, senderId, body, createdAt | body nullable cho tin nhắn chỉ có tệp; CHECK body IS NULL OR length(trim(body)) > 0; không còn readAt — trạng thái đọc nằm ở mốc nước của từng người (V31) |
+| chat_attachments | id, messageId, kind, storageKey, originalName, mediaType, byteSize, createdAt | kind IMAGE/FILE; không có documentId — tệp trong chat không vào kho tài liệu và AI không đọc (ADR-022); byteSize > 0 |
 | password_reset_otps | email, otpCode, expiresAt, createdAt | PK(email); OTP 6 chữ số, hết hạn 5 phút; xóa sau khi sử dụng thành công |
 
 ## 3. Quan hệ
@@ -49,6 +55,8 @@
 - documents: trạng thái document chỉ đổi qua service transaction. Ingestion/deletion bất đồng bộ qua RabbitMQ (ADR-007).
 - conversations 1–N messages; assistant message 1–1 retrieval_trace và 1–N citation_history.
 - retrieval_traces 1–N retrieval_trace_items.
+- direct_conversations 1–N direct_messages; direct_messages 1–N chat_attachments, xóa theo cascade cùng tin nhắn.
+- direct_conversations 1–N conversation_participants; người rời nhóm mất hàng participant nên hội thoại biến khỏi danh sách của họ, còn tin nhắn giữ nguyên.
 - evaluation_runs N–N evaluation_cases qua evaluation_results.
 
 ## 4. Index bắt buộc
@@ -64,6 +72,10 @@
 | evaluation_cases(datasetVersion,split,intent,topicGroup) | Tạo tập calibration/holdout |
 | evaluation_results(runId,caseId) unique | Bảo toàn một kết quả/case/run |
 | audit_events(workspaceId,occurredAt desc) | Audit Workspace |
+| direct_messages(conversationId,createdAt desc) | Phân trang hội thoại |
+| direct_messages(conversationId,senderId,createdAt) | Đếm tin chưa đọc theo mốc nước |
+| conversation_participants(userId) | Liệt kê hội thoại của một người |
+| chat_attachments(messageId,createdAt) | Nạp tệp cho cả một trang tin nhắn |
 
 ## 5. Chroma collection
 
@@ -90,6 +102,29 @@ Embedding model: intfloat/multilingual-e5-base revision d128750597153bb5987e10b1
 - Conversation summary cập nhật bất đồng bộ hoặc sau khi stream/generate với optimistic locking (WHERE id = :id AND summary_version = :expectedVersion).
 - Delete saga idempotent; document DELETING bị loại khỏi retrieval ngay lập tức.
 
+## 7b. Cuộc gọi 1:1 (V44)
+
+Bảng `calls` chỉ lưu **lịch sử**, không lưu signaling. SDP và ICE candidate mô tả
+địa chỉ mạng và codec của một phiên chết ngay khi kết thúc, nên chúng được chuyển
+tiếp giữa hai trình duyệt và không bao giờ ghi xuống.
+
+- Khóa: `id`; `conversation_id` tham chiếu `direct_conversations` với ON DELETE CASCADE —
+  cuộc gọi là một phần của hội thoại, không phải bản ghi sống lâu hơn hội thoại.
+- `status` ∈ RINGING, ACTIVE, ENDED, DECLINED, MISSED, FAILED; `media` ∈ AUDIO, VIDEO.
+  Có CHECK constraint, **khác ADR-027**: đây là máy trạng thái đóng nên giá của
+  migration thấp còn giá trị của ràng buộc cao.
+- Năm CHECK riêng rẽ ràng buộc mốc thời gian theo trạng thái (RINGING không có mốc nào;
+  ACTIVE phải có `answered_at` và chưa có `ended_at`; DECLINED/MISSED không được có
+  `answered_at`…). Tách từng luật để vi phạm nào thì báo đúng tên luật đó. Lý do ràng
+  buộc ở tầng database: thời lượng tính từ một giá trị null ra **con số sai** chứ không
+  phải lỗi, nên sẽ bị phát hiện rất muộn.
+- Index: `(conversation_id, started_at DESC)` cho lịch sử; hai partial index theo
+  `caller_id`/`callee_id` WHERE status live cho câu hỏi "đang bận không" hỏi trước mỗi
+  cuộc gọi; partial index cho huy hiệu cuộc gọi nhỡ.
+- `RingingCallSweeper` chuyển RINGING quá 45 giây thành MISSED. Chạy theo timer chứ không
+  phải timeout trong bộ nhớ, vì timeout trong bộ nhớ sẽ quên sạch khi process dừng —
+  đúng lúc sinh ra các dòng kẹt.
+
 ## 8. Retention
 
 - refresh_tokens: xóa sau expiresAt/revokedAt theo policy 7 ngày.
@@ -100,7 +135,7 @@ Embedding model: intfloat/multilingual-e5-base revision d128750597153bb5987e10b1
 - password_reset_otps: xóa ngay sau khi xác minh thành công; record hết hạn bị dọn theo policy 24 giờ.
 - evaluation data: version hóa, chỉ giữ dữ liệu được phép dùng cho nghiên cứu.
 
-## 9. Hive admission singleton — ADR-022
+## 9. Hive admission singleton — ADR-028
 
 `ai_generation_control` có duy nhất id=1, state `OPEN|DRAINING|VERIFYING`, version BIGINT không âm, updated_at TIMESTAMPTZ và updated_by tham chiếu user quản trị. Migration V40 tạo singleton OPEN; không sửa message, vector hoặc lịch sử provider cũ. Bảng bật RLS, không có policy truy cập cho client Supabase; chỉ database role của Core có quyền phù hợp mới dùng gate.
 

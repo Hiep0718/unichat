@@ -18,6 +18,7 @@
 import { Link } from 'react-router-dom';
 
 import { MemberFaces } from './member-faces';
+import { visibilityOption } from '../workspace-visibility';
 import { WorkspaceCover } from './workspace-cover';
 import { Icon } from '../../../components/icon';
 import { formatRelativeTime } from '../../../lib/format-time';
@@ -35,16 +36,12 @@ interface WorkspaceCardProps {
   readonly recentPostCount: number;
   readonly faces: readonly WorkspaceFace[];
   readonly hasCover: boolean;
+  /** What the group is about, which decides its default picture. */
+  readonly topics?: readonly string[] | undefined;
   readonly updatedAt: string;
   /** Index used for staggered entrance animation delay. */
   readonly animationIndex?: number;
 }
-
-const BADGE_CONFIG: Record<WorkspaceVisibility, { icon: string; label: string }> = {
-  PUBLIC: { icon: 'public', label: 'Công khai' },
-  PRIVATE: { icon: 'lock', label: 'Riêng tư' },
-  SHARED: { icon: 'group_add', label: 'Được chia sẻ' },
-};
 
 /**
  * Renders a single workspace card: picture behind, identity and activity over.
@@ -58,10 +55,11 @@ export function WorkspaceCard({
   recentPostCount,
   faces,
   hasCover,
+  topics,
   updatedAt,
   animationIndex = 0,
 }: WorkspaceCardProps) {
-  const badge = BADGE_CONFIG[visibility];
+  const badge = visibilityOption(visibility);
 
   return (
     <Link
@@ -69,7 +67,7 @@ export function WorkspaceCard({
       className="workspace-card"
       style={{ '--card-index': animationIndex } as React.CSSProperties}
     >
-      <WorkspaceCover workspaceId={id} name={name} hasCover={hasCover} />
+      <WorkspaceCover workspaceId={id} name={name} hasCover={hasCover} topics={topics} />
 
       {/* Darkens only the lower half, so the picture stays visible while the
           title over it keeps its contrast whatever was uploaded. */}

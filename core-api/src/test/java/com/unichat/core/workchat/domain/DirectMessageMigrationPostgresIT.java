@@ -15,9 +15,9 @@ import org.hibernate.SessionFactory;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
-import org.hibernate.tool.schema.spi.SchemaManagementException;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jdbc.datasource.init.ScriptUtils;
@@ -30,11 +30,10 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Proves the post-V45 additive repair against isolated schemas and the real Hibernate entity. */
+/** Proves the additive repair against isolated legacy schemas and the real Hibernate entity. */
 @Testcontainers
 class DirectMessageMigrationPostgresIT {
-    private static final String MIGRATION_RESOURCE =
-            "db/migration/V46__restore_direct_messages_read_at_after_v45.sql";
+    private static final String MIGRATION_RESOURCE = "db/migration/V38__restore_direct_messages_read_at.sql";
     private static final Instant CREATED_AT = Instant.parse("2026-10-10T10:00:00Z");
     private static final Instant READ_AT = Instant.parse("2026-10-10T10:01:00Z");
     private static final String MESSAGE_BODY = "Tin nhắn tiếng Việt còn nguyên nội dung";
@@ -43,19 +42,19 @@ class DirectMessageMigrationPostgresIT {
     final PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:18.4");
 
     @Test
-    void shouldRepairBaseline45SchemaWithoutChangingExistingMessages() {
+    void shouldRepairBaseline37SchemaWithoutChangingExistingMessages() {
         DataSource source = legacySchema();
         JdbcTemplate database = new JdbcTemplate(source);
         UUID messageId = insertMessage(database);
         Map<String, Object> originalMessage = messageSnapshot(database, messageId);
-        Flyway flyway = baseline45(source);
+        Flyway flyway = baseline37(source);
 
         assertEquals(1, flyway.migrate().migrationsExecuted);
 
         assertReadAtContract(database);
         assertEquals(originalMessage, messageSnapshot(database, messageId));
         assertNull(database.queryForObject("SELECT read_at FROM direct_messages WHERE id=?", Object.class, messageId));
-        assertEquals("46", flyway.info().current().getVersion().getVersion());
+        assertEquals("38", flyway.info().current().getVersion().getVersion());
         assertEquals(0, flyway.migrate().migrationsExecuted);
     }
 
@@ -67,7 +66,7 @@ class DirectMessageMigrationPostgresIT {
         UUID messageId = insertMessage(database);
         database.update("UPDATE direct_messages SET read_at=? WHERE id=?", utc(READ_AT), messageId);
         Map<String, Object> originalMessage = database.queryForMap("SELECT * FROM direct_messages WHERE id=?", messageId);
-        Flyway flyway = baseline45(source);
+        Flyway flyway = baseline37(source);
 
         flyway.migrate();
         executeRepair(source);
@@ -94,18 +93,16 @@ class DirectMessageMigrationPostgresIT {
     }
 
     @Test
-    void shouldValidateAndPersistRealEntityAfterRepairingMissingReadAt() {
+    void shouldValidateEntityWithoutReadAtEvenOnALegacySchemaMissingTheColumn() {
+        // DirectMessage no longer maps read_at at all (ADR-023: read state
+        // moved to conversation_participants.last_read_at), so validation
+        // succeeds even against a schema that never had the column — V38's
+        // repair is no longer a precondition for the entity to load.
         DataSource source = legacySchema();
         JdbcTemplate database = new JdbcTemplate(source);
         UUID messageId = insertMessage(database);
-        SchemaManagementException missingColumn = assertThrows(SchemaManagementException.class,
-                () -> withValidatedFactory(source, sessionFactory -> { }));
-        assertTrue(missingColumn.getMessage().contains("read_at"));
-
-        baseline45(source).migrate();
 
         withValidatedFactory(source, sessionFactory -> verifyEntityRoundTrip(sessionFactory, messageId));
-        assertEquals(READ_AT, readReceipt(database, messageId));
         assertEquals(2L, database.queryForObject("SELECT count(*) FROM direct_messages", Long.class));
     }
 
@@ -116,24 +113,22 @@ class DirectMessageMigrationPostgresIT {
 
         withValidatedFactory(source, sessionFactory -> assertTrue(sessionFactory.isOpen()));
 
-        assertReadAtContract(database);
-        assertEquals(1L, database.queryForObject(
-                "SELECT count(*) FROM flyway_schema_history WHERE version='46' AND success", Long.class));
+        // V38 (unaware of V37's drop) re-added read_at; V45 retires it again
+        // so the full chain ends with the column absent, matching ADR-023.
+        assertThrows(EmptyResultDataAccessException.class, () -> readAtMetadata(database));
+        assertEquals(1L, database.queryForObject("SELECT count(*) FROM flyway_schema_history WHERE version='38' AND success", Long.class));
     }
 
     @Test
-    void shouldRejectIncompatibleExistingReadAtTypeWithoutRewritingIt() {
+    void shouldLeaveAnIncompatibleExistingReadAtColumnAloneWithoutRewritingIt() throws SQLException {
         DataSource source = legacySchema();
         JdbcTemplate database = new JdbcTemplate(source);
         database.execute("ALTER TABLE direct_messages ADD COLUMN read_at TEXT");
         UUID messageId = insertMessage(database);
         database.update("UPDATE direct_messages SET read_at=? WHERE id=?", "legacy receipt", messageId);
 
-        baseline45(source).migrate();
+        executeRepair(source);
 
-        SchemaManagementException incompatibleColumn = assertThrows(SchemaManagementException.class,
-                () -> withValidatedFactory(source, sessionFactory -> { }));
-        assertTrue(incompatibleColumn.getMessage().contains("read_at"));
         assertEquals("text", readAtMetadata(database).get("udt_name"));
         assertEquals("legacy receipt", database.queryForObject("SELECT read_at FROM direct_messages WHERE id=?", String.class, messageId));
     }
@@ -171,9 +166,11 @@ class DirectMessageMigrationPostgresIT {
         return new DriverManagerDataSource(postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword());
     }
 
-    private Flyway baseline45(DataSource source) {
+    private Flyway baseline37(DataSource source) {
+        // Capped at V38: these tests isolate that one repair script, and the
+        // classpath now carries unrelated migrations past it (V39 onward).
         Flyway flyway = Flyway.configure().dataSource(source).locations("classpath:db/migration")
-                .baselineVersion("45").load();
+                .baselineVersion("37").target("38").load();
         flyway.baseline();
         return flyway;
     }
@@ -232,17 +229,13 @@ class DirectMessageMigrationPostgresIT {
             assertNotNull(existingMessage);
             assertEquals(MESSAGE_BODY, existingMessage.getBody());
             assertEquals(CREATED_AT, existingMessage.getCreatedAt());
-            assertNull(existingMessage.getReadAt());
-            existingMessage.markRead(READ_AT);
             session.persist(new DirectMessage(newMessageId, existingMessage.getConversationId(),
                     existingMessage.getSenderId(), "Tin nhắn mới sau khôi phục", CREATED_AT));
             session.getTransaction().commit();
         }
         try (Session session = sessionFactory.openSession()) {
-            assertEquals(READ_AT, session.find(DirectMessage.class, messageId).getReadAt());
             DirectMessage newMessage = session.find(DirectMessage.class, newMessageId);
             assertEquals("Tin nhắn mới sau khôi phục", newMessage.getBody());
-            assertNull(newMessage.getReadAt());
         }
     }
 

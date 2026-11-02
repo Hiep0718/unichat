@@ -1,93 +1,323 @@
+/* Màn đăng nhập: hai nửa, mỗi nửa một việc.
+
+   Nửa trái là một mảng tối mang bức minh họa và phần kể sản phẩm làm gì;
+   nửa phải là tờ giấy để đăng nhập. Hai mảng này là nền của riêng chúng, nên
+   chúng giữ nguyên ở cả hai chế độ sáng/tối — đây là trang người chưa đăng
+   nhập nhìn thấy, không phải một bề mặt để làm việc hàng giờ. */
+
 .login-page {
-  position: relative;
   display: grid;
-  min-height: 100vh;
-  place-items: center;
-  overflow-x: hidden;
-  overflow-y: auto;
-  padding: clamp(24px, 5vw, 72px);
-  background: #f2f6fb;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  min-block-size: 100vh;
+  background: var(--nen);
 }
 
-.login-page__bg { position: fixed; inset: 0; pointer-events: none; }
-.login-page__blob { position: absolute; border-radius: 50%; filter: blur(90px); }
-.login-page__blob--1 { top: -18%; left: -8%; width: 44vw; height: 44vw; background: rgb(87 223 254 / 24%); }
-.login-page__blob--2 { right: -12%; bottom: -22%; width: 58vw; height: 58vw; background: rgb(30 58 138 / 12%); }
-.login-page__blob--3 { top: 35%; right: 42%; width: 24vw; height: 24vw; background: rgb(255 255 255 / 85%); }
+/* ---------- Nửa trái ---------- */
 
-.login-page__main {
+.login-story {
+  position: relative;
+  display: flex;
+  overflow: hidden;
+  /* Nền tối dưới bức minh họa. Ảnh có nền đen sẵn, nhưng khi khung cao hơn
+     ảnh thì phần thừa phải cùng màu, nếu không sẽ lộ một mép trắng. */
+  background: #070b1a;
+  color: #ffffff;
+}
+
+.login-story__art,
+.login-story__art img {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* Một lớp tối từ dưới lên, để chữ đọc được trên bất kỳ phần nào của ảnh.
+
+   Đây là ngoại lệ gradient duy nhất mà luật nhà cho phép: một lớp phủ trung
+   tính đè lên ảnh để chữ đọc được, chứ không phải một dải màu trang trí. */
+.login-story::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgb(7 11 26 / 72%) 0%,
+    rgb(7 11 26 / 40%) 38%,
+    rgb(7 11 26 / 78%) 100%
+  );
+}
+
+.login-story__inner {
   position: relative;
   z-index: 1;
-  display: grid;
-  grid-template-columns: minmax(300px, .92fr) minmax(390px, 1fr);
-  align-items: center;
-  gap: clamp(44px, 7vw, 112px);
-  width: min(100%, 1080px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 32px;
+  inline-size: 100%;
+  padding: 44px 52px;
 }
-.login-page__main:not(:has(.login-page__story)) { grid-template-columns: minmax(0, 520px); justify-content: center; }
 
-.login-page__story { max-width: 470px; padding: 24px 0; }
-.login-page__logo { display: flex; align-items: center; gap: 12px; margin-bottom: 62px; }
-.login-page__logo-icon {
-  display: grid;
-  width: 48px;
-  height: 48px;
-  place-items: center;
-  border-radius: 16px;
-  background: #102b78;
-  color: white;
-  box-shadow: 0 10px 24px rgb(16 43 120 / 22%);
-}
-.login-page__logo-text { color: #102b78; font-size: 25px; font-weight: 750; letter-spacing: -.045em; }
-.login-page__eyebrow { color: #167487; font-size: 11px; font-weight: 750; letter-spacing: .16em; }
-.login-page__story h2 { margin: 18px 0; color: #10244e; font-size: clamp(34px, 4.2vw, 54px); line-height: 1.12; letter-spacing: -.045em; }
-.login-page__story > p { max-width: 400px; color: #58677e; font-size: 16px; line-height: 1.8; }
-.login-page__story-note {
+.login-story__brand {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-top: 36px;
-  color: #263d62;
-  font-size: 13px;
-  font-weight: 600;
 }
-.login-page__story-note .material-symbols-outlined { color: #168398; }
 
-.login-page .login-card {
-  padding: clamp(26px, 4vw, 44px);
-  border: 1px solid rgb(255 255 255 / 85%);
-  border-radius: 28px;
-  background: rgb(255 255 255 / 88%);
-  box-shadow: 0 24px 70px rgb(21 43 83 / 12%), 0 2px 8px rgb(21 43 83 / 4%);
-  backdrop-filter: blur(18px);
+.login-story__brand-mark {
+  display: grid;
+  place-items: center;
+  inline-size: 44px;
+  block-size: 44px;
+  border-radius: var(--radius-lg);
+  background: var(--nhan);
+  color: #ffffff;
 }
-.login-page .login-card__header { margin-bottom: 30px; text-align: left; }
-.login-page .login-card__title { margin-bottom: 8px; color: #152748; font-size: 25px; letter-spacing: -.035em; }
-.login-page .login-card__subtitle { color: #6a778d; font-size: 14px; }
-.login-page__badge {
+
+.login-story__brand-text {
   display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.login-story__brand-text strong {
+  font: var(--font-headline-sm);
+  font-weight: 700;
+}
+
+.login-story__brand-text small {
+  font: var(--font-label-sm);
+  color: rgb(255 255 255 / 68%);
+}
+
+/* Khối giữa của cột: nó là thứ được đẩy giãn ra, còn thương hiệu ở trên
+   và hàng tính năng ở dưới giữ nguyên kích thước. */
+.login-story__pitch {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-block-size: 0;
+}
+
+.login-story__title {
+  margin: 0;
+  font-family: var(--font-doc);
+  font-size: clamp(34px, 3.6vw, 52px);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+}
+
+.login-story__lede {
+  margin: 20px 0 0;
+  max-inline-size: 42ch;
+  font: var(--font-body-lg);
+  line-height: 1.6;
+  color: rgb(255 255 255 / 82%);
+}
+
+.login-story__features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.login-story__features li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: var(--font-label-md);
+  font-weight: 600;
+  color: rgb(255 255 255 / 88%);
+}
+
+/* ---------- Mẫu hội thoại ---------- */
+
+.login-demo {
+  margin-top: 34px;
+  max-inline-size: 480px;
+}
+
+.login-demo__ask {
+  display: inline-block;
+  margin: 0 0 14px auto;
+  padding: 11px 18px;
+  border-radius: 18px 18px 4px 18px;
+  background: #1b2238;
+  font: var(--font-body-md);
+  color: #ffffff;
+}
+
+.login-demo__answer {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.login-demo__spark {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  inline-size: 32px;
+  block-size: 32px;
+  border-radius: var(--radius-md);
+  background: #1b2238;
+  color: var(--ray-nhan);
+}
+
+.login-demo__body {
+  padding: 15px 17px;
+  border-radius: 4px 18px 18px 18px;
+  /* Tờ giấy trắng: câu trả lời là thứ người ta đọc, nên nó đứng trên giấy. */
+  background: #ffffff;
+  color: var(--muc);
+}
+
+.login-demo__text {
+  margin: 0;
+  font: var(--font-body-md);
+  line-height: 1.55;
+}
+
+/* Hàng nguồn — chỗ sản phẩm này khác một hộp chat bất kỳ. */
+.login-demo__sources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.login-demo__source {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  background: var(--be-mat);
+  font: var(--font-label-sm);
+  color: var(--muc-nhat);
+}
+
+.login-demo__source::before {
+  content: '';
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: 3px;
+  background: var(--nhan);
+}
+
+/* ---------- Nửa phải ---------- */
+
+.login-pane {
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  margin-top: 22px;
-  color: #69768a;
-  font-size: 11px;
-}
-.login-page__badge-icon { color: #168398; }
-
-@media (max-width: 760px) {
-  .login-page { min-height: 100svh; align-items: start; padding: 22px 16px 34px; }
-  .login-page__main { grid-template-columns: minmax(0, 440px); justify-content: center; gap: 18px; }
-  .login-page__story { padding: 0 4px; }
-  .login-page__logo { margin-bottom: 20px; }
-  .login-page__eyebrow, .login-page__story > p, .login-page__story-note { display: none; }
-  .login-page__story h2 { display: none; }
-  .login-page .login-card { padding: 24px 20px; border-radius: 24px; }
-  .login-page .login-card__header { margin-bottom: 22px; }
-  .login-page__badge { margin-top: 18px; }
+  gap: 18px;
+  padding: 40px 24px;
+  background: var(--be-mat);
 }
 
-@media (max-width: 360px) {
-  .login-page { padding-right: 12px; padding-left: 12px; }
-  .login-page .login-card { padding: 22px 16px; }
+.login-pane__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  font: var(--font-label-sm);
+  color: var(--muc-nhat);
+}
+
+/* ---------- Khổ hẹp ---------- */
+
+/* ---------- Khổ điện thoại ---------- */
+
+/* Một cột: dải ảnh tối ở trên, tờ giấy trắng trôi lên đè một đoạn lên nó.
+
+   Dải ảnh cao 300px chứ không phải nửa màn hình: trên một điện thoại 844px,
+   chừng đó để ô email nằm ngay trong tầm nhìn đầu tiên. Phần đè lên là thứ
+   nói cho người dùng biết còn nội dung phía dưới để cuộn. */
+@media (max-width: 1023px) {
+  .login-page {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    background: var(--nen);
+  }
+
+  .login-story {
+    block-size: 300px;
+    min-block-size: 300px;
+  }
+
+  .login-story__inner {
+    justify-content: flex-start;
+    gap: 18px;
+    padding: 26px 22px 46px;
+  }
+
+  .login-story__title {
+    font-size: clamp(26px, 7vw, 34px);
+  }
+
+  .login-story__lede,
+  .login-demo {
+    display: none;
+  }
+
+  .login-story__pitch {
+    flex: 0 0 auto;
+  }
+
+  .login-story__features {
+    gap: 14px;
+  }
+
+  .login-story__features li {
+    font: var(--font-label-sm);
+    font-weight: 600;
+  }
+
+  /* Điểm sáng của bức ảnh nằm ở khoảng 15% chiều cao. Với object-fit: cover
+     trong một khung chỉ cao 300px, canh giữa sẽ cắt đúng khúc giữa và bỏ
+     mất nó; canh lên trên thì nó nằm trong khung. */
+  .login-story__art img {
+    object-position: center 18%;
+  }
+
+  /* Thẻ đăng nhập bỏ khung riêng: tờ giấy trắng của .login-pane đã là thẻ,
+     nên giữ viền nữa là một thẻ nằm trong một thẻ. */
+  .login-card {
+    max-inline-size: 100%;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .login-pane {
+    /* Kéo lên đè đáy dải ảnh. position: relative để nó nằm trên ảnh
+       chứ không bị ảnh vẽ đè lên. */
+    position: relative;
+    z-index: 1;
+    margin-block-start: -28px;
+    padding: 28px 20px 32px;
+    border-start-start-radius: 28px;
+    border-start-end-radius: 28px;
+    background: var(--nen);
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 599px) {
+  .login-story__inner {
+    padding: 22px 18px 46px;
+  }
 }

@@ -1,0 +1,149 @@
+.chat-composer {
+  padding: 14px 24px 20px;
+  border-top: 1px solid var(--ws-line);
+  transition: background var(--transition-fast);
+}
+
+/* A whole-composer tint rather than a dashed outline: the drop target is the
+   composer, and an outline inside a bordered panel reads as a second border. */
+.chat-composer--dragging {
+  background: var(--ws-accent-soft);
+}
+
+.chat-composer__error {
+  margin: 0 0 8px;
+  color: var(--ws-warn-ink);
+  font: var(--font-label-sm);
+  font-weight: 600;
+}
+
+.chat-composer__progress {
+  margin: 0 0 8px;
+  color: var(--ws-ink-muted);
+  font: var(--font-label-sm);
+}
+
+.chat-composer__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+}
+
+.chat-composer__chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 260px;
+  padding: 6px 8px 6px 10px;
+  border-radius: var(--radius-full);
+  background: var(--ws-chip);
+  color: var(--ws-ink);
+}
+
+.chat-composer__chip-name {
+  font: var(--font-label-md);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-composer__chip-size {
+  color: var(--ws-ink-muted);
+  font: var(--font-label-sm);
+  flex-shrink: 0;
+}
+
+.chat-composer__chip-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--ws-ink-muted);
+  cursor: pointer;
+}
+
+.chat-composer__chip-remove:hover:not(:disabled) {
+  background: var(--ws-card);
+  color: var(--ws-ink);
+}
+
+.chat-composer__row {
+  display: flex;
+  gap: 10px;
+}
+
+/* Kept in the accessibility tree but out of the layout: the visible control is
+   the paperclip button, which opens this input. */
+.chat-composer__file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  clip: rect(0 0 0 0);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.chat-composer__attach,
+.chat-composer__send {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: var(--radius-xl);
+  cursor: pointer;
+  transition: filter var(--transition-fast), background var(--transition-fast);
+}
+
+.chat-composer__attach {
+  background: var(--ws-chip);
+  color: var(--ws-ink-muted);
+}
+
+.chat-composer__attach:hover:not(:disabled) {
+  background: var(--ws-accent-soft);
+  color: var(--ws-ink);
+}
+
+.chat-composer__send {
+  background: var(--ws-accent-gradient);
+  color: var(--ws-accent-ink);
+}
+
+.chat-composer__send:hover:not(:disabled) {
+  filter: brightness(1.15);
+}
+
+.chat-composer__attach:disabled,
+.chat-composer__send:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.chat-composer__input {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 16px;
+  border: none;
+  border-radius: var(--radius-xl);
+  background: var(--ws-chip);
+  color: var(--ws-ink);
+  font: var(--font-body-md);
+  outline: none;
+  transition: box-shadow var(--transition-fast);
+}
+
+.chat-composer__input:focus {
+  box-shadow: 0 0 0 2px var(--ws-accent);
+}

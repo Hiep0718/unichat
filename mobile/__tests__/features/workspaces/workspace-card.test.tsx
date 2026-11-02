@@ -13,9 +13,9 @@ describe('WorkspaceCard', () => {
     memberCount: 25,
   };
 
-  it('renders workspace details properly in "mine" mode', () => {
+  it('renders workspace details properly in "mine" mode', async () => {
     const onPressMock = jest.fn();
-    const { getByText, getByTestId } = render(
+    const { getByText, getByTestId } = await render(
       <WorkspaceCard
         workspace={mockWorkspace}
         mode="mine"
@@ -28,15 +28,15 @@ describe('WorkspaceCard', () => {
     expect(getByText('8 tài liệu')).toBeTruthy();
     expect(getByText('25 thành viên')).toBeTruthy();
     expect(getByText('Công khai')).toBeTruthy();
-    expect(getByText('Vào học')).toBeTruthy();
+    expect(getByText('Truy cập')).toBeTruthy();
 
-    fireEvent.press(getByTestId('workspace-card-ws-123'));
+    await fireEvent.press(getByTestId('workspace-card-ws-123'));
     expect(onPressMock).toHaveBeenCalledWith('ws-123');
   });
 
-  it('renders "Tham gia" button in "explore" mode and triggers onJoin', () => {
+  it('renders "Tham gia" button in "explore" mode and triggers onJoin', async () => {
     const onJoinMock = jest.fn();
-    const { getByText, getByTestId } = render(
+    const { getByText, getByTestId } = await render(
       <WorkspaceCard
         workspace={mockWorkspace}
         mode="explore"
@@ -46,7 +46,7 @@ describe('WorkspaceCard', () => {
 
     expect(getByText('Tham gia')).toBeTruthy();
 
-    fireEvent.press(getByTestId('join-btn-ws-123'));
+    await fireEvent.press(getByTestId('join-btn-ws-123'));
     expect(onJoinMock).toHaveBeenCalledWith('ws-123');
   });
 });

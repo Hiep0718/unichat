@@ -1,5 +1,9 @@
 module.exports = {
   preset: 'jest-expo',
+  // Jest 30 workers carry a much larger React Native 0.88 module graph than
+  // Jest 29 did. At the default worker count they are killed for memory on a
+  // 14 GB machine before any suite reports.
+  maxWorkers: '50%',
   setupFiles: ['<rootDir>/jest.setup.js'],
   testMatch: ['**/__tests__/**/*.test.[jt]s?(x)'],
   transformIgnorePatterns: [

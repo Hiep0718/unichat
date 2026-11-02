@@ -62,34 +62,67 @@
   box-shadow: var(--shadow-lg);
 }
 
+/* Seven of these now, so the name moves out of the row and onto hover — the
+   way Facebook does it. Laying seven labelled columns side by side made the
+   picker wider than a phone screen. */
 .reaction-bar__option {
+  position: relative;
   display: inline-flex;
-  flex-direction: column;
   align-items: center;
-  gap: 2px;
-  padding: 6px 10px;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
   border: none;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-full);
   background: transparent;
-  font-size: 20px;
+  font-size: 24px;
   line-height: 1;
   cursor: pointer;
-  transition: background var(--transition-fast), transform var(--transition-fast);
+  transition: transform var(--transition-fast), background var(--transition-fast);
 }
 
-.reaction-bar__option:hover {
+.reaction-bar__option:hover,
+.reaction-bar__option:focus-visible {
   background: var(--color-surface-container-high);
-  transform: translateY(-2px);
+  transform: scale(1.25) translateY(-3px);
 }
 
 .reaction-bar__option--mine {
   background: var(--color-primary-fixed);
 }
 
+/* Kept in the DOM, not display:none, so it is still the button's accessible
+   name; only its presentation changes. */
 .reaction-bar__option-label {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  background: var(--color-inverse-surface, var(--muc));
+  color: var(--color-inverse-on-surface, var(--nen));
   font: var(--font-label-sm);
-  font-size: 10.5px;
-  color: var(--color-on-surface-variant);
+  font-size: 11px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-fast);
+}
+
+.reaction-bar__option:hover .reaction-bar__option-label,
+.reaction-bar__option:focus-visible .reaction-bar__option-label {
+  opacity: 1;
+}
+
+/* Someone who prefers less motion still gets the hover highlight and the
+   name; they just do not get the jump. */
+@media (prefers-reduced-motion: reduce) {
+  .reaction-bar__option:hover,
+  .reaction-bar__option:focus-visible {
+    transform: none;
+  }
 }
 
 /* ── Tally ──────────────────────────────────────────────── */

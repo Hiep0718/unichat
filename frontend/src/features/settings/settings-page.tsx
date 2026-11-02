@@ -1,8 +1,8 @@
-import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
-import { MemberTable } from '../members/components/member-table';
+import { MemberPanel } from '../members';
 import { useWorkspace } from '../workspaces/workspace-context';
+import { InvitePanel } from '../workspaces/components/invite-panel';
 import { AccessForm } from './access-form';
 import { DangerZone } from './danger-zone';
 import { GeneralForm } from './general-form';
@@ -19,13 +19,22 @@ const TABS: readonly { value: SettingsTab; label: string; ownerOnly: boolean }[]
   { value: 'danger', label: 'Vùng nguy hiểm', ownerOnly: true },
 ];
 
+/** Reads the tab named in the URL, so a link can open the one it means. */
+function tabFromQuery(raw: string | null): SettingsTab {
+  return TABS.find((tab) => tab.value === raw)?.value ?? 'general';
+}
+
 /** Displays workspace settings with owner-controlled AI processing consent. */
 export function WorkspaceSettingsPage() {
   const { workspace, isOwner, canEdit } = useWorkspace();
-  const [searchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState<SettingsTab>(
-    searchParams.get('tab') === 'privacy' ? 'privacy' : 'general'
-  );
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Held in the URL rather than in state alone: a screen that tells an owner
+  // to change a setting has to be able to land them on it, and sending them
+  // to the first tab to hunt for it is barely better than saying nothing.
+  const activeTab = tabFromQuery(searchParams.get('tab'));
+  const setActiveTab = (tab: SettingsTab) => setSearchParams({ tab }, { replace: true });
+
   if (!workspace) return null;
 
   return (
@@ -48,8 +57,12 @@ export function WorkspaceSettingsPage() {
         {activeTab === 'access' && isOwner && <div className="settings-tab">
           <AccessForm key={workspace.id} workspace={workspace} />
           <section className="settings-section">
+            <h3 className="settings-section__title">Link mời</h3>
+            <InvitePanel workspaceId={workspace.id} visibility={workspace.visibility} />
+          </section>
+          <section className="settings-section">
             <h3 className="settings-section__title">Danh sách Thành viên</h3>
-            <MemberTable workspaceId={workspace.id} isOwner={isOwner} />
+            <MemberPanel workspaceId={workspace.id} isOwner={isOwner} visibility={workspace.visibility} />
           </section>
         </div>}
         {activeTab === 'privacy' && <PrivacyForm key={workspace.id} workspace={workspace} isOwner={isOwner} />}

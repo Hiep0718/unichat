@@ -51,6 +51,7 @@ describe('ChatPage policy banner', () => {
           visibility: 'PRIVATE',
           role: 'OWNER',
           cloudAllowed: false,
+          topics: [],
           version: 1,
         }}
       >

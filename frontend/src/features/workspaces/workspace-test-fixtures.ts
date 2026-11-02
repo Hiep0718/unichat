@@ -10,6 +10,7 @@ export function applyWorkspaceUpdateFixture(
     name: input.name ?? workspace.name,
     description: input.description ?? workspace.description,
     visibility: input.visibility ?? workspace.visibility,
+    topics: input.topics ?? workspace.topics,
     cloudAllowed: input.cloudAllowed ?? workspace.cloudAllowed,
     version: input.expectedVersion + 1,
   };

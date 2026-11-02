@@ -1,0 +1,40 @@
+.group-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px 0;
+}
+
+.group-skeleton__bar,
+.group-skeleton__card {
+  border-radius: var(--radius-2xl, 16px);
+  background: var(--ws-card, var(--nen));
+}
+
+.group-skeleton__bar {
+  height: 52px;
+}
+
+.group-skeleton__card {
+  height: 220px;
+}
+
+.group-skeleton__card--short {
+  height: 140px;
+}
+
+/* A slow breath rather than a sweep: the placeholder is on screen for a
+   fraction of a second on a warm cache, and a travelling highlight in that
+   time reads as a glitch. */
+@media (prefers-reduced-motion: no-preference) {
+  .group-skeleton__bar,
+  .group-skeleton__card {
+    animation: group-skeleton-pulse 1.4s ease-in-out infinite;
+  }
+}
+
+@keyframes group-skeleton-pulse {
+  50% {
+    opacity: 0.62;
+  }
+}

@@ -1,60 +1,298 @@
+/* Two columns: what the group is on the left, the numbers describing it on
+   the right. One column stacked them, which gave "Ngày tạo" the same weight
+   as the group's purpose. */
 .group-about {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 16px;
+  align-items: start;
+}
+
+.group-about__main,
+.group-about__aside {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  max-width: 720px;
+  gap: 16px;
+  min-width: 0;
 }
 
+@media (max-width: 1040px) {
+  .group-about {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ── Cards ───────────────────────────────────────────────── */
+
+/* Elevation, not an outline. A card drawn with both reads as a wireframe,
+   which is the rule the rest of the group page already follows. */
 .group-about__card {
   padding: 18px 20px;
-  border: 1px solid var(--color-outline-variant);
-  border-radius: var(--radius-xl);
-  background: var(--color-surface-container-lowest);
+  border-radius: var(--radius-2xl, 16px);
+  background: var(--ws-card, var(--nen));
 }
 
+.group-about__card--quiet {
+  background: var(--ws-chip, var(--color-surface-dim));
+  box-shadow: none;
+}
+
+/* The assistant is what this product is for, so its card is the one that
+   carries colour. Soft rather than saturated: the button inside it is the
+   thing to press, and two saturated surfaces would compete. */
+/* The inverse of the page, like the rail's assistant card: the same offer in
+   two places should not read as two different things. The token pair flips
+   under the dark theme, so this stays "not the page" in both. */
 .group-about__card--ai {
-  border-color: transparent;
-  background: var(--color-secondary-fixed);
-  color: var(--color-on-secondary-fixed-variant);
+  position: relative;
+  overflow: hidden;
+  border: none;
+  background: var(--color-inverse-surface);
+  color: var(--color-inverse-on-surface);
+  box-shadow: none;
+}
+
+.group-about__card--ai .group-about__heading {
+  color: var(--color-inverse-on-surface);
+}
+
+.group-about__card--ai .group-about__description,
+.group-about__card--ai .group-about__points li {
+  color: inherit;
+  opacity: 0.82;
+}
+
+.group-about__card--ai .group-about__cta {
+  background: var(--color-inverse-on-surface);
+  color: var(--color-inverse-surface);
+}
+
+.group-about__card--ai .group-about__cta:hover {
+  filter: none;
+  opacity: 0.88;
+}
+
+/* Keeps the prose off the sheets drifting behind it. */
+.group-about__card--ai > *:not(.group-about__motif) {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Sheets behind the assistant card ────────────────────── */
+
+.group-about__motif {
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  width: 170px;
+  height: 150px;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.group-about__sheet {
+  position: absolute;
+  border-radius: 6px;
+  background: var(--color-inverse-on-surface);
+  opacity: 0.1;
+}
+
+.group-about__sheet--back {
+  right: 74px;
+  top: 10px;
+  width: 62px;
+  height: 80px;
+  transform: rotate(-13deg);
+}
+
+.group-about__sheet--mid {
+  right: 16px;
+  top: 0;
+  width: 66px;
+  height: 86px;
+  transform: rotate(8deg);
+  opacity: 0.14;
+}
+
+.group-about__sheet--front {
+  right: 44px;
+  bottom: 4px;
+  width: 70px;
+  height: 90px;
+  transform: rotate(-4deg);
+  opacity: 0.18;
+}
+
+/* The motif is decoration; below this width the card needs its room for
+   the words. */
+@media (max-width: 760px) {
+  .group-about__motif {
+    display: none;
+  }
+}
+
+.group-about__card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
 }
 
 .group-about__heading {
-  display: flex;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--ws-ink, var(--muc));
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.group-about__subheading {
+  display: inline-flex;
   align-items: center;
   gap: 7px;
-  margin: 0 0 10px;
-  font: var(--font-label-md);
+  margin: 0 0 6px;
+  color: var(--ws-ink, var(--muc));
+  font-size: 0.875rem;
   font-weight: 700;
-  color: inherit;
 }
 
 .group-about__description {
   margin: 0;
-  font: var(--font-body-md);
+  color: var(--ws-ink-soft, var(--muc-nhat));
+  font-size: 0.875rem;
   line-height: 1.65;
-  color: inherit;
 }
 
-.group-about__card:not(.group-about__card--ai) .group-about__description {
-  color: var(--color-on-surface-variant);
+.group-about__note {
+  margin: 0;
+  color: var(--ws-ink-muted, var(--muc-nhat));
+  font-size: 0.8125rem;
+  line-height: 1.55;
 }
+
+.group-about__edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--ws-accent, var(--muc));
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.group-about__edit:hover {
+  text-decoration: underline;
+}
+
+/* ── Assistant card ──────────────────────────────────────── */
+
+.group-about__points {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 14px 0 16px;
+  padding: 0;
+  list-style: none;
+}
+
+.group-about__points li {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  color: var(--ws-ink-soft, var(--muc-nhat));
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.group-about__points .material-symbols-outlined {
+  flex: none;
+  color: var(--ws-accent, var(--muc));
+}
+
+.group-about__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 18px;
+  border-radius: 12px;
+  background: var(--ws-accent-gradient);
+  color: var(--ws-accent-ink, var(--nen));
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.group-about__cta:hover {
+  filter: brightness(1.12);
+}
+
+/* ── Side-by-side quiet cards ────────────────────────────── */
+
+.group-about__pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 16px;
+}
+
+/* ── Facts ───────────────────────────────────────────────── */
 
 .group-about__facts {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
   margin: 0;
 }
 
-.group-about__facts dt {
-  font: var(--font-label-sm);
-  color: var(--color-on-surface-variant);
-  margin-bottom: 2px;
+/* Divided by a line between rows rather than a box around each: four boxes
+   inside a card is the wireframe again, one level down. */
+.group-about__fact {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--ws-line, var(--ke));
 }
 
-.group-about__facts dd {
+.group-about__fact:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.group-about__fact dt {
+  color: var(--ws-ink-muted, var(--muc-nhat));
+  font-size: 0.8125rem;
+}
+
+.group-about__fact dd {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   margin: 0;
-  font: var(--font-title-sm);
-  font-weight: 650;
-  color: var(--color-on-surface);
+  color: var(--ws-ink, var(--muc));
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.group-about__role {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--ws-accent-soft, var(--nen));
+  color: var(--ws-accent, var(--muc));
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.group-about__jump {
+  color: var(--ws-accent, var(--muc));
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.group-about__jump:hover {
+  text-decoration: underline;
 }

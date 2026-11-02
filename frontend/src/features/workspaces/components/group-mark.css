@@ -2,10 +2,13 @@
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  color: #fff;
+  /* Mực tối, không phải trắng. Nền của chip là một sắc nhạt kể từ lượt
+     làm nhạt các mark, nên chữ trắng để lại ở đây chỉ còn 1,26:1 — một
+     chữ cái không ai đọc được. Máy đo bắt được, mắt thì không, vì chip
+     chỉ rộng 24px. */
+  color: var(--mark-muc);
   font-weight: 700;
   line-height: 1;
   user-select: none;
   /* Lifts the tile off a white rail without needing a border. */
-  box-shadow: 0 1px 3px rgb(15 23 42 / 18%);
 }

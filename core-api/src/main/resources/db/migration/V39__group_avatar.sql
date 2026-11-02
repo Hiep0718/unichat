@@ -1,0 +1,24 @@
+-- A group's own picture.
+--
+-- Until now a group was drawn as a stack of its members' letter avatars, which
+-- makes two groups of the same people indistinguishable in the list — the
+-- common case, since teams message each other in more than one group.
+--
+-- Only the storage key lives here. The bytes go to the same object store as
+-- profile pictures, because a row holding a 256x256 PNG would be read on every
+-- conversation-list query that never shows it.
+--
+-- A one-to-one conversation keeps the column NULL: it is drawn with the other
+-- person's own picture, which they alone control.
+--
+-- Numbered 39, not 38. Version 38 was taken on the shared development database
+-- on 2026-10-11 by "restore direct messages read at", a script that exists in no
+-- git ref — the fourth time an uncommitted migration has claimed a number here,
+-- after 29, then 32 and 33. Flyway saw 38 as applied and skipped this file
+-- silently; the failure surfaced one layer later as Hibernate reporting the
+-- column missing.
+--
+-- Idempotent for the reason V36 records, which is also what makes a fresh
+-- number safe: on a database that already holds this, the statement is a no-op.
+ALTER TABLE direct_conversations
+    ADD COLUMN IF NOT EXISTS avatar_storage_key VARCHAR(255);

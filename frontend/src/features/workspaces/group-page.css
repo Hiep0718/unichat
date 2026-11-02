@@ -36,10 +36,12 @@
   align-items: flex-end;
 }
 
+/* Raised so the mark straddles the band's lower edge, the way the mockup has
+   it: roughly half of it over the art, the rest on the page. Tied to the
+   mark's own size, so changing one does not silently misalign the other. */
 .group-page__header--under-cover .group-mark {
   align-self: flex-start;
-  margin-top: -40px;
-  box-shadow: 0 0 0 4px var(--color-surface, #fff), 0 4px 14px rgb(15 23 42 / 18%);
+  margin-top: -44px;
 }
 
 .group-page__identity {
@@ -87,7 +89,7 @@
   padding: 10px 18px;
   border: none;
   border-radius: var(--radius-full);
-  background: var(--color-primary);
+  background: var(--ws-accent-gradient);
   color: var(--color-on-primary);
   font: var(--font-label-md);
   font-weight: 650;
@@ -163,11 +165,13 @@
 
 /* ── Tabs ───────────────────────────────────────────────── */
 
+/* No line under the row any more: the active tab's own underline already
+   marks the boundary, and a full-width hairline under it as well drew two
+   divisions for one edge. */
 .group-page__tabs {
   display: flex;
   gap: 4px;
   overflow-x: auto;
-  border-bottom: 1px solid var(--color-outline-variant);
 }
 
 .group-tab {
@@ -188,28 +192,44 @@
   color: var(--color-on-surface);
 }
 
-.group-tab--ai {
-  color: #0284c7;
-  font-weight: 700;
-}
-
-.group-tab--ai .material-symbols-outlined {
-  color: #0284c7;
-}
-
-.group-tab--ai:hover {
-  color: #0369a1;
-  background: #f0f9ff;
-  border-radius: var(--radius-sm, 6px);
-}
-
+/* Matches the filled buttons' accent rather than the old navy primary. */
 .group-tab--active {
-  color: var(--color-primary);
-  border-bottom-color: var(--color-primary);
+  color: var(--ws-accent, var(--muc));
+  border-bottom-color: var(--ws-accent, var(--muc));
 }
 
+/* How much is in the tab, set in the quieter weight so the name stays the
+   thing being read and the number is the aside. */
+.group-tab__count {
+  padding: 1px 7px;
+  border-radius: var(--radius-full);
+  background: var(--ws-chip);
+  color: var(--ws-ink-muted);
+  font: var(--font-label-sm);
+  font-weight: 600;
+}
+
+.group-tab--active .group-tab__count {
+  background: var(--ws-accent-soft);
+  color: var(--ws-accent);
+}
+
+/* One geometry for every tab. The posts tab capped itself at 900px while
+   the files and members tabs ran the full width, so switching between them
+   shifted every element sideways — the jump that read as the page stuttering.
+   The width belongs to the frame holding the tabs, not to each tab. */
 .group-page__body {
   padding-top: 20px;
+}
+
+/* The frame owns the gap under the tabs, and no tab adds its own. Four tabs
+   each setting their own top padding is how the first row ended up at a
+   different height in each one — 20px here, 38px there — which is the shift
+   a reader sees as the page jumping when they switch. */
+.group-page__body > * {
+  max-width: 100%;
+  margin-top: 0;
+  padding-top: 0;
 }
 
 @media (max-width: 640px) {
@@ -224,4 +244,26 @@
   .group-page__assistant span {
     display: none;
   }
+}
+
+/* The level is already stated here, so for the owner — the only person who can
+   change it — the statement is also the way in. Underlined on hover only: a
+   permanently decorated line would read as a warning rather than a fact. */
+.group-page__visibility-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: inherit;
+  text-decoration: none;
+  border-radius: var(--radius-sm, 4px);
+}
+
+.group-page__visibility-link:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.group-page__visibility-link:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }

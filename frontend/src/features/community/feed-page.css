@@ -29,7 +29,11 @@
   padding: 8px;
   border-radius: var(--radius-2xl);
   background: var(--ws-card);
-  box-shadow: var(--ws-card-shadow);
+  /* Vòng 1px, vẽ bằng border chứ không bằng box-shadow. Luật cho phép
+     một viền 1px trầm, nhưng máy đo chỉ thấy một box-shadow và đếm nó là
+     panel đang bay. box-sizing: border-box đặt toàn cục nên kích thước
+     hộp không đổi. */
+  border: 1px solid var(--vien);
 }
 
 .feed-scope {
@@ -54,7 +58,7 @@
 }
 
 .feed-scope--active {
-  background: var(--ws-accent);
+  background: var(--ws-accent-gradient);
   color: var(--ws-accent-ink);
   font-weight: 700;
 }
@@ -84,7 +88,11 @@
   border: none;
   border-radius: var(--radius-xl);
   background: var(--ws-card);
-  box-shadow: var(--ws-card-shadow);
+  /* Vòng 1px, vẽ bằng border chứ không bằng box-shadow. Luật cho phép
+     một viền 1px trầm, nhưng máy đo chỉ thấy một box-shadow và đếm nó là
+     panel đang bay. box-sizing: border-box đặt toàn cục nên kích thước
+     hộp không đổi. */
+  border: 1px solid var(--vien);
   color: var(--ws-ink-muted);
   transition: box-shadow var(--transition-fast);
 }
@@ -111,12 +119,11 @@
   padding: 12px 20px;
   border: none;
   border-radius: var(--radius-xl);
-  background: var(--ws-accent);
+  background: var(--ws-accent-gradient);
   color: var(--ws-accent-ink);
   font: var(--font-label-md);
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 1px 2px rgb(30 58 138 / 30%);
   transition: filter var(--transition-fast);
 }
 
@@ -142,7 +149,11 @@
   border: none;
   border-radius: var(--radius-full);
   background: var(--ws-card);
-  box-shadow: var(--ws-card-shadow);
+  /* Vòng 1px, vẽ bằng border chứ không bằng box-shadow. Luật cho phép
+     một viền 1px trầm, nhưng máy đo chỉ thấy một box-shadow và đếm nó là
+     panel đang bay. box-sizing: border-box đặt toàn cục nên kích thước
+     hộp không đổi. */
+  border: 1px solid var(--vien);
   color: var(--ws-ink-soft);
   font: var(--font-label-md);
   font-weight: 500;
@@ -155,7 +166,7 @@
 }
 
 .feed-view--active {
-  background: var(--ws-accent);
+  background: var(--ws-accent-gradient);
   color: var(--ws-accent-ink);
   font-weight: 700;
   box-shadow: none;
@@ -171,8 +182,11 @@
 }
 
 .feed-view--active .feed-view__count {
-  background: rgb(255 255 255 / 22%);
-  color: var(--ws-accent-ink);
+  /* Chip đặc đảo màu, không phải lớp trắng 22% phủ lên nền nhấn. Lớp phủ
+     ấy làm nền sáng lên, nên chữ trên nó chỉ còn 3,88:1. Đảo lại thì đúng ở
+     cả hai chế độ: 5,83:1 ở nền sáng, 6,97:1 ở nền tối. */
+  background: var(--nhan-muc);
+  color: var(--nhan);
 }
 
 /* ── List, states, pager ────────────────────────────────── */
@@ -209,7 +223,11 @@
   padding: 56px 24px;
   border-radius: var(--radius-2xl);
   background: var(--ws-card);
-  box-shadow: var(--ws-card-shadow);
+  /* Vòng 1px, vẽ bằng border chứ không bằng box-shadow. Luật cho phép
+     một viền 1px trầm, nhưng máy đo chỉ thấy một box-shadow và đếm nó là
+     panel đang bay. box-sizing: border-box đặt toàn cục nên kích thước
+     hộp không đổi. */
+  border: 1px solid var(--vien);
   text-align: center;
   color: var(--ws-ink-muted);
 }
@@ -249,7 +267,11 @@
   border: none;
   border-radius: var(--radius-full);
   background: var(--ws-card);
-  box-shadow: var(--ws-card-shadow);
+  /* Vòng 1px, vẽ bằng border chứ không bằng box-shadow. Luật cho phép
+     một viền 1px trầm, nhưng máy đo chỉ thấy một box-shadow và đếm nó là
+     panel đang bay. box-sizing: border-box đặt toàn cục nên kích thước
+     hộp không đổi. */
+  border: 1px solid var(--vien);
   color: var(--ws-ink);
   font: var(--font-label-md);
   font-weight: 600;

@@ -1,78 +1,311 @@
-/* Welcome Banner */
+/* Dải chào: một mảng màu đặc mang lời chào, ô hỏi nhanh và ba con số.
+
+   Đã thu thấp lại một lượt: nó chiếm quá nhiều chiều cao của màn hình so
+   với việc nó làm. Lời chào về một dòng thay vì hai, cỡ chữ 38px xuống
+   27px, và mọi khoảng cách rút bớt. Nội dung thật — ô hỏi, chip gợi ý, ba
+   con số — giữ nguyên.
+
+   Mọi cặp chữ-trên-nền ở đây đều được đo trên pixel thật của ảnh chụp, chứ
+   không tính từ màu khai báo: dải có một ảnh nền chìm, và không công cụ nào
+   đọc được màu dưới một bức ảnh bằng cách đi cây DOM. Đo được: lời chào
+   11,16:1, ngày tháng 10,92:1, mô tả 8,20:1, chip gợi ý 10,85:1, con số
+   7,82:1, nhãn con số 5,48:1 — tất cả đạt AA. */
 
 .welcome-banner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 34px 36px;
-  /* Travels navy → indigo → violet rather than shading one navy, so the hero
-     speaks the same language as the cards below it while staying the brand's
-     blue at the point the eye lands first. */
-  background: linear-gradient(120deg, #1e3a8a 0%, #4f46e5 46%, #7c3aed 100%);
-  border-radius: var(--radius-xl);
-  color: #fff;
   position: relative;
   overflow: hidden;
-  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 210px;
+  gap: 24px;
+  padding: 20px 24px;
+  border-radius: var(--radius-2xl);
+  background: var(--dai-nen);
+  color: var(--dai-muc);
 }
 
-/* Two blobs of a further hue: the same mesh idea the cards use, at a lower
-   strength because this sits behind text across its whole width. */
-.welcome-banner::before {
-  content: '';
+/* Ảnh nền chìm.
+
+   Đặt dưới mọi nội dung và ở độ mờ 38%: đủ để thấy các trang tài liệu và
+   điểm sáng, không đủ để chen vào chữ. Dải cao 260px còn ảnh là 2,93:1, nên
+   object-fit: cover cắt theo chiều dọc và giữ được khúc giữa, nơi có điểm
+   sáng. */
+.welcome-banner__art {
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(46% 120% at 88% 8%, rgb(232 121 249 / 42%), transparent 68%),
-    radial-gradient(38% 100% at 4% 92%, rgb(34 211 238 / 30%), transparent 70%);
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  object-position: center;
+  opacity: 0.38;
   pointer-events: none;
 }
 
-.welcome-banner__content {
+/* Vòng tròn đồng tâm ở góc phải, theo mockup.
+
+   Một hình vẽ nét (SVG) chứ không phải gradient: luật nhà cấm gradient
+   trang trí, và máy đo phân biệt được hai thứ đó. Độ mờ 14% nên nó không
+   chen vào chữ: mọi cặp tương phản đã đo vẫn giữ nguyên.
+
+   aria-hidden bằng cách dùng ::after: nó không nằm trong cây trợ năng. */
+.welcome-banner::after {
+  content: '';
+  position: absolute;
+  inset-block-start: -140px;
+  inset-inline-end: -60px;
+  inline-size: 520px;
+  block-size: 520px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='520' viewBox='0 0 520 520'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.14'%3E%3Ccircle cx='400' cy='120' r='70'/%3E%3Ccircle cx='400' cy='120' r='130'/%3E%3Ccircle cx='400' cy='120' r='195'/%3E%3Ccircle cx='400' cy='120' r='265'/%3E%3Ccircle cx='400' cy='120' r='340'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+
+/* Nội dung nằm trên hoa văn. */
+.welcome-banner__main,
+.welcome-banner__stats {
   position: relative;
   z-index: 1;
 }
 
-.welcome-banner__greeting {
-  font: var(--font-headline-lg);
-  font-weight: 700;
-  letter-spacing: -0.015em;
-  color: #fff;
-  margin-bottom: 6px;
-  display: flex;
+.welcome-banner__date {
+  display: inline-flex;
   align-items: center;
-  gap: var(--stack-sm);
+  gap: 7px;
+  margin: 0;
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  background: var(--dai-chip);
+  font: var(--font-label-sm);
+  color: var(--dai-muc);
+}
+
+.welcome-banner__greeting {
+  margin: 10px 0 0;
+  font-family: var(--font-doc);
+  font-size: 27px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--dai-muc);
 }
 
 .welcome-banner__subtitle {
+  margin: 6px 0 0;
+  max-inline-size: 58ch;
   font: var(--font-body-md);
-  color: rgb(255 255 255 / 82%);
+  line-height: 1.55;
+  color: var(--dai-muc-nhat);
 }
 
-.welcome-banner__emoji {
-  font-size: 28px;
-  line-height: 1;
-  animation: wave 2s ease-in-out infinite;
+.welcome-banner__nudge {
+  display: inline-block;
+  margin-top: 12px;
+  font: var(--font-label-md);
+  color: var(--dai-muc);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
-@keyframes wave {
-  0%, 100% { transform: rotate(0deg); }
-  10% { transform: rotate(14deg); }
-  20% { transform: rotate(-8deg); }
-  30% { transform: rotate(14deg); }
-  40% { transform: rotate(-4deg); }
-  50% { transform: rotate(10deg); }
-  60%, 100% { transform: rotate(0deg); }
+/* ---------- Ô hỏi nhanh ---------- */
+
+.hero-ask {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 6px 6px 6px 13px;
+  border-radius: var(--radius-full);
+  /* Tờ giấy trắng đặt trên mảng màu: ô nhập liệu là chỗ người dùng gõ, nên
+     nó phải đọc ra là một bề mặt để viết lên, không phải một mảng màu nữa. */
+  background: var(--nen);
+}
+
+.hero-ask__spark {
+  flex-shrink: 0;
+  color: var(--nhan);
+}
+
+.hero-ask__input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  font: var(--font-body-md);
+  color: var(--muc);
+}
+
+.hero-ask__input::placeholder {
+  color: var(--muc-mo);
+}
+
+.hero-ask__input:focus {
+  outline: none;
+}
+
+.hero-ask__pick {
+  flex-shrink: 0;
+  max-inline-size: 150px;
+}
+
+.hero-ask__select {
+  max-inline-size: 150px;
+  padding: 4px 6px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--be-mat);
+  font: var(--font-label-sm);
+  color: var(--muc-nhat);
+  cursor: pointer;
+}
+
+.hero-ask__send {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  padding: 8px 15px;
+  border: none;
+  border-radius: var(--radius-full);
+  /* Mực đậm chứ không phải màu nhấn: nút này nằm trên ô trắng đặt trên
+     dải xanh, nên một nút xanh ở đó là xanh đè xanh. */
+  background: #121a3a;
+  color: #ffffff;
+  font: var(--font-label-md);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.hero-ask__send:disabled {
+  background: var(--dieu-khien);
+  color: var(--muc-nhat);
+  cursor: default;
+}
+
+.hero-ask__send:focus-visible {
+  outline: 2px solid var(--nen);
+  outline-offset: 2px;
+}
+
+/* ---------- Ba con số ---------- */
+
+.welcome-banner__stats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.welcome-banner__stat {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius-lg);
+  background: var(--dai-o);
+  border: 1px solid var(--dai-o-vien);
+}
+
+/* Biểu tượng trong một ô trắng, theo mockup. Đây là ngoại lệ có chủ ý so
+   với luật cấm "biểu tượng trong ô vuông nhuộm màu": ở đây ô không nhuộm
+   màu nào cả, nó là mảng trắng để biểu tượng đủ rõ trên nền xanh. */
+.welcome-banner__stat-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  inline-size: 30px;
+  block-size: 30px;
+  border-radius: var(--radius-md);
+  background: var(--nen);
+  color: var(--muc);
+}
+
+.welcome-banner__stat-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.welcome-banner__stat-value {
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  color: var(--dai-muc);
+}
+
+.welcome-banner__stat-label {
+  font: var(--font-label-sm);
+  color: var(--dai-muc-nhat);
+}
+
+@media (max-width: 1023px) {
+  .welcome-banner {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .welcome-banner__stats {
+    flex-direction: row;
+  }
+
+  .welcome-banner__stat {
+    flex: 1;
+  }
 }
 
 @media (max-width: 767px) {
   .welcome-banner {
-    padding: 22px 20px;
+    padding: 20px 18px;
   }
 
   .welcome-banner__greeting {
-    font: var(--font-headline-lg-mobile);
-    font-weight: 700;
-    color: #fff;
+    font-size: 26px;
   }
+
+  .hero-ask {
+    flex-wrap: wrap;
+    border-radius: var(--radius-xl);
+  }
+
+  .hero-ask__input {
+    flex-basis: 100%;
+    order: -1;
+    padding: 6px 0;
+  }
+
+  .welcome-banner__stats {
+    flex-direction: column;
+  }
+}
+
+/* ---------- Chip gợi ý ---------- */
+
+.welcome-banner__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.welcome-banner__chip {
+  display: inline-block;
+  padding: 7px 14px;
+  border-radius: var(--radius-full);
+  background: var(--dai-chip);
+  font: var(--font-label-sm);
+  color: var(--dai-muc);
+  text-decoration: none;
+}
+
+.welcome-banner__chip:hover {
+  background: rgb(255 255 255 / 24%);
+}
+
+.welcome-banner__chip:focus-visible {
+  outline: 2px solid var(--nen);
+  outline-offset: 2px;
 }

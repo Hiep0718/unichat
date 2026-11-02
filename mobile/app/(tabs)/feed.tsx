@@ -5,68 +5,126 @@ import {
   StyleSheet,
   ScrollView,
   RefreshControl,
-  TouchableOpacity,
+  Pressable,
   ActivityIndicator,
   Platform,
 } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 
-import { colors, spacing, radii } from '../../src/design/tokens';
+import { workplace, spacing, radii, animation } from '../../src/design/tokens';
 import { shadows } from '../../src/design/shadows';
 import { UCScreenContainer } from '../../src/components/uc-screen-container';
+import { UCIcon, IconName } from '../../src/components/uc-icon';
 import { fetchJson } from '../../src/lib/api-client';
 import { DiscussionCard } from '../../src/features/feed/components/discussion-card';
-import { DiscussionItem } from '../../src/features/feed/feed-types';
+import { FeedPost } from '../../src/features/feed/feed-types';
 
-const FALLBACK_FEED: DiscussionItem[] = [
+/**
+ * The scope rail from the web feed, laid along the top on a narrow screen.
+ *
+ * Task-oriented rather than a HOT/TOP ranking, for the reason the web states:
+ * ranking needs a scale this product does not have, and it buries the only
+ * signal that matters — whether a question still needs an answer.
+ */
+const FILTERS = [
+  { key: 'ALL', label: 'Tất cả', icon: 'forum' },
+  { key: 'QUESTION', label: 'Hỏi đáp', icon: 'help-outline' },
+  { key: 'ANNOUNCEMENT', label: 'Thông báo', icon: 'campaign' },
+] as const satisfies ReadonlyArray<{
+  key: string;
+  label: string;
+  icon: IconName;
+}>;
+
+type FilterKey = (typeof FILTERS)[number]['key'];
+
+const noReactions = { counts: {}, total: 0, myReaction: null };
+
+/**
+ * Shown until the feed answers.
+ *
+ * The workspace ids are real UUIDs because the cover each group wears is
+ * hashed from its id — a placeholder like 'ws-1' would hand every sample the
+ * same tile and hide the thing these rows exist to show.
+ */
+const FALLBACK_FEED: FeedPost[] = [
   {
-    id: 'f-1',
-    title: 'Làm thế nào để cải thiện độ chính xác của RAG tiếng Việt?',
-    body: 'Mình đang cấu hình chunk_size=500 nhưng kết quả tìm kiếm ngữ nghĩa khá hạn chế. Các bạn có mẹo tối ưu hóa embedding không?',
-    authorName: 'Hoàng Minh (K65)',
+    id: '0193a1f0-0000-7000-8000-000000000001',
+    workspaceId: '0193a1f0-aaaa-7000-8000-00000000000a',
     workspaceName: 'Cộng đồng AI & RAG',
+    authorId: '0193a1f0-bbbb-7000-8000-00000000000b',
+    authorName: 'Hoàng Minh (K65)',
+    authorAvatar: null,
+    title: 'Làm thế nào để cải thiện độ chính xác của RAG tiếng Việt?',
+    body: 'Mình đang cấu hình `chunk_size=500` nhưng kết quả tìm kiếm ngữ nghĩa khá hạn chế. Các bạn có mẹo tối ưu hóa embedding không?',
     label: 'QUESTION',
     voteScore: 18,
     replyCount: 3,
-    createdAt: '2 giờ trước',
-    hasAiAnswer: true,
+    reactions: { counts: { LIKE: 7, LOVE: 2 }, total: 9, myReaction: null },
+    backgroundKey: null,
+    acceptedReplyId: '0193a1f0-cccc-7000-8000-00000000000c',
+    isBookmarked: false,
+    createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+    attachments: [],
   },
   {
-    id: 'f-2',
+    id: '0193a1f0-0000-7000-8000-000000000002',
+    workspaceId: '0193a1f0-dddd-7000-8000-00000000000d',
+    workspaceName: 'Thông báo chung',
+    authorId: '0193a1f0-eeee-7000-8000-00000000000e',
+    authorName: 'Ban Đào tạo UniChat',
+    authorAvatar: null,
     title: 'Ra mắt tính năng Bảng tin học thuật kiểu Reddit!',
     body: 'Bản cập nhật mới nhất hỗ trợ bình chọn câu trả lời hữu ích nhất và đính kèm trích dẫn tài liệu tự động từ AI.',
-    authorName: 'Ban Đào tạo UniChat',
-    workspaceName: 'Thông báo chung',
     label: 'ANNOUNCEMENT',
     voteScore: 45,
     replyCount: 8,
-    createdAt: '1 ngày trước',
-    pinned: true,
+    reactions: { counts: { LIKE: 21, WOW: 6, LOVE: 4 }, total: 31, myReaction: 'LIKE' },
+    backgroundKey: null,
+    acceptedReplyId: null,
+    isBookmarked: true,
+    createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+    attachments: [],
   },
   {
-    id: 'f-3',
-    title: 'Tổng hợp tài liệu ôn tập môn Kiến trúc Máy tính & Vi xử lý',
-    body: 'Đã tải lên bộ slide bài giảng 10 tuần học kèm ngân hàng đề thi trắc nghiệm có đáp án giải thích chi tiết.',
-    authorName: 'Thanh Hiệp',
+    id: '0193a1f0-0000-7000-8000-000000000003',
+    workspaceId: '0193a1f0-ffff-7000-8000-00000000000f',
     workspaceName: 'Khoa CNTT - Học kỳ 1',
-    label: 'NOTE',
+    authorId: '0193a1f0-1111-7000-8000-000000000011',
+    authorName: 'Thanh Hiệp',
+    authorAvatar: null,
+    title: 'Tổng hợp tài liệu ôn tập môn Kiến trúc Máy tính & Vi xử lý',
+    body: '## Nội dung\nĐã tải lên bộ slide bài giảng 10 tuần học kèm ngân hàng đề thi trắc nghiệm có đáp án giải thích chi tiết.',
+    label: 'QUESTION',
     voteScore: 29,
-    replyCount: 5,
-    createdAt: '3 ngày trước',
+    replyCount: 0,
+    reactions: noReactions,
+    backgroundKey: null,
+    acceptedReplyId: null,
+    isBookmarked: false,
+    createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+    attachments: [
+      {
+        id: '0193a1f0-2222-7000-8000-000000000022',
+        kind: 'DOCUMENT',
+        originalName: 'kien-truc-may-tinh.pdf',
+        mediaType: 'application/pdf',
+        byteSize: 2_400_000,
+      },
+    ],
   },
 ];
 
 export default function FeedTabScreen() {
-  const [feed, setFeed] = useState<DiscussionItem[]>(FALLBACK_FEED);
+  const [feed, setFeed] = useState<FeedPost[]>(FALLBACK_FEED);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [votedMap, setVotedMap] = useState<Record<string, boolean>>({});
-  const [activeFilter, setActiveFilter] = useState<'ALL' | 'QUESTION' | 'ANNOUNCEMENT'>('ALL');
+  const [activeFilter, setActiveFilter] = useState<FilterKey>('ALL');
 
   const loadFeed = useCallback(async () => {
     try {
-      const res = await fetchJson<{ content: DiscussionItem[] }>('/api/v1/feed?page=0&size=20');
+      const res = await fetchJson<{ content: FeedPost[] }>('/api/v1/feed?page=0&size=20');
       if (res?.content && res.content.length > 0) {
         setFeed(res.content);
       }
@@ -87,72 +145,66 @@ export default function FeedTabScreen() {
     loadFeed();
   };
 
-  const handleVote = (id: string) => {
+  const handleBookmark = (id: string) => {
     if (Platform.OS === 'ios') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
-    const wasVoted = !!votedMap[id];
-    const delta = wasVoted ? -1 : 1;
-    setVotedMap((prev) => ({ ...prev, [id]: !wasVoted }));
-    setFeed((items) =>
-      items.map((item) =>
-        item.id === id ? { ...item, voteScore: item.voteScore + delta } : item
+    setFeed((posts) =>
+      posts.map((post) =>
+        post.id === id ? { ...post, isBookmarked: !post.isBookmarked } : post
       )
     );
   };
 
   const filteredFeed =
-    activeFilter === 'ALL' ? feed : feed.filter((item) => item.label === activeFilter);
+    activeFilter === 'ALL' ? feed : feed.filter((post) => post.label === activeFilter);
 
   return (
-    <UCScreenContainer>
+    <UCScreenContainer surface="canvas">
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
-        {/* Category Pills */}
-        <Animated.View entering={FadeInUp.duration(280)} style={styles.filterRow}>
-          <TouchableOpacity
-            style={[styles.filterPill, activeFilter === 'ALL' && styles.filterPillActive]}
-            onPress={() => setActiveFilter('ALL')}
-          >
-            <Text style={[styles.filterText, activeFilter === 'ALL' && styles.filterTextActive]}>
-              🔥 Tất cả
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.filterPill, activeFilter === 'QUESTION' && styles.filterPillActive]}
-            onPress={() => setActiveFilter('QUESTION')}
-          >
-            <Text style={[styles.filterText, activeFilter === 'QUESTION' && styles.filterTextActive]}>
-              ❓ Hỏi đáp
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.filterPill, activeFilter === 'ANNOUNCEMENT' && styles.filterPillActive]}
-            onPress={() => setActiveFilter('ANNOUNCEMENT')}
-          >
-            <Text style={[styles.filterText, activeFilter === 'ANNOUNCEMENT' && styles.filterTextActive]}>
-              📢 Thông báo
-            </Text>
-          </TouchableOpacity>
+        <Animated.View
+          entering={FadeInUp.duration(animation.durationMedium)}
+          style={styles.scopes}
+        >
+          {FILTERS.map((filter) => {
+            const active = activeFilter === filter.key;
+            return (
+              <Pressable
+                key={filter.key}
+                style={[styles.scope, active && styles.scopeActive]}
+                onPress={() => setActiveFilter(filter.key)}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: active }}
+              >
+                <UCIcon
+                  name={filter.icon}
+                  size={18}
+                  color={active ? workplace.accentInk : workplace.inkMuted}
+                />
+                <Text style={[styles.scopeText, active && styles.scopeTextActive]}>
+                  {filter.label}
+                </Text>
+              </Pressable>
+            );
+          })}
         </Animated.View>
 
-        {/* Feed Cards */}
         {loading ? (
           <View style={styles.loadingBox}>
-            <ActivityIndicator size="large" color={colors.primary} />
+            <ActivityIndicator size="large" color={workplace.accent} />
           </View>
         ) : (
           <View style={styles.listWrap}>
-            {filteredFeed.map((item, index) => (
+            {filteredFeed.map((post, index) => (
               <DiscussionCard
-                key={item.id}
-                item={item}
+                key={post.id}
+                post={post}
                 index={index}
-                hasVoted={!!votedMap[item.id]}
-                onVote={handleVote}
+                onBookmark={handleBookmark}
               />
             ))}
           </View>
@@ -170,33 +222,41 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     paddingBottom: 110,
   },
-  filterRow: {
+
+  /** `.feed-page__scopes`: one white tray holding the scopes. */
+  scopes: {
     flexDirection: 'row',
-    gap: spacing.sm,
+    gap: 3,
+    padding: 8,
     marginBottom: spacing.md,
+    borderRadius: radii.xl,
+    backgroundColor: workplace.card,
+    ...shadows.card,
   },
-  filterPill: {
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: radii.full,
-    backgroundColor: 'rgba(255, 255, 255, 0.75)',
-    borderWidth: 1.2,
-    borderColor: 'rgba(226, 232, 248, 0.9)',
-    ...shadows.sm,
+  scope: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 7,
+    paddingVertical: 10,
+    paddingHorizontal: 13,
+    borderRadius: radii.lg,
+    backgroundColor: 'transparent',
   },
-  filterPillActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-    ...shadows.ambientNavy,
+  scopeActive: {
+    backgroundColor: workplace.accent,
   },
-  filterText: {
-    color: '#475569',
+  scopeText: {
+    color: workplace.inkMuted,
     fontSize: 13,
-    fontFamily: 'Inter_600SemiBold',
+    fontFamily: 'Inter_500Medium',
   },
-  filterTextActive: {
-    color: '#FFFFFF',
+  scopeTextActive: {
+    color: workplace.accentInk,
+    fontFamily: 'Inter_700Bold',
   },
+
   loadingBox: {
     paddingVertical: spacing.xxl,
     alignItems: 'center',

@@ -20,8 +20,8 @@ describe('UCErrorBoundary', () => {
     console.error = originalError;
   });
 
-  it('renders children when there is no error', () => {
-    const { getByText } = render(
+  it('renders children when there is no error', async () => {
+    const { getByText } = await render(
       <UCErrorBoundary>
         <ProblemChild shouldThrow={false} />
       </UCErrorBoundary>
@@ -30,8 +30,8 @@ describe('UCErrorBoundary', () => {
     expect(getByText('Con hoạt động bình thường')).toBeTruthy();
   });
 
-  it('catches render error and shows fallback UI', () => {
-    const { getByTestId, getByText } = render(
+  it('catches render error and shows fallback UI', async () => {
+    const { getByTestId, getByText } = await render(
       <UCErrorBoundary>
         <ProblemChild shouldThrow={true} />
       </UCErrorBoundary>
@@ -42,11 +42,11 @@ describe('UCErrorBoundary', () => {
     expect(getByText('Thử lại')).toBeTruthy();
   });
 
-  it('resets state when retry button is pressed', () => {
+  it('resets state when retry button is pressed', async () => {
     const onResetMock = jest.fn();
     let shouldThrow = true;
 
-    const { getByTestId, rerender } = render(
+    const { getByTestId, rerender } = await render(
       <UCErrorBoundary onReset={onResetMock}>
         <ProblemChild shouldThrow={shouldThrow} />
       </UCErrorBoundary>
@@ -62,7 +62,7 @@ describe('UCErrorBoundary', () => {
       </UCErrorBoundary>
     );
 
-    fireEvent.press(getByTestId('uc-error-boundary-retry-button'));
+    await fireEvent.press(getByTestId('uc-error-boundary-retry-button'));
     expect(onResetMock).toHaveBeenCalledTimes(1);
   });
 });

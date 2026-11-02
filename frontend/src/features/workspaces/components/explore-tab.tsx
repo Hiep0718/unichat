@@ -2,13 +2,15 @@
  * Explore tab displaying public workspaces that the user can join.
  */
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { Icon } from '../../../components/icon';
 import { ExploreCard } from './explore-card';
+import { CoverAssignmentProvider } from '../cover-assignment';
 import { SkeletonCard } from './skeleton-card';
 import { usePublicWorkspaces, useJoinWorkspace } from '../workspace-hooks';
+import { useDiscoverableTopics } from '../workspace-topics';
 
 import './explore-tab.css';
 
@@ -16,15 +18,29 @@ const SKELETON_COUNT = 3;
 
 export function ExploreTab() {
   const navigate = useNavigate();
+  const [searchInput, setSearchInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [topic, setTopic] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'GRID' | 'LIST'>('GRID');
-  
-  const { data, isLoading, error, refetch } = usePublicWorkspaces(searchQuery, 0);
+
+  // Typing fired one request per keystroke before this; 300 ms is the figure
+  // the feed page already uses and the engineering standards require.
+  useEffect(() => {
+    const timer = setTimeout(() => setSearchQuery(searchInput), 300);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+
+  const { data: topics } = useDiscoverableTopics();
+  const { data, isLoading, error, refetch } = usePublicWorkspaces(
+    searchQuery,
+    0,
+    topic ?? undefined,
+  );
   const joinMutation = useJoinWorkspace();
 
   const handleSearchChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      setSearchQuery(e.target.value);
+      setSearchInput(e.target.value);
     },
     [],
   );
@@ -43,8 +59,11 @@ export function ExploreTab() {
   const workspaces = useMemo(() => data?.content ?? [], [data?.content]);
   const gridClass = viewMode === 'LIST' ? 'explore-grid explore-grid--list' : 'explore-grid';
 
+  const coverIds = useMemo(() => workspaces.map((ws) => ws.id), [workspaces]);
+
   return (
     <section className="explore-tab" aria-label="Khám phá">
+      <CoverAssignmentProvider workspaceIds={coverIds}>
       <div className="explore-tab__header">
         <h3 className="explore-tab__title">
           <Icon name="travel_explore" size={20} />
@@ -62,7 +81,7 @@ export function ExploreTab() {
             className="workspace-search__input"
             type="text"
             placeholder="Tìm kiếm không gian công khai..."
-            value={searchQuery}
+            value={searchInput}
             onChange={handleSearchChange}
           />
         </div>
@@ -88,6 +107,34 @@ export function ExploreTab() {
           </div>
         </div>
       </div>
+
+      {topics && topics.length > 0 && (
+        <div className="explore-topics" role="group" aria-label="Lọc theo chủ đề">
+          <button
+            type="button"
+            className={`explore-topics__chip ${topic === null ? 'explore-topics__chip--active' : ''}`}
+            aria-pressed={topic === null}
+            onClick={() => setTopic(null)}
+          >
+            Tất cả
+          </button>
+          {topics.map((option) => (
+            <button
+              key={option.name}
+              type="button"
+              className={`explore-topics__chip ${topic === option.name ? 'explore-topics__chip--active' : ''}`}
+              aria-pressed={topic === option.name}
+              // Pressing the active chip clears the filter, so there is always
+              // a way back without hunting for "Tất cả".
+              onClick={() => setTopic((current) => (current === option.name ? null : option.name))}
+            >
+              <Icon name={option.icon} size={15} />
+              {option.label}
+              <span className="explore-topics__count">{option.count}</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="workspace-content">
         {isLoading && (
@@ -116,8 +163,19 @@ export function ExploreTab() {
             <Icon name="travel_explore" size={48} />
             <h3 className="workspace-empty__title">Không có kết quả</h3>
             <p className="workspace-empty__desc">
-              Không tìm thấy workspace công khai nào phù hợp.
+              {topic
+                ? 'Chưa có nhóm công khai nào thuộc chủ đề này.'
+                : 'Không tìm thấy workspace công khai nào phù hợp.'}
             </p>
+            {topic && (
+              <button
+                className="workspace-empty__action"
+                type="button"
+                onClick={() => setTopic(null)}
+              >
+                Xem tất cả chủ đề
+              </button>
+            )}
           </div>
         )}
 
@@ -135,6 +193,7 @@ export function ExploreTab() {
           </div>
         )}
       </div>
+    </CoverAssignmentProvider>
     </section>
   );
 }

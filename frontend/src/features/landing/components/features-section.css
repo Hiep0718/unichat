@@ -1,118 +1,228 @@
-/* Features Section */
+/* Khối tính năng: một lưới bento trên nền giấy.
+
+   Thẻ dẫn đầu chiếm hai hàng và là thẻ duy nhất đặt trên nền tối, nên mắt
+   rơi vào nó trước — nó mang đúng thứ phân biệt sản phẩm này. */
 
 .features {
-  padding: 96px 0;
-  background: var(--color-surface-container-lowest);
+  background: var(--be-mat);
+  padding-block: 88px;
 }
 
 .features__inner {
-  max-width: var(--container-max);
+  max-inline-size: var(--container-max);
   margin: 0 auto;
-  padding: 0 var(--gutter);
+  padding-inline: var(--gutter);
 }
 
-.features__header {
-  text-align: center;
-  max-width: 672px;
-  margin: 0 auto 64px;
+.features__eyebrow {
+  margin: 0;
+  font: var(--font-label-sm);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--nhan);
 }
 
 .features__title {
-  font: var(--font-headline-lg);
+  margin: 14px 0 44px;
+  max-inline-size: 18ch;
+  font-family: var(--font-doc);
+  font-size: clamp(28px, 3vw, 40px);
   font-weight: 700;
-  color: var(--color-on-surface);
-  margin-bottom: var(--stack-md);
-}
-
-.features__subtitle {
-  font: var(--font-body-lg);
-  color: var(--color-on-surface-variant);
+  line-height: 1.16;
+  letter-spacing: -0.015em;
+  color: var(--muc);
 }
 
 .features__grid {
   display: grid;
-  gap: var(--gutter);
+  grid-template-columns: repeat(3, 1fr);
+  /* align-items: start để mỗi thẻ cao theo nội dung của nó. Thiếu dòng
+     này thì hai thẻ trắng bên cạnh bị kéo cao bằng thẻ tối. */
+  align-items: start;
+  gap: 18px;
 }
 
-.features__card {
+/* ---------- Thẻ ---------- */
+
+.feat {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  padding: 32px;
-  min-height: 280px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-outline-variant);
+  padding: 26px;
   border-radius: var(--radius-2xl);
-  overflow: hidden;
-  transition: border-color var(--transition-normal);
+  background: var(--nen);
 }
 
-.features__card:hover {
-  border-color: var(--color-primary-container);
+/* Thẻ dẫn đầu chỉ cao hơn hai thẻ bên cạnh, không chiếm hai hàng: chiếm
+   hai hàng thì hàng thứ hai bị đẩy lệch và góc phải trên để hở một ô. */
+.feat--lead {
+  background: var(--muc);
+  color: var(--nen);
 }
 
-.features__card--dark {
-  background: var(--color-inverse-surface);
+.feat--wide {
+  grid-column: span 2;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 32px;
 }
 
-.features__card--dark .features__card-title {
-  color: var(--color-surface);
+.feat__half {
+  flex: 1;
+  min-inline-size: 0;
 }
 
-.features__card--dark .features__card-desc {
-  color: var(--color-surface-variant);
+.feat__mark {
+  display: grid;
+  place-items: center;
+  inline-size: 38px;
+  block-size: 38px;
+  border-radius: var(--radius-lg);
+  background: var(--nhan-nhat);
+  color: var(--nhan);
 }
 
-.features__card-icon {
-  width: 48px;
-  height: 48px;
+/* Trên thẻ tối, ô biểu tượng mang màu nhấn đặc chứ không mang sắc nhạt —
+   sắc nhạt trên nền tối thì gần như biến mất. */
+.feat__mark--on-dark {
+  background: var(--nhan);
+  color: #ffffff;
+}
+
+.feat__title {
+  margin: 18px 0 0;
+  font: var(--font-headline-sm);
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.feat__body {
+  margin: 9px 0 0;
+  font: var(--font-body-sm);
+  line-height: 1.6;
+  color: var(--muc-nhat);
+}
+
+.feat--lead .feat__body {
+  color: rgb(255 255 255 / 76%);
+}
+
+/* ---------- Đoạn tài liệu có dòng được đánh dấu ---------- */
+
+.feat__proof {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-top: auto;
+  padding: 22px 20px;
+  border-radius: var(--radius-xl);
+  background: var(--nen);
+}
+
+.feat__proof-line {
+  block-size: 7px;
+  border-radius: var(--radius-full);
+  background: var(--vien);
+}
+
+.feat__proof-line--lit {
+  background: var(--nhan);
+}
+
+.feat__proof-line--short {
+  inline-size: 52%;
+}
+
+.feat__proof-tag {
+  position: absolute;
+  inset-block-start: 14px;
+  inset-inline-end: 14px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  background: var(--nhan);
+  font: var(--font-label-sm);
+  font-weight: 600;
+  color: var(--nhan-muc);
+}
+
+/* ---------- Hàng trạng thái chia sẻ ---------- */
+
+.feat__states {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  inline-size: 46%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.feat__state {
   display: flex;
   align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-xl);
-  margin-bottom: var(--stack-lg);
-  box-shadow: var(--shadow-sm);
+  gap: 11px;
+  padding: 11px 14px;
+  border-radius: var(--radius-lg);
+  background: var(--be-mat);
 }
 
-.features__card--primary .features__card-icon {
-  background: var(--color-primary);
-  color: var(--color-on-primary);
+.feat__state-mark {
+  flex-shrink: 0;
+  inline-size: 22px;
+  block-size: 22px;
+  border-radius: 7px;
 }
 
-.features__card--secondary .features__card-icon {
-  background: var(--color-secondary-container);
-  color: var(--color-on-secondary-container);
+.feat__state-name {
+  flex: 1;
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: var(--font-label-md);
+  font-weight: 600;
+  color: var(--muc);
 }
 
-.features__card--tertiary .features__card-icon {
-  background: var(--color-tertiary-container);
-  color: var(--color-on-tertiary);
+.feat__state-value {
+  font: var(--font-label-sm);
+  color: var(--muc-nhat);
 }
 
-.features__card--dark .features__card-icon {
-  background: var(--color-surface-container-highest);
-  color: var(--color-on-surface);
-}
+/* ---------- Khổ hẹp ---------- */
 
-.features__card-title {
-  font: var(--font-headline-md);
-  font-weight: 700;
-  color: var(--color-on-surface);
-  margin-bottom: var(--stack-sm);
-}
-
-.features__card-desc {
-  font: var(--font-body-md);
-  color: var(--color-on-surface-variant);
-  max-width: 480px;
-}
-
-@media (min-width: 768px) {
-  .features__grid {
-    grid-template-columns: repeat(3, 1fr);
+@media (max-width: 1023px) {
+  .features {
+    padding-block: 64px;
   }
 
-  .features__card--span2 {
+  .features__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .feat--lead {
+    grid-row: auto;
     grid-column: span 2;
+  }
+}
+
+@media (max-width: 767px) {
+  .features__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .feat--lead,
+  .feat--wide {
+    grid-column: auto;
+  }
+
+  .feat--wide {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .feat__states {
+    inline-size: 100%;
   }
 }

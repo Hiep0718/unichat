@@ -10,13 +10,13 @@ describe('ChatFailures', () => {
     expect(failure.message).not.toContain('sensitive');
     expect(isTerminalChatFailure(failure)).toBe(true);
   });
-  it('should recover interrupted transports but never replay explicit provider failures', () => {
+  it('should recover interrupted transports but never replay explicit provider failures', async () => {
     expect(isTerminalChatFailure(new Error('socket closed'))).toBe(false);
     expect(isTerminalChatFailure(new ApiError(502, 'unavailable'))).toBe(false);
     expect(isTerminalChatFailure(new ApiError(503, 'failed', { errorCode: 'PROVIDER_PROTOCOL_ERROR' }))).toBe(true);
     expect(isTerminalChatFailure(new ApiError(503, 'failed', { code: 'AI_MAINTENANCE' }))).toBe(true);
   });
-  it('should keep friendly client authorization errors and default unknown failures safely', () => {
+  it('should keep friendly client authorization errors and default unknown failures safely', async () => {
     expect(friendlyChatError(new ApiError(403, 'Không có quyền truy cập')).message).toBe('Không có quyền truy cập');
     expect(friendlyChatError(null).code).toBe('AI_REQUEST_FAILED');
     expect(friendlyChatError(new ApiError(429, 'raw')).code).toBe('PROVIDER_HTTP_429');

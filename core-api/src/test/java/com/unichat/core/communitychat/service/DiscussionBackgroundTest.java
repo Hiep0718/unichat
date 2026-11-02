@@ -1,6 +1,7 @@
 package com.unichat.core.communitychat.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.context.ApplicationEventPublisher;
 
+import com.unichat.core.common.error.AuthorizationError;
 import com.unichat.core.common.error.ValidationError;
 import com.unichat.core.communitychat.api.CreateDiscussionRequest;
 import com.unichat.core.communitychat.api.UpdateDiscussionRequest;
@@ -144,6 +146,44 @@ class DiscussionBackgroundTest {
 
         // Assert
         assertNull(existing.getBackgroundKey());
+    }
+
+    @Test
+    void shouldLetTheAskerTakeBackTheAcceptedAnswer() {
+        // Arrange: accepting used to be one-way, so a misclick was permanent
+        // and a better answer arriving later could not take over.
+        UUID discussionId = UUID.randomUUID();
+        Discussion question = new Discussion(discussionId, workspaceId, authorId, "Vì sao?",
+                "body", "QUESTION", false, "OPEN", Instant.now());
+        question.setAcceptedReplyId(UUID.randomUUID());
+        when(discussionRepository.findById(discussionId)).thenReturn(Optional.of(question));
+
+        // Act
+        service.clearAcceptedReply(workspaceId, discussionId, authorId);
+
+        // Assert
+        assertNull(question.getAcceptedReplyId());
+        verify(discussionRepository).save(question);
+    }
+
+    @Test
+    void shouldRefuseToTakeItBackForAnyoneButTheAsker() {
+        // Arrange: only the person who asked knows whether it is settled.
+        UUID discussionId = UUID.randomUUID();
+        UUID bystander = UUID.randomUUID();
+        Discussion question = new Discussion(discussionId, workspaceId, authorId, "Vì sao?",
+                "body", "QUESTION", false, "OPEN", Instant.now());
+        question.setAcceptedReplyId(UUID.randomUUID());
+        when(discussionRepository.findById(discussionId)).thenReturn(Optional.of(question));
+        when(memberRepository.findByWorkspaceIdAndUserIdAndStatus(
+                workspaceId, bystander, WorkspaceMemberStatus.ACTIVE))
+                .thenReturn(Optional.of(new WorkspaceMember(workspaceId, bystander,
+                        WorkspaceRole.EDITOR, WorkspaceMemberStatus.ACTIVE, bystander)));
+
+        // Act and Assert
+        assertThrows(AuthorizationError.class,
+                () -> service.clearAcceptedReply(workspaceId, discussionId, bystander));
+        assertNotNull(question.getAcceptedReplyId());
     }
 
     @Test

@@ -1,5 +1,7 @@
 package com.unichat.core.workspace.api;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 import jakarta.validation.Valid;
@@ -27,7 +29,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.unichat.core.common.error.ValidationError;
 import com.unichat.core.shared.idempotency.IdempotencyService;
+import com.unichat.core.workspace.domain.WorkspaceTopic;
 import com.unichat.core.workspace.service.WorkspaceCoverService;
 import com.unichat.core.workspace.service.WorkspaceService;
 
@@ -140,11 +144,66 @@ public class WorkspaceController {
             @AuthenticationPrincipal Jwt jwt,
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "20") int size,
-            @RequestParam(value = "search", required = false) String search) {
+            @RequestParam(value = "search", required = false) String search,
+            @RequestParam(value = "topic", required = false) String topic) {
         UUID userId = UUID.fromString(jwt.getSubject());
         int pageSize = Math.min(size, 100);
         Pageable pageable = PageRequest.of(page, pageSize);
-        return ResponseEntity.ok(workspaceService.getPublicWorkspaces(userId, search, pageable));
+        WorkspaceTopic subject = parseTopic(topic);
+        return ResponseEntity.ok(
+                workspaceService.getPublicWorkspaces(userId, search, subject, pageable));
+    }
+
+    /**
+     * The topics a workspace may be filed under.
+     *
+     * <p>Served rather than duplicated in the client, so the vocabulary and
+     * its Vietnamese labels have one definition.
+     *
+     * <p>Cached for five minutes, not a day. The list only changes on a
+     * deploy, which argued for a long time — but nothing invalidates a
+     * browser cache on deploy, so a day meant a day of pickers still offering
+     * the old vocabulary after it had been widened. Five minutes costs one
+     * cheap request and bounds the staleness to something nobody notices.
+     */
+    @GetMapping("/topics")
+    public ResponseEntity<List<WorkspaceTopicResponse>> topics() {
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CACHE_CONTROL, "private, max-age=300")
+                .body(Arrays.stream(WorkspaceTopic.values())
+                        .map(WorkspaceTopicResponse::from)
+                        .toList());
+    }
+
+    /**
+     * Topics that currently have discoverable workspaces behind them.
+     *
+     * <p>Not cached: unlike the vocabulary, these counts change whenever a
+     * group is published or joined.
+     */
+    @GetMapping("/explore/topics")
+    public ResponseEntity<List<DiscoverableTopicResponse>> discoverableTopics(
+            @AuthenticationPrincipal Jwt jwt) {
+        return ResponseEntity.ok(
+                workspaceService.getDiscoverableTopics(UUID.fromString(jwt.getSubject())));
+    }
+
+    /**
+     * Reads the optional topic filter.
+     *
+     * @return the topic, or null when the caller asked for every topic
+     * @throws ValidationError when the value is not a known topic, rather than
+     *                         the 500 an unguarded valueOf would produce
+     */
+    private static WorkspaceTopic parseTopic(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        try {
+            return WorkspaceTopic.parse(raw);
+        } catch (IllegalArgumentException e) {
+            throw new ValidationError(e.getMessage());
+        }
     }
 
     /**

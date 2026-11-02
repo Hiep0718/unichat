@@ -1,12 +1,11 @@
 package com.unichat.core.shared.config;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpMethod;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -44,18 +43,12 @@ import com.unichat.core.auth.config.SecurityFailureResponder;
 public class SecurityConfiguration {
     private final Set<String> origins;
     private final boolean production;
-    /** Loads deployment policy from the environment, without wildcard credentialed CORS. */
+    /** Loads deployment policy from the environment; the origin list is shared. */
     public SecurityConfiguration(
-            @Value("${CORS_ALLOWED_ORIGINS:}") String originList,
+            AllowedOrigins allowedOrigins,
             @Value("${UNICHAT_SECURITY_PROFILE:${APP_ENV:local}}") String profile) {
         production = !"local".equals(profile);
-        String defaults = "http://localhost:5173,http://localhost:8081,http://localhost:8082";
-        String configured = originList.isBlank() ? defaults : originList;
-        var allowed = Arrays.stream(configured.split(",")).map(String::strip)
-                .filter(origin -> !origin.isEmpty()).collect(Collectors.toSet());
-        if (!production && originList.isBlank()) allowed.add("http://127.0.0.1:5173");
-        if (allowed.stream().anyMatch(origin -> origin.contains("*"))) throw new IllegalArgumentException("CORS wildcard forbidden");
-        origins = Set.copyOf(allowed);
+        origins = allowedOrigins.values();
     }
     /** Uses Argon2id for new hashes and supports legacy BCrypt verification. */
     @Bean
@@ -107,6 +100,12 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/v1/health", "/actuator/health", "/api/v1/auth/**").permitAll()
                         .requestMatchers("/ws/work-chat/**").permitAll()
+                        // Preview of an invite link only. Someone who has been
+                        // sent one may not have an account yet, and a login
+                        // screen tells them neither what they were invited to
+                        // nor by whom. Redeeming it still requires a session:
+                        // the matcher is GET-only and does not cover /accept.
+                        .requestMatchers(HttpMethod.GET, "/api/v1/invites/*").permitAll()
                         .requestMatchers("/internal/v1/**").denyAll()
                         .requestMatchers("/api/v1/admin/**").hasAuthority("SCOPE_ADMIN")
                         .anyRequest().authenticated())

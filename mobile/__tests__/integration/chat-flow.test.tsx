@@ -15,7 +15,7 @@ jest.mock('../../src/features/auth/auth-context', () => ({
 }));
 
 describe('Integration Flow: Workspace to Chat Experience', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     jest.clearAllMocks();
   });
 
@@ -41,7 +41,7 @@ describe('Integration Flow: Workspace to Chat Experience', () => {
       totalElements: 0,
     });
 
-    const { getByText, getByTestId } = render(
+    const { getByText, getAllByText, getByTestId } = await render(
       <ToastProvider>
         <WorkspaceTabScreen />
       </ToastProvider>
@@ -49,16 +49,16 @@ describe('Integration Flow: Workspace to Chat Experience', () => {
 
     // Initial render and data fetch
     await waitFor(() => {
-      expect(getByText('Hệ thống Phân tán')).toBeTruthy();
+      expect(getAllByText('Hệ thống Phân tán')[0]).toBeTruthy();
       expect(getByText('Học phần nâng cao kỳ 1 năm 2026')).toBeTruthy();
       expect(getByText('3 tài liệu')).toBeTruthy();
       expect(getByText('42 thành viên')).toBeTruthy();
-      expect(getByText('Vào học')).toBeTruthy();
+      expect(getByText('Truy cập')).toBeTruthy();
     });
 
     // Card exists and can be tapped
     const card = getByTestId('workspace-card-ws-rag-1');
     expect(card).toBeTruthy();
-    fireEvent.press(card);
+    await fireEvent.press(card);
   });
 });

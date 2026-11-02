@@ -24,6 +24,9 @@ import com.unichat.core.communitychat.domain.DiscussionRepository;
 import com.unichat.core.document.domain.DocumentRepository;
 import com.unichat.core.workspace.api.WorkspaceCardStats;
 import com.unichat.core.workspace.domain.WorkspaceMemberRepository;
+import com.unichat.core.workspace.domain.WorkspaceTopic;
+import com.unichat.core.workspace.domain.WorkspaceTopicAssignment;
+import com.unichat.core.workspace.domain.WorkspaceTopicRepository;
 import com.unichat.core.workspace.domain.WorkspaceMemberStatus;
 
 /**
@@ -35,6 +38,7 @@ class WorkspaceStatsLoaderTest {
     private DocumentRepository documentRepository;
     private WorkspaceMemberRepository memberRepository;
     private DiscussionRepository discussionRepository;
+    private WorkspaceTopicRepository topicRepository;
     private WorkspaceStatsLoader loader;
 
     private final UUID busy = UUID.randomUUID();
@@ -45,13 +49,17 @@ class WorkspaceStatsLoaderTest {
         documentRepository = mock(DocumentRepository.class);
         memberRepository = mock(WorkspaceMemberRepository.class);
         discussionRepository = mock(DiscussionRepository.class);
+        topicRepository = mock(WorkspaceTopicRepository.class);
+        when(topicRepository.findByWorkspaceIdIn(anyList())).thenReturn(List.of());
         loader = new WorkspaceStatsLoader(documentRepository, memberRepository,
-                discussionRepository, Clock.fixed(Instant.parse("2026-09-26T00:00:00Z"), ZoneOffset.UTC));
+                discussionRepository, topicRepository,
+                Clock.fixed(Instant.parse("2026-09-26T00:00:00Z"), ZoneOffset.UTC));
 
         when(documentRepository.countGroupedByWorkspaceIds(anyList())).thenReturn(List.of());
         when(memberRepository.countGroupedByWorkspaceIds(anyList(), any())).thenReturn(List.of());
         when(discussionRepository.countRecentGroupedByWorkspaceIds(anyList(), any()))
                 .thenReturn(List.of());
+        when(discussionRepository.countGroupedByWorkspaceIds(anyList())).thenReturn(List.of());
         when(memberRepository.findFacesForWorkspaces(anyList(), anyInt())).thenReturn(List.of());
     }
 
@@ -97,6 +105,35 @@ class WorkspaceStatsLoaderTest {
         // Assert
         assertEquals(4, stats.get(busy).recentPostCount());
         assertEquals(0, stats.get(quiet).recentPostCount());
+    }
+
+    @Test
+    void shouldReportEveryPostAlongsideTheRecentOnes() {
+        // Arrange: the tab badge beside "Bài viết" claims the total, while the
+        // card's activity line claims the week. A group with a long history and
+        // a quiet week must report both honestly rather than one twice.
+        when(discussionRepository.countGroupedByWorkspaceIds(anyList()))
+                .thenReturn(List.<Object[]>of(new Object[] { busy, 200L }));
+        when(discussionRepository.countRecentGroupedByWorkspaceIds(any(), any()))
+                .thenReturn(List.of());
+
+        // Act
+        Map<UUID, WorkspaceCardStats> stats = loader.loadFor(List.of(busy, quiet));
+
+        // Assert
+        assertEquals(200, stats.get(busy).postCount());
+        assertEquals(0, stats.get(busy).recentPostCount());
+        assertEquals(0, stats.get(quiet).postCount());
+    }
+
+    @Test
+    void shouldCountEveryPostInOneQueryForTheWholePage() {
+        // Act
+        loader.loadFor(List.of(busy, quiet));
+
+        // Assert: one grouped query for the page, like the other card counts,
+        // so a list of groups does not pay a query per card.
+        verify(discussionRepository).countGroupedByWorkspaceIds(List.of(busy, quiet));
     }
 
     @Test
@@ -148,6 +185,35 @@ class WorkspaceStatsLoaderTest {
         // some drivers, invalid SQL.
         assertTrue(stats.isEmpty());
         verify(documentRepository, never()).countGroupedByWorkspaceIds(anyList());
+        verify(discussionRepository, never()).countGroupedByWorkspaceIds(anyList());
         verify(memberRepository, never()).findFacesForWorkspaces(anyList(), anyInt());
+    }
+
+    @Test
+    void shouldAttachEachWorkspaceItsOwnTopicsInDeclarationOrder() {
+        var alpha = UUID.randomUUID();
+        var beta = UUID.randomUUID();
+        when(topicRepository.findByWorkspaceIdIn(anyList())).thenReturn(List.of(
+                // Returned out of order on purpose: the database makes no
+                // promise here, and two cards must not list the same pair
+                // differently.
+                new WorkspaceTopicAssignment(alpha, WorkspaceTopic.DATABASE),
+                new WorkspaceTopicAssignment(alpha, WorkspaceTopic.PROGRAMMING),
+                new WorkspaceTopicAssignment(beta, WorkspaceTopic.LANGUAGES)));
+
+        var stats = loader.loadFor(List.of(alpha, beta));
+
+        assertEquals(List.of(WorkspaceTopic.PROGRAMMING, WorkspaceTopic.DATABASE),
+                stats.get(alpha).topics());
+        assertEquals(List.of(WorkspaceTopic.LANGUAGES), stats.get(beta).topics());
+    }
+
+    @Test
+    void shouldLeaveTopicsEmptyForAWorkspaceThatHasNone() {
+        var id = UUID.randomUUID();
+        when(topicRepository.findByWorkspaceIdIn(anyList())).thenReturn(List.of());
+
+        // Groups created before topics existed, which is most of them.
+        assertEquals(List.of(), loader.loadFor(List.of(id)).get(id).topics());
     }
 }

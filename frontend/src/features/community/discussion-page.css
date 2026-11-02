@@ -5,85 +5,29 @@
 
 /* ---------- Discussion List ----------
    Rendered inside the group page, which owns the page padding and width. */
+/* No width of its own: the group page frame sets it, so this tab lines up
+   with Tệp and Thành viên instead of jumping narrower when it opens. */
+/* Two columns: the posts, and the rail saying what the group can answer and
+   who is in it. The rail is this tab's, not the page's — the Thành viên tab
+   beside a card of member faces would say the same thing twice. */
 .disc-list {
-  max-width: 900px;
+  display: grid;
+  width: 100%;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  align-items: start;
+  gap: 24px;
 }
 
-.disc-list__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 24px;
-  gap: 16px;
-  flex-wrap: wrap;
+.disc-list__main {
+  min-width: 0;
 }
 
-.disc-list__title {
-  font: var(--font-headline-lg);
-  color: var(--color-on-surface);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 0;
-}
-
-.disc-list__title-icon {
-  color: var(--color-primary);
-}
-
-.disc-list__controls {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.disc-list__divider {
-  width: 1px;
-  height: 24px;
-  background-color: var(--color-outline-variant);
-  margin: 0 4px;
-}
-
-.disc-list__filter-btn {
-  padding: 6px 14px;
-  border-radius: var(--radius-full);
-  border: 1px solid var(--color-outline-variant);
-  background: var(--color-surface);
-  color: var(--color-on-surface-variant);
-  font: var(--font-label-md);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.disc-list__filter-btn:hover {
-  background: var(--color-surface-container-high);
-}
-
-.disc-list__filter-btn--active {
-  background: var(--color-primary);
-  color: var(--color-on-primary);
-  border-color: var(--color-primary);
-}
-
-.disc-list__new-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 18px;
-  border-radius: var(--radius-full);
-  border: none;
-  background: var(--color-primary);
-  color: var(--color-on-primary);
-  font: var(--font-label-md);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  box-shadow: var(--shadow-sm);
-}
-
-.disc-list__new-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
+/* Below this the rail would squeeze the titles it sits beside, so it goes
+   under them instead of alongside. */
+@media (max-width: 1100px) {
+  .disc-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 /* ---------- Card list ---------- */
@@ -103,7 +47,6 @@
   color: var(--color-on-surface-variant);
   text-align: center;
   background: var(--color-surface-container-lowest);
-  border: 1px solid var(--color-outline-variant);
   border-radius: var(--radius-xl);
 }
 
@@ -134,7 +77,6 @@
   background: var(--color-surface-container-lowest);
   border-radius: var(--radius-lg);
   padding: 12px;
-  border: 1px solid var(--color-outline-variant);
   transition: border-color var(--transition-fast);
 }
 
@@ -219,7 +161,7 @@
   bottom: 0;
   left: 15px;
   width: 2px;
-  background-color: var(--color-outline-variant);
+  background-color: var(--ws-line, var(--ke));
   border-radius: 2px;
   transition: background-color var(--transition-fast);
 }
@@ -235,11 +177,10 @@
 }
 
 .reply-node--ai {
-  background: var(--color-ai-bubble, #ecfeff);
+  background: var(--color-ai-bubble, var(--nen));
   padding: 12px;
   border-radius: var(--radius-lg);
   margin: 8px 0;
-  border: 1px solid var(--color-ai-bubble-border, #cffafe);
 }
 
 .reply-node__avatar {
@@ -258,7 +199,7 @@
 }
 
 .reply-node--ai .reply-node__avatar {
-  background: linear-gradient(135deg, #06b6d4, #3b82f6);
+  background: var(--muc);
   color: white;
 }
 
@@ -281,7 +222,7 @@
 }
 
 .reply-node__dot {
-  color: var(--color-outline);
+  color: var(--muc-nhat);
   font-size: 10px;
 }
 
@@ -372,17 +313,16 @@
 }
 
 .reply-node__action-btn--accept {
-  color: #166534;
+  color: var(--ws-ok-ink);
 }
 
 .reply-node__action-btn--accept:hover {
-  background: #dcfce7;
-  color: #14532d;
+  background: var(--ws-ok-bg);
+  color: var(--ws-ok-ink);
 }
 
 .reply-node--accepted {
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
+  background: var(--nen);
   padding: 12px;
   border-radius: var(--radius-lg);
   margin: 8px 0;
@@ -394,8 +334,8 @@
   gap: 4px;
   font: var(--font-label-sm);
   font-size: 10px;
-  background: #dcfce7;
-  color: #166534;
+  background: var(--ws-ok-bg);
+  color: var(--ws-ok-ink);
   padding: 2px 8px;
   border-radius: var(--radius-full);
   text-transform: uppercase;
@@ -408,29 +348,4 @@
 }
 
 /* ---------- Search within the group ---------- */
-.disc-list__search {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 16px;
-  padding: 9px 16px;
-  border: 1px solid var(--color-outline-variant);
-  border-radius: var(--radius-full);
-  background: var(--color-surface-container-lowest);
-  color: var(--color-on-surface-variant);
-}
-
-.disc-list__search:focus-within {
-  border-color: var(--color-primary);
-}
-
-.disc-list__search input {
-  flex: 1;
-  min-width: 0;
-  border: none;
-  outline: none;
-  background: transparent;
-  font: var(--font-body-md);
-  color: var(--color-on-surface);
-}
 

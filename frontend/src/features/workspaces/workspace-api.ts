@@ -90,10 +90,14 @@ export function getPublicWorkspaces(
   page = 0,
   size = 20,
   search?: string,
+  topic?: string,
 ): Promise<PagedResponse<WorkspaceDto>> {
   const params = new URLSearchParams({ page: String(page), size: String(size) });
   if (search?.trim()) {
     params.set('search', search.trim());
+  }
+  if (topic) {
+    params.set('topic', topic);
   }
   return fetchJson(`/workspaces/explore?${params.toString()}`);
 }

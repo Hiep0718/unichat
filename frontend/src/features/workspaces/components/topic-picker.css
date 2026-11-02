@@ -1,0 +1,117 @@
+.topic-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.topic-picker__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.topic-picker__hint,
+.topic-picker__state {
+  margin: 0;
+  color: var(--color-on-surface-variant, var(--muc-nhat));
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+/* Beside the instruction rather than adrift at the bottom right, where it read
+   as an unrelated page number. */
+.topic-picker__count {
+  flex: none;
+  padding: 2px 9px;
+  border-radius: var(--radius-full, 999px);
+  background: var(--color-surface-container-high, var(--ke));
+  color: var(--color-on-surface-variant, var(--muc-nhat));
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.topic-picker__count--full {
+  background: var(--color-primary, var(--muc));
+  color: var(--nen);
+}
+
+.topic-picker__band {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Quiet: it is a signpost between chips, not a heading competing with the
+   form's own labels. */
+.topic-picker__band-title {
+  margin: 0;
+  color: var(--color-on-surface-variant, var(--muc-mo));
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.topic-picker__options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.topic-picker__option {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border: 1px solid var(--color-outline-variant, var(--dieu-khien));
+  border-radius: var(--radius-full, 999px);
+  background: var(--color-surface, var(--nen));
+  color: var(--color-on-surface, var(--muc));
+  font: inherit;
+  font-size: 0.8125rem;
+  line-height: 1.3;
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.topic-picker__option:hover:not(:disabled) {
+  border-color: var(--color-primary, var(--muc));
+  background: var(--color-surface-container-low, var(--nen));
+}
+
+.topic-picker__option:focus-visible {
+  outline: 2px solid var(--color-primary, var(--muc));
+  outline-offset: 2px;
+}
+
+/* Filled, not merely tinted: the previous state differed from unselected by a
+   pale background alone, which was easy to miss among a dozen chips. The icon
+   also swaps to a check, so the state does not rest on colour by itself. */
+.topic-picker__option--picked {
+  border-color: var(--color-primary, var(--muc));
+  background: var(--color-primary, var(--muc));
+  color: var(--nen);
+  font-weight: 600;
+}
+
+.topic-picker__option--picked:hover:not(:disabled) {
+  background: var(--color-primary, var(--muc));
+  filter: brightness(1.12);
+}
+
+/* Flat rather than hidden once the cap is reached: the reader still sees what
+   else exists, and why they cannot add it. */
+.topic-picker__option:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.topic-picker__option--picked:disabled {
+  opacity: 1;
+  cursor: pointer;
+}

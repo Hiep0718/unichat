@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { createPortal } from 'react-dom';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   ContributionContext,
   DocumentResponse,
@@ -13,6 +13,14 @@ import { PdfSplitModal } from './pdf-split-modal';
 import { SyncVectorModal } from './sync-vector-modal';
 import { DocumentDeleteModal } from './document-delete-modal';
 import { LoadingInline } from '../../../components/loading-screen';
+import { Icon } from '../../../components/icon';
+import { countReady, duplicatedNames } from '../document-status';
+import { DocumentPagination } from './document-pagination';
+import { DocumentRows } from './document-rows';
+import { DocumentToast } from './document-toast';
+import { DocumentUploadZone } from './document-upload-zone';
+
+import type { DocumentNotice } from './document-toast';
 import './document-table.css';
 
 interface DocumentTableProps {
@@ -41,11 +49,8 @@ interface UploadingDocument {
   progress: number;
 }
 
-interface NotificationToast {
-  type: 'success' | 'error';
-  title: string;
-  message: string;
-}
+/** Stable empty list, so an unloaded table does not get a new array each render. */
+const EMPTY_DOCUMENTS: DocumentResponse[] = [];
 
 export const DocumentTable: React.FC<DocumentTableProps> = ({
   workspaceId,
@@ -53,12 +58,37 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({
   canContribute = canEdit,
   reloadToken = 0,
 }) => {
-  const [documents, setDocuments] = useState<DocumentResponse[]>([]);
-  const [loading, setLoading] = useState(true);
+  // The list lives in the query cache, so reopening this tab paints from it
+  // instead of showing "Đang tải" and refetching — the reason switching tabs
+  // stuttered. Everything else here keeps its own state; only the list moved.
+  const queryClient = useQueryClient();
+  const documentsKey = useMemo(
+    () => ['workspaces', workspaceId, 'documents', 'table'] as const,
+    [workspaceId],
+  );
+
+  const {
+    data: documents = EMPTY_DOCUMENTS,
+    isPending: loading,
+    error: loadError,
+    refetch,
+  } = useQuery({
+    queryKey: documentsKey,
+    queryFn: () => fetchWorkspaceDocuments(workspaceId).then((res) => res.content ?? []),
+    enabled: Boolean(workspaceId),
+  });
+
+  /** Replaces the cached list, for the places that already had the new rows. */
+  const setDocuments = useCallback(
+    (next: DocumentResponse[]) => queryClient.setQueryData(documentsKey, next),
+    [queryClient, documentsKey],
+  );
+
   const [error, setError] = useState<string | null>(null);
+  const listError =
+    error ?? (loadError instanceof Error ? loadError.message : null);
   const [uploadingDocs, setUploadingDocs] = useState<UploadingDocument[]>([]);
-  const [isDragging, setIsDragging] = useState(false);
-  const [notificationToast, setNotificationToast] = useState<NotificationToast | null>(null);
+  const [notificationToast, setNotificationToast] = useState<DocumentNotice | null>(null);
   // Files waiting for the contributor to describe them before upload starts.
   const [pendingContribution, setPendingContribution] = useState<File[] | null>(null);
   const [documentToDelete, setDocumentToDelete] = useState<DocumentResponse | null>(null);
@@ -83,6 +113,11 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({
     return documents.slice(start, start + pageSize);
   }, [documents, currentPage, pageSize]);
 
+  // Both count the whole group, not the current page: the heading speaks for
+  // the group, and a name is no less duplicated for sitting on another page.
+  const { ready, total } = useMemo(() => countReady(documents), [documents]);
+  const duplicates = useMemo(() => duplicatedNames(documents), [documents]);
+
   // Oversized PDF Handling States
   const [oversizedFiles, setOversizedFiles] = useState<File[]>([]);
   const [isSplittingPdf, setIsSplittingPdf] = useState(false);
@@ -91,37 +126,13 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const loadDocuments = useCallback(async () => {
-    try {
-      const res = await fetchWorkspaceDocuments(workspaceId);
-      setDocuments(res.content || []);
-      setError(null);
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Lỗi tải danh sách tài liệu');
-    } finally {
-      setLoading(false);
-    }
-  }, [workspaceId]);
+    await refetch();
+  }, [refetch]);
 
+  // An approval decision upstream means the list is out of date.
   useEffect(() => {
-    let isMounted = true;
-    fetchWorkspaceDocuments(workspaceId)
-      .then((res) => {
-        if (isMounted) {
-          setDocuments(res.content || []);
-          setError(null);
-          setLoading(false);
-        }
-      })
-      .catch((err: unknown) => {
-        if (isMounted) {
-          setError(err instanceof Error ? err.message : 'Lỗi tải danh sách tài liệu');
-          setLoading(false);
-        }
-      });
-    return () => {
-      isMounted = false;
-    };
-  }, [workspaceId, reloadToken]);
+    if (reloadToken > 0) void refetch();
+  }, [reloadToken, refetch]);
 
   useEffect(() => {
     const isProcessing = documents.some(
@@ -287,30 +298,10 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({
     }
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFiles = Array.from(e.target.files || []);
-    processFiles(selectedFiles);
-  };
-
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (uploadingDocs.length === 0) setIsDragging(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-  };
-
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
+  /** The zone owns dragging and the picker; this is the one way in. */
+  const handlePickedFiles = (files: File[]) => {
     if (uploadingDocs.length > 0) return;
-    const droppedFiles = Array.from(e.dataTransfer.files);
-    processFiles(droppedFiles);
+    processFiles(files);
   };
 
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
@@ -336,7 +327,9 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({
       setDeletingDocumentId(null);
       return;
     }
-    setDocuments((current) => current.filter((doc) => doc.id !== selectedDocument.id));
+    // Dropped from the cached list before the refetch lands, so the row goes
+    // the moment the server confirms rather than one round trip later.
+    setDocuments(documents.filter((doc) => doc.id !== selectedDocument.id));
     setDocumentToDelete(null);
     setDeletingDocumentId(null);
     try {
@@ -349,12 +342,6 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({
           : 'Đã gửi yêu cầu xóa nhưng không thể tải lại danh sách.'
       );
     }
-  };
-
-  const formatSize = (bytes: number) => {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
   if (loading) return <LoadingInline label="Đang tải danh sách tài liệu..." />;
@@ -408,26 +395,7 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({
         />
       )}
 
-      {notificationToast &&
-        createPortal(
-          <div className={`doc-toast doc-toast--${notificationToast.type}`}>
-            <div className={`doc-toast__icon doc-toast__icon--${notificationToast.type}`}>
-              {notificationToast.type === 'success' ? '✓' : '✕'}
-            </div>
-            <div className="doc-toast__body">
-              <h5 className="doc-toast__title">{notificationToast.title}</h5>
-              <p className="doc-toast__message">{notificationToast.message}</p>
-            </div>
-            <button
-              className="doc-toast__close"
-              onClick={() => setNotificationToast(null)}
-              title="Đóng thông báo"
-            >
-              &times;
-            </button>
-          </div>,
-          document.body
-        )}
+      <DocumentToast notice={notificationToast} onClose={() => setNotificationToast(null)} />
 
       <SyncVectorModal
         isOpen={isSyncModalOpen}
@@ -439,206 +407,66 @@ export const DocumentTable: React.FC<DocumentTableProps> = ({
         }}
       />
 
-      <div className="document-management__header">
+      <header className="document-management__header">
         <div className="document-management__title-zone">
-          <h3 className="document-management__title">Tài liệu Workspace ({documents.length})</h3>
+          <h2 className="document-management__title">Tài liệu của nhóm</h2>
+          {/* Counted from the list already loaded: a file still being ingested
+              is not one the assistant can read, so the total alone would
+              overstate what it knows. */}
+          <p className="document-management__subtitle">
+            {total === 0
+              ? 'Chưa có tệp nào trong nhóm.'
+              : `${ready}/${total} tệp đã sẵn sàng cho Trợ lý AI`}
+          </p>
         </div>
-        <button
-          type="button"
-          className="document-management__sync-btn"
-          onClick={handleSyncVector}
-          title="Đồng bộ tất cả tài liệu đĩa sang ChromaDB Vector Store"
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
-            cloud_sync
-          </span>
-          <span>Đồng bộ Vector DB</span>
-        </button>
-      </div>
+        {canEdit && (
+          <button
+            type="button"
+            className="document-management__sync-btn"
+            onClick={handleSyncVector}
+            title="Nạp lại toàn bộ tài liệu của nhóm cho trợ lý"
+          >
+            <Icon name="sync" size={18} />
+            Đồng bộ lại
+          </button>
+        )}
+      </header>
 
-      {error && <div style={{ color: '#ef4444', fontSize: '14px', marginBottom: '1rem' }}>{error}</div>}
-
-      {canContribute && (
-        <div
-          className={`document-upload-zone ${isDragging ? 'document-upload-zone--dragging' : ''}`}
-          onClick={() => !isUploading && fileInputRef.current?.click()}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          style={{ opacity: isUploading ? 0.6 : 1, cursor: isUploading ? 'not-allowed' : 'pointer' }}
-        >
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileSelect}
-            style={{ display: 'none' }}
-            accept=".pdf,.docx,.txt"
-            multiple
-            disabled={isUploading}
-          />
-          <div className="document-upload-zone__title">
-            {isUploading
-              ? `Đang tải lên ${uploadingDocs.length} tài liệu...`
-              : 'Nhấp hoặc kéo thả nhiều tệp PDF, DOCX, TXT để tải lên cùng lúc'}
-          </div>
-          <div className="document-upload-zone__subtitle">
-            {/* An editor needs to know what the pipeline can take; a contributor
-                needs to know their file waits for approval first. */}
-            {canEdit
-              ? 'Hỗ trợ upload hàng loạt (PDF, DOCX, TXT) • Tự động chia nhỏ PDF > 20 MB (15 trang/tệp) • Đồng bộ Vector DB tự động'
-              : 'Đóng góp của bạn sẽ được chủ Workspace duyệt trước khi AI sử dụng • Tối đa 20 MiB/tệp'}
-          </div>
-        </div>
+      {listError && (
+        <p className="document-management__error" role="alert">
+          <Icon name="error_outline" size={16} />
+          {listError}
+        </p>
       )}
 
-      <div className="document-table-container">
-        <table className="document-table">
-          <thead>
-            <tr>
-              <th>Tên tài liệu</th>
-              <th>Định dạng</th>
-              <th>Dung lượng</th>
-              <th>Trạng thái Vector DB</th>
-              {canEdit && <th>Hành động</th>}
-            </tr>
-          </thead>
-          <tbody>
-            {uploadingDocs.map((doc) => (
-              <tr key={doc.id} className="document-row--uploading">
-                <td>
-                  <div className="document-uploading-info">
-                    <span className="document-uploading-name">{doc.name}</span>
-                    <div className="document-progress-bar-container">
-                      <div
-                        className="document-progress-bar-fill"
-                        style={{ width: `${doc.progress}%` }}
-                      />
-                    </div>
-                  </div>
-                </td>
-                <td>{doc.mediaType}</td>
-                <td>{formatSize(doc.size)}</td>
-                <td>
-                  <span className="document-badge document-badge--uploading">
-                    <span className="document-badge__icon">⏳</span>
-                    Đang nạp Vector ({doc.progress}%)
-                  </span>
-                </td>
-                {canEdit && <td>—</td>}
-              </tr>
-            ))}
+      {canContribute && (
+        <DocumentUploadZone
+          isUploading={isUploading}
+          uploadingCount={uploadingDocs.length}
+          canEdit={canEdit}
+          onFiles={handlePickedFiles}
+        />
+      )}
 
-            {paginatedDocs.map((doc) => (
-              <tr key={doc.id}>
-                <td>{doc.originalName}</td>
-                <td>{doc.mediaType.split('/')[1]?.toUpperCase() || doc.mediaType}</td>
-                <td>{formatSize(doc.byteSize)}</td>
-                <td>
-                  <span className={`document-badge document-badge--${doc.status.toLowerCase()}`}>
-                    <span className="document-badge__icon">
-                      {doc.status === 'PROCESSED'
-                        ? '✓'
-                        : doc.status === 'FAILED' || doc.status === 'REJECTED'
-                        ? '✕'
-                        : '⏳'}
-                    </span>
-                    {doc.status === 'PROCESSED'
-                      ? 'Vector DB Ready'
-                      : doc.status === 'PROCESSING'
-                      ? 'Tách Vector...'
-                      : doc.status === 'FAILED'
-                      ? 'Lỗi Vector'
-                      : doc.status === 'PENDING_APPROVAL'
-                      ? 'Chờ duyệt'
-                      : doc.status === 'REJECTED'
-                      ? 'Bị từ chối'
-                      : 'Chưa nạp Vector'}
-                  </span>
-                </td>
-                {canEdit && (
-                  <td>
-                    <button
-                      type="button"
-                      className="document-delete-btn"
-                      onClick={() => handleDelete(doc)}
-                      disabled={deletingDocumentId !== null}
-                    >
-                      Xóa
-                    </button>
-                  </td>
-                )}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      {(paginatedDocs.length > 0 || uploadingDocs.length > 0) && (
+        <DocumentRows
+          documents={paginatedDocs}
+          uploading={uploadingDocs}
+          duplicates={duplicates}
+          canEdit={canEdit}
+          deleting={deletingDocumentId !== null}
+          onDelete={handleDelete}
+        />
+      )}
 
-        {documents.length > 0 && (
-          <div className="document-pagination">
-            <div className="document-pagination__info">
-              <span>
-                Hiển thị <strong>{(currentPage - 1) * pageSize + 1}</strong> -{' '}
-                <strong>{Math.min(currentPage * pageSize, totalItems)}</strong> trong tổng số{' '}
-                <strong>{totalItems}</strong> tài liệu
-              </span>
-              <select
-                className="document-pagination__size-select"
-                value={pageSize}
-                onChange={(e) => {
-                  setPageSize(Number(e.target.value));
-                  setCurrentPage(1);
-                }}
-              >
-                <option value={5}>5 dòng / trang</option>
-                <option value={10}>10 dòng / trang</option>
-                <option value={20}>20 dòng / trang</option>
-                <option value={50}>50 dòng / trang</option>
-              </select>
-            </div>
-
-            <div className="document-pagination__controls">
-              <button
-                type="button"
-                className="document-pagination__btn"
-                onClick={() => setCurrentPage(1)}
-                disabled={currentPage === 1}
-                title="Trang đầu"
-              >
-                «
-              </button>
-              <button
-                type="button"
-                className="document-pagination__btn"
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-                title="Trang trước"
-              >
-                ‹
-              </button>
-              <span className="document-pagination__page-indicator">
-                Trang {currentPage} / {totalPages}
-              </span>
-              <button
-                type="button"
-                className="document-pagination__btn"
-                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                disabled={currentPage >= totalPages}
-                title="Trang sau"
-              >
-                ›
-              </button>
-              <button
-                type="button"
-                className="document-pagination__btn"
-                onClick={() => setCurrentPage(totalPages)}
-                disabled={currentPage >= totalPages}
-                title="Trang cuối"
-              >
-                »
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+      <DocumentPagination
+        currentPage={currentPage}
+        pageSize={pageSize}
+        totalItems={totalItems}
+        totalPages={totalPages}
+        onPage={setCurrentPage}
+        onPageSize={setPageSize}
+      />
     </div>
   );
 };

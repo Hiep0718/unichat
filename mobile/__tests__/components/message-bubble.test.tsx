@@ -4,7 +4,7 @@ import { MessageBubble } from '../../src/features/chat/components/message-bubble
 import { MessageItem } from '../../src/types/api';
 
 describe('MessageBubble', () => {
-  it('renders user message correctly', () => {
+  it('renders user message correctly', async () => {
     const userMsg: MessageItem = {
       id: 'msg-u1',
       conversationId: 'c1',
@@ -13,13 +13,13 @@ describe('MessageBubble', () => {
       createdAt: '2026-10-03T00:00:00Z',
     };
 
-    const { getByText, getByTestId } = render(<MessageBubble message={userMsg} />);
+    const { getByText, getByTestId } = await render(<MessageBubble message={userMsg} />);
 
     expect(getByTestId('user-message-msg-u1')).toBeTruthy();
     expect(getByText('Cho tôi biết định nghĩa về RAG?')).toBeTruthy();
   });
 
-  it('renders AI assistant message with markdown and citations', () => {
+  it('renders AI assistant message with markdown and citations', async () => {
     const aiMsg: MessageItem = {
       id: 'msg-a1',
       conversationId: 'c1',
@@ -38,7 +38,7 @@ describe('MessageBubble', () => {
       createdAt: '2026-10-03T00:00:01Z',
     };
 
-    const { getByText, getByTestId } = render(<MessageBubble message={aiMsg} />);
+    const { getByText, getByTestId } = await render(<MessageBubble message={aiMsg} />);
 
     expect(getByTestId('ai-message-msg-a1')).toBeTruthy();
     expect(getByText('UniChat AI')).toBeTruthy();
@@ -46,7 +46,7 @@ describe('MessageBubble', () => {
     expect(getByText('95%')).toBeTruthy();
   });
 
-  it('should disclose missing web search when expanded evidence is unavailable', () => {
+  it('should disclose missing web search when expanded evidence is unavailable', async () => {
     const aiMsg: MessageItem = {
       id: 'msg-a2',
       conversationId: 'c1',
@@ -57,7 +57,7 @@ describe('MessageBubble', () => {
       createdAt: '2026-10-03T00:00:01Z',
     };
 
-    const { getByText } = render(<MessageBubble message={aiMsg} />);
+    const { getByText } = await render(<MessageBubble message={aiMsg} />);
 
     expect(getByText(/Chưa cấu hình tìm kiếm web/)).toBeTruthy();
   });

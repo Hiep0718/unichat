@@ -1,0 +1,73 @@
+/* Dải hồ sơ ở đầu trang cài đặt.
+
+   Dùng lại bộ token dải của trang Workspace (--ray-*), nên hai nơi là cùng
+   một mảng tối chứ không phải hai sắc xanh suýt giống nhau. Ảnh nằm dưới
+   cùng ở độ mờ thấp; mọi cặp chữ-trên-nền đã đo bằng pixel thật. */
+
+.profile-banner {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  margin-block-start: 20px;
+  padding: 22px 26px;
+  min-block-size: 128px;
+  border-radius: var(--radius-xl);
+  background: var(--ray-nen);
+}
+
+.profile-banner__art {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  object-position: center;
+  opacity: 0.32;
+  pointer-events: none;
+}
+
+.profile-banner__who {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-inline-size: 0;
+}
+
+.profile-banner__text {
+  min-inline-size: 0;
+}
+
+.profile-banner__name {
+  margin: 0;
+  font-family: var(--font-doc);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ray-muc);
+  overflow-wrap: anywhere;
+}
+
+.profile-banner__meta {
+  margin: 5px 0 0;
+  font: var(--font-body-sm);
+  color: var(--ray-muc-nhat);
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 599px) {
+  .profile-banner {
+    padding: 18px;
+    min-block-size: 0;
+  }
+
+  .profile-banner__who {
+    gap: 14px;
+  }
+
+  .profile-banner__name {
+    font-size: 20px;
+  }
+}

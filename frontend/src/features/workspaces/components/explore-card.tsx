@@ -8,6 +8,7 @@
 
 import { Icon } from '../../../components/icon';
 import { MemberFaces } from './member-faces';
+import { TopicChips } from './topic-chips';
 import { WorkspaceCover } from './workspace-cover';
 
 import type { WorkspaceDto } from '../workspace-schema';
@@ -34,6 +35,7 @@ export function ExploreCard({ workspace, animationIndex = 0, onJoin, isJoining }
         workspaceId={workspace.id}
         name={workspace.name}
         hasCover={workspace.hasCover}
+        topics={workspace.topics}
       />
       <span className="explore-card__scrim" />
 
@@ -47,6 +49,8 @@ export function ExploreCard({ workspace, animationIndex = 0, onJoin, isJoining }
         {workspace.description?.trim() && (
           <p className="explore-card__desc">{workspace.description}</p>
         )}
+
+        <TopicChips topics={workspace.topics} compact />
 
         <div className="explore-card__foot">
           <div className="explore-card__facts">

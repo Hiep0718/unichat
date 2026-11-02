@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.unichat.core.common.error.AuthorizationError;
 import com.unichat.core.common.error.ConflictError;
 import com.unichat.core.common.error.NotFoundError;
+import com.unichat.core.user.domain.AvatarColor;
 import com.unichat.core.user.domain.User;
 import com.unichat.core.user.domain.UserRepository;
 import com.unichat.core.workspace.api.AddWorkspaceMemberRequest;
@@ -53,20 +54,26 @@ public class WorkspaceMemberService {
                 .findByWorkspaceIdAndStatus(workspace.getId(), WorkspaceMemberStatus.ACTIVE);
 
         List<UUID> userIds = members.stream().map(WorkspaceMember::getUserId).toList();
-        Map<UUID, String> emailMap = userRepository.findAllById(userIds).stream()
-                .collect(Collectors.toMap(User::getId, User::getEmail));
+        // The whole user, not just the address: the list draws each member's
+        // avatar, and these are already loaded, so it costs no further query.
+        Map<UUID, User> userMap = userRepository.findAllById(userIds).stream()
+                .collect(Collectors.toMap(User::getId, user -> user));
 
         return members.stream()
-                .map(m -> WorkspaceMemberResponse.from(m, emailMap.getOrDefault(m.getUserId(), "")))
+                .map(m -> toResponse(m, userMap.get(m.getUserId())))
                 .toList();
     }
 
     /**
      * Adds a new member to a workspace by email.
+     *
+     * @throws com.unichat.core.common.error.ValidationError when the workspace
+     *         is PRIVATE, which by definition holds nobody but its owner
      */
     @Transactional
     public WorkspaceMemberResponse addMember(UUID currentUserId, UUID workspaceId, AddWorkspaceMemberRequest request) {
         Workspace workspace = validateOwnerAccess(currentUserId, workspaceId);
+        WorkspaceVisibilityPolicy.requireCanAddMember(workspace.getVisibility());
 
         User targetUser = userRepository.findByEmailIgnoreCase(request.email())
                 .orElseThrow(() -> new NotFoundError("Không tìm thấy người dùng với email này"));
@@ -90,7 +97,7 @@ public class WorkspaceMemberService {
         workspace.incrementPermissionVersion();
         workspaceRepository.save(workspace);
 
-        return WorkspaceMemberResponse.from(member, targetUser.getEmail());
+        return toResponse(member, targetUser);
     }
 
     /**
@@ -116,8 +123,7 @@ public class WorkspaceMemberService {
         workspaceRepository.save(workspace);
 
         User targetUser = userRepository.findById(targetUserId).orElse(null);
-        String email = targetUser != null ? targetUser.getEmail() : "";
-        return WorkspaceMemberResponse.from(member, email);
+        return toResponse(member, targetUser);
     }
 
     /**
@@ -155,5 +161,27 @@ public class WorkspaceMemberService {
         }
 
         return workspace;
+    }
+
+    /**
+     * Maps one membership with the identity shown beside it.
+     *
+     * <p>A member whose user row could not be read still appears, because a
+     * membership that exists is a fact the owner should see; it simply carries
+     * no name or picture.
+     *
+     * @param user the member's user row, null when it could not be read
+     */
+    private WorkspaceMemberResponse toResponse(WorkspaceMember member, User user) {
+        if (user == null) {
+            return WorkspaceMemberResponse.from(member, "", null, false, null);
+        }
+        AvatarColor colour = user.getAvatarColor();
+        return WorkspaceMemberResponse.from(
+                member,
+                user.getEmail(),
+                user.getDisplayName(),
+                user.hasAvatarImage(),
+                colour == null ? null : colour.key());
     }
 }

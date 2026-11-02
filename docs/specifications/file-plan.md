@@ -75,6 +75,8 @@ Mỗi feature có index.ts public barrel, schema.ts, api.ts/hooks.ts khi cần, 
 | frontend/src/features/documents/ | document-api.ts, upload-schema.ts, document-page.tsx, upload-panel.tsx, document-table.tsx |
 | frontend/src/features/chat/ | chat-api.ts, question-schema.ts, chat-page.tsx, message-list.tsx, question-form.tsx, citation-panel.tsx, refusal-card.tsx |
 | frontend/src/features/history/ | conversation-api.ts, conversation-page.tsx, conversation-list.tsx |
+| frontend/src/features/realtime/ | realtime-provider.tsx (một kết nối STOMP dùng chung toàn app) |
+| frontend/src/features/calls/ | call-api.ts, call-machine.ts (reducer thuần), peer-connection.ts, call-signalling.ts, call-provider.tsx, components/call-overlay.tsx, components/call-button.tsx |
 | frontend/src/features/settings/ | settings-page.tsx, general-form.tsx, access-form.tsx, privacy-form.tsx, danger-zone.tsx |
 | frontend/src/features/evaluation/ | evaluation-api.ts, evaluation-page.tsx, run-form.tsx, metric-summary.tsx |
 | frontend/src/features/admin/ | admin-api.ts, user-page.tsx, metric-page.tsx, user-table.tsx |
@@ -223,7 +225,7 @@ hiện hành.
 - AI Service: provider settings/key registry và adapter protocol; Hive SSE/parser + Gemini adapter; gateway, RAG/compaction/cancellation, private errors, attribution, probe/registry/readiness; offline Python tests.
 - Core admin/chat: admission controller/service/repository, V40 singleton migration, shared/exclusive lock integration, safe private provider error mapping, registry/history metadata; controller/unit/PostgreSQL concurrency tests.
 - Web/mobile: provider-neutral admin diagnostics, independent history filters, admission controls, nullable usage and friendly error/refusal presentation; offline component/transport/Playwright tests.
-- Documentation: ADR-022, provider configuration sample, API/data/retrieval/test specs và Hive runbook. Giữ baseline/decisions/evidence trong .pipeline; không ghi đè dirty work của task khác.
+- Documentation: ADR-028, provider configuration sample, API/data/retrieval/test specs và Hive runbook. Giữ baseline/decisions/evidence trong .pipeline; không ghi đè dirty work của task khác.
 - Delivery excludes shared migration apply, live env/restart, real provider smoke, package installation và Git operations until separately approved.
 
 ## 15. Gemini primary với Hive fallback — approved extension

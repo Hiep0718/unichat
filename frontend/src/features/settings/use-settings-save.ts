@@ -9,7 +9,7 @@ import type { UpdateWorkspaceInput, WorkspaceDto } from '../workspaces/workspace
 
 /** Minimal authoritative metadata consumed by settings forms on either route. */
 export type SettingsWorkspace = Pick<WorkspaceDto,
-  'id' | 'name' | 'description' | 'visibility' | 'cloudAllowed' | 'version'>;
+  'id' | 'name' | 'description' | 'visibility' | 'topics' | 'cloudAllowed' | 'version'>;
 
 /** Validates updates and synchronizes the returned version before the next save. */
 export function useSettingsSave(workspaceId: string) {

@@ -1,472 +1,429 @@
-/* ==========================================================================
-   Account Settings Page — Academic Precision Design System
-   Uses CSS variables from styles/index.css (DESIGN.md tokens)
-   Prefix: account-* (avoids conflict with workspace settings.css)
-   ========================================================================== */
+/* Trang cài đặt tài khoản.
 
-/* ─── Page Container ─────────────────────────────────────── */
+   Số học lưới, viết ra để kiểm được: canvas rộng tối đa 1080, cột khu vực
+   228, khe 24, nên khung nội dung là 1080 − 228 − 24 = 828. Dải hồ sơ và
+   tiêu đề dùng đúng hai mép ấy, nên mọi thứ trên trang chạy trên một mép
+   trái và một mép phải duy nhất.
 
-.account-page {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
+   Màu chỉ nằm trên dải hồ sơ, trên mục khu vực đang mở và trên nút đăng
+   xuất. Phần còn lại là giấy, mực và một bậc nền — theo đúng ngân sách màu
+   của màn hình ứng dụng. */
+
+.settings {
+  --canvas: 1080px;
+  --aside: 228px;
+
+  block-size: 100%;
+  overflow-y: auto;
+  padding: 28px var(--gutter) 64px;
 }
 
-/* ─── Header ─────────────────────────────────────────────── */
-
-.account-page__header {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 34px var(--gutter) 6px;
-  background: var(--color-background);
-  max-width: 44rem;
-  width: 100%;
-  margin: 0 auto;
+.settings__head,
+.profile-banner,
+.settings__body {
+  max-inline-size: var(--canvas);
+  margin-inline: auto;
 }
 
-.account-page__title {
-  font: var(--font-headline-lg);
+.settings__title {
+  margin: 0;
+  font-family: var(--font-doc);
+  font-size: 26px;
   font-weight: 700;
-  letter-spacing: -0.02em;
-  color: var(--color-on-surface);
+  letter-spacing: -0.015em;
+  color: var(--muc);
+}
+
+.settings__lede {
+  margin: 6px 0 0;
+  font: var(--font-body-sm);
+  color: var(--muc-nhat);
+}
+
+.settings__body {
+  display: grid;
+  grid-template-columns: var(--aside) minmax(0, 1fr);
+  gap: 24px;
+  margin-block-start: 24px;
+  align-items: start;
+}
+
+.settings__aside {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: sticky;
+  inset-block-start: 0;
+}
+
+/* ---------- Cột khu vực ---------- */
+
+.settings__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.settings__nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  font: var(--font-label-md);
+  color: var(--muc-nhat);
+  text-align: start;
+  cursor: pointer;
+}
+
+.settings__nav-item:hover {
+  background: var(--khung);
+  color: var(--muc);
+}
+
+/* Mục đang mở: màu giấy, cùng màu với thẻ nội dung nó mở ra, nên hai thứ đọc
+   ra là một. Không dùng mảng màu nhấn — ở màn hình làm việc, điều hướng phải
+   lùi lại phía sau nội dung.
+
+   Trước đây ô này tô bằng --be-mat, mà nền của vỏ ứng dụng đúng là màu ấy
+   (#f6f7f9), nên không nhìn ra mục nào đang mở. Một bậc nền chỉ là một bậc
+   khi nó khác với thứ nằm dưới nó. */
+.settings__nav-item--on,
+.settings__nav-item--on:hover {
+  background: var(--noi);
+  color: var(--muc);
+  font-weight: 600;
+}
+
+.settings__nav-item:focus-visible {
+  outline: 2px solid var(--nhan);
+  outline-offset: 2px;
+}
+
+/* ---------- Đăng xuất ---------- */
+
+/* Cùng lý do: trên nền vỏ #f6f7f9 thì một khối --be-mat là vô hình. */
+.settings__signout {
+  padding: 16px;
+  border-radius: var(--radius-lg);
+  background: var(--noi);
+  border: 1px solid var(--vien);
+}
+
+.settings__signout-title {
   margin: 0;
-}
-
-.account-page__subtitle {
-  font: var(--font-body-md);
-  color: var(--color-on-surface-variant);
-  margin: 0;
-}
-
-/* ─── Tab Bar (horizontal, matches ws-detail__tabs) ──────── */
-
-.account-page__tabs {
-  display: inline-flex;
-  gap: 3px;
-  padding: 4px;
-  margin: 14px var(--gutter) 0;
-  max-width: calc(44rem - var(--gutter) * 2);
-  align-self: center;
-  background: var(--color-surface-container-high);
-  border: none;
-  border-radius: var(--radius-full);
-  overflow-x: auto;
-}
-
-.account-page__tab {
-  padding: 9px 18px;
-  background: none;
-  border: none;
-  border-radius: var(--radius-full);
   font: var(--font-label-md);
   font-weight: 600;
-  color: var(--color-on-surface-variant);
-  cursor: pointer;
-  white-space: nowrap;
+  color: var(--muc);
+}
+
+.settings__signout-note {
+  margin: 5px 0 12px;
+  font: var(--font-label-sm);
+  line-height: 1.5;
+  color: var(--muc-nhat);
+}
+
+.settings__signout-btn {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  transition: background var(--transition-fast), color var(--transition-fast),
-    box-shadow var(--transition-fast);
+  padding: 8px 14px;
+  border: 1px solid var(--vien);
+  border-radius: var(--radius-md);
+  background: var(--noi);
+  font: var(--font-label-md);
+  font-weight: 600;
+  color: var(--hong);
+  cursor: pointer;
 }
 
-.account-page__tab:hover:not(.account-page__tab--active) {
-  color: var(--color-on-surface);
+.settings__signout-btn:hover {
+  background: var(--pill-hong-nen);
 }
 
-.account-page__tab--active {
-  background: var(--color-surface-container-lowest);
-  color: var(--color-primary);
-  box-shadow: 0 1px 2px rgb(15 23 42 / 8%), 0 3px 10px rgb(15 23 42 / 7%);
+.settings__signout-btn:focus-visible {
+  outline: 2px solid var(--hong);
+  outline-offset: 2px;
 }
 
-.account-page__tab--danger {
-  color: var(--color-error);
-}
+/* ---------- Thẻ của một khu vực ---------- */
 
-.account-page__tab--danger.account-page__tab--active {
-  color: var(--color-error);
-}
-
-/* ─── Content Area ───────────────────────────────────────── */
-
-.account-page__content {
-  flex: 1;
-  padding: 20px var(--gutter) 48px;
-  background: var(--color-background);
-}
-
-.account-page__sections {
-  display: flex;
-  flex-direction: column;
-  gap: var(--stack-lg);
-  max-width: 44rem;
-  width: 100%;
-  margin: 0 auto;
-}
-
-/* ─── Reusable Section Card (matches settings-section) ──── */
-
-.account-section {
-  display: flex;
-  flex-direction: column;
-  gap: var(--stack-md);
-  padding: 24px 26px;
-  background: var(--color-surface-container-lowest);
-  border: none;
+.settings-card {
+  padding: 24px;
   border-radius: var(--radius-xl);
-  box-shadow: 0 1px 2px rgb(15 23 42 / 6%), 0 4px 16px rgb(15 23 42 / 5%);
+  background: var(--noi);
+  border: 1px solid var(--vien);
 }
 
-.account-section__header {
+.settings-card__title {
+  margin: 0;
+  font: var(--font-headline-sm);
+  font-weight: 700;
+  color: var(--muc);
+}
+
+.settings-card__note {
+  margin: 6px 0 0;
+  font: var(--font-body-sm);
+  color: var(--muc-nhat);
+}
+
+/* ---------- Ô nhập ---------- */
+
+.settings-field {
+  margin-block-start: 22px;
+}
+
+.settings-field__label {
+  display: block;
+  margin-block-end: 8px;
+  font: var(--font-label-md);
+  font-weight: 600;
+  color: var(--muc);
+}
+
+.settings-field__row {
+  display: flex;
+  gap: 10px;
+}
+
+/* inline-size: 100% là bắt buộc, không thừa.
+   `flex: 1` chỉ có tác dụng khi ô cha là flex — đúng với ô tên hiển thị, nằm
+   trong .settings-field__row. Các ô mật khẩu nằm thẳng trong .settings-field,
+   vốn là một div thường, nên flex không áp vào đâu cả và chúng co về bề rộng
+   mặc định của trình duyệt: ~180px trong một thẻ rộng 828px, để lại một dải
+   chết 600px bên phải mỗi ô. */
+.settings-field__input,
+.settings-field__locked {
+  flex: 1;
+  inline-size: 100%;
+  min-inline-size: 0;
+  block-size: 42px;
+  padding-inline: 14px;
+  border: 1px solid var(--vien);
+  border-radius: var(--radius-md);
+  background: var(--nen);
+  font: var(--font-body-md);
+  color: var(--muc);
+}
+
+.settings-field__input:focus-visible {
+  outline: 2px solid var(--nhan);
+  outline-offset: -1px;
+}
+
+/* Ô chỉ đọc. Dùng readOnly chứ không disabled: ô disabled không nhận được
+   tiêu điểm bàn phím, nên người dùng bàn phím không đọc nổi email của chính
+   mình. Cái khóa và nền một bậc nói rằng nó không sửa được. */
+.settings-field__locked {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: var(--be-mat);
+  color: var(--muc-nhat);
+}
+
+.settings-field__locked input {
+  flex: 1;
+  min-inline-size: 0;
+  border: 0;
+  background: transparent;
+  font: var(--font-body-md);
+  color: var(--muc-nhat);
+}
+
+.settings-field__save {
+  flex: none;
+  padding-inline: 20px;
+  block-size: 42px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--muc);
+  font: var(--font-label-md);
+  font-weight: 600;
+  color: var(--nen);
+  cursor: pointer;
+}
+
+.settings-field__save:disabled {
+  background: var(--ke);
+  color: var(--muc-mo);
+  cursor: not-allowed;
+}
+
+.settings-field__save:focus-visible {
+  outline: 2px solid var(--nhan);
+  outline-offset: 2px;
+}
+
+.settings-field__hint {
+  margin: 8px 0 0;
+  font: var(--font-label-sm);
+  line-height: 1.5;
+  color: var(--muc-nhat);
+}
+
+.settings-field__hint--bad {
+  color: var(--hong);
+}
+
+.settings-field__hint--good {
+  color: var(--tot);
+}
+
+/* ---------- Hàng cài đặt (mật khẩu) ---------- */
+
+.settings-row {
   display: flex;
   align-items: center;
   gap: 12px;
+  margin-block-start: 20px;
+  padding: 14px 16px;
+  border-radius: var(--radius-lg);
+  background: var(--be-mat);
 }
 
-.account-section__icon {
+.settings-row__mark {
   display: grid;
   place-items: center;
-  width: 34px;
-  height: 34px;
-  flex-shrink: 0;
-  border-radius: 11px;
-  background: linear-gradient(145deg, #6366f1 0%, #8b5cf6 100%);
-  box-shadow: 0 3px 10px rgb(99 102 241 / 32%);
-  color: #fff;
-}
-
-.account-section__title {
-  font: var(--font-headline-md);
-  font-weight: 700;
-  letter-spacing: -0.015em;
-  color: var(--color-on-surface);
-  margin: 0;
-}
-
-.account-section__subtitle {
-  font: var(--font-label-md);
-  font-weight: 600;
-  color: var(--color-on-surface);
-  margin: 0 0 var(--stack-sm);
-}
-
-/* ─── Form Elements (mirrors settings-form pattern) ──────── */
-
-.account-form {
-  display: flex;
-  flex-direction: column;
-  gap: var(--stack-md);
-}
-
-.account-form__field {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.account-form__row {
-  display: flex;
-  gap: var(--stack-md);
-}
-
-.account-form__row .account-form__field {
-  flex: 1;
-}
-
-.account-form__label {
-  font: var(--font-label-sm);
-  font-weight: 600;
-  color: var(--color-on-surface-variant);
-}
-
-.account-form__input {
-  padding: 11px 14px;
-  font: var(--font-body-md);
-  color: var(--color-on-surface);
-  background: var(--color-surface-container-high);
-  border: 1px solid transparent;
-  border-radius: var(--radius-lg);
-  outline: none;
-  transition: background var(--transition-fast), border-color var(--transition-fast),
-    box-shadow var(--transition-fast);
-}
-
-.account-form__input:focus {
-  background: var(--color-surface-container-lowest);
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgb(99 102 241 / 16%);
-}
-
-.account-form__input:disabled {
-  background: var(--color-surface-container-low);
-  color: var(--color-on-surface-variant);
-  cursor: not-allowed;
-}
-
-.account-form__hint {
-  font: var(--font-label-sm);
-  color: var(--color-on-surface-variant);
-  margin-top: 2px;
-}
-
-.account-form__actions {
-  display: flex;
-  justify-content: flex-start;
-  gap: var(--stack-sm);
-  margin-top: var(--stack-sm);
-}
-
-/* ─── Buttons ────────────────────────────────────────────── */
-
-.account-btn--primary {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 22px;
-  font: var(--font-label-md);
-  font-weight: 600;
-  color: #fff;
-  background: linear-gradient(120deg, #1e3a8a 0%, #4f46e5 60%, #6d28d9 100%);
-  border: none;
-  border-radius: var(--radius-full);
-  cursor: pointer;
-  box-shadow: 0 4px 14px rgb(79 70 229 / 30%);
-  transition: box-shadow var(--transition-fast), transform var(--transition-fast);
-}
-
-.account-btn--primary:hover:not(:disabled) {
-  box-shadow: 0 6px 20px rgb(79 70 229 / 42%);
-  transform: translateY(-1px);
-}
-
-.account-btn--primary:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.account-btn--outline {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 20px;
-  font: var(--font-label-md);
-  color: var(--color-secondary);
-  background: transparent;
-  border: 1px solid var(--color-secondary);
-  border-radius: var(--radius-default);
-  cursor: pointer;
-  transition: background var(--transition-fast);
-}
-
-.account-btn--outline:hover:not(:disabled) {
-  background: var(--color-surface-container-low);
-}
-
-.account-btn--outline:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.account-btn--danger {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 22px;
-  font: var(--font-label-md);
-  font-weight: 600;
-  color: var(--color-on-error);
-  background: linear-gradient(120deg, #b91c1c 0%, #dc2626 100%);
-  border: none;
-  border-radius: var(--radius-full);
-  cursor: pointer;
-  box-shadow: 0 4px 14px rgb(220 38 38 / 28%);
-  transition: box-shadow var(--transition-fast), transform var(--transition-fast);
-}
-
-.account-btn--danger:hover:not(:disabled) {
-  opacity: 0.9;
-}
-
-.account-btn--danger:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.account-link--danger {
-  color: var(--color-error);
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: transparent;
-  border: none;
-  font: var(--font-label-md);
-  cursor: pointer;
-  padding: 0;
-  transition: opacity var(--transition-fast);
-}
-
-.account-link--danger:hover {
-  opacity: 0.8;
-}
-
-/* ─── Alerts ─────────────────────────────────────────────── */
-
-.account-alert {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
+  inline-size: 34px;
+  block-size: 34px;
   border-radius: var(--radius-md);
-  font: var(--font-body-md);
+  background: var(--noi);
+  color: var(--muc-nhat);
 }
 
-.account-alert--error {
-  background: var(--color-error-container);
-  color: var(--color-on-error-container);
-  border: 1px solid var(--color-error);
-}
-
-.account-alert--success {
-  background: var(--color-surface-container-low);
-  color: var(--color-success);
-  border: 1px solid var(--color-success);
-}
-
-/* ─── Divider ────────────────────────────────────────────── */
-
-.account-divider {
-  height: 1px;
-  background: var(--color-outline-variant);
-  margin: var(--stack-md) 0;
-  border: none;
-}
-
-/* ─── Device List ────────────────────────────────────────── */
-
-.account-device-list {
+.settings-row__text {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-bottom: var(--stack-md);
+  gap: 3px;
+  flex: 1;
+  min-inline-size: 0;
 }
 
-.account-device-item {
+.settings-row__name {
+  font: var(--font-label-md);
+  font-weight: 600;
+  color: var(--muc);
+}
+
+.settings-row__meta {
+  font: var(--font-label-sm);
+  color: var(--muc-nhat);
+}
+
+.settings-row__action {
+  flex: none;
+  padding: 9px 16px;
+  border: 1px solid var(--vien);
+  border-radius: var(--radius-md);
+  background: var(--noi);
+  font: var(--font-label-md);
+  font-weight: 600;
+  color: var(--muc);
+  cursor: pointer;
+}
+
+.settings-row__action:hover {
+  background: var(--ke);
+}
+
+.settings-row__action:focus-visible {
+  outline: 2px solid var(--nhan);
+  outline-offset: 2px;
+}
+
+/* ---------- Biểu mẫu mật khẩu ---------- */
+
+.settings-pwd {
+  margin-block-start: 4px;
+  padding-block-start: 4px;
+}
+
+.settings-pwd__actions {
   display: flex;
   align-items: center;
-  gap: var(--stack-md);
-  padding: var(--stack-md);
-  border: 1px solid var(--color-outline-variant);
-  border-radius: var(--radius-default);
-  background: var(--color-surface-container-lowest);
+  gap: 10px;
+  margin-block-start: 20px;
 }
 
-.account-device-item--active {
-  background: var(--color-surface-container-low);
-}
-
-.account-device-icon {
-  color: var(--color-on-surface-variant);
-}
-
-.account-device-info {
-  flex: 1;
-}
-
-.account-device-name {
-  font: var(--font-label-md);
-  color: var(--color-on-surface);
-  margin: 0 0 4px;
-}
-
-.account-device-meta {
-  font: var(--font-label-sm);
-  color: var(--color-on-surface-variant);
-  margin: 0;
-}
-
-.account-device-action {
-  color: var(--color-error);
+.settings-pwd__cancel {
+  padding: 0 8px;
+  block-size: 42px;
+  border: 0;
   background: transparent;
-  border: none;
-  font: var(--font-label-sm);
+  font: var(--font-label-md);
+  font-weight: 600;
+  color: var(--muc-nhat);
   cursor: pointer;
-  padding: 4px 8px;
-  transition: opacity var(--transition-fast);
 }
 
-.account-device-action:hover {
-  opacity: 0.8;
+.settings-pwd__cancel:hover {
+  color: var(--muc);
 }
 
-/* ─── Logout section ─────────────────────────────────────── */
-
-.account-logout-section {
-  display: flex;
-  flex-direction: column;
-  gap: var(--stack-md);
-  padding: 20px;
-  background: var(--color-surface-container-lowest);
-  border: 1px solid var(--color-error-container);
-  border-radius: var(--radius-lg);
+.settings-pwd__cancel:focus-visible {
+  outline: 2px solid var(--nhan);
+  outline-offset: 2px;
 }
 
-.account-logout-section__title {
-  font: var(--font-headline-md);
-  color: var(--color-error);
-  margin: 0;
-}
+/* ---------- Khổ hẹp ---------- */
 
-.account-logout-section__description {
-  font: var(--font-body-md);
-  color: var(--color-on-surface-variant);
-  margin: 0;
-  line-height: 1.5;
-}
+@media (max-width: 899px) {
+  .settings__body {
+    grid-template-columns: 1fr;
+  }
 
-/* ─── Responsive ─────────────────────────────────────────── */
+  .settings__aside {
+    position: static;
+    gap: 16px;
+  }
 
-@media (min-width: 768px) {
-  .account-page {
-    margin-left: var(--sidebar-width);
+  /* Cột khu vực thành một hàng cuộn ngang, nên nó không chiếm cả một màn
+     trước khi thấy nội dung. */
+  .settings__nav {
+    flex-direction: row;
+    gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .settings__nav-item {
+    flex: none;
+  }
+
+  /* Đăng xuất xuống cuối trang: trên khổ hẹp nó nằm ngay dưới cột khu vực
+     thì lọt vào giữa đường đi tới nội dung. */
+  .settings__signout {
+    order: 2;
+  }
+
+  .settings__aside {
+    display: contents;
+  }
+
+  .settings__panel {
+    order: 1;
   }
 }
 
-/* The one editable field on the profile tab, so the control sits beside it
-   rather than in a form-wide footer. */
-.account-form__row {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
+@media (max-width: 599px) {
+  .settings {
+    padding-block-start: 20px;
+  }
 
-.account-form__row .account-form__input {
-  flex: 1;
-  min-width: 0;
-}
+  .settings-card {
+    padding: 18px;
+  }
 
-.account-form__save {
-  flex-shrink: 0;
-  padding: 11px 20px;
-  border: none;
-  border-radius: var(--radius-full);
-  background: linear-gradient(120deg, #1e3a8a 0%, #4f46e5 60%, #6d28d9 100%);
-  color: #fff;
-  font: var(--font-label-md);
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 4px 14px rgb(79 70 229 / 30%);
-  transition: box-shadow var(--transition-fast), transform var(--transition-fast);
-}
+  .settings-field__row {
+    flex-wrap: wrap;
+  }
 
-.account-form__save:hover:not(:disabled) {
-  box-shadow: 0 6px 20px rgb(79 70 229 / 42%);
-  transform: translateY(-1px);
-}
-
-.account-form__save:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
+  .settings-field__save {
+    inline-size: 100%;
+  }
 }

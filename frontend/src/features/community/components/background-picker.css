@@ -34,7 +34,7 @@
 
 .bg-picker__swatch--active {
   box-shadow: 0 0 0 2px var(--color-surface-container-lowest),
-    0 0 0 4px #4f46e5, 0 1px 3px rgb(15 23 42 / 16%);
+    0 0 0 4px var(--muc), 0 1px 3px rgb(15 23 42 / 16%);
 }
 
 .bg-picker__swatch--none {

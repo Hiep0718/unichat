@@ -83,6 +83,23 @@ public interface DiscussionRepository extends JpaRepository<Discussion, UUID> {
     List<Object[]> countRecentGroupedByWorkspaceIds(@Param("wsIds") List<UUID> wsIds,
                                                     @Param("since") Instant since);
 
+    /**
+     * Every live post per workspace, however old.
+     *
+     * <p>The companion to {@link #countRecentGroupedByWorkspaceIds}: that one
+     * answers "is anything happening here", this one answers "how much is
+     * here", which is what a tab badge beside "Bài viết" claims to say.
+     *
+     * <p>Grouped for a whole page in one query, like the other card counts, so
+     * a list of groups does not pay a query per card.
+     *
+     * @return rows of {workspaceId, count}; a workspace with none is absent
+     */
+    @Query("SELECT d.workspaceId, COUNT(d) FROM Discussion d "
+            + "WHERE d.workspaceId IN :wsIds AND " + NOT_DELETED
+            + " GROUP BY d.workspaceId")
+    List<Object[]> countGroupedByWorkspaceIds(@Param("wsIds") List<UUID> wsIds);
+
     @Query("SELECT count(d) FROM Discussion d WHERE d.authorId = :userId "
             + "AND d.workspaceId IN :wsIds AND " + NOT_DELETED)
     long countPostsBy(@Param("userId") UUID userId, @Param("wsIds") List<UUID> wsIds);
@@ -108,20 +125,42 @@ public interface DiscussionRepository extends JpaRepository<Discussion, UUID> {
     Page<Discussion> findTopSince(@Param("wsIds") List<UUID> wsIds, @Param("since") Instant since, Pageable p);
 
     /**
-     * Questions still waiting for a resolution — the actionable set for members
-     * who can help. Ordered oldest-unanswered first so nothing is forgotten.
+     * Questions nobody has answered yet — the actionable set for members who
+     * can help. Newest first, because an unanswered question is most likely to
+     * be answered while the person who asked is still around.
+     *
+     * <p>Restricted to questions. Without that the view also returned
+     * discussions and announcements, neither of which has a resolution to
+     * wait for, and the sidebar badge counted them as questions needing help.
+     *
+     * <p>"Unanswered" means <em>no replies at all</em>, not merely no accepted
+     * answer. Those are different states and the UI already names them
+     * differently — a question with replies and no accepted answer reads
+     * "Đang thảo luận" on its card. Keying this on {@code accepted_reply_id}
+     * alone made the tab badge disagree with the cards underneath it, and left
+     * every question whose author never came back to press accept sitting in
+     * the list for good. {@code reply_count} is maintained on the row, so this
+     * stays one indexed scan.
      */
     @Query(value = "SELECT * FROM discussions WHERE workspace_id IN :wsIds "
-            + "AND status <> 'DELETED' AND accepted_reply_id IS NULL "
-            + "ORDER BY reply_count ASC, created_at DESC",
+            + "AND status <> 'DELETED' AND label = 'QUESTION' "
+            + "AND accepted_reply_id IS NULL AND reply_count = 0 "
+            + "ORDER BY created_at DESC",
            countQuery = "SELECT count(*) FROM discussions WHERE workspace_id IN :wsIds "
-            + "AND status <> 'DELETED' AND accepted_reply_id IS NULL",
+            + "AND status <> 'DELETED' AND label = 'QUESTION' "
+            + "AND accepted_reply_id IS NULL AND reply_count = 0",
            nativeQuery = true)
     Page<Discussion> findUnanswered(@Param("wsIds") List<UUID> wsIds, Pageable p);
 
-    /** Counts unanswered questions, for the feed tab badge. */
+    /**
+     * Counts unanswered questions for the feed tab badge.
+     *
+     * <p>Same rule as {@link #findUnanswered}, so the number on the tab is the
+     * number of rows the tab opens.
+     */
     @Query(value = "SELECT count(*) FROM discussions WHERE workspace_id IN :wsIds "
-            + "AND status <> 'DELETED' AND accepted_reply_id IS NULL",
+            + "AND status <> 'DELETED' AND label = 'QUESTION' "
+            + "AND accepted_reply_id IS NULL AND reply_count = 0",
            nativeQuery = true)
     long countUnanswered(@Param("wsIds") List<UUID> wsIds);
 

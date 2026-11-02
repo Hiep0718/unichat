@@ -144,7 +144,7 @@
 }
 
 .create-post-modal__pill--active {
-  background: var(--color-primary);
+  background: var(--ws-accent-gradient);
   color: var(--color-on-primary);
   border-color: var(--color-primary);
 }
@@ -208,7 +208,7 @@
   padding: 10px 24px;
   border: none;
   border-radius: var(--radius-full);
-  background: var(--color-primary);
+  background: var(--ws-accent-gradient);
   color: var(--color-on-primary);
   font: var(--font-label-md);
   cursor: pointer;

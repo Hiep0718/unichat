@@ -53,9 +53,12 @@
 }
 
 .dashboard-tab--active {
-  background: var(--color-surface-container-lowest);
-  color: var(--color-primary);
-  box-shadow: 0 1px 2px rgb(15 23 42 / 8%), 0 3px 10px rgb(15 23 42 / 7%);
+  /* Trạng thái đang chọn được nói bằng nền và bằng mực, không bằng bóng đổ.
+     Một nút nổi lên khỏi nền là thứ luật nhà cấm; panel đứng trên mặt phẳng,
+     phân biệt với nhau bằng một bậc sắc độ. */
+  background: var(--nen);
+  color: var(--muc);
+  font-weight: 600;
 }
 
 /* Recent Section */
@@ -111,19 +114,17 @@
   justify-content: center;
   gap: var(--stack-sm);
   padding: 11px 20px;
-  background: linear-gradient(120deg, #1e3a8a 0%, #4f46e5 60%, #6d28d9 100%);
-  color: #fff;
+  background: var(--nhan);
+  color: var(--nhan-muc);
   font: var(--font-label-md);
   font-weight: 600;
   border: none;
   border-radius: var(--radius-full);
   cursor: pointer;
-  box-shadow: 0 4px 14px rgb(79 70 229 / 30%);
   transition: box-shadow var(--transition-fast), transform var(--transition-fast);
 }
 
 .workspace-header__create-btn:hover {
-  box-shadow: 0 6px 20px rgb(79 70 229 / 42%);
   transform: translateY(-1px);
 }
 
@@ -146,7 +147,7 @@
   top: 50%;
   left: 12px;
   transform: translateY(-50%);
-  color: var(--color-outline);
+  color: var(--muc-nhat);
   pointer-events: none;
 }
 
@@ -165,8 +166,7 @@
 
 .workspace-search__input:focus {
   background: var(--color-surface-container-lowest);
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgb(99 102 241 / 16%);
+  border-color: var(--muc);
 }
 
 .workspace-filters {
@@ -201,9 +201,8 @@
 }
 
 .workspace-filter--active {
-  background: linear-gradient(120deg, #4f46e5 0%, #6d28d9 100%);
-  color: #fff;
-  box-shadow: 0 3px 10px rgb(79 70 229 / 28%);
+  background: var(--nhan);
+  color: var(--nhan-muc);
 }
 
 /* Actions Group (Sort & View Toggle) */
@@ -261,9 +260,8 @@
 }
 
 .view-toggle-btn--active {
-  background: var(--color-surface-container-lowest);
-  color: var(--color-primary);
-  box-shadow: 0 1px 3px rgb(15 23 42 / 12%);
+  background: var(--nen);
+  color: var(--muc);
 }
 
 /* Content */
@@ -340,19 +338,120 @@
     align-items: center;
   }
 
-  .recent-section__grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
 }
 
-@media (min-width: 1024px) {
+/* Lưới tự chọn số cột theo chỗ trống, thay vì cố định 2 rồi 3 cột.
+
+   Mốc cứng không biết cột nội dung đang rộng bao nhiêu, mà bề rộng đó
+   còn phụ thuộc thanh bên và trần --container-max. auto-fill đếm bằng chỗ
+   thật có: ở cột nội dung 1280px, 240px tối thiểu cho ra 5 cột; hẹp hơn thì
+   nó tự rụt xuống 4 rồi 3 mà không cần thêm mốc nào.
+
+   240px là sàn chứ không phải con số tuỳ ý: thẻ có aspect-ratio 16/11, nên
+   dưới mức này ảnh bìa thấp hơn 165px và tên nhóm đè lên nó bắt đầu tràn
+   nhiều dòng. */
+@media (min-width: 768px) {
   .workspace-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  /* Truy cập nhanh dùng thẻ to hơn lưới đầy đủ bên dưới.
+
+     Đây là cách mục này nói rằng nó quan trọng hơn: ba thứ bạn vừa mở,
+     đủ lớn để nhận ra ngay, so với danh mục đầy đủ bên dưới — thứ bạn
+     quét qua. Sàn 320px cho ra 3 cột ở cột nội dung 1280px, so với 4-5 cột
+     của lưới dưới. */
+  .recent-section__grid {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  }
 }
 
-@media (min-width: 1440px) {
+/* Đúng bốn cột, theo mockup.
+
+   auto-fill tự đếm theo chỗ trống nên nó cho 5 cột trên màn rộng; ở đây
+   số cột là một lựa chọn bố cục chứ không phải một phép tính, nên nó
+   được viết thẳng ra. Thẻ rộng ra theo màn hình thay vì thêm cột. */
+@media (min-width: 1100px) {
   .workspace-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* ---------- Tiêu đề mục và ô tạo mới ---------- */
+
+.recent-section__head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.recent-section__sub {
+  margin: 0;
+  font: var(--font-label-sm);
+  color: var(--muc-nhat);
+}
+
+/* Số nhóm đang hiển thị, đặt cạnh tiêu đề. Đây là số sau khi lọc chứ
+   không phải tổng, để nó khớp với thứ mắt đếm được ngay bên dưới. */
+.all-workspaces-section__count {
+  display: inline-grid;
+  place-items: center;
+  min-inline-size: 22px;
+  block-size: 22px;
+  margin-inline-start: 2px;
+  padding-inline: 6px;
+  border-radius: var(--radius-full);
+  background: var(--be-mat);
+  font: var(--font-label-sm);
+  font-weight: 700;
+  color: var(--muc-nhat);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Ô tạo nhóm mới: cùng tỉ lệ với thẻ nhóm nên nó ngồi đúng hàng, và
+   viền đứt để nói đây là chỗ trống chờ được lấp chứ không phải một nhóm. */
+.workspace-new-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  aspect-ratio: 16 / 11;
+  border: 1px dashed var(--dieu-khien);
+  border-radius: var(--radius-xl);
+  background: transparent;
+  font: var(--font-label-md);
+  font-weight: 600;
+  color: var(--muc-nhat);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.workspace-new-tile:hover {
+  border-color: var(--nhan);
+  color: var(--nhan);
+}
+
+.workspace-new-tile:focus-visible {
+  outline: 2px solid var(--nhan);
+  outline-offset: 2px;
+}
+
+.workspace-new-tile__plus {
+  display: grid;
+  place-items: center;
+  inline-size: 38px;
+  block-size: 38px;
+  border-radius: var(--radius-full);
+  background: var(--be-mat);
+}
+
+.workspace-new-tile:hover .workspace-new-tile__plus {
+  background: var(--nhan-nhat);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .workspace-new-tile {
+    transition: none;
   }
 }

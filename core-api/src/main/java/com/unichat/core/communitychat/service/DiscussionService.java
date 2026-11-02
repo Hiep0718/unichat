@@ -3,6 +3,7 @@ package com.unichat.core.communitychat.service;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -115,6 +116,11 @@ public class DiscussionService {
         Map<UUID, List<PostAttachmentResponse>> attachments = attachmentService.listForAll(discussionIds);
         Map<UUID, ReactionSummary> reactions =
                 reactionService.summariseAll("DISCUSSION", discussionIds, userId);
+        // One query for the page. Asking per card would be a query per row, and
+        // this marker is drawn on every card.
+        Set<UUID> answeredByAssistant = discussionIds.isEmpty()
+                ? Set.of()
+                : Set.copyOf(replyRepository.findIdsWithAiAnswer(discussionIds));
 
         return result.map(d -> DiscussionResponse.from(
                 d,
@@ -122,7 +128,8 @@ public class DiscussionService {
                 authorNames.getOrDefault(d.getAuthorId(), "Unknown"),
                 null,
                 attachments.getOrDefault(d.getId(), List.of()),
-                reactions.getOrDefault(d.getId(), ReactionSummary.empty())));
+                reactions.getOrDefault(d.getId(), ReactionSummary.empty()),
+                answeredByAssistant.contains(d.getId())));
     }
 
     @Transactional
@@ -164,7 +171,9 @@ public class DiscussionService {
         publishMentions(workspaceId, discussion.getId(), null, userId, request.body());
 
         String authorName = userRepository.findById(userId).map(User::getDisplayName).orElse("Người dùng");
-        return DiscussionResponse.from(discussion, authorName, null);
+        // A post that was created a statement ago has no replies at all, so no
+        // query is needed to know the assistant has not answered it.
+        return DiscussionResponse.from(discussion, authorName, null, false);
     }
 
     /**
@@ -313,7 +322,38 @@ public class DiscussionService {
 
         String authorName = userRepository.findById(userId)
                 .map(User::getDisplayName).orElse("Người dùng");
-        return DiscussionResponse.from(discussion, authorName, null);
+        return DiscussionResponse.from(discussion, authorName, null,
+                replyRepository.hasAiAnswer(discussionId));
+    }
+
+    /**
+     * Takes back the accepted answer, returning the question to the unanswered
+     * set.
+     *
+     * <p>Accepting used to be one-way: there was no path back, so a misclick
+     * was permanent and a better answer arriving later could not take over.
+     * A collaborative product should not have an action that cannot be undone.
+     *
+     * <p>Only the author, for the same reason they alone may accept: only the
+     * person who asked knows whether their problem is actually settled.
+     */
+    @Transactional
+    public DiscussionResponse clearAcceptedReply(UUID workspaceId, UUID discussionId, UUID userId) {
+        verifyMembership(workspaceId, userId);
+
+        Discussion discussion = requirePost(workspaceId, discussionId);
+        if (!discussion.getAuthorId().equals(userId)) {
+            throw new AuthorizationError("Chỉ tác giả mới gỡ được lời giải đã chấp nhận");
+        }
+
+        discussion.setAcceptedReplyId(null);
+        discussion.setUpdatedAt(Instant.now());
+        discussionRepository.save(discussion);
+
+        String authorName = userRepository.findById(userId)
+                .map(User::getDisplayName).orElse("Người dùng");
+        return DiscussionResponse.from(discussion, authorName, null,
+                replyRepository.hasAiAnswer(discussionId));
     }
 
     /**
@@ -396,7 +436,8 @@ public class DiscussionService {
                 .getOrDefault(discussion.getId(), ReactionSummary.empty());
 
         return DiscussionResponse.from(discussion, workspaceName, authorName, null,
-                attachmentService.listFor(discussion.getId()), reactions);
+                attachmentService.listFor(discussion.getId()), reactions,
+                replyRepository.hasAiAnswer(discussion.getId()));
     }
 
 }

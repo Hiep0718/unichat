@@ -1,8 +1,12 @@
 /**
  * The caller's conversations, most recently active first.
+ *
+ * A group and a one-to-one thread render as the same row: the server fills the
+ * title for both, so only the avatar differs — one face, or the faces of the
+ * first few members.
  */
 import { Icon } from '../../../components/icon';
-import { EntityAvatar } from '../../../components/entity-avatar';
+import { ConversationAvatar } from './conversation-avatar';
 import { formatRelativeTime } from '../../../lib/format-time';
 import type { Conversation } from '../work-chat-api';
 import './conversation-list.css';
@@ -39,10 +43,10 @@ export function ConversationList({
             onClick={() => onSelect(conversation.id)}
             aria-current={conversation.id === activeId}
           >
-            <EntityAvatar name={conversation.otherUserName} size={36} shape="circle" />
+            <ConversationAvatar conversation={conversation} />
             <span className="conversation-list__body">
               <span className="conversation-list__top">
-                <span className="conversation-list__name">{conversation.otherUserName}</span>
+                <span className="conversation-list__name">{conversation.title}</span>
                 {conversation.lastMessageAt && (
                   <time className="conversation-list__time">
                     {formatRelativeTime(conversation.lastMessageAt)}
@@ -64,3 +68,4 @@ export function ConversationList({
     </ul>
   );
 }
+

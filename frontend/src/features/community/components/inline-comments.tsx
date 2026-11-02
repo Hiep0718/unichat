@@ -17,6 +17,8 @@ import { Icon } from '../../../components/icon';
 import { ReplyForm } from './reply-form';
 import { ReplyThread } from './reply-thread';
 import { addReply, fetchReplies } from '../community-api';
+import { acceptReply, clearAcceptedReply } from '../feed-api';
+import { useAuth } from '../../auth/auth-context';
 import { useAiReplyWatch } from '../use-ai-reply-watch';
 import { mentionsAi } from '../await-ai-reply';
 
@@ -26,15 +28,25 @@ import './inline-comments.css';
 interface InlineCommentsProps {
   readonly workspaceId: string;
   readonly discussionId: string;
+  /** Only the asker may settle their own question. */
+  readonly postAuthorId: string;
+  /** The reply already accepted, null while the question is open. */
+  readonly acceptedReplyId: string | null;
   /** Reported after each successful post so the card's count stays honest. */
   readonly onReplyCountChange?: (count: number) => void;
+  /** Reported after accepting or taking back, so the card's chip follows. */
+  readonly onAcceptedReplyChange?: (replyId: string | null) => void;
 }
 
 export function InlineComments({
   workspaceId,
   discussionId,
+  postAuthorId,
+  acceptedReplyId,
   onReplyCountChange,
+  onAcceptedReplyChange,
 }: InlineCommentsProps) {
+  const { user } = useAuth();
   const [replies, setReplies] = useState<ReplyResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [posting, setPosting] = useState(false);
@@ -97,6 +109,27 @@ export function InlineComments({
     }
   };
 
+  /**
+   * Settles the question, or takes that back when the accepted reply is
+   * chosen again — so the control that sets it is also the one that clears it.
+   */
+  const handleAcceptReply = async (replyId: string) => {
+    const clearing = acceptedReplyId === replyId;
+    setError(null);
+    try {
+      if (clearing) {
+        await clearAcceptedReply(workspaceId, discussionId);
+      } else {
+        await acceptReply(workspaceId, discussionId, replyId);
+      }
+      onAcceptedReplyChange?.(clearing ? null : replyId);
+    } catch {
+      setError(clearing ? 'Không gỡ được lời giải' : 'Không chấp nhận được lời giải');
+    }
+  };
+
+  const isPostAuthor = user?.id === postAuthorId;
+
   return (
     <section className="inline-comments" aria-label="Bình luận">
       <ReplyForm
@@ -130,6 +163,9 @@ export function InlineComments({
               repliesByParent={repliesByParent}
               onAddReply={handleAddReply}
               replyLoading={posting}
+              onAcceptReply={isPostAuthor ? (id) => void handleAcceptReply(id) : undefined}
+              acceptedReplyId={acceptedReplyId}
+              isPostAuthor={isPostAuthor}
               workspaceId={workspaceId}
             />
           ))}

@@ -98,7 +98,9 @@ class AccessSecurityChainTest {
         context=new AnnotationConfigWebApplicationContext();
         context.setServletContext(new MockServletContext());
         context.getEnvironment().getPropertySources().addFirst(new MapPropertySource("test",Map.of("UNICHAT_SECURITY_PROFILE",profile)));
-        context.register(SecurityConfiguration.class,Fixture.class); context.refresh();
+        // AllowedOrigins is a @Component and this context does not scan, so it
+        // is registered by hand; the security chain reads its list.
+        context.register(AllowedOrigins.class,SecurityConfiguration.class,Fixture.class); context.refresh();
         sessions=context.getBean(SessionStateService.class);
         when(sessions.isActive(userId,familyId,3L)).thenReturn(true);
         http=MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();

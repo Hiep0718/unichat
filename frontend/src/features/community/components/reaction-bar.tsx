@@ -20,20 +20,23 @@ interface ReactionBarProps {
   readonly compact?: boolean;
 }
 
-/** Display order and labels, matching ReactionSummary.displayOrder on the server. */
+/**
+ * Display order and labels, matching ReactionSummary.displayOrder on the
+ * server. The set and its order are Facebook's, so nobody has to learn them.
+ */
 const REACTIONS: readonly { type: ReactionType; emoji: string; label: string }[] = [
   { type: 'LIKE', emoji: '👍', label: 'Thích' },
   { type: 'LOVE', emoji: '❤️', label: 'Yêu thích' },
-  { type: 'INSIGHTFUL', emoji: '💡', label: 'Sâu sắc' },
-  { type: 'CELEBRATE', emoji: '🎉', label: 'Chúc mừng' },
+  { type: 'CARE', emoji: '🥰', label: 'Thương thương' },
+  { type: 'HAHA', emoji: '😆', label: 'Haha' },
+  { type: 'WOW', emoji: '😮', label: 'Wow' },
+  { type: 'SAD', emoji: '😢', label: 'Buồn' },
+  { type: 'ANGRY', emoji: '😠', label: 'Phẫn nộ' },
 ];
 
-const EMOJI: Record<ReactionType, string> = {
-  LIKE: '👍',
-  LOVE: '❤️',
-  INSIGHTFUL: '💡',
-  CELEBRATE: '🎉',
-};
+const EMOJI: Record<ReactionType, string> = Object.fromEntries(
+  REACTIONS.map((reaction) => [reaction.type, reaction.emoji]),
+) as Record<ReactionType, string>;
 
 export function ReactionBar({ targetType, targetId, summary, compact = false }: ReactionBarProps) {
   const [current, setCurrent] = useState<ReactionSummary>(summary);

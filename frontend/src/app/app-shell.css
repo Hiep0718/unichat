@@ -17,10 +17,49 @@
   overflow-y: auto;
   margin-left: 0;
   transition: margin-left var(--transition-normal);
+
+  /* The room for the scrollbar is held whether or not one is needed. Pages
+     inside here are centred on a max-width, so a tab tall enough to scroll
+     narrowed this box by the scrollbar's width and moved everything sideways
+     by half of it — then moved it back on a tab that fits. Switching tabs
+     looked like the layout twitching, and it was. */
+  scrollbar-gutter: stable;
 }
 
 @media (min-width: 768px) {
   .app-shell__main {
     margin-left: var(--sidebar-width);
   }
+
+  /* Vùng nội dung đi theo bề rộng thật của thanh bên. Thanh bên position:
+     fixed nên nó không đẩy gì cả; nếu lề này không đổi theo, thu thanh bên
+     lại sẽ chỉ để lại một khoảng trống 156px. */
+  .app-shell:has(.side-nav--collapsed) .app-shell__main {
+    margin-left: 68px;
+  }
+}
+
+/* ── The rail and the assistant's history column ─────────── */
+
+/* The rail is fixed and widens from 68px to 260px on hover, so it paints
+   over whatever sits against it rather than pushing it aside. That is
+   harmless over a page's margin and hostile over the assistant's history,
+   which is a 268px column at exactly that edge: hovering on the way to it
+   covered the very list the reader was reaching for.
+
+   While that column is open the rail keeps its resting width. Its labels are
+   still one hover away everywhere else, and closing the column — the button
+   in the chat header — gives them back here too. */
+.app-shell:has(.chat-history) .side-nav:hover {
+  width: var(--sidebar-width);
+}
+
+/* The icons stay centred in the narrow rail rather than sliding toward
+   labels that are no longer going to appear. */
+.app-shell:has(.chat-history) .side-nav:hover .side-nav__brand-info,
+.app-shell:has(.chat-history) .side-nav:hover .side-nav__upload-text,
+.app-shell:has(.chat-history) .side-nav:hover .side-nav__section,
+.app-shell:has(.chat-history) .side-nav:hover .side-nav__label {
+  opacity: 0;
+  visibility: hidden;
 }

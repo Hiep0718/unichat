@@ -11,6 +11,12 @@ export type MemberStatus = 'ACTIVE' | 'REVOKED';
 export interface MemberDto {
   readonly userId: string;
   readonly email: string;
+  /** Name to show and to derive a letter avatar from; null when unresolved. */
+  readonly displayName: string | null;
+  /** Whether to fetch the member's picture or draw the letter avatar. */
+  readonly hasAvatar: boolean;
+  /** Chosen letter-avatar colour, null to derive one from the name. */
+  readonly avatarColor: string | null;
   readonly role: MemberRole;
   readonly status: MemberStatus;
   readonly invitedById: string | null;

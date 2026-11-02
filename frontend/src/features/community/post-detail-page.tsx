@@ -35,7 +35,7 @@ import { ReplyThread } from './components/reply-thread';
 import { useAuth } from '../auth/auth-context';
 import { useAiReplyWatch } from './use-ai-reply-watch';
 import { useWorkspace as useWorkspaceQuery } from '../workspaces/workspace-hooks';
-import { toggleBookmark, acceptReply } from './feed-api';
+import { toggleBookmark, acceptReply, clearAcceptedReply } from './feed-api';
 import './post-detail-page.css';
 
 /**
@@ -108,13 +108,25 @@ export function PostDetailPage() {
     }
   };
 
+  /**
+   * Settles the question, or takes that back when the accepted reply is
+   * chosen again — the same toggle the feed's inline thread uses, so the
+   * button means one thing in both places.
+   */
   const handleAcceptReply = async (replyId: string) => {
     if (!workspaceId || !discussion) return;
+    const clearing = discussion.acceptedReplyId === replyId;
     try {
-      await acceptReply(workspaceId, discussion.id, replyId);
-      setDiscussion(prev => prev ? { ...prev, acceptedReplyId: replyId } : null);
-    } catch {
-      /* ignore */
+      if (clearing) {
+        await clearAcceptedReply(workspaceId, discussion.id);
+      } else {
+        await acceptReply(workspaceId, discussion.id, replyId);
+      }
+      setDiscussion(prev =>
+        prev ? { ...prev, acceptedReplyId: clearing ? null : replyId } : null);
+    } catch (err: unknown) {
+      // Swallowing this left the button looking like it had worked.
+      setError(err instanceof Error ? err.message : 'Không cập nhật được lời giải');
     }
   };
 
@@ -259,6 +271,7 @@ export function PostDetailPage() {
                 {formatRelativeTime(discussion.createdAt)}
               </time>
               <AnswerStatusBadge
+                label={discussion.label}
                 replyCount={discussion.replyCount}
                 hasAcceptedAnswer={Boolean(discussion.acceptedReplyId)}
               />
@@ -452,11 +465,11 @@ export function PostDetailPage() {
               trong Knowledge Space này.
             </p>
             <div className="post-detail__sidebar-stats">
-              <div className="post-detail__stat">
+              <div className="post-detail__sidebar-stat">
                 <strong>{discussion.viewCount}</strong>
                 <span>Lượt xem</span>
               </div>
-              <div className="post-detail__stat">
+              <div className="post-detail__sidebar-stat">
                 <strong>{replies.length}</strong>
                 <span>Bình luận</span>
               </div>

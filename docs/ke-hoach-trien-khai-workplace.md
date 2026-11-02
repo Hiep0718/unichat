@@ -104,7 +104,7 @@ Nhắn tin trực tiếp giữa các thành viên. Cần lưu ý: **phải làm 
 
 Phạm vi được giữ hẹp có chủ đích, để kịp hạn:
 
-- Chỉ chat 1-1, chỉ văn bản. Không chat nhóm, không gửi tệp.
+- Chat 1-1 và chat nhóm (tối đa 50 người, ADR-023). Gửi tệp đã có (ảnh và PDF/DOCX/TXT, 5 tệp và 20 MiB mỗi tin nhắn, ADR-022).
 - WebSocket/STOMP thuần Spring, **không dùng Redis**.
 - Trạng thái trực tuyến lưu trong bộ nhớ tiến trình.
 

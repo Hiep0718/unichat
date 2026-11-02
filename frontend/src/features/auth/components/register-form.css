@@ -1,20 +1,18 @@
-/* Register Form */
+/* Các trường của form đăng ký.
+
+   Những quy tắc này từng được viết ở cả đây và register-page.css cùng
+   lúc — 12 lớp trùng nhau — nên thứ nào thắng phụ thuộc thứ tự import và
+   một trong hai luôn là mã chết mà không ai biết là bản nào. Đây là lần thứ
+   hai cùng một kiểu hỏng trong dự án; lần trước là .chat-welcome.
+
+   Giờ chúng nằm cạnh component render chúng, và chỉ ở đây. */
+
+/* ---------- Các trường ---------- */
 
 .register-form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-}
-
-.register-form__error {
-  display: flex;
-  align-items: center;
-  gap: var(--stack-sm);
-  padding: 12px;
-  background: var(--color-error-container);
-  color: var(--color-on-error-container);
-  border-radius: var(--radius-lg);
-  font: var(--font-label-sm);
+  gap: 15px;
 }
 
 .register-form__field {
@@ -25,100 +23,132 @@
 
 .register-form__label {
   font: var(--font-label-sm);
-  color: var(--color-on-surface);
+  font-weight: 600;
+  color: var(--muc);
+}
+
+.register-form__input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.register-form__input-icon {
+  position: absolute;
+  inset-inline-start: 13px;
+  color: var(--muc-mo);
+  pointer-events: none;
 }
 
 .register-form__input {
-  width: 100%;
-  padding: 10px 16px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-outline-variant);
+  inline-size: 100%;
+  padding: 12px 14px 12px 42px;
+  border: 1px solid var(--vien);
   border-radius: var(--radius-lg);
+  background: var(--be-mat);
   font: var(--font-body-md);
-  color: var(--color-on-surface);
-  outline: none;
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  color: var(--muc);
 }
 
 .register-form__input::placeholder {
-  color: var(--color-outline);
+  color: var(--muc-mo);
 }
 
 .register-form__input:focus {
-  border-color: var(--color-secondary-fixed-dim);
-  box-shadow: 0 0 0 2px rgba(76, 215, 246, 0.2);
+  outline: 2px solid var(--nhan);
+  outline-offset: -1px;
+  background: var(--nen);
 }
+
+.register-form__toggle {
+  position: absolute;
+  inset-inline-end: 10px;
+  display: grid;
+  place-items: center;
+  inline-size: 30px;
+  block-size: 30px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--muc-nhat);
+  cursor: pointer;
+}
+
+.register-form__toggle:focus-visible {
+  outline: 2px solid var(--nhan);
+  outline-offset: 1px;
+}
+
+/* ---------- Điều khoản và nút ---------- */
 
 .register-form__terms {
   display: flex;
   align-items: flex-start;
-  gap: var(--stack-sm);
-  margin-top: var(--stack-sm);
+  gap: 10px;
+  margin-top: 4px;
 }
 
 .register-form__checkbox {
-  margin-top: 4px;
-  width: 16px;
-  height: 16px;
-  border-radius: var(--radius-default);
-  border: 1px solid var(--color-outline-variant);
-  accent-color: var(--color-primary);
   flex-shrink: 0;
+  inline-size: 17px;
+  block-size: 17px;
+  margin-top: 2px;
+  accent-color: var(--nhan);
+  cursor: pointer;
 }
 
 .register-form__terms-label {
-  font: var(--font-body-md);
-  color: var(--color-on-surface-variant);
+  font: var(--font-body-sm);
+  line-height: 1.5;
+  color: var(--muc-nhat);
+  cursor: pointer;
 }
 
 .register-form__link {
-  color: var(--color-primary);
+  color: var(--nhan);
   font-weight: 600;
 }
 
-.register-form__link:hover {
-  text-decoration: underline;
-}
-
 .register-form__submit {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--stack-sm);
-  padding: 12px 16px;
-  margin-top: var(--stack-md);
-  background: var(--color-primary);
-  color: var(--color-on-primary);
-  font: var(--font-label-md);
+  inline-size: 100%;
+  padding: 13px 16px;
   border: none;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
+  background: var(--nhan);
+  color: var(--nhan-muc);
+  font: var(--font-label-md);
+  font-weight: 600;
   cursor: pointer;
-  transition: background var(--transition-fast), opacity var(--transition-fast);
 }
 
-.register-form__submit:hover:not(:disabled) {
-  background: var(--color-on-primary-fixed-variant);
-}
-
+/* Trạng thái vô hiệu đọc ra rõ ràng là vô hiệu: nút này khóa cho tới khi
+   người dùng tick ô điều khoản, nên nó phải nói ra điều đó. */
 .register-form__submit:disabled {
-  opacity: 0.7;
+  background: var(--be-mat);
+  color: var(--muc-mo);
   cursor: not-allowed;
 }
 
 .register-form__footer {
-  margin-top: 32px;
-  text-align: center;
-  font: var(--font-body-md);
-  color: var(--color-on-surface-variant);
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  font: var(--font-body-sm);
+  color: var(--muc-nhat);
 }
 
 .register-form__signin-link {
-  font: var(--font-label-md);
-  color: var(--color-primary);
-  margin-left: 4px;
+  color: var(--nhan);
+  font-weight: 600;
 }
 
-.register-form__signin-link:hover {
-  text-decoration: underline;
+.register-form__error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 14px;
+  border-radius: var(--radius-lg);
+  background: var(--pill-hong-nen);
+  font: var(--font-body-sm);
+  color: var(--pill-hong-muc);
 }

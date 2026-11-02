@@ -1,0 +1,65 @@
+/* ==========================================================================
+   Document upload zone — where a member adds files to a group.
+   ========================================================================== */
+
+.doc-drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 30px 24px;
+  border: 1px dashed var(--vien);
+  border-radius: var(--radius-lg);
+  background: var(--ws-canvas);
+  cursor: pointer;
+  text-align: center;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.doc-drop:hover,
+.doc-drop--over {
+  border-color: var(--ws-ink);
+  background: var(--ws-chip);
+}
+
+.doc-drop:focus-visible {
+  outline: 2px solid var(--ws-ink);
+  outline-offset: 2px;
+}
+
+/* While files go up the zone is not a target; saying so with opacity alone
+   would leave it looking clickable. */
+.doc-drop--busy {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.doc-drop__input {
+  display: none;
+}
+
+.doc-drop__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  background: var(--ws-card);
+  color: var(--ws-ink-soft);
+  box-shadow: var(--ws-card-shadow);
+}
+
+.doc-drop__title {
+  margin: 0;
+  color: var(--ws-ink);
+  font: var(--font-label-md);
+  font-weight: 600;
+}
+
+.doc-drop__hint {
+  margin: 0;
+  max-width: 58ch;
+  color: var(--ws-ink-muted);
+  font: var(--font-label-sm);
+}

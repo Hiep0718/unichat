@@ -11,7 +11,7 @@ import { useState } from 'react';
 import { Icon } from '../../../components/icon';
 import { formatRelativeTime } from '../../../lib/format-time';
 import type { FeedPostResponse } from '../feed-api';
-import { resolveAnswerStatus } from './answer-status';
+import { hasResolutionState, resolveAnswerStatus } from './answer-status';
 import { ReactionBar } from './reaction-bar';
 import { PostAttachments } from './post-attachments';
 import { PostBackgroundPanel } from './post-background-panel';
@@ -46,6 +46,28 @@ const STATUS_TEXT: Record<string, string> = {
   UNANSWERED: 'Chưa có lời giải',
 };
 
+/**
+ * Says the assistant has answered this post, and opens the thread to read it.
+ *
+ * "Xem" opens the card's own comments rather than navigating away, because the
+ * assistant's answer is one of the replies living there: sending the reader to
+ * another page to see a reply this card can already show would lose their place
+ * in the list for nothing.
+ */
+function AssistantAnsweredStrip({ onView }: { readonly onView: () => void }) {
+  return (
+    <div className="feed-card__ai">
+      <Icon name="auto_awesome" size={15} />
+      <span className="feed-card__ai-text">
+        Trợ lý AI đã trả lời dựa trên tài liệu hiện có
+      </span>
+      <button type="button" className="feed-card__ai-view" onClick={onView}>
+        Xem
+      </button>
+    </div>
+  );
+}
+
 /** Strips Markdown syntax so the preview line reads as plain prose. */
 function toPlainPreview(body: string): string {
   return body
@@ -67,14 +89,15 @@ export function FeedCard({
   pinned = false,
 }: FeedCardProps) {
   const [showComments, setShowComments] = useState(false);
+  // Held locally so accepting an answer updates the card's status chip without
+  // refetching the feed, which would lose the reader's scroll position.
+  const [acceptedReplyId, setAcceptedReplyId] = useState(post.acceptedReplyId);
   // Held locally so posting a comment updates the count without refetching the
   // whole feed, which would also lose the reader's scroll position.
   const [replyCount, setReplyCount] = useState(post.replyCount);
   const preview = toPlainPreview(post.body);
-  // Resolution state only means something for questions; an announcement is
-  // never "unanswered".
-  const isQuestion = post.label === 'QUESTION';
-  const status = resolveAnswerStatus(post.replyCount, post.hasAcceptedAnswer);
+  const isQuestion = hasResolutionState(post.label);
+  const status = resolveAnswerStatus(post.replyCount, acceptedReplyId !== null);
 
   return (
     <article className={`feed-card ${pinned ? 'feed-card--pinned' : ''}`}>
@@ -108,6 +131,12 @@ export function FeedCard({
           </button>
           <span aria-hidden="true"> · </span>
           <time dateTime={post.createdAt}>{formatRelativeTime(post.createdAt)}</time>
+          {post.label && LABEL_TEXT[post.label] && (
+            <>
+              <span aria-hidden="true"> · </span>
+              <span className="feed-card__kind">{LABEL_TEXT[post.label]}</span>
+            </>
+          )}
         </span>
 
         {isQuestion && (
@@ -133,6 +162,10 @@ export function FeedCard({
         <PostBackgroundPanel backgroundKey={post.backgroundKey} body={post.body} compact />
       ) : (
         preview && <p className="feed-card__preview">{preview}</p>
+      )}
+
+      {post.hasAiAnswer && (
+        <AssistantAnsweredStrip onView={() => setShowComments(true)} />
       )}
 
       {post.attachments?.length > 0 && (
@@ -179,7 +212,10 @@ export function FeedCard({
         <InlineComments
           workspaceId={post.workspaceId}
           discussionId={post.id}
+          postAuthorId={post.authorId}
+          acceptedReplyId={acceptedReplyId}
           onReplyCountChange={setReplyCount}
+          onAcceptedReplyChange={setAcceptedReplyId}
         />
       )}
     </article>

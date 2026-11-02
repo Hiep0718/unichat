@@ -26,11 +26,17 @@ public interface DirectConversationRepository extends JpaRepository<DirectConver
     /**
      * Conversations this person is part of, most recently active first.
      *
+     * <p>Driven by the participant rows rather than by the pair of columns on
+     * the conversation, so one query serves one-to-one threads and groups
+     * alike. Someone who has left a group has no participant row and so no
+     * longer sees it.
+     *
      * <p>A conversation with no messages yet sorts by when it was opened, so a
      * thread someone just started does not vanish to the bottom of the list.
      */
     @Query("SELECT c FROM DirectConversation c "
-            + "WHERE c.participantLow = :userId OR c.participantHigh = :userId "
+            + "WHERE EXISTS (SELECT 1 FROM ConversationParticipant p "
+            + "              WHERE p.id.conversationId = c.id AND p.id.userId = :userId) "
             + "ORDER BY COALESCE(c.lastMessageAt, c.createdAt) DESC")
     Page<DirectConversation> findForParticipant(@Param("userId") UUID userId, Pageable pageable);
 

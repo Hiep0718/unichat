@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -59,8 +60,14 @@ public class User {
     @Column(name = "avatar_storage_key")
     private String avatarStorageKey;
 
-    /** Chosen colour for the letter avatar; null means derive it from the name. */
-    @Enumerated(EnumType.STRING)
+    /**
+     * Chosen colour for the letter avatar; null means derive it from the name.
+     *
+     * <p>Converted rather than {@code @Enumerated(EnumType.STRING)}: the column
+     * admits only the lowercase names, so writing the enum's own name failed
+     * the check constraint. See {@link AvatarColorConverter}.
+     */
+    @Convert(converter = AvatarColorConverter.class)
     @Column(name = "avatar_color")
     private AvatarColor avatarColor;
 

@@ -16,12 +16,13 @@
 .post-bg__text {
   margin: 0;
   max-width: 34ch;
-  color: #fff;
+  color: var(--nen);
   font-size: 25px;
   font-weight: 700;
   line-height: 1.34;
   letter-spacing: -0.01em;
-  text-shadow: 0 1px 12px rgb(2 6 23 / 30%);
+  /* Bỏ đổ bóng chữ: lớp scrim phía dưới đã lo phần đọc được,
+     còn một lớp bóng chồng lên chỉ làm nhòe nét chữ. */
   /* A pasted URL or a long compound word must wrap, not overflow. */
   overflow-wrap: anywhere;
   white-space: pre-wrap;

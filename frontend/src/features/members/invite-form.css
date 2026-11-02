@@ -1,0 +1,184 @@
+/* ==========================================================================
+   Invite form — the modal for inviting a member to a group.
+   Renamed from member-table.css, which also held the styles of a table
+   that no longer exists; .member-section now belongs to member-list.css,
+   and two files defining it was a conflict decided by import order.
+   ========================================================================== */
+
+/* ==========================================================================
+   Invite Modal — Academic Precision
+   ========================================================================== */
+
+.invite-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+  animation: invite-fade-in var(--transition-normal) ease;
+}
+
+.invite-modal {
+  width: 100%;
+  max-width: 28rem;
+  padding: var(--gutter);
+  background: var(--ws-card, var(--nen));
+  border-radius: var(--radius-2xl, 16px);
+  box-shadow: 0 8px 28px rgb(15 23 42 / 12%);
+  animation: invite-slide-up var(--transition-normal) ease;
+}
+
+.invite-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--stack-lg);
+}
+
+.invite-modal__title {
+  font: var(--font-headline-md);
+  color: var(--color-on-surface);
+  margin: 0;
+}
+
+.invite-modal__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  color: var(--color-on-surface-variant);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-default);
+  cursor: pointer;
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.invite-modal__close:hover {
+  color: var(--color-on-surface);
+  background: var(--color-surface-container-low);
+}
+
+.invite-modal__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--stack-md);
+}
+
+.invite-modal__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.invite-modal__label {
+  font: var(--font-label-sm);
+  color: var(--color-on-surface-variant);
+}
+
+.invite-modal__input {
+  padding: 10px 12px;
+  font: var(--font-body-md);
+  color: var(--color-on-surface);
+  background: var(--ws-chip, var(--color-surface-dim));
+  border: none;
+  border-radius: 10px;
+  outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.invite-modal__input:focus {
+  border-color: var(--color-secondary);
+  box-shadow: 0 0 0 2px rgba(0, 104, 122, 0.15);
+}
+
+.invite-modal__input--error {
+  border-color: var(--color-error);
+}
+
+.invite-modal__select {
+  padding: 10px 12px;
+  font: var(--font-body-md);
+  color: var(--color-on-surface);
+  background: var(--ws-chip, var(--color-surface-dim));
+  border: none;
+  border-radius: 10px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+}
+
+.invite-modal__select:focus {
+  border-color: var(--color-secondary);
+  box-shadow: 0 0 0 2px rgba(0, 104, 122, 0.15);
+}
+
+.invite-modal__error {
+  font: var(--font-label-sm);
+  color: var(--color-error);
+  margin: 0;
+}
+
+.invite-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--stack-sm);
+  margin-top: var(--stack-sm);
+}
+
+.invite-modal__cancel-btn {
+  padding: 8px 16px;
+  font: var(--font-label-md);
+  color: var(--color-on-surface);
+  background: var(--ws-chip, var(--color-surface-dim));
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.invite-modal__cancel-btn:hover {
+  background: var(--color-surface-container-low);
+}
+
+.invite-modal__submit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 20px;
+  font: var(--font-label-md);
+  color: var(--color-on-primary);
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-default);
+  cursor: pointer;
+  transition: opacity var(--transition-fast);
+}
+
+.invite-modal__submit-btn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.invite-modal__submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@keyframes member-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+@keyframes invite-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes invite-slide-up {
+  from { transform: translateY(8px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}

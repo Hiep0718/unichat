@@ -3,7 +3,7 @@ import { render, fireEvent } from '@testing-library/react-native';
 import { ChatCitationSheet } from '../../src/features/chat/components/chat-citation-sheet';
 
 describe('ChatCitationSheet', () => {
-  it('renders citation details when open', () => {
+  it('renders citation details when open', async () => {
     const citation = {
       documentId: 'd-1',
       fileName: 'KienTrucMayTinh.pdf',
@@ -13,7 +13,7 @@ describe('ChatCitationSheet', () => {
     };
     const onClose = jest.fn();
 
-    const { getByText } = render(
+    const { getByText } = await render(
       <ChatCitationSheet citation={citation} onClose={onClose} />
     );
 
@@ -24,11 +24,11 @@ describe('ChatCitationSheet', () => {
       getByText('"Mô hình Von Neumann bao gồm CPU và bộ nhớ chính."')
     ).toBeTruthy();
 
-    fireEvent.press(getByText('KienTrucMayTinh.pdf'));
+    await fireEvent.press(getByText('KienTrucMayTinh.pdf'));
   });
 
-  it('renders nothing when citation is null', () => {
-    const { toJSON } = render(
+  it('renders nothing when citation is null', async () => {
+    const { toJSON } = await render(
       <ChatCitationSheet citation={null} onClose={jest.fn()} />
     );
     expect(toJSON()).toBeNull();

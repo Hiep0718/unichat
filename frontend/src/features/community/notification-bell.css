@@ -29,7 +29,7 @@
 }
 
 .side-nav__item--active .notification-bell__badge {
-  box-shadow: 0 0 0 2px #4f46e5;
+  box-shadow: 0 0 0 2px var(--muc);
 }
 
 @keyframes badgePop {
@@ -124,23 +124,23 @@
 }
 
 .notification-item__icon--reply {
-  background: #dbeafe;
-  color: #2563eb;
+  background: var(--be-mat);
+  color: var(--muc);
 }
 
 .notification-item__icon--ai {
-  background: #cffafe;
-  color: #0891b2;
+  background: var(--be-mat);
+  color: var(--muc);
 }
 
 .notification-item__icon--approval {
-  background: #dcfce7;
-  color: #16a34a;
+  background: var(--ws-ok-bg);
+  color: var(--ws-ok-ink);
 }
 
 .notification-item__icon--mention {
-  background: #fef3c7;
-  color: #d97706;
+  background: var(--ws-warn-bg);
+  color: var(--ws-warn-ink);
 }
 
 .notification-item__body {

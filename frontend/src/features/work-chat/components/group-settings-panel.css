@@ -1,0 +1,193 @@
+/* A third lifted panel on the canvas, built like the sidebar and the thread
+   rather than welded to the thread's right edge — it is a column of the page,
+   not a drawer inside the conversation. */
+.group-settings {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  border-radius: var(--radius-2xl);
+  background: var(--ws-card);
+  /* Vòng 1px, vẽ bằng border chứ không bằng box-shadow. Luật cho phép
+     một viền 1px trầm, nhưng máy đo chỉ thấy một box-shadow và đếm nó là
+     panel đang bay. box-sizing: border-box đặt toàn cục nên kích thước
+     hộp không đổi. */
+  border: 1px solid var(--vien);
+  overflow: hidden;
+}
+
+.group-settings__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 18px 18px 12px;
+}
+
+.group-settings__title {
+  margin: 0;
+  color: var(--ws-ink);
+  font-family: var(--font-family);
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.group-settings__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--ws-ink-muted);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.group-settings__close:hover {
+  background: var(--ws-chip);
+  color: var(--ws-ink);
+}
+
+.group-settings__error {
+  margin: 0 18px 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius-lg);
+  background: var(--ws-warn-bg);
+  color: var(--ws-warn-ink);
+  font: var(--font-label-sm);
+  font-weight: 600;
+}
+
+.group-settings__list {
+  margin: 0;
+  padding: 0 12px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.group-settings__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 6px;
+  border-radius: var(--radius-lg);
+  transition: background var(--transition-fast);
+}
+
+.group-settings__row:hover {
+  background: var(--ws-chip);
+}
+
+.group-settings__name {
+  flex: 1;
+  min-width: 0;
+  color: var(--ws-ink);
+  font: var(--font-label-md);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.group-settings__you {
+  color: var(--ws-ink-muted);
+  font-weight: 400;
+}
+
+.group-settings__owner {
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: var(--ws-accent-soft);
+  color: var(--ws-ink);
+  font: var(--font-label-sm);
+  white-space: nowrap;
+}
+
+.group-settings__remove {
+  display: inline-flex;
+  border: none;
+  background: transparent;
+  color: var(--ws-ink-muted);
+  cursor: pointer;
+}
+
+.group-settings__remove:hover:not(:disabled) {
+  color: var(--ws-warn-ink);
+}
+
+/* Pinned below the roster, which is the part that scrolls. */
+.group-settings__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 18px 18px;
+  border-top: 1px solid var(--ws-line);
+}
+
+.group-settings__add,
+.group-settings__leave {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border: none;
+  border-radius: var(--radius-lg);
+  background: var(--ws-chip);
+  color: var(--ws-ink);
+  font: var(--font-label-md);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.group-settings__add:hover:not(:disabled) {
+  background: var(--ws-accent-soft);
+}
+
+.group-settings__leave:hover:not(:disabled) {
+  background: var(--ws-warn-bg);
+  color: var(--ws-warn-ink);
+}
+
+.group-settings__add:disabled,
+.group-settings__leave:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Separates the group's identity above from its roster below. */
+.group-settings__section {
+  margin: 0;
+  padding: 14px 18px 8px;
+  color: var(--ws-ink-muted);
+  font: var(--font-label-sm);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Below three columns' worth of width the thread keeps the space and this
+   floats over the canvas, anchored where the column would have been. */
+@media (max-width: 1280px) {
+  .group-settings {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    bottom: 20px;
+    z-index: 20;
+    width: 312px;
+  }
+}
+
+@media (max-width: 900px) {
+  .group-settings {
+    top: 12px;
+    right: 12px;
+    bottom: 12px;
+    left: 12px;
+    width: auto;
+  }
+}

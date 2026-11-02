@@ -11,7 +11,7 @@
   justify-content: center;
   min-height: 100vh;
   width: 100%;
-  background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 50%, #e2e8f0 100%);
+  background: linear-gradient(135deg, var(--nen) 0%, var(--nen) 50%, var(--ke) 100%);
   padding: 24px;
   box-sizing: border-box;
   text-align: center;
@@ -75,8 +75,7 @@
   height: 64px;
   border-radius: 18px;
   object-fit: cover;
-  box-shadow: 0 8px 24px rgba(2, 132, 199, 0.25);
-  border: 2px solid #ffffff;
+  border: 2px solid var(--nen);
   position: relative;
   z-index: 2;
 }
@@ -94,7 +93,7 @@
   font-size: 20px;
   font-weight: 800;
   letter-spacing: -0.02em;
-  background: linear-gradient(135deg, #0b192c 0%, #0284c7 100%);
+  background: var(--muc);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   margin: 0;

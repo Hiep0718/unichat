@@ -221,13 +221,28 @@ function Start-ServicesSequentially {
 
     # Auto-detect active LAN IP and synchronize to mobile/.env for phone Expo Go connectivity
     try {
-        $lanIp = (Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue | Where-Object { 
-            $_.InterfaceAlias -notmatch 'Loopback|vEthernet|Virtual' -and $_.IPAddress -notlike '169.254*' 
-        } | Select-Object -First 1).IPAddress
+        # The adapter carrying the default route, lowest metric first. Filtering
+        # interfaces by name picked whichever happened to come first: on this
+        # machine that was "Ethernet 3" at 10.10.10.1, a virtual adapter whose
+        # name does not contain any of the excluded words, while the phone can
+        # only reach the Wi-Fi address. An adapter with no default gateway is
+        # not on the network the phone is on.
+        $lanIp = (Get-NetIPConfiguration -ErrorAction SilentlyContinue | Where-Object {
+            $_.IPv4DefaultGateway -and $_.NetAdapter.Status -eq 'Up'
+        } | Sort-Object { $_.IPv4DefaultGateway.RouteMetric } | Select-Object -First 1).IPv4Address.IPAddress
         if ($lanIp) {
-            $env:EXPO_PUBLIC_API_URL = "http://$lanIp:8082"
+            # ${lanIp} rather than $lanIp: PowerShell reads "$lanIp:8082" as the
+            # variable 8082 in the scope lanIp -- the same syntax as $env:PATH --
+            # which resolves to nothing, so this wrote the bare string "http://"
+            # and every request from the phone went to an address with no host.
+            $apiUrl = "http://${lanIp}:8082"
+            $env:EXPO_PUBLIC_API_URL = $apiUrl
             $mobileEnvFile = Join-Path $rootDir 'mobile\.env'
-            "# Auto-synced LAN IP for mobile Expo Go connectivity`nEXPO_PUBLIC_API_URL=http://$lanIp:8082" | Out-File $mobileEnvFile -Encoding utf8 -Force
+            # WriteAllText rather than Out-File -Encoding utf8: on Windows
+            # PowerShell 5.1 that switch writes a BOM, and a BOM on the first
+            # line of a .env corrupts the name of the first key in it.
+            $envBody = "# Auto-synced LAN IP for mobile Expo Go connectivity`nEXPO_PUBLIC_API_URL=$apiUrl`n"
+            [System.IO.File]::WriteAllText($mobileEnvFile, $envBody)
         }
     } catch {}
 

@@ -37,7 +37,7 @@ const mockUseLocalSearchParams = useLocalSearchParams as jest.Mock;
 describe('WorkspaceConversationsScreen', () => {
   const mockWorkspaceId = '123e4567-e89b-12d3-a456-426614174000';
 
-  beforeEach(() => {
+  beforeEach(async () => {
     jest.clearAllMocks();
     mockUseLocalSearchParams.mockReturnValue({ id: mockWorkspaceId });
     (workspaceApi.getWorkspace as jest.Mock).mockResolvedValue({
@@ -59,14 +59,14 @@ describe('WorkspaceConversationsScreen', () => {
       ],
     });
 
-    const { getByText, getByTestId } = render(<WorkspaceConversationsScreen />);
+    const { getByText, getByTestId } = await render(<WorkspaceConversationsScreen />);
 
     await waitFor(() => {
       expect(getByText('Giải thuật Dijkstra')).toBeTruthy();
       expect(getByText('1 cuộc trò chuyện')).toBeTruthy();
     });
 
-    fireEvent.press(getByTestId('conversation-item-conv-1'));
+    await fireEvent.press(getByTestId('conversation-item-conv-1'));
     expect(router.push).toHaveBeenCalledWith(
       `/workspace/${mockWorkspaceId}/chat/conv-1`
     );
@@ -92,7 +92,7 @@ describe('WorkspaceConversationsScreen', () => {
       ],
     });
 
-    const { getByText, queryByText, getByTestId } = render(
+    const { getByText, queryByText, getByTestId } = await render(
       <WorkspaceConversationsScreen />
     );
 
@@ -101,7 +101,7 @@ describe('WorkspaceConversationsScreen', () => {
       expect(getByText('Cơ sở dữ liệu NoSQL')).toBeTruthy();
     });
 
-    fireEvent.changeText(
+    await fireEvent.changeText(
       getByTestId('conversations-search-input'),
       'CNN'
     );
@@ -115,13 +115,13 @@ describe('WorkspaceConversationsScreen', () => {
       items: [],
     });
 
-    const { getByText, getByTestId } = render(<WorkspaceConversationsScreen />);
+    const { getByText, getByTestId } = await render(<WorkspaceConversationsScreen />);
 
     await waitFor(() => {
       expect(getByText('Chưa có cuộc trò chuyện nào')).toBeTruthy();
     });
 
-    fireEvent.press(getByTestId('conversations-new-chat-btn'));
+    await fireEvent.press(getByTestId('conversations-new-chat-btn'));
     expect(router.push).toHaveBeenCalledWith(
       `/workspace/${mockWorkspaceId}/chat/index`
     );
@@ -132,13 +132,13 @@ describe('WorkspaceConversationsScreen', () => {
       items: [],
     });
 
-    const { getByTestId } = render(<WorkspaceConversationsScreen />);
+    const { getByTestId } = await render(<WorkspaceConversationsScreen />);
 
     await waitFor(() => {
       expect(getByTestId('conversations-back-btn')).toBeTruthy();
     });
 
-    fireEvent.press(getByTestId('conversations-back-btn'));
+    await fireEvent.press(getByTestId('conversations-back-btn'));
     expect(router.back).toHaveBeenCalled();
   });
 
@@ -146,9 +146,9 @@ describe('WorkspaceConversationsScreen', () => {
     const item = (id: string) => ({ id, workspaceId: mockWorkspaceId, title: `Hội thoại ${id}`, createdAt: '2026-10-11T00:00:00Z' });
     (chatApi.getConversations as jest.Mock).mockResolvedValueOnce({ items: [item('first')], totalElements: 21, totalPages: 2 })
       .mockResolvedValueOnce({ items: [item('last')], totalElements: 21, totalPages: 2 });
-    const { getByText, getByTestId, queryByTestId } = render(<WorkspaceConversationsScreen />);
+    const { getByText, getByTestId, queryByTestId } = await render(<WorkspaceConversationsScreen />);
     await waitFor(() => expect(getByText('Hội thoại first')).toBeTruthy());
-    fireEvent.press(getByTestId('conversations-load-more'));
+    await fireEvent.press(getByTestId('conversations-load-more'));
     await waitFor(() => expect(getByText('Hội thoại last')).toBeTruthy());
     expect(chatApi.getConversations).toHaveBeenNthCalledWith(1, mockWorkspaceId, { page: 0, size: 20 });
     expect(chatApi.getConversations).toHaveBeenNthCalledWith(2, mockWorkspaceId, { page: 1, size: 20 });

@@ -28,6 +28,9 @@ spring:
     # are not in this tree.
     validate-on-migrate: false
     out-of-order: true
+    # "future" covers versions applied above everything this tree resolves —
+    # a teammate working ahead on the shared database. This tree makes no claim
+    # about those numbers, so there is nothing to disagree about.
     ignore-migration-patterns: "*:missing,*:ignored,*:future"
   jpa:
     hibernate:
@@ -87,6 +90,3 @@ unichat:
       url: ${SUPABASE_STORAGE_URL:}
       key: ${SUPABASE_SERVICE_KEY:}
       bucket: ${SUPABASE_STORAGE_BUCKET:documents}
-
-CORE_SERVICE_PRIVATE_KEY_PATH: ${CORE_SERVICE_PRIVATE_KEY_PATH:.service-keys/core-service-private.pem}
-AI_SERVICE_PUBLIC_KEY_PATH: ${AI_SERVICE_PUBLIC_KEY_PATH:.service-keys/ai-service-public.pem}

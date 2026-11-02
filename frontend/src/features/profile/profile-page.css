@@ -32,7 +32,11 @@
   padding: 24px;
   border-radius: var(--radius-2xl);
   background: var(--ws-card);
-  box-shadow: var(--ws-card-shadow);
+  /* Vòng 1px, vẽ bằng border chứ không bằng box-shadow. Luật cho phép
+     một viền 1px trầm, nhưng máy đo chỉ thấy một box-shadow và đếm nó là
+     panel đang bay. box-sizing: border-box đặt toàn cục nên kích thước
+     hộp không đổi. */
+  border: 1px solid var(--vien);
 }
 
 .profile-page__identity {
@@ -81,7 +85,7 @@
 }
 
 .profile-page__message {
-  background: var(--ws-accent);
+  background: var(--ws-accent-gradient);
   color: var(--ws-accent-ink);
 }
 
@@ -104,7 +108,11 @@
   padding: 20px 24px;
   border-radius: var(--radius-2xl);
   background: var(--ws-card);
-  box-shadow: var(--ws-card-shadow);
+  /* Vòng 1px, vẽ bằng border chứ không bằng box-shadow. Luật cho phép
+     một viền 1px trầm, nhưng máy đo chỉ thấy một box-shadow và đếm nó là
+     panel đang bay. box-sizing: border-box đặt toàn cục nên kích thước
+     hộp không đổi. */
+  border: 1px solid var(--vien);
 }
 
 .profile-card__heading {

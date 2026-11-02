@@ -7,6 +7,8 @@
 }
 
 .workspace-cover__image {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -30,4 +32,19 @@
   letter-spacing: -0.04em;
   color: rgb(255 255 255 / 14%);
   user-select: none;
+}
+
+/* Darkens the lower half so white text over the picture is legible whatever
+   the picture is — a bundled default, or whatever a member uploads. Stronger
+   at the very bottom, where the name and the counters sit. */
+.workspace-cover__scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgb(0 0 0 / 0%) 38%,
+    rgb(0 0 0 / 26%) 70%,
+    rgb(0 0 0 / 58%) 100%
+  );
+  pointer-events: none;
 }

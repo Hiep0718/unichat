@@ -13,13 +13,13 @@ import { WorkspaceShell } from './workspace-shell';
 import type { WorkspaceDto } from '../features/workspaces/workspace-schema';
 
 vi.mock('../features/workspaces/workspace-api', () => ({ getWorkspace: vi.fn(), updateWorkspace: vi.fn() }));
-vi.mock('../features/members/components/member-table', () => ({ MemberTable: () => null }));
+vi.mock('../features/members/components/member-panel', () => ({ MemberPanel: () => null }));
 vi.mock('./app-shell', () => ({ AppShell: () => <><ContextSnapshot /><WorkspaceSettingsPage /></> }));
 
 const WORKSPACE: WorkspaceDto = {
   id: 'workspace-1', ownerId: 'owner-1', name: 'Nhóm nghiên cứu', description: '', visibility: 'PRIVATE',
-  cloudAllowed: false, version: 3, userRole: 'OWNER', documentCount: 0, memberCount: 1, recentPostCount: 0,
-  faces: [], hasCover: false, createdAt: '', updatedAt: '',
+  cloudAllowed: false, version: 3, userRole: 'OWNER', documentCount: 0, memberCount: 1, recentPostCount: 0, postCount: 0,
+  faces: [], topics: [], hasCover: false, createdAt: '', updatedAt: '',
 };
 
 function ContextSnapshot() {
@@ -59,10 +59,10 @@ describe('WorkspaceShell', () => {
     await user.click(screen.getByRole('tab', { name: 'Thông tin chung' }));
     await user.click(screen.getByRole('button', { name: 'Lưu thay đổi' }));
     await waitFor(() => expect(updateWorkspace).toHaveBeenCalledTimes(2));
-    expect(updateWorkspace).toHaveBeenLastCalledWith(WORKSPACE.id, { name: WORKSPACE.name, description: '', expectedVersion: 4 });
+    expect(updateWorkspace).toHaveBeenLastCalledWith(WORKSPACE.id, { name: WORKSPACE.name, description: '', topics: [], expectedVersion: 4 });
     await waitFor(() => expect(screen.getByTestId('context-snapshot')).toHaveTextContent('"version":5'));
     await user.click(screen.getByRole('tab', { name: 'Quyền truy cập & Thành viên' }));
-    await user.click(screen.getByRole('radio', { name: /Chia sẻ/ }));
+    await user.click(screen.getByRole('radio', { name: /chia sẻ/i }));
     await user.click(screen.getByRole('button', { name: 'Cập nhật chế độ hiển thị' }));
     await waitFor(() => expect(updateWorkspace).toHaveBeenCalledTimes(3));
     expect(updateWorkspace).toHaveBeenLastCalledWith(WORKSPACE.id, { visibility: 'SHARED', expectedVersion: 5 });

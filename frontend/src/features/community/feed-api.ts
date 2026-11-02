@@ -21,10 +21,18 @@ export interface FeedPostResponse {
   reactions: ReactionSummary;
   /** Colour preset behind the post, null for an ordinary one. */
   backgroundKey: string | null;
-  hasAcceptedAnswer: boolean;
+  /** The reply the asker accepted, null while the question is open. */
+  acceptedReplyId: string | null;
   isBookmarked: boolean;
   createdAt: string;
   attachments: PostAttachment[];
+  /**
+   * Whether the group's assistant has replied to this post.
+   *
+   * Optional because only a group's own post list reports it; the global feed
+   * endpoint does not, and a card there simply omits the marker.
+   */
+  hasAiAnswer?: boolean;
 }
 
 export interface FeedPage {
@@ -99,3 +107,20 @@ export async function acceptReply(
     { method: 'PUT' }
   );
 }
+
+/**
+ * Takes back the accepted answer, returning the question to the open set.
+ *
+ * Accepting used to be one-way, so a misclick was permanent and a better
+ * answer arriving later could not take over.
+ */
+export async function clearAcceptedReply(
+  workspaceId: string,
+  discussionId: string,
+): Promise<void> {
+  await fetchJson(
+    `/workspaces/${workspaceId}/discussions/${discussionId}/accept-reply`,
+    { method: 'DELETE' },
+  );
+}
+

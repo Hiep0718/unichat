@@ -2,19 +2,17 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
+  StatusBar,
   StyleSheet,
   ScrollView,
   RefreshControl,
   TouchableOpacity,
   TextInput,
 } from 'react-native';
-import Animated, { FadeInUp } from 'react-native-reanimated';
-import { router } from 'expo-router';
-import { colors, spacing, radii } from '../../src/design/tokens';
+import { router, useFocusEffect } from 'expo-router';
+import { colors, spacing } from '../../src/design/tokens';
 import { typography } from '../../src/design/typography';
 import { UCIcon } from '../../src/components/uc-icon';
-import { UCGlassCard } from '../../src/components/uc-glass-card';
-import { UCScreenContainer } from '../../src/components/uc-screen-container';
 import { UCSkeletonList } from '../../src/components/uc-skeleton';
 import { useAuth } from '../../src/features/auth/auth-context';
 import { useToast } from '../../src/lib/toast-context';
@@ -22,7 +20,21 @@ import { workspaceApi } from '../../src/features/workspaces/workspace-api';
 import { WorkspaceItem } from '../../src/features/workspaces/workspace-types';
 import { WorkspaceHero } from '../../src/features/workspaces/components/workspace-hero';
 import { WorkspaceCard } from '../../src/features/workspaces/components/workspace-card';
+import { WorkspaceQuickCard } from '../../src/features/workspaces/components/workspace-quick-card';
 import { CreateWorkspaceModal } from '../../src/features/workspaces/create-workspace-modal';
+import { ApiError } from '../../src/lib/api-client';
+
+/** Names the failure so the reader can act on it instead of guessing. */
+function describeLoadFailure(reason: unknown): string {
+  if (reason instanceof ApiError) {
+    if (reason.status === 401 || reason.status === 403) {
+      return 'Phiên đăng nhập đã hết hạn. Hãy đăng nhập lại.';
+    }
+    return `Không tải được danh sách không gian (lỗi ${reason.status}).`;
+  }
+  if (reason instanceof Error && reason.message) return reason.message;
+  return 'Không tải được danh sách không gian.';
+}
 
 export default function WorkspaceTabScreen() {
   const { user } = useAuth();
@@ -34,6 +46,7 @@ export default function WorkspaceTabScreen() {
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
     try {
@@ -42,8 +55,17 @@ export default function WorkspaceTabScreen() {
         workspaceApi.getExploreWorkspaces({ page: 0, size: 20 }),
       ]);
 
+      // A failed request used to render exactly like an empty account: both
+      // showed "Chưa có Không gian nào", so a dead session or a 500 read as
+      // "you have no workspaces" and there was nothing on screen to tell them
+      // apart.
       if (mineRes.status === 'fulfilled') {
         setMyWorkspaces(mineRes.value.content || []);
+        setLoadError(null);
+      } else {
+        const message = describeLoadFailure(mineRes.reason);
+        setLoadError(message);
+        showToast({ message, type: 'error' });
       }
       if (exploreRes.status === 'fulfilled') {
         setPublicWorkspaces(exploreRes.value.content || []);
@@ -52,11 +74,21 @@ export default function WorkspaceTabScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [showToast]);
 
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  // Dải chào chạy lên dưới thanh trạng thái từ khi header của trình điều hướng
+  // bị tắt, nên chữ trên thanh phải sáng; các tab khác vẫn nền sáng nên trả
+  // lại khi rời màn hình.
+  useFocusEffect(
+    useCallback(() => {
+      StatusBar.setBarStyle('light-content');
+      return () => StatusBar.setBarStyle('dark-content');
+    }, []),
+  );
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -94,294 +126,298 @@ export default function WorkspaceTabScreen() {
     );
   }, [rawList, searchQuery]);
 
+  // Tổng thành viên của các nhóm mình ở trong, cho ô đếm thứ ba ở dải chào.
+  const totalMembers = useMemo(
+    () => myWorkspaces.reduce((sum, ws) => sum + (ws.memberCount || 0), 0),
+    [myWorkspaces],
+  );
+
+  // Nhóm vừa đổi gần đây nhất đứng đầu hàng truy cập nhanh và mang nhãn
+  // "Mới nhất". Thứ tự mảng không nói lên điều gì; thời điểm mới nói.
+  const recent = useMemo(
+    () =>
+      [...myWorkspaces]
+        .sort((a, b) => Date.parse(b.updatedAt || '') - Date.parse(a.updatedAt || ''))
+        .slice(0, 6),
+    [myWorkspaces],
+  );
+
   return (
-    <UCScreenContainer>
+    <View style={styles.screen}>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
-        {/* Liquid Glass Hero Header */}
         <WorkspaceHero
           email={user?.email}
           displayName={user?.displayName}
           workspaceCount={myWorkspaces.length}
           documentCount={totalDocuments}
+          memberCount={totalMembers}
           onQuickChat={() => router.push('/(tabs)/chat' as any)}
-          onCreateWorkspace={() => setIsModalOpen(true)}
+          onNotifications={() => router.push('/(tabs)/feed' as any)}
+          onAccount={() => router.push('/(tabs)/account' as any)}
         />
 
-        {/* Liquid Glass Search & Filter Bar */}
-        <Animated.View entering={FadeInUp.delay(50).duration(260)} style={styles.searchSection}>
-          <View style={styles.searchBar}>
+        <View style={styles.body}>
+          {/* Hai tab, dạng một thanh phân đoạn */}
+          <View style={styles.segment}>
+            {([
+              { key: 'mine', label: 'Của tôi', icon: 'folder-shared' },
+              { key: 'explore', label: 'Khám phá', icon: 'explore' },
+            ] as const).map((item) => {
+              const on = tab === item.key;
+              return (
+                <TouchableOpacity
+                  key={item.key}
+                  style={[styles.segmentBtn, on && styles.segmentBtnOn]}
+                  onPress={() => setTab(item.key)}
+                  activeOpacity={0.85}
+                  accessibilityRole="tab"
+                  accessibilityState={{ selected: on }}
+                >
+                  <UCIcon
+                    name={item.icon}
+                    size={16}
+                    color={on ? colors.onSurface : colors.onSurfaceVariant}
+                  />
+                  <Text style={[styles.segmentText, on && styles.segmentTextOn]}>
+                    {item.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          {/* Truy cập nhanh — chỉ có ở tab "Của tôi": khám phá là danh mục của
+              người khác, không phải thứ bạn vừa mở. */}
+          {tab === 'mine' && recent.length > 0 ? (
+            <View style={styles.quick}>
+              <View style={styles.sectionHead}>
+                <UCIcon name="bolt" size={18} color={colors.primary} />
+                <Text style={styles.sectionTitle}>Truy cập nhanh</Text>
+              </View>
+
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.quickRow}
+              >
+                {recent.map((ws, index) => (
+                  <WorkspaceQuickCard
+                    key={ws.id}
+                    workspace={ws}
+                    latest={index === 0}
+                    onPress={handleWorkspacePress}
+                  />
+                ))}
+              </ScrollView>
+            </View>
+          ) : null}
+
+          <View style={styles.listHead}>
+            <Text style={styles.sectionTitle}>
+              {tab === 'mine' ? 'Tất cả Workspace' : 'Không gian công khai'}
+            </Text>
+            <Text style={styles.count}>{currentList.length}</Text>
+
+            {tab === 'mine' ? (
+              <TouchableOpacity
+                style={styles.addBtn}
+                onPress={() => setIsModalOpen(true)}
+                activeOpacity={0.85}
+                accessibilityRole="button"
+                accessibilityLabel="Tạo workspace mới"
+              >
+                <UCIcon name="add" size={20} color="#FFFFFF" />
+              </TouchableOpacity>
+            ) : null}
+          </View>
+
+          <View style={styles.search}>
             <UCIcon name="search" size={18} color={colors.outline} />
             <TextInput
               style={styles.searchInput}
-              placeholder="Tìm kiếm không gian học tập..."
+              placeholder="Tìm workspace..."
               placeholderTextColor={colors.outline}
               value={searchQuery}
               onChangeText={setSearchQuery}
               returnKeyType="search"
             />
-            {searchQuery.length > 0 && (
-              <TouchableOpacity onPress={() => setSearchQuery('')} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            {searchQuery.length > 0 ? (
+              <TouchableOpacity onPress={() => setSearchQuery('')} hitSlop={10}>
                 <UCIcon name="close" size={16} color={colors.outline} />
               </TouchableOpacity>
-            )}
+            ) : null}
           </View>
-        </Animated.View>
 
-        {/* Liquid Glass Tab Switcher & Create Action */}
-        <Animated.View entering={FadeInUp.delay(90).duration(280)}>
-          <View style={styles.actionRow}>
-            <View style={styles.segmentContainer}>
-              <TouchableOpacity
-                style={[styles.segmentBtn, tab === 'mine' && styles.segmentBtnActive]}
-                onPress={() => setTab('mine')}
-                activeOpacity={0.8}
-              >
-                <UCIcon
-                  name="folder-shared"
-                  size={16}
-                  color={tab === 'mine' ? colors.primary : colors.outline}
-                />
-                <Text style={[styles.segmentText, tab === 'mine' && styles.segmentTextActive]}>
-                  Của tôi ({myWorkspaces.length})
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.segmentBtn, tab === 'explore' && styles.segmentBtnActive]}
-                onPress={() => setTab('explore')}
-                activeOpacity={0.8}
-              >
-                <UCIcon
-                  name="explore"
-                  size={16}
-                  color={tab === 'explore' ? colors.primary : colors.outline}
-                />
-                <Text style={[styles.segmentText, tab === 'explore' && styles.segmentTextActive]}>
-                  Khám phá ({publicWorkspaces.length})
-                </Text>
+          {loading ? (
+            <UCSkeletonList count={3} />
+          ) : loadError && tab === 'mine' ? (
+            <View style={styles.empty}>
+              <UCIcon name="error-outline" size={34} color={colors.error} />
+              <Text style={styles.emptyTitle}>Không tải được dữ liệu</Text>
+              <Text style={styles.emptyBody}>{loadError}</Text>
+              <TouchableOpacity style={styles.retry} onPress={onRefresh} activeOpacity={0.85}>
+                <Text style={styles.retryText}>Thử lại</Text>
+                <UCIcon name="refresh" size={16} color="#FFFFFF" />
               </TouchableOpacity>
             </View>
-
-            <TouchableOpacity
-              style={styles.createBtn}
-              onPress={() => setIsModalOpen(true)}
-              activeOpacity={0.8}
-            >
-              <UCIcon name="add" size={20} color="#FFFFFF" />
-            </TouchableOpacity>
-          </View>
-        </Animated.View>
-
-        {/* Workspaces List */}
-        {loading ? (
-          <UCSkeletonList count={3} />
-        ) : currentList.length > 0 ? (
-          <View style={styles.listContainer}>
-            {currentList.map((ws, index) => (
-              <WorkspaceCard
-                key={ws.id}
-                workspace={ws}
-                mode={tab}
-                index={index}
-                onPress={handleWorkspacePress}
-                onJoin={handleJoin}
-              />
-            ))}
-          </View>
-        ) : (
-          <UCGlassCard variant="light" style={styles.emptyCard} entering="fade">
-            <View style={styles.emptyCircle}>
-              <UCIcon name="school" size={38} color={colors.primary} />
+          ) : currentList.length > 0 ? (
+            <View style={styles.list}>
+              {currentList.map((ws, index) => (
+                <WorkspaceCard
+                  key={ws.id}
+                  workspace={ws}
+                  mode={tab}
+                  index={index}
+                  onPress={handleWorkspacePress}
+                  onJoin={handleJoin}
+                />
+              ))}
             </View>
-            <Text style={styles.emptyTitle}>
-              {searchQuery.trim()
-                ? 'Không tìm thấy kết quả'
-                : tab === 'mine'
-                ? 'Chưa có Không gian nào'
-                : 'Không có Không gian mới'}
-            </Text>
-            <Text style={styles.emptySubtitle}>
-              {searchQuery.trim()
-                ? `Không có không gian nào khớp với "${searchQuery}". Thử từ khóa khác.`
-                : tab === 'mine'
-                ? 'Hãy tạo mới hoặc khám phá không gian học tập công khai để bắt đầu hỏi đáp AI.'
-                : 'Tất cả Không gian công khai đã được bạn tham gia.'}
-            </Text>
-            {tab === 'mine' && publicWorkspaces.length > 0 && !searchQuery.trim() ? (
-              <TouchableOpacity
-                style={styles.emptyCtaBtn}
-                onPress={() => setTab('explore')}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.emptyCtaText}>Khám phá không gian mẫu</Text>
-                <UCIcon name="arrow-forward" size={16} color="#FFFFFF" />
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity style={styles.emptyCtaOutline} onPress={onRefresh} activeOpacity={0.8}>
-                <Text style={styles.emptyCtaOutlineText}>Tải lại dữ liệu</Text>
-              </TouchableOpacity>
-            )}
-          </UCGlassCard>
-        )}
+          ) : (
+            <View style={styles.empty}>
+              <UCIcon name="school" size={34} color={colors.primary} />
+              <Text style={styles.emptyTitle}>
+                {searchQuery.trim()
+                  ? 'Không tìm thấy kết quả'
+                  : tab === 'mine'
+                    ? 'Chưa có workspace nào'
+                    : 'Chưa có workspace công khai'}
+              </Text>
+              {tab === 'mine' && !searchQuery.trim() ? (
+                <TouchableOpacity
+                  style={styles.retry}
+                  onPress={() => setIsModalOpen(true)}
+                  activeOpacity={0.85}
+                >
+                  <Text style={styles.retryText}>Tạo workspace</Text>
+                  <UCIcon name="add" size={16} color="#FFFFFF" />
+                </TouchableOpacity>
+              ) : null}
+            </View>
+          )}
+        </View>
       </ScrollView>
 
-      {/* Workspace Creation Modal */}
       <CreateWorkspaceModal
         visible={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSuccess={() => {
-          loadData();
-          setTab('mine');
+          setIsModalOpen(false);
+          void loadData();
         }}
       />
-    </UCScreenContainer>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: colors.surface },
   scrollView: { flex: 1 },
-  scrollContent: {
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.sm,
-    paddingBottom: 110,
-  },
-  searchSection: {
-    marginBottom: spacing.sm + 4,
-  },
-  searchBar: {
+  /* Chừa chỗ cho thanh tab dưới đáy, vốn nổi trên nội dung. */
+  scrollContent: { paddingBottom: 120 },
+
+  body: { paddingHorizontal: spacing.md, paddingTop: spacing.md, gap: spacing.md },
+
+  /* ---------- Hai tab ---------- */
+  segment: {
     flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.85)',
-    borderRadius: radii.xl,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm + 2,
-    borderWidth: 1.2,
-    borderColor: 'rgba(226, 232, 248, 0.85)',
-    gap: spacing.sm,
-  },
-  searchInput: {
-    flex: 1,
-    ...typography.bodyMd,
-    color: colors.onSurface,
-    padding: 0,
-  },
-  actionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: spacing.md,
-    gap: spacing.sm,
-  },
-  segmentContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    backgroundColor: 'rgba(231, 238, 254, 0.65)',
-    borderRadius: radii.full,
-    padding: 4,
-    borderWidth: 1,
-    borderColor: 'rgba(226, 232, 248, 0.8)',
+    gap: 6,
+    padding: 5,
+    borderRadius: 999,
+    backgroundColor: colors.surfaceContainer,
   },
   segmentBtn: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 7,
-    borderRadius: radii.full,
-    gap: 6,
+    gap: 7,
+    paddingVertical: 10,
+    borderRadius: 999,
   },
-  segmentBtnActive: {
-    backgroundColor: '#FFFFFF',
-    shadowColor: '#00236F',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 2,
-  },
-  segmentText: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: colors.outline,
-  },
-  segmentTextActive: {
-    color: colors.primary,
+  segmentBtnOn: { backgroundColor: colors.surfaceContainerLowest },
+  segmentText: { ...typography.labelMd, color: colors.onSurfaceVariant },
+  segmentTextOn: { color: colors.onSurface, fontWeight: '700' },
+
+  /* ---------- Truy cập nhanh ---------- */
+  quick: { gap: spacing.sm },
+  sectionHead: { flexDirection: 'row', alignItems: 'center', gap: 7 },
+  sectionTitle: { ...typography.headlineMd, color: colors.onSurface, fontWeight: '700' },
+  /* Tràn ra mép màn hình rồi đệm lại bên trong, để thẻ cuối cùng không
+     bị cắt cụt ở mép phải. */
+  quickRow: { gap: 12, paddingRight: spacing.md },
+
+  /* ---------- Tiêu đề danh sách ---------- */
+  listHead: { flexDirection: 'row', alignItems: 'center', gap: 9 },
+  count: {
+    minWidth: 24,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 999,
+    backgroundColor: colors.surfaceContainer,
+    textAlign: 'center',
+    ...typography.labelSm,
+    color: colors.onSurfaceVariant,
     fontWeight: '700',
   },
-  createBtn: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
+  addBtn: {
+    marginLeft: 'auto',
+    width: 38,
+    height: 38,
+    borderRadius: 13,
     backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#00236F',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.22,
-    shadowRadius: 8,
-    elevation: 4,
   },
-  listContainer: {
-    paddingBottom: spacing.sm,
-  },
-  emptyCard: {
-    padding: spacing.xl,
-    borderRadius: radii['2xl'],
-    alignItems: 'center',
-    marginTop: spacing.sm,
-    backgroundColor: '#FFFFFF',
-  },
-  emptyCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: colors.surfaceContainer,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.md,
-  },
-  emptyTitle: {
-    ...typography.headlineMd,
-    color: colors.onSurface,
-    fontWeight: '700',
-    marginBottom: spacing.xs,
-    textAlign: 'center',
-  },
-  emptySubtitle: {
-    ...typography.bodyMd,
-    color: colors.onSurfaceVariant,
-    textAlign: 'center',
-    lineHeight: 20,
-    marginBottom: spacing.lg,
-  },
-  emptyCtaBtn: {
+
+  /* ---------- Tìm kiếm ---------- */
+  search: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.primary,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderRadius: radii.full,
-    gap: spacing.sm,
-  },
-  emptyCtaText: {
-    ...typography.labelMd,
-    color: '#FFFFFF',
-    fontWeight: '700',
-  },
-  emptyCtaOutline: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm + 2,
-    borderRadius: radii.full,
+    gap: 9,
+    paddingHorizontal: 14,
+    borderRadius: 14,
+    backgroundColor: colors.surfaceContainerLowest,
     borderWidth: 1,
     borderColor: colors.outlineVariant,
   },
-  emptyCtaOutlineText: {
-    ...typography.labelSm,
-    color: colors.outline,
-    fontWeight: '600',
+  searchInput: {
+    flex: 1,
+    paddingVertical: 12,
+    ...typography.bodyMd,
+    color: colors.onSurface,
   },
+
+  list: { gap: 10 },
+
+  /* ---------- Trạng thái rỗng và lỗi ---------- */
+  empty: {
+    alignItems: 'center',
+    gap: 10,
+    padding: spacing.lg,
+    borderRadius: 18,
+    backgroundColor: colors.surfaceContainerLowest,
+  },
+  emptyTitle: { ...typography.bodyLg, color: colors.onSurface, fontWeight: '700' },
+  emptyBody: {
+    ...typography.bodySm,
+    color: colors.onSurfaceVariant,
+    textAlign: 'center',
+  },
+  retry: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    marginTop: 4,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 999,
+    backgroundColor: colors.primary,
+  },
+  retryText: { ...typography.labelMd, color: '#FFFFFF', fontWeight: '700' },
 });

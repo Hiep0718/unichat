@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.Test;
 
 import com.unichat.core.common.error.AuthorizationError;
 import com.unichat.core.common.error.ConflictError;
+import com.unichat.core.common.error.ValidationError;
 import com.unichat.core.user.domain.SystemRole;
 import com.unichat.core.user.domain.User;
 import com.unichat.core.user.domain.UserRepository;
@@ -52,7 +54,7 @@ class WorkspaceMemberServiceTest {
         var targetUserId = UUID.randomUUID();
         var email = "student@unichat.edu.vn";
 
-        var workspace = new Workspace(workspaceId, ownerId, "Class Workspace", "", WorkspaceVisibility.PRIVATE, false, Instant.now());
+        var workspace = new Workspace(workspaceId, ownerId, "Class Workspace", "", WorkspaceVisibility.SHARED, false, Instant.now());
         var ownerMember = new WorkspaceMember(workspaceId, ownerId, WorkspaceRole.OWNER, WorkspaceMemberStatus.ACTIVE, ownerId);
         var targetUser = new User(targetUserId, email, "hashed_pass", SystemRole.USER, UserStatus.ACTIVE, Instant.now());
 
@@ -70,6 +72,28 @@ class WorkspaceMemberServiceTest {
         assertEquals(email, response.email());
         assertEquals(WorkspaceRole.EDITOR, response.role());
         verify(workspaceMemberRepository).save(any(WorkspaceMember.class));
+    }
+
+    @Test
+    void shouldRefuseAddingAMemberToAPrivateWorkspace() {
+        var ownerId = UUID.randomUUID();
+        var workspaceId = UUID.randomUUID();
+
+        var workspace = new Workspace(workspaceId, ownerId, "Sổ tay cá nhân", "", WorkspaceVisibility.PRIVATE, false, Instant.now());
+        var ownerMember = new WorkspaceMember(workspaceId, ownerId, WorkspaceRole.OWNER, WorkspaceMemberStatus.ACTIVE, ownerId);
+
+        when(workspaceRepository.findById(workspaceId)).thenReturn(Optional.of(workspace));
+        when(workspaceMemberRepository.findByWorkspaceIdAndUserIdAndStatus(workspaceId, ownerId, WorkspaceMemberStatus.ACTIVE))
+                .thenReturn(Optional.of(ownerMember));
+
+        var request = new AddWorkspaceMemberRequest("colleague@unichat.edu.vn", WorkspaceRole.VIEWER);
+
+        assertThrows(ValidationError.class,
+                () -> workspaceMemberService.addMember(ownerId, workspaceId, request));
+        // Refused before the account is even looked up, so a private workspace
+        // cannot be used to probe which email addresses are registered.
+        verify(userRepository, never()).findByEmailIgnoreCase(any());
+        verify(workspaceMemberRepository, never()).save(any(WorkspaceMember.class));
     }
 
     @Test
@@ -95,7 +119,7 @@ class WorkspaceMemberServiceTest {
         var existingUserId = UUID.randomUUID();
         var email = "existing@unichat.edu.vn";
 
-        var workspace = new Workspace(workspaceId, ownerId, "Class Workspace", "", WorkspaceVisibility.PRIVATE, false, Instant.now());
+        var workspace = new Workspace(workspaceId, ownerId, "Class Workspace", "", WorkspaceVisibility.SHARED, false, Instant.now());
         var ownerMember = new WorkspaceMember(workspaceId, ownerId, WorkspaceRole.OWNER, WorkspaceMemberStatus.ACTIVE, ownerId);
         var existingUser = new User(existingUserId, email, "hashed_pass", SystemRole.USER, UserStatus.ACTIVE, Instant.now());
         var activeMember = new WorkspaceMember(workspaceId, existingUserId, WorkspaceRole.VIEWER, WorkspaceMemberStatus.ACTIVE, ownerId);

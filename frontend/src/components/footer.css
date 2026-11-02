@@ -1,65 +1,69 @@
-/* Footer */
+/* Chân trang của các trang công khai: dấu thương hiệu, các mục, bản quyền. */
 
 .site-footer {
-  background: var(--color-surface-container-low);
-  border-top: 1px solid var(--color-outline-variant);
+  background: var(--be-mat);
+  border-block-start: 1px solid var(--vien);
 }
 
 .site-footer__inner {
   display: flex;
-  flex-direction: column;
-  gap: var(--stack-md);
   align-items: center;
-  max-width: var(--container-max);
+  justify-content: space-between;
+  gap: 28px;
+  max-inline-size: var(--container-max);
   margin: 0 auto;
-  padding: var(--stack-lg) var(--gutter);
-}
-
-.site-footer__brand {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--stack-sm);
+  padding: 26px var(--gutter);
 }
 
 .site-footer__logo {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
+  margin: 0;
   font: var(--font-label-md);
   font-weight: 700;
-  color: var(--color-primary);
-}
-
-.site-footer__copyright {
-  font: var(--font-label-sm);
-  color: var(--color-on-surface-variant);
+  color: var(--muc);
 }
 
 .site-footer__links {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--stack-md);
+  gap: 26px;
 }
 
 .site-footer__link {
-  font: var(--font-label-sm);
-  color: var(--color-on-surface-variant);
-  transition: text-decoration var(--transition-fast);
+  font: var(--font-label-md);
+  color: var(--muc-nhat);
+  text-decoration: none;
 }
 
 .site-footer__link:hover {
+  color: var(--muc);
   text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
-@media (min-width: 768px) {
+.site-footer__link:focus-visible {
+  outline: 2px solid var(--nhan);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+.site-footer__copyright {
+  margin: 0;
+  font: var(--font-label-sm);
+  color: var(--muc-nhat);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 899px) {
   .site-footer__inner {
-    flex-direction: row;
-    justify-content: space-between;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
   }
 
-  .site-footer__brand {
-    align-items: flex-start;
+  .site-footer__links {
+    gap: 18px;
   }
 }

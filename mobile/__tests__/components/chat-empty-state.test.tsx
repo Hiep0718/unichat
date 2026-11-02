@@ -3,9 +3,9 @@ import { render, fireEvent } from '@testing-library/react-native';
 import { ChatEmptyState } from '../../src/features/chat/components/chat-empty-state';
 
 describe('ChatEmptyState', () => {
-  it('renders hero title and starter prompts', () => {
+  it('renders hero title and starter prompts', async () => {
     const onSelectPrompt = jest.fn();
-    const { getByText, getByTestId } = render(
+    const { getByText, getByTestId } = await render(
       <ChatEmptyState
         workspaceName="Toán Rời Rạc"
         onSelectPrompt={onSelectPrompt}
@@ -16,26 +16,27 @@ describe('ChatEmptyState', () => {
     expect(getByText('GỢI Ý CÂU HỎI BẮT ĐẦU')).toBeTruthy();
 
     const firstPrompt = getByTestId('starter-prompt-0');
-    fireEvent.press(firstPrompt);
+    await fireEvent.press(firstPrompt);
 
     expect(onSelectPrompt).toHaveBeenCalledWith(
       expect.stringContaining('Tóm tắt')
     );
   });
 
-  it('renders referenced documents when provided', () => {
+  it('renders referenced documents when provided', async () => {
     const docs = [
       {
         id: 'doc-1',
         name: 'GiaoTrinh_ToanRoiRac.pdf',
         mimeType: 'application/pdf',
         fileSizeBytes: 1024,
-        status: 'COMPLETED' as const,
+        // Core API gửi PROCESSED; 'COMPLETED' chưa bao giờ tồn tại ở server.
+        status: 'PROCESSED' as const,
         createdAt: '',
       },
     ];
 
-    const { getByText } = render(
+    const { getByText } = await render(
       <ChatEmptyState
         documents={docs}
         onSelectPrompt={jest.fn()}

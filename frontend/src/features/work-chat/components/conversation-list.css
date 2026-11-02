@@ -88,7 +88,7 @@
   padding: 2px 7px;
   border-radius: var(--radius-full);
   background: var(--ws-alert);
-  color: #ffffff;
+  color: var(--nen);
   font: var(--font-label-sm);
   font-weight: 700;
   text-align: center;

@@ -15,8 +15,8 @@ vi.mock('../workspaces/workspace-api', () => ({ getWorkspace: vi.fn(), updateWor
 
 const WORKSPACE: WorkspaceDto = {
   id: 'workspace-1', ownerId: 'owner-1', name: 'Nhóm nghiên cứu', description: '', visibility: 'PRIVATE',
-  cloudAllowed: false, version: 3, userRole: 'OWNER', documentCount: 0, memberCount: 1, recentPostCount: 0,
-  faces: [], hasCover: false, createdAt: '', updatedAt: '',
+  cloudAllowed: false, version: 3, userRole: 'OWNER', documentCount: 0, memberCount: 1, recentPostCount: 0, postCount: 0,
+  faces: [], topics: [], hasCover: false, createdAt: '', updatedAt: '',
 };
 
 function PolicyHarness({ isOwner }: { readonly isOwner: boolean }) {

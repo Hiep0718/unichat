@@ -42,3 +42,56 @@
 .explore-grid--list {
   grid-template-columns: 1fr !important;
 }
+
+/* Topic filter. A horizontal rail rather than a dropdown: the point of this
+   page is seeing what subjects exist, which a closed select hides. */
+.explore-topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 4px 0 16px;
+}
+
+.explore-topics__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 14px;
+  border: 1px solid var(--color-outline-variant, var(--dieu-khien));
+  border-radius: var(--radius-full, 999px);
+  background: var(--color-surface, var(--nen));
+  color: var(--color-on-surface, var(--muc));
+  font: inherit;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.explore-topics__chip:hover {
+  border-color: var(--color-primary, var(--muc));
+}
+
+.explore-topics__chip--active {
+  border-color: var(--color-primary, var(--muc));
+  background: var(--color-primary, var(--muc));
+  color: var(--nen);
+  font-weight: 600;
+}
+
+/* How many groups a chip leads to. Shown because the rail only offers topics
+   that have something, so the number is the reason the chip is there. */
+.explore-topics__count {
+  min-width: 18px;
+  padding: 0 5px;
+  border-radius: var(--radius-full, 999px);
+  background: var(--color-surface-container-high, var(--ke));
+  color: var(--color-on-surface-variant, var(--muc-nhat));
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.explore-topics__chip--active .explore-topics__count {
+  background: rgba(255, 255, 255, 0.25);
+  color: var(--nen);
+}

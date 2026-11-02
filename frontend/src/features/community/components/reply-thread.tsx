@@ -6,6 +6,7 @@ import { useState, useMemo } from 'react';
 
 import { Icon } from '../../../components/icon';
 import { formatRelativeTime } from '../../../lib/format-time';
+import { CollapsibleBody } from './collapsible-body';
 import { MentionText } from './mention-text';
 import { ReactionBar } from './reaction-bar';
 import { ReplyCitations } from './reply-citations';
@@ -66,8 +67,13 @@ export function ReplyThread({
             )}
           </div>
           <div className="reply-node__body">
-            <MentionText>{reply.body}</MentionText>
+            <CollapsibleBody text={reply.body}>
+              <MentionText>{reply.body}</MentionText>
+            </CollapsibleBody>
           </div>
+          {/* Outside the fold on purpose: the citations are the evidence for
+              the answer, and evidence behind a click is evidence nobody
+              checks. */}
           <ReplyCitations citations={reply.citations ?? []} />
           <div className="reply-node__actions">
             <ReactionBar
@@ -82,12 +88,20 @@ export function ReplyThread({
             >
               <Icon name="reply" size={16} /> Trả lời
             </button>
-            {isPostAuthor && !isAccepted && (
+            {isPostAuthor && (
               <button
-                className="reply-node__action-btn reply-node__action-btn--accept"
+                className={`reply-node__action-btn ${
+                  isAccepted ? '' : 'reply-node__action-btn--accept'
+                }`}
                 onClick={() => onAcceptReply?.(reply.id)}
+                title={
+                  isAccepted
+                    ? 'Gỡ lời giải này, câu hỏi trở lại danh sách chưa giải đáp'
+                    : 'Đánh dấu đây là lời giải'
+                }
               >
-                <Icon name="check" size={16} /> Chấp nhận
+                <Icon name={isAccepted ? 'undo' : 'check'} size={16} />
+                {isAccepted ? ' Bỏ chấp nhận' : ' Chấp nhận'}
               </button>
             )}
           </div>

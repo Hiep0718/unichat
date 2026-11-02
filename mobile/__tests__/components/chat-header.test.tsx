@@ -3,9 +3,9 @@ import { render, fireEvent } from '@testing-library/react-native';
 import { ChatHeader } from '../../src/features/chat/components/chat-header';
 
 describe('ChatHeader', () => {
-  it('renders workspace title and document count', () => {
+  it('renders workspace title and document count', async () => {
     const onBack = jest.fn();
-    const { getByText } = render(
+    const { getByText } = await render(
       <ChatHeader
         workspaceName="Hệ thống Phân tán"
         documentCount={5}
@@ -17,22 +17,22 @@ describe('ChatHeader', () => {
     expect(getByText('RAG Sẵn sàng • 5 tài liệu')).toBeTruthy();
   });
 
-  it('triggers onBack when back button pressed', () => {
+  it('triggers onBack when back button pressed', async () => {
     const onBack = jest.fn();
-    const { getByTestId } = render(
+    const { getByTestId } = await render(
       <ChatHeader
         workspaceName="Hệ thống Phân tán"
         onBack={onBack}
       />
     );
 
-    fireEvent.press(getByTestId('chat-header-back'));
+    await fireEvent.press(getByTestId('chat-header-back'));
     expect(onBack).toHaveBeenCalled();
   });
 
-  it('displays streaming state when isStreaming is true', () => {
+  it('displays streaming state when isStreaming is true', async () => {
     const onBack = jest.fn();
-    const { getByText } = render(
+    const { getByText } = await render(
       <ChatHeader
         workspaceName="Hệ thống Phân tán"
         onBack={onBack}

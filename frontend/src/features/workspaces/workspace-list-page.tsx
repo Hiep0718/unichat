@@ -7,12 +7,12 @@ import { useCallback, useMemo, useState } from 'react';
 
 import { Icon } from '../../components/icon';
 import { WelcomeBanner } from './components/welcome-banner';
-import { QuickStats } from './components/quick-stats';
 import { WorkspaceCard } from './components/workspace-card';
 import { WorkspaceForm } from './components/workspace-form';
 import { SkeletonCard } from './components/skeleton-card';
 import { ExploreTab } from './components/explore-tab';
 import { useWorkspaces } from './workspace-hooks';
+import { VISIBILITY_OPTIONS } from './workspace-visibility';
 
 import type { WorkspaceVisibility } from './workspace-schema';
 
@@ -24,9 +24,7 @@ type ViewMode = 'GRID' | 'LIST';
 
 const FILTER_OPTIONS: readonly { value: FilterOption; label: string }[] = [
   { value: 'ALL', label: 'Tất cả' },
-  { value: 'PRIVATE', label: 'Riêng tư' },
-  { value: 'SHARED', label: 'Được chia sẻ' },
-  { value: 'PUBLIC', label: 'Công khai' },
+  ...VISIBILITY_OPTIONS.map((option) => ({ value: option.value, label: option.label })),
 ];
 
 /** Number of skeleton cards to show during loading. */
@@ -84,7 +82,7 @@ function WorkspaceListPage() {
   return (
     <main className="workspace-main">
       <div className="workspace-dashboard">
-        <WelcomeBanner />
+        <WelcomeBanner workspaces={allWorkspaces} />
 
         <div className="dashboard-tabs">
           <button
@@ -92,7 +90,7 @@ function WorkspaceListPage() {
             type="button"
             onClick={() => setActiveTab('MY_WORKSPACES')}
           >
-            <Icon name="folder" size={18} />
+            <Icon name="folder" size={18} rounded />
             Không gian của tôi
           </button>
           <button
@@ -100,17 +98,13 @@ function WorkspaceListPage() {
             type="button"
             onClick={() => setActiveTab('EXPLORE')}
           >
-            <Icon name="travel_explore" size={18} />
+            <Icon name="travel_explore" size={18} rounded />
             Khám phá
           </button>
         </div>
 
         {activeTab === 'MY_WORKSPACES' ? (
           <>
-            {!isLoading && !error && allWorkspaces.length > 0 && (
-              <QuickStats workspaces={allWorkspaces} />
-            )}
-
             {!isLoading && !error && recentWorkspaces.length > 0 && (
               <RecentSection workspaces={recentWorkspaces} />
             )}
@@ -157,10 +151,13 @@ interface RecentSectionProps {
 function RecentSection({ workspaces }: RecentSectionProps) {
   return (
     <section className="recent-section">
-      <h3 className="recent-section__title">
-        <Icon name="bolt" size={20} />
-        Truy cập nhanh
-      </h3>
+      <div className="recent-section__head">
+        <h3 className="recent-section__title">
+          <Icon name="bolt" size={20} />
+          Truy cập nhanh
+        </h3>
+        <p className="recent-section__sub">Các workspace bạn mở gần đây</p>
+      </div>
       <div className="recent-section__grid">
         {workspaces.map((ws, i) => (
           <WorkspaceCard
@@ -173,6 +170,7 @@ function RecentSection({ workspaces }: RecentSectionProps) {
             recentPostCount={ws.recentPostCount}
             faces={ws.faces}
             hasCover={ws.hasCover}
+            topics={ws.topics}
             updatedAt={ws.updatedAt}
             animationIndex={i}
           />
@@ -224,6 +222,7 @@ function AllWorkspacesSection({
         <h3 className="all-workspaces-section__title">
           <Icon name="folder" size={20} />
           Tất cả Workspace
+          <span className="all-workspaces-section__count">{filteredWorkspaces.length}</span>
         </h3>
         <button
           className="workspace-header__create-btn"
@@ -328,10 +327,23 @@ function AllWorkspacesSection({
                 recentPostCount={ws.recentPostCount}
                 faces={ws.faces}
                 hasCover={ws.hasCover}
+                topics={ws.topics}
                 updatedAt={ws.updatedAt}
                 animationIndex={i}
               />
             ))}
+            {/* Ô cuối lưới, không phải một nút trôi nổi ở đâu đó: việc tạo
+                nhóm mới nằm đúng chỗ nhóm mới sẽ xuất hiện. */}
+            <button
+              type="button"
+              className="workspace-new-tile"
+              onClick={onCreateClick}
+            >
+              <span className="workspace-new-tile__plus">
+                <Icon name="add" size={22} rounded />
+              </span>
+              Tạo workspace mới
+            </button>
           </div>
         )}
       </div>

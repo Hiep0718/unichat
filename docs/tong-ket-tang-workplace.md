@@ -136,7 +136,7 @@ Trình duyệt **không đặt được header `Authorization` cho WebSocket han
 
 ### 4.3 Giới hạn đã biết (cần nêu trong luận văn)
 
-- Chỉ 1-1, chỉ văn bản. Không chat nhóm, không gửi tệp.
+- 1-1 và nhóm (ADR-023). Gửi tệp đã có (ADR-022).
 - Presence lưu **trong bộ nhớ tiến trình**, đếm theo số phiên (mở 2 tab đóng 1 thì không bị hiện offline). **Chạy nhiều instance thì mỗi instance chỉ thấy client nối vào chính nó.**
 - Chưa kiểm thử thật hai người nhắn cho nhau.
 
@@ -246,7 +246,7 @@ Một trang thống kê cấp nhóm: bao nhiêu câu hỏi được giải bởi
 
 ### Nên tránh trong 2 tháng còn lại
 
-- **Chat nhóm / gửi tệp trong chat** — cần đổi schema và thiết kế lại phân quyền. Để lại như hướng phát triển.
+- *Chat nhóm và gửi tệp trong chat đã làm xong — xem ADR-022 và ADR-023.* Phần còn lại cần người kiểm thử bằng mắt: migration V30/V31 chưa chạy trên database nào. **Version 29 trên database dùng chung là `admin user seed` từ một working copy chưa commit** — cần commit file đó, nếu không mọi database mới sẽ thiếu nó.
 - **Quyền riêng tư profile chi tiết** — nêu như giới hạn, đừng xây.
 - **Chuyển nốt giao diện các màn còn lại** — làm nếu còn thời gian sau khi luận văn xong, không phải trước.
 

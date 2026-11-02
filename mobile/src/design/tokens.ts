@@ -1,17 +1,24 @@
 /**
- * UniChat Design System — Academic Precision.
- * Design tokens mirrored 1:1 from frontend/src/styles/index.css.
+ * Bộ token thiết kế của UniChat trên di động.
+ *
+ * Đồng bộ với frontend/src/styles/index.css. Chú thích cũ ở đây nói chúng
+ * được "mirrored 1:1" từ web, nhưng điều đó đã không còn đúng từ lâu: web
+ * đã đổi từ teal sang xanh cornflower, nền từ ấm sang lạnh, và thêm cả chế
+ * độ tối. Những giá trị dưới đây được kéo sang cho khớp lại.
+ *
+ * React Native không có custom property, nên đây là bản sao chứ không phải
+ * một tham chiếu: mỗi lần web đổi màu thì file này phải đổi theo bằng tay.
  */
 
 export const colors = {
   // Primary (Academic Navy)
-  primary: '#00236F',
+  primary: '#045CDF',
   onPrimary: '#FFFFFF',
-  primaryContainer: '#1E3A8A',
-  onPrimaryContainer: '#90A8FF',
-  inversePrimary: '#B6C4FF',
-  primaryFixed: '#DCE1FF',
-  onPrimaryFixed: '#00164E',
+  primaryContainer: '#1F4FD0',
+  onPrimaryContainer: '#E5EEFB',
+  inversePrimary: '#5A9BFC',
+  primaryFixed: '#E5EEFB',
+  onPrimaryFixed: '#0A1A3C',
 
   // Secondary (AI Teal Accent)
   secondary: '#00687A',
@@ -27,22 +34,22 @@ export const colors = {
   onTertiaryContainer: '#F39461',
 
   // Surface & Background
-  surface: '#F9F9FF',
-  surfaceDim: '#D3DAEA',
-  surfaceBright: '#F9F9FF',
+  surface: '#F6F7F9',
+  surfaceDim: '#E3E6EB',
+  surfaceBright: '#FFFFFF',
   surfaceContainerLowest: '#FFFFFF',
-  surfaceContainerLow: '#F0F3FF',
-  surfaceContainer: '#E7EEFE',
-  surfaceContainerHigh: '#E2E8F8',
-  surfaceContainerHighest: '#DCE2F3',
-  onSurface: '#151C27',
-  onSurfaceVariant: '#444651',
-  inverseSurface: '#2A313D',
-  inverseOnSurface: '#EBF1FF',
+  surfaceContainerLow: '#FAFBFC',
+  surfaceContainer: '#F1F3F6',
+  surfaceContainerHigh: '#EEF0F3',
+  surfaceContainerHighest: '#E3E6EB',
+  onSurface: '#151A23',
+  onSurfaceVariant: '#555C68',
+  inverseSurface: '#242A34',
+  inverseOnSurface: '#E9EDF3',
 
   // Outlines & Borders
-  outline: '#757682',
-  outlineVariant: '#C5C5D3',
+  outline: '#9BA3B1',
+  outlineVariant: '#D4D8E0',
 
   // Functional & State
   error: '#BA1A1A',
@@ -115,8 +122,39 @@ export const animation = {
   staggerDelay: 60,
 } as const;
 
+/**
+ * Workplace surfaces — mirrored from the --ws-* block in
+ * frontend/src/styles/index.css.
+ *
+ * Cards separate by elevation, not by a 1px outline: an interface whose every
+ * box is drawn round reads as a wireframe. `accent` is the single saturated
+ * colour and is spent on what the reader should act on, which is why a card
+ * title stays `ink` here instead of taking the navy it used to have.
+ */
+export const workplace = {
+  canvas: '#F3F5F9',
+  card: '#FFFFFF',
+  line: '#EEF2F7',
+  chip: '#F1F5F9',
+
+  ink: '#0F172A',
+  inkSoft: '#475569',
+  inkMuted: '#64748B',
+
+  accent: '#1E3A8A',
+  accentInk: '#FFFFFF',
+  accentSoft: '#E6EBF7',
+
+  okBg: '#DCFCE7',
+  okInk: '#166534',
+  warnBg: '#FEF3C7',
+  warnInk: '#854D0E',
+  alert: '#B91C1C',
+} as const;
+
 export type ColorToken = keyof typeof colors;
 export type SpacingToken = keyof typeof spacing;
 export type RadiiToken = keyof typeof radii;
 export type GlassToken = keyof typeof glass;
 export type AnimationToken = keyof typeof animation;
+export type WorkplaceToken = keyof typeof workplace;

@@ -5,6 +5,7 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  type ScrollViewInstance,
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { spacing } from '../../../../src/design/tokens';
@@ -23,7 +24,7 @@ import { isValidUuid } from '../../../../src/lib/uuid';
 
 export default function NewWorkspaceChatScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const scrollViewRef = useRef<ScrollView>(null);
+  const scrollViewRef = useRef<ScrollViewInstance>(null);
   const [workspace, setWorkspace] = useState<WorkspaceDetail | null>(null);
   const [documents, setDocuments] = useState<DocumentItem[]>([]);
   const [selectedCitation, setSelectedCitation] = useState<CitationItem | null>(null);
@@ -63,7 +64,7 @@ export default function NewWorkspaceChatScreen() {
   }, [messages, streamingAnswer, thoughtSteps]);
 
   return (
-    <UCScreenContainer gradient={false}>
+    <UCScreenContainer surface="canvas">
       <ChatHeader
         workspaceName={workspace?.name || 'Hỏi đáp Tri thức AI'}
         documentCount={workspace?.documentCount || documents.length}

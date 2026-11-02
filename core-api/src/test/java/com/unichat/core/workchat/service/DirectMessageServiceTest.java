@@ -1,14 +1,13 @@
 package com.unichat.core.workchat.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -17,13 +16,13 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
+import org.springframework.context.ApplicationEventPublisher;
 
 import com.unichat.core.common.error.AuthorizationError;
 import com.unichat.core.common.error.NotFoundError;
@@ -31,24 +30,29 @@ import com.unichat.core.user.domain.User;
 import com.unichat.core.user.domain.UserRepository;
 import com.unichat.core.workchat.api.ConversationSummary;
 import com.unichat.core.workchat.api.MessageResponse;
+import com.unichat.core.workchat.domain.ConversationParticipant;
+import com.unichat.core.workchat.domain.ConversationParticipantRepository;
 import com.unichat.core.workchat.domain.DirectConversation;
 import com.unichat.core.workchat.domain.DirectConversationRepository;
 import com.unichat.core.workchat.domain.DirectMessage;
 import com.unichat.core.workchat.domain.DirectMessageRepository;
+import com.unichat.core.workchat.domain.DirectMessageSentEvent;
+import com.unichat.core.workchat.domain.ParticipantRole;
 
 /**
  * Messaging is limited to people who share a group, and every read or write
- * checks that the caller is actually in the conversation.
+ * checks that the caller actually takes part in the conversation.
  */
 class DirectMessageServiceTest {
 
     private DirectConversationRepository conversationRepository;
     private DirectMessageRepository messageRepository;
+    private ConversationParticipantRepository participantRepository;
     private ContactDirectory contactDirectory;
-    private UserRepository userRepository;
+    private ApplicationEventPublisher eventPublisher;
     private DirectMessageService service;
 
-    private final Clock clock = Clock.fixed(Instant.parse("2026-09-22T09:00:00Z"), ZoneOffset.UTC);
+    private final Clock clock = Clock.fixed(Instant.parse("2026-10-09T09:00:00Z"), ZoneOffset.UTC);
     private final UUID alice = UUID.fromString("11111111-1111-1111-1111-111111111111");
     private final UUID bob = UUID.fromString("22222222-2222-2222-2222-222222222222");
     private final UUID stranger = UUID.fromString("33333333-3333-3333-3333-333333333333");
@@ -58,22 +62,37 @@ class DirectMessageServiceTest {
     void setUp() {
         conversationRepository = mock(DirectConversationRepository.class);
         messageRepository = mock(DirectMessageRepository.class);
+        participantRepository = mock(ConversationParticipantRepository.class);
         contactDirectory = mock(ContactDirectory.class);
-        userRepository = mock(UserRepository.class);
-        service = new DirectMessageService(conversationRepository, messageRepository,
-                contactDirectory, userRepository,
-                mock(org.springframework.context.ApplicationEventPublisher.class), clock);
+        eventPublisher = mock(ApplicationEventPublisher.class);
+        UserRepository userRepository = mock(UserRepository.class);
 
         // Built before stubbing the repositories: creating a mock inside a
         // when(...) argument leaves the outer stubbing unfinished.
-        User aliceUser = user(alice, "alice@example.com");
-        User bobUser = user(bob, "bob@example.com");
+        User bobUser = user(bob, "bob");
+        List<User> users = List.of(user(alice, "alice"), bobUser);
 
         when(contactDirectory.canMessage(alice, bob)).thenReturn(true);
         when(conversationRepository.save(any(DirectConversation.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
         when(userRepository.findById(any())).thenReturn(Optional.of(bobUser));
-        when(userRepository.findAllById(anyList())).thenReturn(List.of(aliceUser, bobUser));
+        when(userRepository.findAllById(anyList())).thenReturn(users);
+
+        // Real collaborators over mocked repositories: participation and row
+        // assembly are the rules under test in several of these cases, so
+        // stubbing them away would make them pass without checking anything.
+        service = new DirectMessageService(
+                conversationRepository,
+                messageRepository,
+                participantRepository,
+                contactDirectory,
+                new ConversationAccess(conversationRepository, participantRepository),
+                new ConversationSummaryAssembler(
+                        participantRepository, messageRepository, userRepository),
+                mock(ChatAttachmentService.class),
+                userRepository,
+                eventPublisher,
+                clock);
     }
 
     @Test
@@ -94,8 +113,8 @@ class DirectMessageServiceTest {
 
     @Test
     void shouldGiveBothPeopleTheSameConversationWhicheverOpensIt() {
-        // Arrange: the pair is stored in a fixed order, so the lookup that Bob
-        // makes must be the same lookup Alice makes.
+        // Arrange: the pair is stored in a fixed order, so the lookup Bob makes
+        // must be the lookup Alice makes.
         when(contactDirectory.canMessage(bob, alice)).thenReturn(true);
         when(conversationRepository.findByParticipantLowAndParticipantHigh(alice, bob))
                 .thenReturn(Optional.empty());
@@ -104,8 +123,8 @@ class DirectMessageServiceTest {
         service.openWith(alice, bob);
         service.openWith(bob, alice);
 
-        // Assert: both calls looked the pair up under the same ordered key.
-        verify(conversationRepository, org.mockito.Mockito.times(2))
+        // Assert
+        verify(conversationRepository, times(2))
                 .findByParticipantLowAndParticipantHigh(alice, bob);
     }
 
@@ -121,6 +140,24 @@ class DirectMessageServiceTest {
         // Assert
         assertEquals(conversationId, summary.id());
         verify(conversationRepository, never()).save(any());
+    }
+
+    @Test
+    void shouldGiveAOneToOneConversationParticipantRowsLikeAGroup() {
+        // Arrange: both kinds carry participant rows, so access, listing and
+        // read state have one implementation rather than two.
+        when(conversationRepository.findByParticipantLowAndParticipantHigh(alice, bob))
+                .thenReturn(Optional.empty());
+
+        // Act
+        service.openWith(alice, bob);
+
+        // Assert
+        ArgumentCaptor<ConversationParticipant> rows =
+                ArgumentCaptor.forClass(ConversationParticipant.class);
+        verify(participantRepository, times(2)).save(rows.capture());
+        assertEquals(List.of(alice, bob),
+                rows.getAllValues().stream().map(ConversationParticipant::getUserId).toList());
     }
 
     @Test
@@ -151,99 +188,15 @@ class DirectMessageServiceTest {
         // Arrange
         DirectConversation conversation = conversation();
         when(conversationRepository.findById(conversationId)).thenReturn(Optional.of(conversation));
+        aliceTakesPart();
 
         // Act
         MessageResponse sent = service.send(alice, conversationId, "  xin chào  ");
 
         // Assert
-        assertEquals(Instant.parse("2026-09-22T09:00:00Z"), conversation.getLastMessageAt());
+        assertEquals(Instant.parse("2026-10-09T09:00:00Z"), conversation.getLastMessageAt());
         assertEquals("xin chào", sent.body());
         assertTrue(sent.mine());
-    }
-
-    @Test
-    void shouldMarkOnlyTheOtherPersonsMessagesAsRead() {
-        // Arrange
-        when(conversationRepository.findById(conversationId))
-                .thenReturn(Optional.of(conversation()));
-        DirectMessage fromBob = new DirectMessage(
-                UUID.randomUUID(), conversationId, bob, "chào bạn", Instant.now(clock));
-        when(messageRepository.findUnreadFor(conversationId, alice)).thenReturn(List.of(fromBob));
-
-        // Act
-        int marked = service.markRead(alice, conversationId);
-
-        // Assert
-        assertEquals(1, marked);
-        assertNotNull(fromBob.getReadAt());
-    }
-
-    @Test
-    void shouldKeepTheOriginalTimestampWhenAMessageIsReadTwice() {
-        // Arrange
-        Instant firstRead = Instant.parse("2026-09-22T08:00:00Z");
-        DirectMessage message = new DirectMessage(
-                UUID.randomUUID(), conversationId, bob, "chào", Instant.now(clock));
-        message.markRead(firstRead);
-
-        // Act
-        message.markRead(Instant.parse("2026-09-22T10:00:00Z"));
-
-        // Assert
-        assertEquals(firstRead, message.getReadAt());
-    }
-
-    @Test
-    void shouldShowTheOtherPersonInEachConversationRow() {
-        // Arrange
-        when(conversationRepository.findForParticipant(any(), any(Pageable.class)))
-                .thenReturn(new PageImpl<>(List.of(conversation())));
-        when(messageRepository.findLatestPerConversation(anyList())).thenReturn(List.of());
-        when(messageRepository.countUnreadByConversation(anyList(), any())).thenReturn(List.of());
-
-        // Act
-        List<ConversationSummary> rows = service.listConversations(alice, 0, 20);
-
-        // Assert: Alice sees Bob, not herself.
-        assertEquals(1, rows.size());
-        assertEquals(bob, rows.get(0).otherUserId());
-        assertNull(rows.get(0).lastMessage());
-    }
-
-    @Test
-    void shouldCountUnreadMessagesPerConversation() {
-        // Arrange
-        when(conversationRepository.findForParticipant(any(), any(Pageable.class)))
-                .thenReturn(new PageImpl<>(List.of(conversation())));
-        when(messageRepository.findLatestPerConversation(anyList())).thenReturn(List.of(
-                new DirectMessage(UUID.randomUUID(), conversationId, bob, "tin mới", Instant.now(clock))));
-        when(messageRepository.countUnreadByConversation(anyList(), any()))
-                .thenReturn(List.<Object[]>of(new Object[] { conversationId, 3L }));
-
-        // Act
-        List<ConversationSummary> rows = service.listConversations(alice, 0, 20);
-
-        // Assert
-        assertEquals(3L, rows.get(0).unreadCount());
-        assertEquals("tin mới", rows.get(0).lastMessage());
-    }
-
-    @Test
-    void shouldShortenALongMessageIntoAPreview() {
-        // Arrange
-        String longBody = "x".repeat(300);
-        when(conversationRepository.findForParticipant(any(), any(Pageable.class)))
-                .thenReturn(new PageImpl<>(List.of(conversation())));
-        when(messageRepository.findLatestPerConversation(anyList())).thenReturn(List.of(
-                new DirectMessage(UUID.randomUUID(), conversationId, bob, longBody, Instant.now(clock))));
-        when(messageRepository.countUnreadByConversation(anyList(), any())).thenReturn(List.of());
-
-        // Act
-        List<ConversationSummary> rows = service.listConversations(alice, 0, 20);
-
-        // Assert
-        assertTrue(rows.get(0).lastMessage().endsWith("…"));
-        assertTrue(rows.get(0).lastMessage().length() < longBody.length());
     }
 
     @Test
@@ -251,6 +204,7 @@ class DirectMessageServiceTest {
         // Arrange
         when(conversationRepository.findById(conversationId))
                 .thenReturn(Optional.of(conversation()));
+        aliceTakesPart();
 
         // Act
         service.send(alice, conversationId, "xin chào");
@@ -261,16 +215,74 @@ class DirectMessageServiceTest {
         assertEquals(alice, captor.getValue().getSenderId());
     }
 
+    @Test
+    void shouldAnnounceDeliveryToEveryoneButTheSender() {
+        // Arrange: three people, so this covers a group as well as a pair.
+        when(conversationRepository.findById(conversationId))
+                .thenReturn(Optional.of(conversation()));
+        aliceTakesPart();
+        when(participantRepository.findByIdConversationIdOrderByJoinedAtAsc(conversationId))
+                .thenReturn(List.of(participant(alice), participant(bob), participant(stranger)));
+
+        // Act
+        service.send(alice, conversationId, "xin chào");
+
+        // Assert: the event names its recipients, so the broadcaster never has
+        // to decide who is entitled to see a message.
+        ArgumentCaptor<DirectMessageSentEvent> event =
+                ArgumentCaptor.forClass(DirectMessageSentEvent.class);
+        verify(eventPublisher).publishEvent(event.capture());
+        assertEquals(Set.of(bob, stranger), event.getValue().recipientIds());
+    }
+
+    @Test
+    void shouldMarkEverythingReadUpToNow() {
+        // Arrange
+        ConversationParticipant participant = participant(alice);
+        when(conversationRepository.findById(conversationId))
+                .thenReturn(Optional.of(conversation()));
+        when(participantRepository.findByIdConversationIdAndIdUserId(conversationId, alice))
+                .thenReturn(Optional.of(participant));
+
+        // Act
+        service.markRead(alice, conversationId);
+
+        // Assert
+        assertEquals(Instant.parse("2026-10-09T09:00:00Z"), participant.getLastReadAt());
+        verify(participantRepository).save(participant);
+    }
+
+    @Test
+    void shouldNotMoveTheReadWatermarkBackwards() {
+        // Arrange: reopening older history must not unread what came after it.
+        ConversationParticipant participant = participant(alice);
+        participant.readUpTo(Instant.parse("2026-10-09T12:00:00Z"));
+
+        // Act
+        participant.readUpTo(Instant.parse("2026-10-09T09:00:00Z"));
+
+        // Assert
+        assertEquals(Instant.parse("2026-10-09T12:00:00Z"), participant.getLastReadAt());
+    }
+
+    private void aliceTakesPart() {
+        when(participantRepository.findByIdConversationIdAndIdUserId(conversationId, alice))
+                .thenReturn(Optional.of(participant(alice)));
+    }
+
+    private ConversationParticipant participant(UUID userId) {
+        return new ConversationParticipant(
+                conversationId, userId, ParticipantRole.MEMBER, Instant.now(clock));
+    }
+
     private DirectConversation conversation() {
         return DirectConversation.between(conversationId, alice, bob, Instant.now(clock));
     }
 
-    private User user(UUID id, String email) {
+    private User user(UUID id, String displayName) {
         User user = mock(User.class);
         when(user.getId()).thenReturn(id);
-        when(user.getEmail()).thenReturn(email);
-        // Names come from the stored display name now, not from the email.
-        when(user.getDisplayName()).thenReturn(email.split("@")[0]);
+        when(user.getDisplayName()).thenReturn(displayName);
         return user;
     }
 }
