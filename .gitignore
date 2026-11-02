@@ -15,6 +15,7 @@ dev-service.ps1
 .env
 .env.*
 !.env.example
+!.env.production.example
 *.pem
 *.key
 
