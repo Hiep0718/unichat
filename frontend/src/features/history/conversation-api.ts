@@ -15,6 +15,7 @@ export interface MessageItem {
   id: string;
   conversationId: string;
   operationId?: string | null;
+  workspaceSummaryId?: string | null;
   role: 'USER' | 'ASSISTANT';
   content: string;
   sequence?: number | undefined;

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { askWorkspaceQuestionStream, cancelChatOperation, waitForChatOperation } from './chat-api';
+import { askWorkspaceQuestionStream, cancelChatOperation, fetchActiveWorkspaceSummary,
+  waitForChatOperation } from './chat-api';
 import { fetchConversationDetail, fetchConversationMessages } from '../history/conversation-api';
 import { getSessionSnapshot, subscribeSession } from '../../lib/session-store';
 import type { MessageItem } from './components/chat-message-item';
@@ -23,6 +24,7 @@ function historyMessage(message: HistoryMessage): MessageItem {
   const decision = message.refusalCode === 'CLARIFY_REQUIRED' ? 'CLARIFY' : message.refusalCode ? 'REFUSE' : 'ANSWER';
   return { id: message.id, role: message.role, content, sequence: message.sequence, redacted: message.redacted,
     response: { messageId: message.id, conversationId: message.conversationId, operationId: message.operationId ?? undefined, decision, answer: content,
+      workspaceSummaryId: message.workspaceSummaryId ?? undefined,
       intent: message.intent ?? 'FACT', strategyVersion: 'v1.0', citations: message.redacted ? [] : message.citations ?? [],
       refusalCode: message.refusalCode ?? null, requestId: '', knowledgeMode: message.knowledgeMode,
       providerModel: message.redacted ? null : message.providerModel,
@@ -60,6 +62,8 @@ export function useChatSession(workspaceId: string, initialId?: string) {
         request.operationId = metadata.operationId ?? null;
         if (metadata.conversationId) setState((previous) => ({ ...previous, conversationId: metadata.conversationId })); },
       onThought: (thought) => update((message) => ({ ...message, thoughts: [...(message.thoughts ?? []), thought] })),
+      onProgress: (progress) => update((message) => ({ ...message, content:
+        `Đang tóm tắt toàn bộ tài liệu: ${progress.documentsCompleted}/${progress.documentsTotal} tài liệu, ${progress.chunksProcessed}/${progress.chunksTotal} chunks.` })),
       onToken: (delta) => update((message) => ({ ...message, content: message.content + delta })),
       onReset: () => update((message) => ({ ...message, content: '', response: undefined })),
       onFinal: (result) => { if (mounted.current && pending.current === request && getSessionSnapshot().generation === request.generation) applyFinal(result, request.assistantId); },
@@ -78,11 +82,12 @@ export function useChatSession(workspaceId: string, initialId?: string) {
     }
   }, [workspaceId, callbacks]);
 
-  const send = useCallback(async (question: string, expanded = false) => {
+  const send = useCallback(async (question: string, expanded = false, taskType?: 'WORKSPACE_SUMMARY') => {
     if (pending.current || question.trim().length < 3 || question.trim().length > 2000) return;
     const key = crypto.randomUUID();
     const request: PendingAsk = { key, binding: { question: question.normalize('NFC').trim(),
-      conversationId: current.current.conversationId, allowExternalKnowledge: expanded },
+      conversationId: current.current.conversationId, allowExternalKnowledge: expanded,
+      ...(taskType ? { taskType } : {}) },
       assistantId: `assistant-${key}`, operationId: null, generation: getSessionSnapshot().generation, controller: new AbortController() };
     pending.current = request;
     setState((previous) => ({ ...previous, loading: true, error: null, messages: [...previous.messages,
@@ -97,7 +102,8 @@ export function useChatSession(workspaceId: string, initialId?: string) {
     request.controller = new AbortController();
     if (!request.operationId) { await execute(request); return; }
     try {
-      const result = await waitForChatOperation(workspaceId, request.operationId, request.controller.signal);
+      const result = await waitForChatOperation(workspaceId, request.operationId, request.controller.signal,
+        callbacks(request).onProgress);
       if (pending.current !== request || getSessionSnapshot().generation !== request.generation || !mounted.current) return;
       applyFinal(result, request.assistantId); finish();
     } catch (error: unknown) {
@@ -105,7 +111,33 @@ export function useChatSession(workspaceId: string, initialId?: string) {
         setState((previous) => ({ ...previous, loading: false, error: error instanceof Error ? error.message : 'Không thể khôi phục kết quả' }));
       }
     }
-  }, [workspaceId, execute, applyFinal, finish]);
+  }, [workspaceId, execute, callbacks, applyFinal, finish]);
+
+  const recoverActiveSummary = useCallback(async (conversationId?: string) => {
+    const generation = getSessionSnapshot().generation;
+    try {
+      const operation = await fetchActiveWorkspaceSummary(workspaceId, conversationId);
+      if (!operation?.operationId || pending.current || !mounted.current || generation !== getSessionSnapshot().generation) return;
+      const assistantId = `assistant-${operation.operationId}`;
+      const request: PendingAsk = { key: operation.operationId, assistantId, generation,
+        binding: { question: 'Tóm tắt toàn bộ tài liệu', taskType: 'WORKSPACE_SUMMARY' },
+        operationId: operation.operationId, controller: new AbortController() };
+      pending.current = request;
+      setState((previous) => ({ ...previous, loading: true,
+        conversationId: operation.conversationId ?? previous.conversationId,
+        messages: [...previous.messages, { id: assistantId, role: 'ASSISTANT', content: '', isStreaming: true }] }));
+      const result = await waitForChatOperation(workspaceId, operation.operationId, request.controller.signal,
+        callbacks(request).onProgress);
+      if (pending.current === request && mounted.current && generation === getSessionSnapshot().generation) {
+        applyFinal(result, assistantId); finish();
+      }
+    } catch (error: unknown) {
+      if (mounted.current && generation === getSessionSnapshot().generation) {
+        setState((previous) => ({ ...previous, loading: false,
+          error: error instanceof Error ? error.message : 'Không thể khôi phục bản tóm tắt.' }));
+      }
+    }
+  }, [workspaceId, callbacks, applyFinal, finish]);
 
   useEffect(() => {
     mounted.current = true;
@@ -126,18 +158,19 @@ export function useChatSession(workspaceId: string, initialId?: string) {
     const request = { cancelled: false, generation: getSessionSnapshot().generation };
     pending.current?.controller.abort(); pending.current = null;
     setState(empty(initialId));
-    if (!initialId) return;
+    if (!initialId) { void recoverActiveSummary(); return; }
     void Promise.all([fetchConversationDetail(workspaceId, initialId), fetchConversationMessages(workspaceId, initialId)])
       .then(([detail, page]) => {
         if (request.cancelled || request.generation !== getSessionSnapshot().generation) return;
         history.current = { nextPage: 1, snapshot: page.snapshotSequence, loading: false };
         setState({ ...empty(initialId), initialLoading: false, title: detail.title,
           messages: page.content.map(historyMessage), older: page.totalPages > 1 });
+        void recoverActiveSummary(initialId);
       }).catch((error: unknown) => {
         if (!request.cancelled && request.generation === getSessionSnapshot().generation) setState((previous) => ({ ...previous, initialLoading: false, error: error instanceof Error ? error.message : 'Không thể tải lịch sử' }));
       });
     return () => { request.cancelled = true; };
-  }, [workspaceId, initialId]);
+  }, [workspaceId, initialId, recoverActiveSummary]);
 
   const loadOlder = useCallback(async () => {
     const id = current.current.conversationId;
@@ -175,8 +208,20 @@ export function useChatSession(workspaceId: string, initialId?: string) {
     request.controller = new AbortController();
     setState((previous) => ({ ...previous, loading: true, error: null,
       messages: previous.messages.map((message) => message.id === request.assistantId ? { ...message, isStreaming: true, content: '' } : message) }));
-    await execute(request);
-  }, [execute]);
+    if (!request.operationId) { await execute(request); return; }
+    try {
+      const result = await waitForChatOperation(workspaceId, request.operationId, request.controller.signal,
+        callbacks(request).onProgress);
+      if (pending.current === request && mounted.current && request.generation === getSessionSnapshot().generation) {
+        applyFinal(result, request.assistantId); finish();
+      }
+    } catch (error: unknown) {
+      if (pending.current === request && mounted.current && !request.controller.signal.aborted) {
+        setState((previous) => ({ ...previous, loading: false,
+          error: error instanceof Error ? error.message : 'Không thể khôi phục kết quả' }));
+      }
+    }
+  }, [workspaceId, execute, callbacks, applyFinal, finish]);
   const reset = useCallback(() => { pending.current?.controller.abort(); pending.current = null; setState(empty()); }, []);
   return { ...state, send, cancel, loadOlder, reset, retry, canRetry: !state.loading && pending.current !== null };
 }

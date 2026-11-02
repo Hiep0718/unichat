@@ -238,39 +238,14 @@ export async function rejectDocument(
   );
 }
 
-export interface VectorSyncStatusResponse {
-  is_syncing: boolean;
-  status: 'IDLE' | 'RUNNING' | 'COMPLETED' | 'ERROR';
-  current_file: string | null;
-  processed_files: number;
-  total_files: number;
-  processed_chunks: number;
-  percent: number;
-  message: string;
-  last_error: string | null;
+/** Number of processed documents whose trusted chunk manifest is absent. */
+export async function fetchManifestStatus(workspaceId: string): Promise<{ missingManifests: number; failedDocuments: number }> {
+  return fetchJson(`/workspaces/${workspaceId}/documents/manifest-status`);
 }
 
-export interface VectorStatusCheckResponse {
-  workspaceId?: string | undefined;
-  totalChunksInDb: number;
-  workspaceChunksInDb: number;
-  isVectorDbReady: boolean;
-  message: string;
-}
-
-export async function syncVectorStore(): Promise<{ status: string; processed_files: number; total_chunks: number; message?: string }> {
-  return fetchJson<{ status: string; processed_files: number; total_chunks: number; message?: string }>('/internal/v1/eval/sync-storage', {
-    method: 'POST',
-  });
-}
-
-export async function fetchVectorSyncStatus(): Promise<VectorSyncStatusResponse> {
-  return fetchJson<VectorSyncStatusResponse>('/internal/v1/eval/sync-status');
-}
-
-export async function fetchVectorStatusCheck(workspaceId?: string): Promise<VectorStatusCheckResponse> {
-  const query = workspaceId ? `?workspaceId=${workspaceId}` : '';
-  return fetchJson<VectorStatusCheckResponse>(`/internal/v1/eval/vector-status${query}`);
+/** Queues missing manifests through Core's authorized ingestion pipeline. */
+export async function repairDocumentManifests(workspaceId: string): Promise<{ queuedDocuments: number }> {
+  return fetchJson(`/workspaces/${workspaceId}/documents/repair-manifests`, { method: 'POST' });
 }
 
 export const getDocuments = (workspaceId: string, page = 0, size = 20): Promise<DocumentResponse[]> =>

@@ -39,19 +39,14 @@ export async function setRagMode(
   page: Page,
   mode: 'strict' | 'hybrid',
 ): Promise<void> {
-  const contextIndicator = page.locator('.chat-input-form__context-indicator');
-  if (!(await contextIndicator.isVisible({ timeout: 3_000 }).catch(() => false))) {
+  const option = page.getByRole('radiogroup', { name: 'Phạm vi tri thức' })
+    .getByRole('radio', { name: mode === 'hybrid' ? /Mở rộng/ : /Chỉ tài liệu/ });
+  if (!(await option.isVisible({ timeout: 3_000 }).catch(() => false))) {
     return;
   }
 
-  const isCurrentlyHybrid = await contextIndicator
-    .getAttribute('class')
-    .then((cls) => cls?.includes('--hybrid') ?? true);
-
-  const wantHybrid = mode === 'hybrid';
-  if (isCurrentlyHybrid !== wantHybrid) {
-    await contextIndicator.click();
-    await page.waitForTimeout(300);
+  if ((await option.getAttribute('aria-checked')) !== 'true') {
+    await option.click();
   }
 }
 
@@ -80,12 +75,12 @@ export async function sendQuestionAndCollectResponse(
 
   try {
     // 1. Fill question into the chat input
-    const chatInput = page.locator('.chat-input-form__field');
+    const chatInput = page.locator('.chat-composer__field');
     await chatInput.waitFor({ state: 'visible', timeout: 10_000 });
     await chatInput.fill(question);
 
     // 2. Click send button
-    const sendBtn = page.locator('.chat-input-form__submit-btn');
+    const sendBtn = page.locator('.chat-composer__send[type="submit"]');
     await sendBtn.click();
 
     // 3. Wait for user message to appear
@@ -96,12 +91,12 @@ export async function sendQuestionAndCollectResponse(
     const assistantMsg = page.locator('.chat-msg--assistant').last();
     await assistantMsg.waitFor({ state: 'visible', timeout: RESPONSE_TIMEOUT_MS });
 
-    // 5. Wait for streaming to complete (loading indicator disappears)
+    // 5. Wait for streaming to complete (stop action is replaced by the send action)
     await page.waitForFunction(
       () => {
-        const submitBtn = document.querySelector('.chat-input-form__submit-btn');
-        const loadingRing = document.querySelector('.chat-input-form__loading-ring');
-        return submitBtn && !loadingRing;
+        const sendBtn = document.querySelector('.chat-composer__send[type="submit"]');
+        const stopBtn = document.querySelector('.chat-composer__send--stop');
+        return sendBtn && !stopBtn;
       },
       { timeout: RESPONSE_TIMEOUT_MS },
     );

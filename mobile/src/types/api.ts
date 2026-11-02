@@ -83,6 +83,7 @@ export interface MessageItem {
   id: string;
   conversationId: string;
   operationId?: string | null;
+  workspaceSummaryId?: string | null;
   sender: 'USER' | 'ASSISTANT';
   content: string;
   citations?: CitationItem[];
@@ -90,6 +91,7 @@ export interface MessageItem {
   redacted?: boolean;
   knowledgeMode?: 'STRICT' | 'EXPANDED';
   sections?: AnswerSection[];
+  warningMessage?: string | null;
   provisional?: boolean;
   intent?: string | null;
   refusalCode?: string | null;

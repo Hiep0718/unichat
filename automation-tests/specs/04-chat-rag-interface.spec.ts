@@ -96,7 +96,7 @@ test.describe('Automation Suite 04 — RAG Chat Interface & Workspace Quản lý
     await chatNavBtn.click();
 
     // 5. Verify Chat input field renders in Chat UI
-    const chatInput = page.locator('.chat-input-form__field');
+    const chatInput = page.locator('.chat-composer__field');
     await expect(chatInput).toBeVisible({ timeout: 10000 });
   });
 
@@ -205,13 +205,13 @@ test.describe('Automation Suite 04 — RAG Chat Interface & Workspace Quản lý
     await chatNavBtn.click();
 
     // 4. Fill question in chat input and submit
-    const chatInput = page.locator('.chat-input-form__field');
+    const chatInput = page.locator('.chat-composer__field');
     await expect(chatInput).toBeVisible({ timeout: 10000 });
 
     const questionText = 'Khái niệm Quản lý tích hợp dự án là gì?';
     await chatInput.fill(questionText);
 
-    const sendBtn = page.locator('.chat-input-form__submit-btn');
+    const sendBtn = page.locator('.chat-composer__send[type="submit"]');
     await sendBtn.click();
 
     // 5. Verify user message appears immediately

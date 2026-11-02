@@ -94,7 +94,7 @@ test.describe('Automation Suite 05 — Short-term Conversation Memory & Context 
     await expect(chatNavBtn).toBeVisible({ timeout: 10000 });
     await chatNavBtn.click();
 
-    await expect(page.locator('.chat-input-form__field')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('.chat-composer__field')).toBeVisible({ timeout: 10000 });
   };
 
   test('should support multi-turn conversation flow with short-term context continuity', async ({ page }) => {
@@ -143,8 +143,8 @@ test.describe('Automation Suite 05 — Short-term Conversation Memory & Context 
     await setupMockRoutes(page, [turn1Sse, turn2Sse]);
     await loginAndNavigateToChat(page);
 
-    const chatInput = page.locator('.chat-input-form__field');
-    const sendBtn = page.locator('.chat-input-form__submit-btn');
+    const chatInput = page.locator('.chat-composer__field');
+    const sendBtn = page.locator('.chat-composer__send[type="submit"]');
 
     // Act: Turn 1 - Ask foundational question
     const q1 = 'Khái niệm Lập trình hướng đối tượng OOP là gì?';
@@ -201,9 +201,9 @@ test.describe('Automation Suite 05 — Short-term Conversation Memory & Context 
     await loginAndNavigateToChat(page);
 
     // Act: Submit question that triggers compaction
-    const chatInput = page.locator('.chat-input-form__field');
+    const chatInput = page.locator('.chat-composer__field');
     await chatInput.fill('Hãy tóm tắt ưu nhược điểm của kiến trúc Microservices');
-    await page.locator('.chat-input-form__submit-btn').click();
+    await page.locator('.chat-composer__send[type="submit"]').click();
 
     // Assert: Assistant message and thoughts accordion appear
     const assistantMsg = page.locator('.chat-msg--assistant').first();
@@ -272,8 +272,8 @@ test.describe('Automation Suite 05 — Short-term Conversation Memory & Context 
     await setupMockRoutes(page, [turn1Compacted, turn2Subsequent]);
     await loginAndNavigateToChat(page);
 
-    const chatInput = page.locator('.chat-input-form__field');
-    const sendBtn = page.locator('.chat-input-form__submit-btn');
+    const chatInput = page.locator('.chat-composer__field');
+    const sendBtn = page.locator('.chat-composer__send[type="submit"]');
 
     // Turn 1
     await chatInput.fill('Câu hỏi tạo compaction');

@@ -852,29 +852,33 @@
 
 .unichat-citation-detail-inline .citation-drawer__header {
   height: auto;
-  min-height: 40px;
-  padding: 10px 12px;
-  align-items: stretch;
-  flex-direction: column;
+  min-height: 44px;
+  padding: 8px 12px;
+  align-items: center;
+  flex-direction: row;
+  flex-wrap: wrap;
   gap: 8px;
   border-radius: var(--radius-lg, 12px) var(--radius-lg, 12px) 0 0;
 }
 
 .unichat-citation-detail-inline .citation-drawer__title-zone {
-  width: 100%;
-  flex: 0 1 auto;
-  flex-wrap: wrap;
+  flex: 1 1 200px;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .unichat-citation-detail-inline .citation-drawer__filename {
   font-size: 12px;
-  max-width: 100%;
+  max-width: 160px;
 }
 
 .unichat-citation-detail-inline .citation-drawer__header-actions {
-  width: 100%;
-  flex-wrap: wrap;
-  justify-content: flex-start;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  margin-left: auto;
   gap: 6px;
 }
 
