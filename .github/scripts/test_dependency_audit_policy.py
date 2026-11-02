@@ -44,11 +44,11 @@ class DependencyAuditPolicyTest(unittest.TestCase):
         self.assertEqual("org.example:library", dependencies[0].name)
         self.assertEqual("1.2.3", dependencies[0].version)
 
-    def test_should_allow_exact_exception_for_non_chroma_change(self) -> None:
+    def test_should_allow_cloud_retrieval_change_with_scoped_exception(self) -> None:
         result = POLICY._evaluate_policy(
             [self._chroma_finding()],
             [self._chroma_exception()],
-            ["core-api/pom.xml"],
+            ["ai-service/app/core/rag/retrieval_engine.py"],
             "change",
         )
 
@@ -65,6 +65,38 @@ class DependencyAuditPolicyTest(unittest.TestCase):
 
         self.assertEqual("FAIL", result["status"])
         self.assertEqual("SCOPED_EXCEPTION_NOT_APPLICABLE", result["reason"])
+
+    def test_should_block_exception_when_self_host_configuration_changes(self) -> None:
+        result = POLICY._evaluate_policy(
+            [self._chroma_finding()],
+            [self._chroma_exception()],
+            ["infra/compose.yaml"],
+            "change",
+        )
+
+        self.assertEqual("FAIL", result["status"])
+        self.assertEqual("SCOPED_EXCEPTION_NOT_APPLICABLE", result["reason"])
+
+    def test_should_block_cloud_exception_when_client_configuration_changes(self) -> None:
+        result = POLICY._evaluate_policy(
+            [self._chroma_finding()],
+            [self._chroma_exception()],
+            ["ai-service/app/services/vector_store.py"],
+            "change",
+        )
+
+        self.assertEqual("FAIL", result["status"])
+        self.assertEqual("SCOPED_EXCEPTION_NOT_APPLICABLE", result["reason"])
+
+    def test_should_allow_read_only_cloud_preflight_hardening(self) -> None:
+        result = POLICY._evaluate_policy(
+            [self._chroma_finding()],
+            [self._chroma_exception()],
+            ["ai-service/app/services/preflight_check.py"],
+            "change",
+        )
+
+        self.assertEqual("PASS_WITH_SCOPED_EXCEPTION", result["status"])
 
     def test_should_block_release_while_exception_is_open(self) -> None:
         result = POLICY._evaluate_policy(

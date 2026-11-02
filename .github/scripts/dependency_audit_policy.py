@@ -23,9 +23,19 @@ from dependency_audit_sources import (
 
 CHROMA_MANIFEST_PATHS = frozenset(
     {
+        "ai-service/pyproject.toml",
         "ai-service/requirements.txt",
         "ai-service/requirements-dev.txt",
         "ai-service/requirements.lock.txt",
+    }
+)
+CHROMA_SERVER_CONFIGURATION_PATHS = frozenset(
+    {
+        "infra/compose.yaml",
+        "infra/compose.yml",
+        "infra/docker-compose.yaml",
+        "infra/docker-compose.yml",
+        "ai-service/app/services/vector_store.py",
     }
 )
 
@@ -73,7 +83,9 @@ def _matches_exception(finding: Finding, exception: AuditException) -> bool:
 def _touches_chroma_scope(changed_files: list[str]) -> bool:
     for raw_path in changed_files:
         path = raw_path.strip().replace("\\", "/").lower()
-        if path in CHROMA_MANIFEST_PATHS:
+        if path in CHROMA_MANIFEST_PATHS | CHROMA_SERVER_CONFIGURATION_PATHS:
+            return True
+        if path.startswith("ai-service/") and "chroma" in path:
             return True
         if path.startswith(("deploy/", "deployment/", "infra/helm/", "infra/kubernetes/")):
             return True

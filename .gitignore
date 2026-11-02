@@ -3,7 +3,8 @@
 .tmp/
 .agents/
 .local-archive/
-.pipeline/
+.pipeline/*
+!.pipeline/decisions-log.md
 .repository-reorganization/
 .audit/
 .service-keys/
@@ -58,6 +59,11 @@ logs/
 .DS_Store
 Thumbs.db
 desktop.ini
+*.dtmp
+.*.dtmp
+
+# Evaluation and data
+data/
 
 # Office temporary locks
 ~$*
