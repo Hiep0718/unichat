@@ -3,6 +3,7 @@
  * Communicates with Core API workspace endpoints via fetchJson.
  */
 import { fetchJson, getAccessToken } from '../../lib/api-client';
+import { randomUuid } from '../../lib/random-uuid';
 
 import type {
   CreateWorkspaceInput,
@@ -31,7 +32,7 @@ export function getWorkspaces(
 export function createWorkspace(
   data: CreateWorkspaceInput,
 ): Promise<WorkspaceDto> {
-  const idempotencyKey = crypto.randomUUID();
+  const idempotencyKey = randomUuid();
 
   return fetchJson('/workspaces', {
     method: 'POST',

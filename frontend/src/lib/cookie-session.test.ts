@@ -49,4 +49,23 @@ describe('loginCookieSession', () => {
     expect(request).toHaveBeenCalledTimes(1);
     expect(localStorage.getItem('unichat.logged-out')).toBeNull();
   });
+
+  it('should succeed on plain HTTP origins where crypto.randomUUID is unavailable', async () => {
+    const nativeGetRandomValues = globalThis.crypto.getRandomValues.bind(globalThis.crypto);
+    vi.stubGlobal('crypto', {
+      randomUUID: undefined,
+      getRandomValues: nativeGetRandomValues,
+    });
+    const profile = { id: 'user-1', email: 'user@example.com', displayName: 'Người dùng',
+      systemRole: 'USER', status: 'ACTIVE' };
+    const request = vi.fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ accessToken: 'access', tokenType: 'Bearer', expiresIn: 900 })))
+      .mockResolvedValueOnce(new Response(JSON.stringify(profile)));
+    vi.stubGlobal('fetch', request);
+
+    const session = await loginCookieSession({ email: profile.email, password: 'valid-password' });
+
+    expect(session.accessToken).toBe('access');
+    expect(request.mock.calls.map((call: unknown[]) => call[0])).toEqual(['/api/v1/auth/login', '/api/v1/users/me']);
+  });
 });
