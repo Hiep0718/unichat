@@ -1,5 +1,7 @@
 import { useEffect, useId, useState } from 'react';
 
+import { randomUuid } from '../../../lib/random-uuid';
+
 /** Isolates sanitized Mermaid SVG as an image, preserving escaping at the React boundary. */
 export function MermaidDiagram({ chart, isStreaming = false }: { readonly chart: string; readonly isStreaming?: boolean | undefined }) {
   const id = useId().replace(/:/g, '');
@@ -32,6 +34,6 @@ async function renderDiagram(id: string, chart: string): Promise<string> {
   mermaid.initialize({ startOnLoad: false, securityLevel: 'strict', suppressErrorRendering: true,
     maxTextSize: 30_000, flowchart: { htmlLabels: false }, theme: 'neutral' });
   const source = chart.replace(/%%\{[\s\S]*?\}%%/g, '').replace(/^\s*click\s.*$/gm, '');
-  const result = await mermaid.render(`unichat-${id}-${crypto.randomUUID()}`, source);
+  const result = await mermaid.render(`unichat-${id}-${randomUuid()}`, source);
   return result.svg;
 }
