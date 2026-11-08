@@ -130,6 +130,7 @@ export function GroupDocumentsTab({ workspaceId, canEdit, header }: GroupDocumen
           }}
           onDelete={canEdit ? handleDelete : undefined}
           header={listHeader}
+          inset={spacing.md}
         />
       </View>
 
@@ -148,11 +149,12 @@ export function GroupDocumentsTab({ workspaceId, canEdit, header }: GroupDocumen
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  // Danh sách tự kẻ lề cho từng thẻ, còn phần lề ngang chung đặt ở đây để dải
-  // bìa vẫn chạy hết chiều ngang màn hình.
-  listWrap: { flex: 1, paddingHorizontal: spacing.md },
-  padded: { paddingTop: spacing.sm },
-  summaryWrap: { paddingTop: spacing.md, paddingBottom: spacing.sm },
+  // Không kẻ lề ngang ở đây: danh sách chứa cả dải bìa và thanh tab trong phần
+  // đầu, nên lề đặt lên danh sách sẽ ép cả hai hẹp lại so với các tab khác.
+  // Lề thuộc về từng phần nội dung (tóm tắt, ô tải lên, thẻ tệp).
+  listWrap: { flex: 1 },
+  padded: { paddingTop: spacing.sm, paddingHorizontal: spacing.md },
+  summaryWrap: { paddingTop: spacing.md, paddingBottom: spacing.sm, paddingHorizontal: spacing.md },
   summary: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -183,7 +185,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: colors.surfaceContainerHigh,
   },
-  uploadWrap: { paddingBottom: spacing.sm },
+  uploadWrap: { paddingBottom: spacing.sm, paddingHorizontal: spacing.md },
   fab: {
     position: 'absolute',
     right: spacing.md,
