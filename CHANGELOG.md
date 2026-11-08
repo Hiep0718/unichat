@@ -4,6 +4,11 @@
 
 ### Added
 
+- Gave the mobile Bảng tin tab a header in the same dark style as Trợ lý AI and Tài khoản: title, subtitle, a saved-posts shortcut and tappable "chưa giải đáp" / "bài viết" counts from `/feed/stats`. Bảng tin, Trợ lý AI, Tài khoản and Tin nhắn now share one `UCTabHero` component; Tin nhắn keeps its new-message button and search box inside the band.
+- Redesigned the mobile AI assistant: an ask-first "Trợ lý AI" home with the group shown on the question box, a group picker that disables groups without documents, and history grouped by Hôm nay / Hôm qua / Tuần này filtered to the selected group or all groups. The chat screen gained a group switcher, the group's cover with document readiness, suggestions built from ready documents, numbered source chips, "Chỉ tài liệu / Mở rộng" modes and a read-only source list.
+- Brought the mobile community feed to parity with web: tappable reactions on posts and comments, a post detail screen with threaded comments, replying, accepting an answer (asker only) and an "assistant is answering" state after an `@AI` mention, plus Mới nhất / Chưa giải đáp / Của tôi / Đã lưu filters served by the API. Bookmarks now go through `/bookmarks`, so the saved list is shared with web.
+- Added Work Chat to the mobile app: a "Tin nhắn" tab listing direct and group conversations with search and unread counts, a thread screen that interleaves messages with grouped call history, day separators and a sent status, a contact picker to start a direct conversation, and live delivery over the shared STOMP socket (`@stomp/stompjs` 7.3.0, the same version as web).
+- Replaced the mobile liquid-glass tab bar with a dark floating dock: Bảng tin, Nhóm, a centred "Hỏi AI" button (the former "Hội thoại" AI history screen), Tin nhắn and Tài khoản.
 - Added a feature-flagged, asynchronous workspace-wide summary path with ingestion-manifest validation, deterministic Chroma chunk reads, hierarchical summaries, cited per-document artifacts, progress and paginated result APIs.
 - Added explicit workspace-summary actions and long-running operation polling to the web and mobile chat transport layers.
 - Added document-level resume checkpoints, bounded RabbitMQ retries, a verified worker heartbeat, reload recovery and paginated document summaries on web and mobile.
@@ -13,6 +18,12 @@
 
 ### Fixed
 
+- The mobile group screen's Files tab drew the cover and tab bar 16 px narrower than the other tabs, because the horizontal padding sat on the whole list instead of on each card.
+- Loading a group on mobile now shows a skeleton shaped like the screen with a working back button, instead of a lone grey card under unreadable light status-bar text; a network failure offers a retry, and a missing or forbidden group says so instead of always claiming "not found".
+- The mobile "Chat mới" button no longer silently picks the first group when viewing all groups, the chat composer no longer shows non-functional microphone and waveform buttons, and opening an existing conversation no longer loads its messages twice.
+- Mobile feed no longer shows hard-coded sample posts when the API fails, no longer toggles bookmarks only on the device, and no longer shows a fixed "3" badge on the Bảng tin tab; the "Bảng tin cộng đồng" header bar was removed.
+- Opening a post from a group's post list on mobile pointed at a route that did not exist; it now opens the post detail screen.
+- Removed the "Công khai" feed scope on web: the feed now reads only from the caller's own groups, and `GET /api/v1/feed?scope=ALL` from an old client falls back to the member scope instead of loading every public workspace in memory.
 - Included the actual provider model in canonical live chat results so the UI can identify the model immediately.
 - Preserved Markdown diagram fences when appending citations and instructed the assistant to produce source-backed Mermaid for diagram requests.
 - Reduced Gemini structured-output schema complexity while keeping application-side answer and citation validation.

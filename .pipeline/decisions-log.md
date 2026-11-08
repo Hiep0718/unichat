@@ -4280,3 +4280,95 @@ xoá test của component đã chết). Vẫn phải chạy `--maxWorkers=2` vì
   - `use-chat-stream.test.ts` trên mobile: `renderHook` bất đồng bộ của RNTL v14 chờ hiệu ứng, nên lần gọi `fetchActiveWorkspaceSummary` lúc mount — trước đây không mock, tức một request thật — kịp đặt lỗi lên một hook vừa dựng. Nay mock `chat-transport`, đúng quy tắc "tests must never make real network calls".
   - `message-bubble.test.tsx`: một ca kiểm thử main thêm vào còn dùng `render` đồng bộ sau khi nhánh chuyển bộ test sang API bất đồng bộ.
 - Kiểm chứng: frontend `tsc --noEmit` 0 lỗi, `vitest` 571/571 ca qua, `eslint` 0 lỗi (1 cảnh báo react-refresh sẵn có trong `citation-drawer.tsx` của main). Mobile `tsc --noEmit` 0 lỗi, `jest` 237/237 ca qua. `ai-service` không chạy được: `pytest` chưa cài trong `.venv` và cài gói cần phép riêng; thư mục này thuộc main nguyên vẹn nên không chịu ảnh hưởng của lần gộp.
+
+
+## 2026-11-08 — Thêm Tin nhắn cho mobile và đổi thanh điều hướng thành dock tối có nút Hỏi AI
+
+- Bối cảnh: Bản mobile thiếu hẳn phần nhắn tin giữa người với người mà web đã có (Work Chat). Người dùng gửi mockup màn danh sách, màn luồng chat và dock tối có nút AI ở giữa, và yêu cầu thay tab "Hội thoại" bằng "Hỏi AI".
+- Quyết định (các lựa chọn có hỏi và được người dùng chốt):
+  1. Nút giữa dock mở màn lịch sử hội thoại AI hiện có (route `chat`), đổi nhãn thành "Hỏi AI"; màn này đã có chọn nhóm, "Chat mới" và lịch sử nên không viết lại.
+  2. Dock tối theo mockup, thứ tự Bảng tin, Nhóm (tab Workspace cũ), Hỏi AI, Tin nhắn, Tài khoản. `UCLiquidGlassTabBar` được đổi tên thành `UCDockTabBar`. Nhóm vẫn là màn mở đầu qua `unstable_settings.initialRouteName = 'index'`.
+  3. Cài `@stomp/stompjs` 7.3.0 (người dùng duyệt) để nhận tin tức thì, cùng bản với web. Kết nối đặt ở `RealtimeProvider` dưới `AuthProvider`, mở khi đăng nhập và đóng khi đăng xuất. Trên native bật `forceBinaryWSFrames` và `appendMissingNULLonIncoming` vì React Native cắt ký tự NULL của frame STOMP. Địa chỉ socket suy từ `getApiBaseUrl()`; RN gửi Origin bằng chính host của API nên vượt qua kiểm tra same-origin của Spring mà không phải thêm vào allowlist.
+  4. Gọi thoại chỉ hiện lịch sử trong luồng chat; nút gọi báo "chỉ hỗ trợ trên bản web" vì WebRTC trên RN cần thư viện native chưa được duyệt.
+  5. Phạm vi: chỉ "bắt đầu chat với người" (bảng chọn liên hệ cùng nhóm). Tạo nhóm chat và gửi tệp/ảnh chưa làm; tệp đính kèm đã có vẫn hiện tên trong bong bóng.
+  6. Danh sách cuộc trò chuyện dùng chung khoá React Query `['work-chat','conversations']` giữa màn Tin nhắn, màn luồng chat (lấy tiêu đề) và huy hiệu chưa đọc trên dock; socket chỉ làm khoá đó mất hiệu lực.
+  7. Dòng thời gian là hàm thuần `buildTimeline`: mốc ngày chỉ chèn khi nhãn đổi, cuộc gọi liền nhau cùng mô tả gộp thành "3 cuộc gọi không trả lời", avatar ở cuối mỗi chuỗi cùng người gửi trong cùng mốc ngày, "Đã gửi" chỉ dưới tin cuối nếu là của mình.
+- Giới hạn còn lại: API `ConversationSummary` không cho biết ai gửi tin cuối, nên dòng xem trước không có tiền tố "Bạn:" như mockup.
+- Kiểm chứng: mobile `tsc --noEmit` 0 lỗi, `eslint` 0 lỗi, `jest` 312/312 ca qua; phần mã mới phủ 90% câu lệnh, 79% nhánh.
+
+
+## 2026-11-08 — Bỏ phạm vi "Công khai" khỏi Bảng tin
+
+- Bối cảnh: Người dùng thấy phạm vi "Công khai" không cần thiết và muốn Bảng tin chỉ tập trung vào "Không gian của tôi".
+- Quyết định:
+  1. Web bỏ mục "Công khai" và giá trị `ALL` khỏi kiểu `FeedScope`; còn "Không gian của tôi" và "Đã lưu".
+  2. `FeedService.resolveWorkspaceIds` luôn trả các nhóm người gọi là thành viên ACTIVE. `scope=ALL` từ client cũ không bị báo lỗi mà rơi về phạm vi thành viên, để một bản web cũ còn trong cache vẫn chạy. Đồng thời bỏ lời gọi `workspaceRepository.findAll()` tải toàn bộ bảng nhóm vào bộ nhớ.
+  3. Mobile không dùng `scope=ALL` nên không phải đổi.
+- Chưa sửa (đã báo người dùng, chờ chốt): ở "Đã lưu" ba tab trên không có tác dụng; số trên "Chưa giải đáp" không theo phạm vi; lưu bài chưa kiểm tra quyền.
+- Kiểm chứng: `FeedServiceTest` 3/3 qua; frontend `tsc` 0 lỗi, `eslint` 0 lỗi, `vitest` thư mục community 87/87 qua.
+
+
+## 2026-11-08 — Bảng tin mobile: cảm xúc, bình luận, "Đã lưu" đồng bộ với web
+
+- Bối cảnh: Bảng tin mobile thiếu cảm xúc và bình luận như web, nút lưu chỉ đổi trên máy, và người dùng muốn bỏ thanh tiêu đề "Bảng tin cộng đồng".
+- Hiện trạng tìm thấy: API lỗi thì hiện ba bài mẫu cố định như dữ liệu thật; bộ lọc Tất cả/Hỏi đáp/Thông báo chỉ lọc trên 20 bài đã tải; tab có huy hiệu "3" viết cứng; danh sách bài của nhóm mở tới `/feed/posts/...`, một route không tồn tại trên mobile.
+- Quyết định (người dùng chốt các mục có đánh dấu *):
+  1. *Bình luận ở màn chi tiết riêng `app/post/[workspaceId]/[postId].tsx`, không bung trong thẻ như web: màn hẹp đọc và gõ dễ hơn, và danh sách bài của nhóm dùng lại được.
+  2. *Bộ lọc giống web cộng "Đã lưu": Mới nhất · Chưa giải đáp · Của tôi · Đã lưu, lọc ở máy chủ. "Đã lưu" là tab ngang hàng gửi `scope=SAVED&sort=NEW`, tránh lỗi bên web nơi ba tab không có tác dụng khi đang ở "Đã lưu". Mặc định là "Mới nhất".
+  3. Lưu bài gọi `POST /bookmarks/{id}` như web, nên danh sách "Đã lưu" là một ở cả hai nơi.
+  4. Bảng tin dùng `useInfiniteQuery` theo khoá `['feed', filter]`; màn chi tiết ghi ngược cảm xúc, số bình luận, lời giải và trạng thái lưu vào mọi khoá qua `patchFeedPost`, nên quay lại danh sách không phải tải lại và không mất chỗ đang đọc.
+  5. Endpoint chi tiết không báo `isBookmarked`, nên trạng thái lưu đi kèm đường dẫn (`?saved=1|0`); mở từ danh sách của nhóm (không có trạng thái thật) thì ẩn nút lưu thay vì hiện sai.
+  6. Cây bình luận dựng ở client (`buildReplyRows`), thụt tối đa 3 tầng; sâu hơn thì ghi "@người được trả lời". Bình luận có cha đã xoá được đưa lên gốc.
+  7. Sau bình luận có `@AI`, danh sách bình luận tự làm mới mỗi 5 giây tới khi có câu trả lời của trợ lý hoặc hết 2 phút.
+  8. Thân bài vẽ bằng Markdown (thư viện không chạy HTML thô). Tệp đính kèm chỉ hiện số lượng kèm "xem trên bản web".
+- *Chưa sửa theo yêu cầu: lệnh lưu bài ở backend vẫn chưa kiểm tra quyền.
+- Kiểm chứng: mobile `tsc --noEmit` 0 lỗi, `eslint` 0 lỗi, `jest` 352/352 ca qua; phần bảng tin phủ 87% câu lệnh.
+
+
+## 2026-11-09 — Dựng lại giao diện Trợ lý AI trên mobile theo mockup
+
+- Bối cảnh: Người dùng gửi mockup cho màn Trợ lý AI, bảng chọn nhóm, màn chat mới và màn hội thoại, kèm yêu cầu mockup chỉ để tham khảo và phải bám chức năng đang có.
+- Đối chiếu với chức năng thật: AI chỉ hỏi trong một nhóm mỗi lần (`/workspaces/{id}/questions`); câu hỏi không chọn được từng tài liệu; mobile chưa đăng bài được.
+- Quyết định (người dùng chốt các mục có *):
+  1. *Bỏ "Tất cả nhóm" khỏi bảng chọn vì backend không hỏi được trên nhiều nhóm; xem lịch sử mọi nhóm vẫn có qua nút "Xem mọi nhóm".
+  2. *Bỏ nút "Chưa đúng ý? Hỏi các bạn trong nhóm" vì mobile chưa có đăng bài.
+  3. *Nút "N nguồn" mở bảng liệt kê tài liệu của nhóm và trạng thái, chỉ để xem; N là số tệp `PROCESSED`.
+  4. Màn đầu "hỏi trước": nhóm mặc định là nhóm hỏi gần nhất, nếu không thì nhóm đầu tiên có tài liệu. Câu hỏi gõ ở đây đi qua tham số `q` sang màn chat mới và được gửi đúng một lần.
+  5. Nhóm `documentCount = 0` bị làm mờ, không chọn được; khi nhóm không có tệp nào sẵn sàng thì ô hỏi bị khoá và gợi ý bị ẩn.
+  6. Hai màn chat (mới và đã có) trùng gần hết mã, nay dùng chung `AssistantChatView`. Màn hội thoại cũ tải tin hai lần (màn hình và `useChatStream`); nay chỉ hook tải. Tiêu đề lấy từ câu hỏi đầu tiên để khỏi gọi thêm API.
+  7. Dữ liệu nhóm, lịch sử và tài liệu nằm trong React Query khoá `['assistant', ...]`, dùng chung giữa màn đầu và màn chat. Lịch sử vẫn phải gọi theo từng nhóm vì Core API không có danh sách gộp; nhóm lỗi được đếm và báo thay vì im lặng thiếu dòng.
+  8. Ảnh minh hoạ của mockup thay bằng ảnh bìa chính nhóm (`WorkspaceCover`), để biết đang hỏi kho nào mà không thêm tài sản ảnh.
+  9. Bỏ nút micro và sóng âm giả trong ô hỏi; bỏ `citation-card.tsx` vì nguồn nay là chip đánh số trong `message-bubble`.
+  10. Nút AI trên dock khi đang chọn chuyển thành nền trắng viền màu nhấn như mockup.
+- Kiểm chứng: mobile `tsc --noEmit` 0 lỗi, `eslint` 0 lỗi, `jest` 384/384 ca qua; phần mới phủ 94% câu lệnh.
+
+
+## 2026-11-09 — Màn nhóm trên mobile: khung lúc tải và tab Tệp bị hẹp
+
+- Bối cảnh: Người dùng báo màn nhóm lúc tải trông xấu và tab Tệp nhỏ hơn các tab khác.
+- Nguyên nhân tìm thấy:
+  1. Tab Tệp: `GroupDocumentsTab` đặt `paddingHorizontal: 16` lên vùng chứa cả `FlatList`, mà dải bìa và thanh tab lại nằm trong `ListHeaderComponent` của danh sách đó, nên cả hai bị thụt vào 16px mỗi bên. Chú thích cũ nói ngược lại. Tab Bài viết thụt lề từng thẻ nên không bị.
+  2. Lúc tải: màn chỉ vẽ một `UCSkeletonCard` trên nền sáng, không có nút quay lại, trong khi `useFocusEffect` đã đặt thanh trạng thái sang chữ sáng cho dải bìa tối, nên giờ và pin gần như vô hình. Lỗi mạng và nhóm không tồn tại cùng hiện "Không tìm thấy nhóm này", không có cách thử lại.
+- Quyết định:
+  1. `DocumentList` nhận `inset` và đặt lề cho từng thẻ và màn trống; tab Tệp bỏ lề trên danh sách, đặt lề riêng cho ô tóm tắt, ô tải lên và khung chờ.
+  2. `GroupLoadingSkeleton` vẽ đúng hình màn thật (dải bìa tối, thanh tab, thẻ), có nút quay lại dùng được ngay; nền tối khớp với thanh trạng thái chữ sáng.
+  3. `GroupErrorState`: 403/404 là "Không tìm thấy nhóm này" không có nút thử lại; lỗi khác là "Không tải được nhóm" có nút thử lại. Khi đã có dữ liệu mà làm mới lỗi thì giữ màn và chỉ báo toast. Trạng thái "đã có dữ liệu" đọc qua ref để hàm tải không phụ thuộc vào chính dữ liệu nó đặt (tránh effect tải lại không dứt).
+- Kiểm chứng: mobile `tsc --noEmit` 0 lỗi, `eslint` 0 lỗi, `jest` 388/388 ca qua.
+
+
+## 2026-11-09 — Dải đầu Bảng tin, gom dải đầu tối của các tab về một component
+
+- Bối cảnh: Người dùng thấy đầu Bảng tin trống sau khi bỏ thanh "Bảng tin cộng đồng", muốn có tiêu đề đẹp và đồng bộ với các tab khác.
+- Quyết định:
+  1. Tài khoản, UniChat và Trợ lý AI cùng dùng dải nền xanh đen bo góc dưới với tiêu đề lớn chữ trắng, nhưng mỗi tab tự vẽ và lệch nhau ở chuyển màu và cỡ chữ (AI 30px, Tài khoản 27px). Tách `UCTabHero` (chuyển màu, chồng giấy trang trí, tiêu đề 28px, dòng phụ, nút góc phải, nội dung con) và cho Bảng tin, Trợ lý AI, Tài khoản dùng chung. `UCTabHero` tự chuyển thanh trạng thái sang chữ sáng khi tab hiện; màn Tài khoản bỏ đoạn tự làm việc này.
+  2. Dải UniChat (tab Nhóm) giữ nguyên vì dùng ảnh nền riêng và lời chào; Tin nhắn giữ tiêu đề sáng theo mockup người dùng đã gửi.
+  3. Dải Bảng tin có hai ô số liệu từ `GET /feed/stats` (cùng endpoint web): "chưa giải đáp" và "bài viết", bấm vào là chuyển bộ lọc tương ứng; nút đánh dấu ở góc bật/tắt "Đã lưu". Số liệu lỗi thì hiện "—" mà không chặn bảng tin.
+  4. Dải cuộn cùng danh sách (nằm trong `ListHeaderComponent`) như Tài khoản; vì vậy lề ngang chuyển từ danh sách xuống từng thẻ, tránh lặp lại lỗi dải bị hẹp như tab Tệp.
+- Kiểm chứng: mobile `tsc --noEmit` 0 lỗi, `eslint` 0 lỗi, `jest` 392/392 ca qua.
+
+
+## 2026-11-09 — Đồng bộ dải đầu Tin nhắn
+
+- Bối cảnh: Người dùng thấy đầu màn Tin nhắn (tiêu đề nền sáng theo mockup trước) lạc quẻ so với các tab đã dùng dải tối.
+- Quyết định: Tin nhắn chuyển sang `UCTabHero` như Bảng tin, Trợ lý AI và Tài khoản. Nút "Nhắn tin cho người cùng nhóm" thành nút mờ góc phải; ô tìm kiếm thành thẻ trắng nằm trong dải, giống ô hỏi của Trợ lý AI. Dải cuộn cùng danh sách; lề ngang chuyển xuống phần thân. Chỉ còn tab Nhóm giữ dải riêng có ảnh nền và lời chào.
+- Kiểm chứng: mobile `tsc --noEmit` 0 lỗi, `eslint` 0 lỗi, `jest` toàn bộ qua.
