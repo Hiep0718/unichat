@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { randomUuid } from './random-uuid';
+
 const EPOCH_KEY = 'unichat.session-epoch';
 const memory = { epoch: '' };
 const messageSchema = z.discriminatedUnion('type', [
@@ -15,7 +17,7 @@ export function readBrowserEpoch(): string {
 
 /** Changes only coordination metadata; credentials never enter browser storage. */
 export function advanceBrowserEpoch(): string {
-  memory.epoch = crypto.randomUUID();
+  memory.epoch = randomUuid();
   try { localStorage.setItem(EPOCH_KEY, memory.epoch); } catch { /* Memory remains authoritative in this tab. */ }
   return memory.epoch;
 }

@@ -36,8 +36,8 @@ export async function cookieRequest<T>(endpoint: string, body?: unknown): Promis
   const headers = new Headers({ 'Content-Type': 'application/json' });
   if (import.meta.env.PROD) {
     const csrf = await fetch(`${getApiBaseUrl()}/api/v1/auth/csrf`, { credentials: 'include' });
-    const token = await readApiResponse<{ token: string; headerName: string }>(csrf);
-    headers.set(token.headerName, token.token);
+    const token = await readApiResponse<{ token: string | null; headerName: string }>(csrf);
+    if (token.token) headers.set(token.headerName, token.token);
   }
   const response = await fetch(`${getApiBaseUrl()}/api/v1${endpoint}`, {
     method: 'POST', credentials: 'include', headers, signal: AbortSignal.timeout(15_000),

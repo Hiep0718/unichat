@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { fetchAuthorized, fetchJson } from '../../lib/api-client';
 import { readApiResponse } from '../../lib/api-error';
+import { randomUuid } from '../../lib/random-uuid';
 import { getSessionSnapshot, assertSessionGeneration } from '../../lib/session-store';
 import { SseFrameParser } from '../../lib/sse-protocol';
 import { ChatEventReceiver } from './chat-events';
@@ -78,7 +79,7 @@ export async function waitForChatOperation(workspaceId: string, operationId: str
 
 /** Submits or recovers the immutable original binding under a single UUID key. */
 export async function askWorkspaceQuestion(workspaceId: string, payload: AskQuestionPayload, options: ChatRequestOptions = {}): Promise<QuestionResponse> {
-  const key = keySchema.parse(options.idempotencyKey ?? crypto.randomUUID());
+  const key = keySchema.parse(options.idempotencyKey ?? randomUuid());
   const body = questionSchema.parse(payload);
   const response = await fetchAuthorized(`/workspaces/${workspaceId}/questions`, {
     method: 'POST', headers: { 'Idempotency-Key': key }, body: JSON.stringify(body), ...(options.signal ? { signal: options.signal } : {}),
@@ -119,7 +120,7 @@ function deliverResult(result: QuestionResponse, callbacks: StreamQuestionCallba
 /** Streams provisional text, replaces it with committed final and recovers the same key on interruption. */
 export async function askWorkspaceQuestionStream(workspaceId: string, payload: AskQuestionPayload,
   callbacks: StreamQuestionCallbacks, options: ChatRequestOptions = {}): Promise<void> {
-  const key = keySchema.parse(options.idempotencyKey ?? crypto.randomUUID());
+  const key = keySchema.parse(options.idempotencyKey ?? randomUuid());
   const binding = questionSchema.parse(payload);
   const generation = getSessionSnapshot().generation;
   const operation = { id: null as string | null };

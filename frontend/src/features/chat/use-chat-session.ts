@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { askWorkspaceQuestionStream, cancelChatOperation, fetchActiveWorkspaceSummary,
   waitForChatOperation } from './chat-api';
 import { fetchConversationDetail, fetchConversationMessages } from '../history/conversation-api';
+import { randomUuid } from '../../lib/random-uuid';
 import { getSessionSnapshot, subscribeSession } from '../../lib/session-store';
 import type { MessageItem } from './components/chat-message-item';
 import type { AskQuestionPayload, QuestionResponse, StreamQuestionCallbacks } from './chat-types';
@@ -84,7 +85,7 @@ export function useChatSession(workspaceId: string, initialId?: string) {
 
   const send = useCallback(async (question: string, expanded = false, taskType?: 'WORKSPACE_SUMMARY') => {
     if (pending.current || question.trim().length < 3 || question.trim().length > 2000) return;
-    const key = crypto.randomUUID();
+    const key = randomUuid();
     const request: PendingAsk = { key, binding: { question: question.normalize('NFC').trim(),
       conversationId: current.current.conversationId, allowExternalKnowledge: expanded,
       ...(taskType ? { taskType } : {}) },
