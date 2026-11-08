@@ -1,6 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { ActivityIndicator, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
-import { useFocusEffect } from 'expo-router';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { UCScreenContainer } from '../../src/components/uc-screen-container';
@@ -32,14 +31,7 @@ export default function AccountTabScreen() {
     queryFn: accountApi.getMe,
   });
 
-  // Dải đầu màn hình là nền tối, nên chữ trên thanh trạng thái phải sáng; các
-  // tab khác vẫn nền sáng nên trả lại khi rời màn hình.
-  useFocusEffect(
-    useCallback(() => {
-      StatusBar.setBarStyle('light-content');
-      return () => StatusBar.setBarStyle('dark-content');
-    }, []),
-  );
+  // Chữ sáng trên thanh trạng thái do dải đầu dùng chung (UCTabHero) lo.
 
   const onChanged = useCallback(() => {
     setAvatarVersion((version) => version + 1);
