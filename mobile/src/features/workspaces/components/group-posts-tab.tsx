@@ -17,6 +17,7 @@ import { UCEmptyState } from '../../../components/uc-empty-state';
 import { UCSkeletonList } from '../../../components/uc-skeleton';
 import { useToast } from '../../../lib/toast-context';
 import { DiscussionCard } from '../../feed/components/discussion-card';
+import { postPath } from '../../feed/post-route';
 import { workspaceApi } from '../workspace-api';
 
 import type { FeedPost } from '../../feed/feed-types';
@@ -122,8 +123,9 @@ export function GroupPostsTab({ workspaceId, header }: GroupPostsTabProps) {
               index={index}
               hideGroup
               pinned={item.pinned ?? false}
-              onOpen={(postId) =>
-                router.push(`/feed/posts/${postId}?workspaceId=${workspaceId}` as never)
+              onOpen={(post) => router.push(postPath({ id: post.id, workspaceId: post.workspaceId }) as never)}
+              onReactionsChange={(postId, reactions) =>
+                setPosts((current) => current.map((p) => (p.id === postId ? { ...p, reactions } : p)))
               }
             />
           </View>

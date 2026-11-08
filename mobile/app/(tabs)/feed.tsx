@@ -1,267 +1,201 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  RefreshControl,
-  Pressable,
   ActivityIndicator,
-  Platform,
+  FlatList,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
-import Animated, { FadeInUp } from 'react-native-reanimated';
-import * as Haptics from 'expo-haptics';
+import { router } from 'expo-router';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { workplace, spacing, radii, animation } from '../../src/design/tokens';
+import { UCIcon } from '../../src/components/uc-icon';
+import { radii, spacing, workplace } from '../../src/design/tokens';
 import { shadows } from '../../src/design/shadows';
-import { UCScreenContainer } from '../../src/components/uc-screen-container';
-import { UCIcon, IconName } from '../../src/components/uc-icon';
-import { fetchJson } from '../../src/lib/api-client';
 import { DiscussionCard } from '../../src/features/feed/components/discussion-card';
-import { FeedPost } from '../../src/features/feed/feed-types';
+import { FeedHero } from '../../src/features/feed/components/feed-hero';
+import { feedApi } from '../../src/features/feed/feed-api';
+import { postPath } from '../../src/features/feed/post-route';
+import { flattenFeed, patchFeedPost, useFeed, useToggleBookmark } from '../../src/features/feed/use-feed';
+import { useToast } from '../../src/lib/toast-context';
+
+import type { IconName } from '../../src/components/uc-icon';
+import type { FeedFilter, FeedPost, ReactionSummary } from '../../src/features/feed/feed-types';
 
 /**
- * The scope rail from the web feed, laid along the top on a narrow screen.
+ * Bốn cách xem, cùng bộ với web cộng "Đã lưu".
  *
- * Task-oriented rather than a HOT/TOP ranking, for the reason the web states:
- * ranking needs a scale this product does not have, and it buries the only
- * signal that matters — whether a question still needs an answer.
+ * "Đã lưu" là một tab ngang hàng chứ không phải phạm vi ghép với ba tab kia:
+ * máy chủ trả bài đã lưu bất kể cách sắp, nên ghép hai trục chỉ sinh ra những
+ * tab bấm vào không đổi gì.
  */
-const FILTERS = [
-  { key: 'ALL', label: 'Tất cả', icon: 'forum' },
-  { key: 'QUESTION', label: 'Hỏi đáp', icon: 'help-outline' },
-  { key: 'ANNOUNCEMENT', label: 'Thông báo', icon: 'campaign' },
-] as const satisfies ReadonlyArray<{
-  key: string;
-  label: string;
-  icon: IconName;
-}>;
-
-type FilterKey = (typeof FILTERS)[number]['key'];
-
-const noReactions = { counts: {}, total: 0, myReaction: null };
-
-/**
- * Shown until the feed answers.
- *
- * The workspace ids are real UUIDs because the cover each group wears is
- * hashed from its id — a placeholder like 'ws-1' would hand every sample the
- * same tile and hide the thing these rows exist to show.
- */
-const FALLBACK_FEED: FeedPost[] = [
-  {
-    id: '0193a1f0-0000-7000-8000-000000000001',
-    workspaceId: '0193a1f0-aaaa-7000-8000-00000000000a',
-    workspaceName: 'Cộng đồng AI & RAG',
-    authorId: '0193a1f0-bbbb-7000-8000-00000000000b',
-    authorName: 'Hoàng Minh (K65)',
-    authorAvatar: null,
-    title: 'Làm thế nào để cải thiện độ chính xác của RAG tiếng Việt?',
-    body: 'Mình đang cấu hình `chunk_size=500` nhưng kết quả tìm kiếm ngữ nghĩa khá hạn chế. Các bạn có mẹo tối ưu hóa embedding không?',
-    label: 'QUESTION',
-    voteScore: 18,
-    replyCount: 3,
-    reactions: { counts: { LIKE: 7, LOVE: 2 }, total: 9, myReaction: null },
-    backgroundKey: null,
-    acceptedReplyId: '0193a1f0-cccc-7000-8000-00000000000c',
-    isBookmarked: false,
-    createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    attachments: [],
-  },
-  {
-    id: '0193a1f0-0000-7000-8000-000000000002',
-    workspaceId: '0193a1f0-dddd-7000-8000-00000000000d',
-    workspaceName: 'Thông báo chung',
-    authorId: '0193a1f0-eeee-7000-8000-00000000000e',
-    authorName: 'Ban Đào tạo UniChat',
-    authorAvatar: null,
-    title: 'Ra mắt tính năng Bảng tin học thuật kiểu Reddit!',
-    body: 'Bản cập nhật mới nhất hỗ trợ bình chọn câu trả lời hữu ích nhất và đính kèm trích dẫn tài liệu tự động từ AI.',
-    label: 'ANNOUNCEMENT',
-    voteScore: 45,
-    replyCount: 8,
-    reactions: { counts: { LIKE: 21, WOW: 6, LOVE: 4 }, total: 31, myReaction: 'LIKE' },
-    backgroundKey: null,
-    acceptedReplyId: null,
-    isBookmarked: true,
-    createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-    attachments: [],
-  },
-  {
-    id: '0193a1f0-0000-7000-8000-000000000003',
-    workspaceId: '0193a1f0-ffff-7000-8000-00000000000f',
-    workspaceName: 'Khoa CNTT - Học kỳ 1',
-    authorId: '0193a1f0-1111-7000-8000-000000000011',
-    authorName: 'Thanh Hiệp',
-    authorAvatar: null,
-    title: 'Tổng hợp tài liệu ôn tập môn Kiến trúc Máy tính & Vi xử lý',
-    body: '## Nội dung\nĐã tải lên bộ slide bài giảng 10 tuần học kèm ngân hàng đề thi trắc nghiệm có đáp án giải thích chi tiết.',
-    label: 'QUESTION',
-    voteScore: 29,
-    replyCount: 0,
-    reactions: noReactions,
-    backgroundKey: null,
-    acceptedReplyId: null,
-    isBookmarked: false,
-    createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-    attachments: [
-      {
-        id: '0193a1f0-2222-7000-8000-000000000022',
-        kind: 'DOCUMENT',
-        originalName: 'kien-truc-may-tinh.pdf',
-        mediaType: 'application/pdf',
-        byteSize: 2_400_000,
-      },
-    ],
-  },
+const FILTERS: readonly { key: FeedFilter; label: string; icon: IconName }[] = [
+  { key: 'NEW', label: 'Mới nhất', icon: 'schedule' },
+  { key: 'UNANSWERED', label: 'Chưa giải đáp', icon: 'help-outline' },
+  { key: 'MINE', label: 'Của tôi', icon: 'person-outline' },
+  { key: 'SAVED', label: 'Đã lưu', icon: 'bookmark-border' },
 ];
 
+const EMPTY_TEXT: Record<FeedFilter, { title: string; hint: string }> = {
+  NEW: { title: 'Chưa có bài viết nào', hint: 'Bài viết trong các nhóm của bạn sẽ hiện ở đây.' },
+  UNANSWERED: { title: 'Mọi câu hỏi đều đã được giải đáp', hint: 'Không còn câu nào đang chờ. Quay lại sau nhé.' },
+  MINE: { title: 'Bạn chưa đăng bài nào', hint: 'Bài bạn đăng trong các nhóm sẽ xuất hiện ở đây.' },
+  SAVED: { title: 'Chưa lưu bài nào', hint: 'Bấm biểu tượng lưu trên một bài để đọc lại sau, trên cả web lẫn điện thoại.' },
+};
+
+/** Bảng tin cộng đồng: bài viết từ mọi nhóm bạn tham gia. */
 export default function FeedTabScreen() {
-  const [feed, setFeed] = useState<FeedPost[]>(FALLBACK_FEED);
-  const [loading, setLoading] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
-  const [activeFilter, setActiveFilter] = useState<FilterKey>('ALL');
+  const [filter, setFilter] = useState<FeedFilter>('NEW');
+  const feed = useFeed(filter);
+  // Số liệu là phần phụ của dải đầu: lỗi thì hiện "—", không chặn bảng tin.
+  const stats = useQuery({ queryKey: ['feed-stats'], queryFn: () => feedApi.fetchStats() });
+  const posts = flattenFeed(feed.data);
+  const queryClient = useQueryClient();
+  const toggleBookmark = useToggleBookmark();
+  const { showToast } = useToast();
 
-  const loadFeed = useCallback(async () => {
-    try {
-      const res = await fetchJson<{ content: FeedPost[] }>('/api/v1/feed?page=0&size=20');
-      if (res?.content && res.content.length > 0) {
-        setFeed(res.content);
-      }
-    } catch {
-      // Keep fallback items for reliable display
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
+  const handleBookmark = useCallback((postId: string) => {
+    toggleBookmark(postId).catch(() => {
+      showToast({ message: 'Không lưu được bài viết. Vui lòng thử lại.', type: 'error' });
+    });
+  }, [toggleBookmark, showToast]);
 
-  useEffect(() => {
-    loadFeed();
-  }, [loadFeed]);
+  const handleReactions = useCallback((postId: string, reactions: ReactionSummary) => {
+    patchFeedPost(queryClient, postId, { reactions });
+  }, [queryClient]);
 
-  const onRefresh = () => {
-    setRefreshing(true);
-    loadFeed();
+  const handleOpen = useCallback((post: FeedPost) => router.push(postPath(post) as never), []);
+
+  const loadMore = () => {
+    if (feed.hasNextPage && !feed.isFetchingNextPage) void feed.fetchNextPage();
   };
-
-  const handleBookmark = (id: string) => {
-    if (Platform.OS === 'ios') {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
-    setFeed((posts) =>
-      posts.map((post) =>
-        post.id === id ? { ...post, isBookmarked: !post.isBookmarked } : post
-      )
-    );
-  };
-
-  const filteredFeed =
-    activeFilter === 'ALL' ? feed : feed.filter((post) => post.label === activeFilter);
 
   return (
-    <UCScreenContainer surface="canvas">
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-      >
-        <Animated.View
-          entering={FadeInUp.duration(animation.durationMedium)}
-          style={styles.scopes}
-        >
-          {FILTERS.map((filter) => {
-            const active = activeFilter === filter.key;
-            return (
-              <Pressable
-                key={filter.key}
-                style={[styles.scope, active && styles.scopeActive]}
-                onPress={() => setActiveFilter(filter.key)}
-                accessibilityRole="tab"
-                accessibilityState={{ selected: active }}
-              >
-                <UCIcon
-                  name={filter.icon}
-                  size={18}
-                  color={active ? workplace.accentInk : workplace.inkMuted}
-                />
-                <Text style={[styles.scopeText, active && styles.scopeTextActive]}>
-                  {filter.label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </Animated.View>
-
-        {loading ? (
-          <View style={styles.loadingBox}>
-            <ActivityIndicator size="large" color={workplace.accent} />
-          </View>
-        ) : (
-          <View style={styles.listWrap}>
-            {filteredFeed.map((post, index) => (
-              <DiscussionCard
-                key={post.id}
-                post={post}
-                index={index}
-                onBookmark={handleBookmark}
-              />
-            ))}
+    <View style={styles.screen}>
+      <FlatList
+        data={posts}
+        keyExtractor={(post) => post.id}
+        contentContainerStyle={styles.list}
+        ListHeaderComponent={
+          <>
+            <FeedHero stats={stats.data} active={filter} onSelect={setFilter} />
+            <FilterTray active={filter} onChange={setFilter} />
+          </>
+        }
+        renderItem={({ item, index }) => (
+          <View style={styles.cardWrap}>
+            <DiscussionCard
+              post={item}
+              index={index}
+              onOpen={handleOpen}
+              onBookmark={handleBookmark}
+              onReactionsChange={handleReactions}
+            />
           </View>
         )}
-      </ScrollView>
-    </UCScreenContainer>
+        ItemSeparatorComponent={() => <View style={styles.gap} />}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.4}
+        refreshControl={
+          <RefreshControl
+            refreshing={feed.isRefetching}
+            onRefresh={() => {
+              void feed.refetch();
+              void stats.refetch();
+            }}
+          />
+        }
+        ListEmptyComponent={
+          <FeedState
+            loading={feed.isLoading}
+            failed={feed.isError}
+            filter={filter}
+            onRetry={() => void feed.refetch()}
+          />
+        }
+        ListFooterComponent={feed.isFetchingNextPage ? <ActivityIndicator color={workplace.accent} /> : undefined}
+        testID="feed-list"
+      />
+    </View>
+  );
+}
+
+function FilterTray({ active, onChange }: { readonly active: FeedFilter; readonly onChange: (f: FeedFilter) => void }) {
+  return (
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.trayScroll} contentContainerStyle={styles.tray}>
+      {FILTERS.map((item) => {
+        const selected = item.key === active;
+        return (
+          <Pressable
+            key={item.key}
+            style={[styles.chip, selected && styles.chipActive]}
+            onPress={() => onChange(item.key)}
+            accessibilityRole="tab"
+            accessibilityState={{ selected }}
+            testID={`feed-filter-${item.key}`}
+          >
+            <UCIcon name={item.icon} size={17} color={selected ? workplace.accentInk : workplace.inkMuted} />
+            <Text style={[styles.chipText, selected && styles.chipTextActive]}>{item.label}</Text>
+          </Pressable>
+        );
+      })}
+    </ScrollView>
+  );
+}
+
+interface FeedStateProps {
+  readonly loading: boolean;
+  readonly failed: boolean;
+  readonly filter: FeedFilter;
+  readonly onRetry: () => void;
+}
+
+function FeedState({ loading, failed, filter, onRetry }: FeedStateProps) {
+  if (loading) return <ActivityIndicator style={styles.state} size="large" color={workplace.accent} />;
+  if (failed) {
+    return (
+      <Pressable style={styles.state} onPress={onRetry} accessibilityRole="button">
+        <UCIcon name="error-outline" size={32} color={workplace.inkMuted} />
+        <Text style={styles.stateHint}>Không tải được bảng tin. Chạm để thử lại.</Text>
+      </Pressable>
+    );
+  }
+  const text = EMPTY_TEXT[filter];
+  return (
+    <View style={styles.state} testID="feed-empty">
+      <UCIcon name="forum" size={36} color={workplace.inkMuted} />
+      <Text style={styles.stateTitle}>{text.title}</Text>
+      <Text style={styles.stateHint}>{text.hint}</Text>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    padding: spacing.md,
-    paddingBottom: 110,
-  },
-
-  /** `.feed-page__scopes`: one white tray holding the scopes. */
-  scopes: {
+  screen: { flex: 1, backgroundColor: workplace.canvas },
+  trayScroll: { flexGrow: 0 },
+  tray: { gap: 8, paddingHorizontal: spacing.md, paddingTop: 14, paddingBottom: 12 },
+  chip: {
     flexDirection: 'row',
-    gap: 3,
-    padding: 8,
-    marginBottom: spacing.md,
-    borderRadius: radii.xl,
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 9,
+    paddingHorizontal: 14,
+    borderRadius: radii.full,
     backgroundColor: workplace.card,
     ...shadows.card,
   },
-  scope: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 7,
-    paddingVertical: 10,
-    paddingHorizontal: 13,
-    borderRadius: radii.lg,
-    backgroundColor: 'transparent',
-  },
-  scopeActive: {
-    backgroundColor: workplace.accent,
-  },
-  scopeText: {
-    color: workplace.inkMuted,
-    fontSize: 13,
-    fontFamily: 'Inter_500Medium',
-  },
-  scopeTextActive: {
-    color: workplace.accentInk,
-    fontFamily: 'Inter_700Bold',
-  },
-
-  loadingBox: {
-    paddingVertical: spacing.xxl,
-    alignItems: 'center',
-  },
-  listWrap: {
-    gap: spacing.md,
-  },
+  chipActive: { backgroundColor: workplace.accent },
+  chipText: { color: workplace.inkMuted, fontSize: 13, fontFamily: 'Inter_500Medium' },
+  chipTextActive: { color: workplace.accentInk, fontFamily: 'Inter_700Bold' },
+  // Không đặt lề ngang lên danh sách: dải đầu nằm trong phần đầu của nó và
+  // phải chạy hết chiều ngang. Lề thuộc về từng thẻ.
+  list: { paddingBottom: 120, flexGrow: 1 },
+  cardWrap: { paddingHorizontal: spacing.md },
+  gap: { height: spacing.md },
+  state: { alignItems: 'center', gap: 10, paddingVertical: 56, paddingHorizontal: 24 },
+  stateTitle: { color: workplace.ink, fontSize: 16, fontFamily: 'Inter_700Bold', textAlign: 'center' },
+  stateHint: { color: workplace.inkMuted, fontSize: 14, textAlign: 'center', lineHeight: 20 },
 });

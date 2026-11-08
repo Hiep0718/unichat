@@ -6,6 +6,8 @@ import { workplace } from '../../../src/design/tokens';
 import { DiscussionCard } from '../../../src/features/feed/components/discussion-card';
 import { FeedPost } from '../../../src/features/feed/feed-types';
 
+jest.mock('../../../src/lib/toast-context', () => ({ useToast: () => ({ showToast: jest.fn() }) }));
+
 const BASE: FeedPost = {
   id: 'p-1',
   workspaceId: '0193a1f0-aaaa-7000-8000-00000000000a',

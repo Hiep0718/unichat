@@ -19,15 +19,20 @@ import {
   STATUS_BG,
   STATUS_INK,
   STATUS_TEXT,
-  usedReactions,
 } from '../post-presentation';
-import { FeedPost } from '../feed-types';
+import { EMPTY_REACTIONS } from '../reactions';
+import { PostActions } from './post-actions';
+
+import type { FeedPost, ReactionSummary } from '../feed-types';
 
 interface DiscussionCardProps {
   post: FeedPost;
   index: number;
-  onOpen?: (id: string) => void;
+  /** Mở màn chi tiết của bài, nơi đọc đủ và bình luận. */
+  onOpen?: (post: FeedPost) => void;
   onBookmark?: (id: string) => void;
+  /** Báo cảm xúc mới để nơi gọi giữ cache đúng. */
+  onReactionsChange?: (id: string, summary: ReactionSummary) => void;
   /**
    * Giấu tên và dấu nhóm. Đặt trên trang của chính nhóm đó, nơi mọi thẻ đều
    * thuộc về cái nhóm người đọc đang nhìn.
@@ -55,13 +60,14 @@ export function DiscussionCard({
   index,
   onOpen,
   onBookmark,
+  onReactionsChange,
   hideGroup = false,
   pinned = false,
 }: DiscussionCardProps) {
+  const open = () => onOpen?.(post);
   const preview = toPlainPreview(post.body);
   const isQuestion = hasResolutionState(post.label);
   const status = resolveAnswerStatus(post.replyCount, post.acceptedReplyId !== null);
-  const faces = usedReactions(post.reactions?.counts ?? {});
 
   return (
     <Animated.View
@@ -78,7 +84,7 @@ export function DiscussionCard({
         status={status}
       />
 
-      <Pressable onPress={() => onOpen?.(post.id)} accessibilityRole="button">
+      <Pressable onPress={open} accessibilityRole="button">
         <Text style={styles.title}>{post.title}</Text>
       </Pressable>
 
@@ -91,7 +97,7 @@ export function DiscussionCard({
       {post.hasAiAnswer ? (
         <Pressable
           style={styles.ai}
-          onPress={() => onOpen?.(post.id)}
+          onPress={open}
           accessibilityRole="button"
           accessibilityLabel="Xem câu trả lời của trợ lý"
         >
@@ -112,34 +118,15 @@ export function DiscussionCard({
         </View>
       ) : null}
 
-      <View style={styles.foot}>
-        {faces.length > 0 ? (
-          <View style={styles.reactions}>
-            <Text style={styles.reactionFaces}>{faces.join('')}</Text>
-            <Text style={styles.reactionCount}>{post.reactions.total}</Text>
-          </View>
-        ) : null}
-
-        <View style={styles.replies}>
-          <UCIcon name="chat-bubble-outline" size={16} color={workplace.inkMuted} />
-          <Text style={styles.repliesText}>{post.replyCount} bình luận</Text>
-        </View>
-
-        {onBookmark ? (
-          <Pressable
-            style={styles.save}
-            onPress={() => onBookmark(post.id)}
-            accessibilityRole="button"
-            accessibilityLabel={post.isBookmarked ? 'Bỏ lưu bài viết' : 'Lưu bài viết'}
-          >
-            <UCIcon
-              name={post.isBookmarked ? 'bookmark' : 'bookmark-border'}
-              size={18}
-              color={post.isBookmarked ? workplace.accent : workplace.inkMuted}
-            />
-          </Pressable>
-        ) : null}
-      </View>
+      <PostActions
+        postId={post.id}
+        reactions={post.reactions ?? EMPTY_REACTIONS}
+        replyCount={post.replyCount}
+        bookmarked={onBookmark ? post.isBookmarked : undefined}
+        onReactionsChange={(summary) => onReactionsChange?.(post.id, summary)}
+        onComments={open}
+        onBookmark={onBookmark ? () => onBookmark(post.id) : undefined}
+      />
     </Animated.View>
   );
 }
@@ -306,47 +293,6 @@ const styles = StyleSheet.create({
   attachmentsText: {
     color: workplace.inkMuted,
     fontSize: 12,
-  },
-
-  foot: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 18,
-    marginTop: 2,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: workplace.line,
-  },
-  reactions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-  },
-  reactionFaces: {
-    fontSize: 13,
-  },
-  reactionCount: {
-    color: workplace.inkMuted,
-    fontSize: 13,
-    fontFamily: 'Inter_500Medium',
-  },
-  replies: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 7,
-  },
-  repliesText: {
-    color: workplace.inkMuted,
-    fontSize: 13,
-    fontFamily: 'Inter_500Medium',
-  },
-  save: {
-    width: 34,
-    height: 34,
-    marginLeft: 'auto',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: radii.md,
   },
 
   chip: {

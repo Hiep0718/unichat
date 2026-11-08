@@ -6,6 +6,7 @@
  * thấy gì để đúng.
  */
 import { workplace } from '../../design/tokens';
+import { REACTION_EMOJI } from './reactions';
 
 import type { AnswerStatus } from './answer-status';
 import type { ReactionType } from './feed-types';
@@ -22,16 +23,6 @@ export const LABEL_TEXT: Record<string, string> = {
   QUESTION: 'Câu hỏi',
   DISCUSSION: 'Thảo luận',
   ANNOUNCEMENT: 'Thông báo',
-};
-
-const REACTION_EMOJI: Record<ReactionType, string> = {
-  LIKE: '👍',
-  LOVE: '❤️',
-  CARE: '🥰',
-  HAHA: '😆',
-  WOW: '😮',
-  SAD: '😢',
-  ANGRY: '😠',
 };
 
 export const STATUS_BG: Record<AnswerStatus, string> = {

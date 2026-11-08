@@ -65,3 +65,72 @@ export interface FeedPost {
   /** Bài được ghim lên đầu danh sách của nhóm. */
   pinned?: boolean;
 }
+
+/** Nguồn trợ lý đã dựa vào, lưu cùng câu trả lời của nó. */
+export interface ReplyCitation {
+  citationId: string;
+  documentId: string | null;
+  fileName: string;
+  locator: string | null;
+  excerpt: string;
+}
+
+/** Một bình luận, có thể lồng dưới bình luận khác qua `parentReplyId`. */
+export interface ReplyItem {
+  id: string;
+  discussionId: string;
+  authorId: string;
+  authorName: string;
+  authorAvatar: string | null;
+  body: string;
+  parentReplyId: string | null;
+  isAiAnswer: boolean;
+  createdAt: string;
+  voteScore: number;
+  reactions: ReactionSummary;
+  /** Rỗng với bình luận của người. */
+  citations: ReplyCitation[];
+}
+
+/**
+ * Bài viết như endpoint chi tiết trả về.
+ *
+ * Không có `isBookmarked`: Core API chỉ báo trường này trên bảng tin, nên màn
+ * chi tiết nhận trạng thái lưu từ danh sách đã mở nó.
+ */
+export interface DiscussionDetail {
+  id: string;
+  workspaceId: string;
+  workspaceName: string | null;
+  authorId: string;
+  authorName: string;
+  title: string;
+  body: string;
+  label: PostLabel | null;
+  pinned: boolean;
+  replyCount: number;
+  createdAt: string;
+  editedAt: string | null;
+  reactions: ReactionSummary;
+  backgroundKey: string | null;
+  acceptedReplyId: string | null;
+  hasAiAnswer: boolean;
+  attachments: PostAttachment[];
+}
+
+/** Bốn cách xem bảng tin; ba cái đầu là cách sắp, cái cuối là bài đã lưu. */
+export type FeedFilter = 'NEW' | 'UNANSWERED' | 'MINE' | 'SAVED';
+
+export interface FeedPage {
+  content: FeedPost[];
+  number: number;
+  totalPages: number;
+  last?: boolean;
+}
+
+/** Số liệu bảng tin, đếm trong các nhóm người dùng đang tham gia. */
+export interface FeedStats {
+  totalPosts: number;
+  /** Câu hỏi chưa có lời giải: con số đáng hành động nhất. */
+  unansweredCount: number;
+}

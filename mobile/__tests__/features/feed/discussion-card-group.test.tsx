@@ -5,6 +5,8 @@ import { DiscussionCard } from '../../../src/features/feed/components/discussion
 
 import type { FeedPost } from '../../../src/features/feed/feed-types';
 
+jest.mock('../../../src/lib/toast-context', () => ({ useToast: () => ({ showToast: jest.fn() }) }));
+
 const basePost: FeedPost = {
   id: 'p1',
   workspaceId: 'w1',
