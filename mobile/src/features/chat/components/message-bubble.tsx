@@ -1,13 +1,12 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import React from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Markdown from '@ronradtke/react-native-markdown-display';
-import { LinearGradient } from 'expo-linear-gradient';
-import { colors, spacing } from '../../../design/tokens';
-import { typography } from '../../../design/typography';
+
 import { UCIcon } from '../../../components/uc-icon';
-import { MessageItem, CitationItem } from '../../../types/api';
-import { CitationCard } from './citation-card';
+import { dock, radii, workplace } from '../../../design/tokens';
 import { WorkspaceSummaryDocuments } from './workspace-summary-documents';
+
+import type { CitationItem, MessageItem } from '../../../types/api';
 
 interface MessageBubbleProps {
   message: MessageItem;
@@ -15,251 +14,128 @@ interface MessageBubbleProps {
   onPressCitation?: (citation: CitationItem) => void;
 }
 
+/** Số tài liệu khác nhau mà câu trả lời trích dẫn. */
+export function distinctDocuments(citations: readonly CitationItem[]): number {
+  return new Set(citations.map((citation) => citation.documentId || citation.fileName)).size;
+}
+
 function MessageWarning({ message }: { readonly message: MessageItem }) {
   if (!message.warningMessage || message.redacted) return null;
   return <Text style={styles.warning} accessibilityRole="text">{message.warningMessage}</Text>;
 }
 
-export function MessageBubble({ message, workspaceId, onPressCitation }: MessageBubbleProps) {
-  const isUser = message.sender === 'USER';
-  const [citationsExpanded, setCitationsExpanded] = useState(false);
+function AssistantMeta({ message, citations }: { readonly message: MessageItem; readonly citations: readonly CitationItem[] }) {
+  const docs = distinctDocuments(citations);
+  const parts = [docs > 0 ? `dựa trên ${docs} tài liệu` : null, message.knowledgeMode === 'EXPANDED' ? 'có kiến thức ngoài' : null]
+    .filter(Boolean)
+    .join(' · ');
+  return (
+    <View style={styles.meta}>
+      <View style={styles.avatar}>
+        <UCIcon name="auto-awesome" size={13} color="#FFFFFF" />
+      </View>
+      <Text style={styles.name}>Trợ lý AI</Text>
+      {parts ? <Text style={styles.metaText} numberOfLines={1}>· {parts}</Text> : null}
+    </View>
+  );
+}
 
-  if (isUser) {
-    return (
-      <View style={styles.userWrapper} testID={`user-message-${message.id}`}>
-        <LinearGradient
-          colors={['#00236F', '#1E3A8A']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.userBubble}
+interface CitationStripProps {
+  readonly citations: readonly CitationItem[];
+  readonly onPress?: (citation: CitationItem) => void;
+}
+
+/** Nguồn đánh số theo thứ tự trích dẫn, cuộn ngang; bấm để đọc đoạn gốc. */
+function CitationStrip({ citations, onPress }: CitationStripProps) {
+  return (
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.strip}>
+      {citations.map((citation, index) => (
+        <Pressable
+          key={citation.citationId || `${citation.documentId}-${index}`}
+          style={({ pressed }) => [styles.source, pressed && styles.pressed]}
+          onPress={() => onPress?.(citation)}
+          accessibilityRole="button"
+          accessibilityLabel={`Nguồn ${index + 1}: ${citation.fileName || 'Tài liệu'}`}
+          testID={`citation-card-${index}`}
         >
+          <View style={styles.sourceIndex}>
+            <Text style={styles.sourceIndexText}>{index + 1}</Text>
+          </View>
+          <Text style={styles.sourceName} numberOfLines={1}>{citation.fileName || 'Tài liệu'}</Text>
+        </Pressable>
+      ))}
+    </ScrollView>
+  );
+}
+
+/**
+ * Một lượt trong cuộc trò chuyện: câu hỏi của người dùng (nền tối, bên phải)
+ * hoặc câu trả lời của trợ lý (thẻ trắng kèm nguồn đánh số).
+ */
+export function MessageBubble({ message, workspaceId, onPressCitation }: MessageBubbleProps) {
+  if (message.sender === 'USER') {
+    return (
+      <View style={styles.userWrap} testID={`user-message-${message.id}`}>
+        <View style={styles.userBubble}>
           <Text style={styles.userText}>{message.content}</Text>
-        </LinearGradient>
+        </View>
       </View>
     );
   }
 
-  const citations = message.citations || [];
-
+  const citations = message.citations ?? [];
   return (
-    <View style={styles.aiWrapper} testID={`ai-message-${message.id}`}>
-      {/* AI Identifier Header */}
-      <View style={styles.aiHeader}>
-        <View style={styles.aiAvatar}>
-          <UCIcon name="auto-awesome" size={14} color="#00687A" />
-        </View>
-        <Text style={styles.aiName}>UniChat AI</Text>
-      </View>
-
-      {/* Clean Unboxed Markdown Response */}
-      <View style={styles.markdownWrap}>
+    <View style={styles.aiWrap} testID={`ai-message-${message.id}`}>
+      <AssistantMeta message={message} citations={citations} />
+      <View style={styles.aiCard}>
         <Markdown style={markdownStyles}>{message.content}</Markdown>
+        <MessageWarning message={message} />
       </View>
-
-      <MessageWarning message={message} />
-      {workspaceId && message.workspaceSummaryId && !message.redacted &&
-        <WorkspaceSummaryDocuments workspaceId={workspaceId} summaryId={message.workspaceSummaryId}
-          />}
-
-      {/* Compact Perplexity/Gemini Citations Strip */}
-      {citations.length > 0 && (
-        <View style={styles.citationsSection}>
-          <TouchableOpacity
-            style={styles.citationsSummaryBar}
-            onPress={() => setCitationsExpanded(!citationsExpanded)}
-            activeOpacity={0.7}
-          >
-            <View style={styles.citationsSummaryLeft}>
-              <UCIcon name="verified" size={13} color="#00687A" />
-              <Text style={styles.citationsSummaryTitle}>
-                Nguồn trích dẫn ({citations.length})
-              </Text>
-            </View>
-            <View style={styles.citationsToggleRow}>
-              <Text style={styles.citationsToggleText}>
-                {citationsExpanded ? 'Thu gọn' : 'Xem tất cả'}
-              </Text>
-              <UCIcon
-                name={citationsExpanded ? 'expand-less' : 'expand-more'}
-                size={15}
-                color="#64748B"
-              />
-            </View>
-          </TouchableOpacity>
-
-          {!citationsExpanded ? (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.citationsScrollStrip}
-            >
-              {citations.map((c, i) => (
-                <CitationCard
-                  key={c.citationId || i}
-                  citation={c}
-                  index={i}
-                  onPress={onPressCitation}
-                  compact
-                />
-              ))}
-            </ScrollView>
-          ) : (
-            <View style={styles.citationsExpandedList}>
-              {citations.map((c, i) => (
-                <CitationCard
-                  key={c.citationId || i}
-                  citation={c}
-                  index={i}
-                  onPress={onPressCitation}
-                  compact={false}
-                />
-              ))}
-            </View>
-          )}
-        </View>
+      {workspaceId && message.workspaceSummaryId && !message.redacted && (
+        <WorkspaceSummaryDocuments workspaceId={workspaceId} summaryId={message.workspaceSummaryId} />
       )}
+      {citations.length > 0 && <CitationStrip citations={citations} onPress={onPressCitation} />}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  userWrapper: {
-    alignItems: 'flex-end',
-    marginVertical: spacing.xs + 2,
-    paddingLeft: spacing.xl,
-  },
-  userBubble: {
-    borderRadius: 18,
-    borderBottomRightRadius: 4,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    maxWidth: '85%',
-    shadowColor: '#00236F',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 6,
-    elevation: 2,
-  },
-  userText: {
-    ...typography.bodyMd,
-    color: '#FFFFFF',
-    lineHeight: 21,
-    fontSize: 15,
-  },
-  aiWrapper: {
-    alignItems: 'flex-start',
-    marginVertical: spacing.sm,
-    width: '100%',
-    paddingHorizontal: 2,
-  },
-  aiHeader: {
+  userWrap: { alignItems: 'flex-end', marginVertical: 8, paddingLeft: 40 },
+  userBubble: { maxWidth: '100%', paddingHorizontal: 16, paddingVertical: 12, borderRadius: 18, borderBottomRightRadius: 6, backgroundColor: workplace.ink },
+  userText: { color: '#FFFFFF', fontSize: 15, lineHeight: 22, fontFamily: 'Inter_500Medium' },
+  aiWrap: { gap: 10, marginVertical: 8 },
+  meta: { flexDirection: 'row', alignItems: 'center', gap: 7 },
+  avatar: { width: 24, height: 24, borderRadius: 7, backgroundColor: workplace.ink, alignItems: 'center', justifyContent: 'center' },
+  name: { color: workplace.ink, fontSize: 13.5, fontFamily: 'Inter_700Bold' },
+  metaText: { flexShrink: 1, color: workplace.inkMuted, fontSize: 12.5 },
+  aiCard: { paddingHorizontal: 16, paddingVertical: 12, borderRadius: radii.xl, backgroundColor: workplace.card, borderWidth: 1, borderColor: workplace.line },
+  warning: { marginTop: 8, color: workplace.warnInk, fontSize: 13, lineHeight: 19 },
+  strip: { gap: 8, paddingRight: 8 },
+  source: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: spacing.xs,
-    gap: 7,
+    gap: 8,
+    maxWidth: 240,
+    paddingLeft: 8,
+    paddingRight: 12,
+    paddingVertical: 9,
+    borderRadius: radii.lg,
+    backgroundColor: workplace.card,
+    borderWidth: 1,
+    borderColor: workplace.line,
   },
-  aiAvatar: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: 'rgba(0, 104, 122, 0.10)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  aiName: {
-    ...typography.labelMd,
-    color: colors.primary,
-    fontWeight: '700',
-    fontSize: 13,
-  },
-  markdownWrap: {
-    width: '100%',
-    paddingLeft: 2,
-  },
-  warning: {
-    width: '100%',
-    marginTop: spacing.xs,
-    padding: spacing.sm,
-    borderLeftWidth: 3,
-    borderLeftColor: '#D97706',
-    borderRadius: 6,
-    backgroundColor: '#FFFBEB',
-    color: '#78350F',
-    ...typography.bodySm,
-  },
-  citationsSection: {
-    marginTop: spacing.sm + 2,
-    width: '100%',
-  },
-  citationsSummaryBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 4,
-    marginBottom: 6,
-  },
-  citationsSummaryLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-  },
-  citationsSummaryTitle: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#00687A',
-  },
-  citationsToggleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-  },
-  citationsToggleText: {
-    fontSize: 11,
-    fontWeight: '500',
-    color: '#64748B',
-  },
-  citationsScrollStrip: {
-    gap: 6,
-    paddingVertical: 2,
-  },
-  citationsExpandedList: {
-    gap: spacing.xs,
-  },
+  pressed: { backgroundColor: workplace.canvas },
+  sourceIndex: { minWidth: 22, height: 22, borderRadius: 6, backgroundColor: dock.accent, alignItems: 'center', justifyContent: 'center' },
+  sourceIndexText: { color: '#FFFFFF', fontSize: 12, fontFamily: 'Inter_700Bold' },
+  sourceName: { flexShrink: 1, color: workplace.ink, fontSize: 13, fontFamily: 'Inter_600SemiBold' },
 });
 
 const markdownStyles = {
-  body: {
-    ...typography.bodyMd,
-    color: '#0F172A',
-    lineHeight: 24,
-    fontSize: 15,
-  },
-  strong: {
-    fontWeight: '700' as const,
-    color: '#00236F',
-  },
-  code_inline: {
-    backgroundColor: '#F1F5F9',
-    color: '#0F172A',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-    fontFamily: 'monospace',
-    fontSize: 12.5,
-  },
-  code_block: {
-    backgroundColor: '#0F172A',
-    color: '#F8FAFC',
-    padding: 12,
-    borderRadius: 10,
-    marginVertical: 8,
-    fontFamily: 'monospace',
-    fontSize: 12.5,
-  },
-  bullet_list: {
-    marginVertical: 4,
-  },
-  bullet_list_item: {
-    marginVertical: 2,
-  },
+  body: { color: workplace.ink, fontSize: 15, lineHeight: 24 },
+  strong: { fontFamily: 'Inter_700Bold', fontWeight: '700' as const, color: workplace.ink },
+  code_inline: { backgroundColor: workplace.chip, color: workplace.ink, paddingHorizontal: 6, borderRadius: 4, fontFamily: 'monospace', fontSize: 13 },
+  code_block: { backgroundColor: workplace.ink, color: '#F8FAFC', padding: 12, borderRadius: 10, marginVertical: 8, fontFamily: 'monospace', fontSize: 12.5 },
+  fence: { backgroundColor: workplace.ink, color: '#F8FAFC', padding: 12, borderRadius: 10, marginVertical: 8, fontFamily: 'monospace', fontSize: 12.5 },
+  bullet_list: { marginVertical: 4 },
+  bullet_list_item: { marginVertical: 2 },
 };

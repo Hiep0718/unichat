@@ -1,167 +1,93 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { BlurView } from 'expo-blur';
-import { colors, spacing, radii } from '../../../design/tokens';
-import { typography } from '../../../design/typography';
+
 import { UCIcon } from '../../../components/uc-icon';
+import { radii, workplace } from '../../../design/tokens';
 
 interface ChatHeaderProps {
-  workspaceName?: string;
-  documentCount?: number;
-  onBack: () => void;
-  onOpenHistory?: () => void;
-  isStreaming?: boolean;
+  readonly workspaceName: string;
+  /** Tiêu đề cuộc trò chuyện, hoặc "Cuộc trò chuyện mới". */
+  readonly title: string;
+  readonly isStreaming?: boolean;
+  readonly onBack: () => void;
+  /** Bỏ trống thì tên nhóm không bấm được. */
+  readonly onPickGroup?: () => void;
+  readonly onOpenHistory?: () => void;
+  readonly onNewChat?: () => void;
 }
 
-export function ChatHeader({
-  workspaceName = 'Hỏi đáp Không gian',
-  documentCount = 0,
-  onBack,
-  onOpenHistory,
-  isStreaming = false,
-}: ChatHeaderProps) {
+/**
+ * Dải đầu màn chat: nhóm đang hỏi (bấm để đổi), tiêu đề, lịch sử và tạo mới.
+ *
+ * Chấm màu trước tên nhóm chuyển sang hổ phách khi trợ lý đang trả lời, để
+ * trạng thái hiện mà không chiếm thêm một dòng.
+ */
+export function ChatHeader(props: ChatHeaderProps) {
+  const { workspaceName, title, isStreaming = false, onBack, onPickGroup, onOpenHistory, onNewChat } = props;
   const insets = useSafeAreaInsets();
-
   return (
-    <View style={[styles.headerContainer, { paddingTop: Math.max(insets.top, 16) + 4 }]}>
-      {Platform.OS === 'ios' ? (
-        <BlurView intensity={80} tint="systemThinMaterialLight" style={StyleSheet.absoluteFill} />
-      ) : null}
+    <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
+      <Pressable onPress={onBack} hitSlop={10} style={styles.back} accessibilityRole="button" accessibilityLabel="Quay lại" testID="chat-header-back">
+        <UCIcon name="chevron-left" size={28} color={workplace.ink} />
+      </Pressable>
 
-      <View style={styles.specularHighlight} />
-
-      <View style={styles.contentRow}>
-        <TouchableOpacity
-          onPress={onBack}
-          style={styles.circleButton}
-          activeOpacity={0.7}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          testID="chat-header-back"
+      <View style={styles.titles}>
+        <Pressable
+          style={styles.group}
+          onPress={onPickGroup}
+          disabled={!onPickGroup || isStreaming}
+          accessibilityRole="button"
+          accessibilityLabel={`Đang hỏi trong ${workspaceName}. Đổi nhóm`}
+          testID="chat-header-group"
         >
-          <UCIcon name="arrow-back" size={20} color="#0F172A" />
-        </TouchableOpacity>
-
-        <View style={styles.titleWrap}>
-          {/* Gemini-Style Model / Workspace Dropdown Capsule */}
-          <View style={styles.geminiDropdownPill}>
-            <Text style={styles.workspaceTitle} numberOfLines={1}>
-              {workspaceName}
-            </Text>
-            <UCIcon name="keyboard-arrow-down" size={16} color="#64748B" />
-          </View>
-
-          {(isStreaming || documentCount > 0) && (
-            <View style={styles.statusBadgePill}>
-              <View
-                style={[
-                  styles.statusDot,
-                  isStreaming ? styles.statusDotStreaming : styles.statusDotReady,
-                ]}
-              />
-              <Text style={styles.statusText}>
-                {isStreaming
-                  ? 'AI đang suy luận...'
-                  : `RAG Sẵn sàng • ${documentCount} tài liệu`}
-              </Text>
-            </View>
-          )}
-        </View>
-
-        {onOpenHistory ? (
-          <TouchableOpacity
-            onPress={onOpenHistory}
-            style={styles.circleButton}
-            activeOpacity={0.7}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            testID="chat-header-history"
-          >
-            <UCIcon name="history" size={20} color="#0F172A" />
-          </TouchableOpacity>
-        ) : (
-          <View style={styles.circleButton}>
-            <UCIcon name="auto-awesome" size={17} color="#00687A" />
-          </View>
-        )}
+          <View style={[styles.dot, isStreaming && styles.dotBusy]} />
+          <Text style={styles.groupName} numberOfLines={1}>{workspaceName}</Text>
+          {onPickGroup && <UCIcon name="keyboard-arrow-down" size={16} color="#15803D" />}
+        </Pressable>
+        <Text style={styles.title} numberOfLines={1}>{isStreaming ? 'Trợ lý đang trả lời...' : title}</Text>
       </View>
+
+      {onOpenHistory && (
+        <Pressable onPress={onOpenHistory} hitSlop={6} style={styles.ghost} accessibilityRole="button" accessibilityLabel="Lịch sử trò chuyện" testID="chat-header-history">
+          <UCIcon name="history" size={22} color={workplace.ink} />
+        </Pressable>
+      )}
+      {onNewChat && (
+        <Pressable
+          onPress={onNewChat}
+          disabled={isStreaming}
+          style={({ pressed }) => [styles.newChat, pressed && styles.pressed]}
+          accessibilityRole="button"
+          accessibilityLabel="Cuộc trò chuyện mới"
+          testID="chat-header-new"
+        >
+          <UCIcon name="add" size={22} color="#FFFFFF" />
+        </Pressable>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  headerContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 10,
+    paddingBottom: 10,
+    backgroundColor: workplace.card,
     borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
-    paddingHorizontal: spacing.md,
-    paddingBottom: 8,
-    zIndex: 100,
-    position: 'relative',
+    borderBottomColor: workplace.line,
   },
-  specularHighlight: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 1,
-    backgroundColor: '#FFFFFF',
-  },
-  contentRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  circleButton: {
-    width: 38,
-    height: 38,
-    borderRadius: radii.full,
-    backgroundColor: '#F1F5F9',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  titleWrap: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  geminiDropdownPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F8FAFC',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: radii.full,
-    gap: 4,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  workspaceTitle: {
-    ...typography.labelMd,
-    color: '#0F172A',
-    fontWeight: '700',
-    fontSize: 14,
-    maxWidth: 180,
-  },
-  statusBadgePill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginTop: 2,
-  },
-  statusDot: {
-    width: 5.5,
-    height: 5.5,
-    borderRadius: 3,
-  },
-  statusDotReady: {
-    backgroundColor: colors.success,
-  },
-  statusDotStreaming: {
-    backgroundColor: '#06B6D4',
-  },
-  statusText: {
-    fontSize: 10.5,
-    color: '#64748B',
-    fontWeight: '500',
-  },
+  back: { paddingRight: 2 },
+  titles: { flex: 1, minWidth: 0 },
+  group: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start', maxWidth: '100%' },
+  dot: { width: 9, height: 9, borderRadius: 3, backgroundColor: '#16A34A' },
+  dotBusy: { backgroundColor: '#F59E0B' },
+  groupName: { flexShrink: 1, color: '#15803D', fontSize: 13, fontFamily: 'Inter_700Bold' },
+  title: { color: workplace.ink, fontSize: 17, fontFamily: 'Inter_800ExtraBold', letterSpacing: -0.2 },
+  ghost: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
+  newChat: { width: 44, height: 44, borderRadius: radii.lg, backgroundColor: workplace.ink, alignItems: 'center', justifyContent: 'center' },
+  pressed: { opacity: 0.75 },
 });
