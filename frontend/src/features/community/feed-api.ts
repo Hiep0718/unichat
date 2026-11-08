@@ -56,7 +56,7 @@ export interface FeedStats {
  * question still needs an answer.
  */
 export type FeedSort = 'UNANSWERED' | 'NEW' | 'MINE';
-export type FeedScope = 'ALL' | 'JOINED' | 'SAVED';
+export type FeedScope = 'JOINED' | 'SAVED';
 export type TopRange = 'TODAY' | 'WEEK' | 'MONTH' | 'YEAR' | 'ALL';
 
 export interface FeedParams {
