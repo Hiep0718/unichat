@@ -152,6 +152,42 @@ export const workplace = {
   alert: '#B91C1C',
 } as const;
 
+/**
+ * Thanh điều hướng dạng dock tối, với nút Hỏi AI nổi ở giữa.
+ *
+ * `accent` cũng là màu bong bóng tin của mình trong màn Tin nhắn, để nút AI
+ * và hành động chính của màn chat đọc như cùng một hệ.
+ */
+export const dock = {
+  surface: '#0F172A',
+  border: 'rgba(255, 255, 255, 0.06)',
+  icon: '#94A3B8',
+  iconActive: '#FFFFFF',
+  accent: '#3346F5',
+  accentPressed: '#2737D8',
+  badge: '#EF4444',
+} as const;
+
+/** Màn Tin nhắn: nền, bong bóng và các viên thông tin trong luồng chat. */
+export const messenger = {
+  canvas: '#F4F5F9',
+  card: '#FFFFFF',
+  line: '#E8EBF2',
+  mine: '#3346F5',
+  mineInk: '#FFFFFF',
+  theirs: '#FFFFFF',
+  theirsInk: '#0F172A',
+  chip: '#E8EBF2',
+  chipInk: '#475569',
+  field: '#EEF0F5',
+  missedInk: '#DC2626',
+  missedBorder: '#FBCFCF',
+  missedIconBg: '#FEE2E2',
+  okIconBg: '#DCFCE7',
+  okIcon: '#16A34A',
+  disabled: '#C7CCD8',
+} as const;
+
 export type ColorToken = keyof typeof colors;
 export type SpacingToken = keyof typeof spacing;
 export type RadiiToken = keyof typeof radii;

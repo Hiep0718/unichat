@@ -13,6 +13,7 @@ import {
 } from '@expo-google-fonts/inter';
 import * as SplashScreen from 'expo-splash-screen';
 import { AuthProvider } from '../src/features/auth/auth-context';
+import { RealtimeProvider } from '../src/features/realtime/realtime-provider';
 import { UCErrorBoundary } from '../src/components/uc-error-boundary';
 import { ToastProvider } from '../src/lib/toast-context';
 
@@ -50,15 +51,19 @@ export default function RootLayout() {
     <UCErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <ToastProvider>
-            <StatusBar barStyle="dark-content" />
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen name="workspace" options={{ headerShown: false }} />
-              <Stack.Screen name="account" options={{ headerShown: false }} />
-            </Stack>
-          </ToastProvider>
+          <RealtimeProvider>
+            <ToastProvider>
+              <StatusBar barStyle="dark-content" />
+              <Stack screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen name="workspace" options={{ headerShown: false }} />
+                <Stack.Screen name="account" options={{ headerShown: false }} />
+                <Stack.Screen name="messages" options={{ headerShown: false }} />
+                <Stack.Screen name="post" options={{ headerShown: false }} />
+              </Stack>
+            </ToastProvider>
+          </RealtimeProvider>
         </AuthProvider>
       </QueryClientProvider>
     </UCErrorBoundary>
