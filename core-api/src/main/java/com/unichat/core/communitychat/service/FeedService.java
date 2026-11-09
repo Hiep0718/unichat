@@ -30,7 +30,6 @@ import com.unichat.core.workspace.domain.WorkspaceMember;
 import com.unichat.core.workspace.domain.WorkspaceMemberRepository;
 import com.unichat.core.workspace.domain.WorkspaceMemberStatus;
 import com.unichat.core.workspace.domain.WorkspaceRepository;
-import com.unichat.core.workspace.domain.WorkspaceVisibility;
 
 /**
  * Service layer for the community feed, supporting search, bookmarks, and
@@ -77,7 +76,7 @@ public class FeedService {
     public Page<FeedPostResponse> getFeed(UUID userId, String sort, String scope,
                                           String query, String range,
                                           int page, int size) {
-        List<UUID> workspaceIds = resolveWorkspaceIds(userId, scope);
+        List<UUID> workspaceIds = resolveWorkspaceIds(userId);
         if (workspaceIds.isEmpty()) {
             return Page.empty();
         }
@@ -93,7 +92,7 @@ public class FeedService {
      * Returns counts for the feed sidebar, scoped to the user's workspaces.
      */
     public Map<String, Object> getStats(UUID userId) {
-        List<UUID> workspaceIds = resolveWorkspaceIds(userId, "JOINED");
+        List<UUID> workspaceIds = resolveWorkspaceIds(userId);
         if (workspaceIds.isEmpty()) {
             return Map.of("totalPosts", 0L, "unansweredCount", 0L);
         }
@@ -106,18 +105,17 @@ public class FeedService {
 
     /* ---------- Private helpers ---------- */
 
-    private List<UUID> resolveWorkspaceIds(UUID userId, String scope) {
-        if ("ALL".equalsIgnoreCase(scope)) {
-            return workspaceRepository.findAll().stream()
-                    .filter(w -> w.getVisibility() == WorkspaceVisibility.PUBLIC)
-                    .map(Workspace::getId)
-                    .toList();
-        }
-        if ("SAVED".equalsIgnoreCase(scope)) {
-            // Sentinel — handled after query by bookmarkRepository
-            return memberRepository.findByUserIdAndStatus(userId, WorkspaceMemberStatus.ACTIVE)
-                    .stream().map(WorkspaceMember::getWorkspaceId).toList();
-        }
+    /**
+     * The groups a feed may read from: only those the caller is an active
+     * member of, for every scope.
+     *
+     * <p>There used to be an {@code ALL} scope reading every public group in
+     * the system. It was removed so the feed stays about the caller's own
+     * groups; an old client still sending it now gets the member scope rather
+     * than an error. {@code SAVED} narrows to bookmarks later, in
+     * {@link #executeQuery}.
+     */
+    private List<UUID> resolveWorkspaceIds(UUID userId) {
         return memberRepository.findByUserIdAndStatus(userId, WorkspaceMemberStatus.ACTIVE)
                 .stream().map(WorkspaceMember::getWorkspaceId).toList();
     }

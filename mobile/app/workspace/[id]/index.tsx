@@ -6,10 +6,9 @@
  * tại. Giờ tất cả ở lại trong trang này; những đích đến thứ yếu — lịch sử hội
  * thoại, xoá nhóm — nằm trong menu "..." ở góc, nơi dành cho việc rời đi.
  */
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   ScrollView,
   RefreshControl,
@@ -18,10 +17,9 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, router, useFocusEffect } from 'expo-router';
 
-import { colors, spacing } from '../../../src/design/tokens';
-import { typography } from '../../../src/design/typography';
+import { spacing } from '../../../src/design/tokens';
 import { UCScreenContainer } from '../../../src/components/uc-screen-container';
-import { UCSkeletonCard } from '../../../src/components/uc-skeleton';
+import { ApiError } from '../../../src/lib/api-error';
 import { useToast } from '../../../src/lib/toast-context';
 import { useAuth } from '../../../src/features/auth/auth-context';
 import { workspaceApi } from '../../../src/features/workspaces/workspace-api';
@@ -31,6 +29,7 @@ import { GroupAboutTab } from '../../../src/features/workspaces/components/group
 import { GroupMembersTab } from '../../../src/features/workspaces/components/group-members-tab';
 import { GroupPostsTab } from '../../../src/features/workspaces/components/group-posts-tab';
 import { GroupDocumentsTab } from '../../../src/features/workspaces/components/group-documents-tab';
+import { GroupErrorState, GroupLoadingSkeleton } from '../../../src/features/workspaces/components/group-screen-states';
 import { isValidUuid } from '../../../src/lib/uuid';
 
 import type { GroupTabKey } from '../../../src/features/workspaces/components/group-tab-bar';
@@ -48,23 +47,34 @@ export default function WorkspaceDetailScreen() {
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [membersLoading, setMembersLoading] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<'failed' | 'missing' | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  // Đọc trong lúc tải mà không biến hàm tải thành phụ thuộc của chính dữ liệu
+  // nó vừa đặt, vốn sẽ kích effect tải lại không dứt.
+  const hasWorkspace = useRef(false);
   const [tab, setTab] = useState<GroupTabKey>('posts');
 
   const isOwner = workspace?.userRole === 'OWNER';
 
   const loadWorkspace = useCallback(async () => {
     if (!isValidUuid(id)) {
+      setLoadError('missing');
       setLoading(false);
       return;
     }
     try {
       setWorkspace(await workspaceApi.getWorkspace(id));
+      hasWorkspace.current = true;
+      setLoadError(null);
     } catch (err: unknown) {
-      showToast({
-        message: err instanceof Error ? err.message : 'Không tải được thông tin nhóm',
-        type: 'error',
-      });
+      // 403/404 nghĩa là nhóm không còn hoặc không còn quyền: thử lại vô ích.
+      // Mọi lỗi khác (mạng, máy chủ) thì đáng một nút thử lại.
+      const missing = err instanceof ApiError && (err.status === 403 || err.status === 404);
+      setLoadError(missing ? 'missing' : 'failed');
+      // Đã có dữ liệu (đang kéo làm mới) thì giữ màn, chỉ báo lỗi.
+      if (hasWorkspace.current) {
+        showToast({ message: err instanceof Error ? err.message : 'Không tải được thông tin nhóm', type: 'error' });
+      }
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -163,23 +173,20 @@ export default function WorkspaceDetailScreen() {
     );
   };
 
-  if (loading) {
-    return (
-      <UCScreenContainer>
-        <View style={styles.loadingBox}>
-          <UCSkeletonCard />
-        </View>
-      </UCScreenContainer>
-    );
-  }
+  const goBack = () => (router.canGoBack() ? router.back() : router.replace('/(tabs)'));
+
+  if (loading) return <GroupLoadingSkeleton onBack={goBack} />;
 
   if (!workspace) {
     return (
-      <UCScreenContainer>
-        <View style={styles.loadingBox}>
-          <Text style={styles.notFound}>Không tìm thấy nhóm này.</Text>
-        </View>
-      </UCScreenContainer>
+      <GroupErrorState
+        kind={loadError ?? 'missing'}
+        onBack={goBack}
+        onRetry={() => {
+          setLoading(true);
+          loadWorkspace();
+        }}
+      />
     );
   }
 
@@ -193,7 +200,7 @@ export default function WorkspaceDetailScreen() {
         workspace={workspace}
         documentCount={workspace.documentCount}
         memberCount={workspace.memberCount}
-        onBack={() => router.back()}
+        onBack={goBack}
         onMenu={handleMenu}
         onAskAssistant={askAssistant}
       />
@@ -265,13 +272,5 @@ const styles = StyleSheet.create({
   tabBody: {
     paddingHorizontal: spacing.md,
     paddingTop: spacing.md,
-  },
-  loadingBox: {
-    padding: spacing.lg,
-  },
-  notFound: {
-    ...typography.bodyMd,
-    color: colors.onSurfaceVariant,
-    textAlign: 'center',
   },
 });

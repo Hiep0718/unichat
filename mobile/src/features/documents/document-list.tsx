@@ -22,6 +22,11 @@ interface DocumentListProps {
   onDelete?: (documentId: string) => void;
   /** Drawn above the first card; the group's tab puts its heading here. */
   header?: React.ReactElement | undefined;
+  /**
+   * Lề ngang của từng thẻ và màn trống. Đặt ở đây chứ không phải lên cả danh
+   * sách, vì phần đầu (dải bìa, thanh tab) phải chạy hết chiều ngang màn hình.
+   */
+  inset?: number;
 }
 
 function formatBytes(bytes: number): string {
@@ -43,7 +48,9 @@ export function DocumentList({
   onRefresh,
   onDelete,
   header,
+  inset = 0,
 }: DocumentListProps) {
+  const insetStyle = { paddingHorizontal: inset };
   // Tính cho cả danh sách, không phải từng dòng: một cái tên không bớt trùng đi
   // chỉ vì dòng mang nó đang được vẽ riêng lẻ.
   const duplicates = useMemo(() => duplicatedNames(documents), [documents]);
@@ -65,18 +72,22 @@ export function DocumentList({
       contentContainerStyle={styles.listContent}
       ListHeaderComponent={header}
       ListEmptyComponent={
-        <UCEmptyState
-          title="Chưa có tài liệu nào"
-          description="Hãy tải lên các tài liệu PDF, DOCX hoặc TXT để trợ lý bắt đầu đọc."
-          icon="description"
-        />
+        <View style={insetStyle}>
+          <UCEmptyState
+            title="Chưa có tài liệu nào"
+            description="Hãy tải lên các tài liệu PDF, DOCX hoặc TXT để trợ lý bắt đầu đọc."
+            icon="description"
+          />
+        </View>
       }
       renderItem={({ item }) => (
-        <DocumentRow
-          document={item}
-          duplicated={isDuplicatedName(item.name, duplicates)}
-          onDelete={onDelete ? () => handleDeletePress(item) : undefined}
-        />
+        <View style={insetStyle}>
+          <DocumentRow
+            document={item}
+            duplicated={isDuplicatedName(item.name, duplicates)}
+            onDelete={onDelete ? () => handleDeletePress(item) : undefined}
+          />
+        </View>
       )}
     />
   );

@@ -33,7 +33,6 @@ const VIEWS: readonly { id: FeedSort; label: string; icon: string }[] = [
 
 const SCOPES: readonly { id: FeedScope; label: string; icon: string }[] = [
   { id: 'JOINED', label: 'Không gian của tôi', icon: 'home' },
-  { id: 'ALL', label: 'Công khai', icon: 'public' },
   { id: 'SAVED', label: 'Đã lưu', icon: 'bookmark' },
 ];
 

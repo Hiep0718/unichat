@@ -1,343 +1,123 @@
-import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { colors, spacing, radii } from '../../../design/tokens';
-import { typography } from '../../../design/typography';
+import React from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+
 import { UCIcon } from '../../../components/uc-icon';
-import { useOptionalAuth } from '../../../features/auth/auth-context';
-import { DocumentItem } from '../../workspaces/workspace-types';
+import { dock, radii, workplace } from '../../../design/tokens';
+import { shadows } from '../../../design/shadows';
+import { WorkspaceCover } from '../../workspaces/components/workspace-cover';
 
 interface ChatEmptyStateProps {
-  workspaceName?: string;
-  documents?: DocumentItem[];
-  onSelectPrompt: (prompt: string) => void;
+  readonly workspaceId: string;
+  readonly workspaceName: string;
+  readonly topics?: readonly string[];
+  /** Số tài liệu trợ lý đọc được trên tổng số; null khi chưa tải xong. */
+  readonly readiness: { readonly ready: number; readonly total: number } | null;
+  readonly suggestions: readonly string[];
+  readonly onSelectPrompt: (prompt: string) => void;
 }
 
-const STARTER_PROMPTS = [
-  {
-    category: 'TỔNG HỢP KIẾN THỨC',
-    prompt: 'Tóm tắt các nội dung cốt lõi và định lý trọng tâm trong tài liệu',
-    icon: 'auto-awesome' as const,
-    color: '#0284C7',
-    bgColor: 'rgba(224, 242, 254, 0.85)',
-    borderColor: 'rgba(186, 230, 253, 0.9)',
-  },
-  {
-    category: 'TRA CỨU KHÁI NIỆM',
-    prompt: 'Giải thích chi tiết các thuật ngữ và khái niệm quan trọng nhất',
-    icon: 'help-outline' as const,
-    color: '#059669',
-    bgColor: 'rgba(209, 250, 229, 0.85)',
-    borderColor: 'rgba(167, 243, 208, 0.9)',
-  },
-  {
-    category: 'SO SÁNH & ĐÁNH GIÁ',
-    prompt: 'Phân tích ưu nhược điểm và so sánh sự khác nhau giữa các phương pháp',
-    icon: 'lightbulb-outline' as const,
-    color: '#D97706',
-    bgColor: 'rgba(254, 243, 199, 0.85)',
-    borderColor: 'rgba(253, 230, 138, 0.9)',
-  },
-  {
-    category: 'ÔN THI & BÀI TẬP',
-    prompt: 'Tạo 3 câu hỏi trắc nghiệm ôn tập kèm lời giải trích dẫn từ tài liệu',
-    icon: 'checklist' as const,
-    color: '#7C3AED',
-    bgColor: 'rgba(237, 233, 254, 0.85)',
-    borderColor: 'rgba(221, 214, 254, 0.9)',
-  },
-];
+function ReadinessPill({ readiness }: { readonly readiness: ChatEmptyStateProps['readiness'] }) {
+  if (!readiness) return null;
+  const none = readiness.ready === 0;
+  return (
+    <View style={styles.pill} testID="readiness-pill">
+      <View style={[styles.pillDot, none && styles.pillDotOff]} />
+      <Text style={styles.pillText}>
+        {none ? 'Chưa có tài liệu sẵn sàng' : `${readiness.ready}/${readiness.total} tài liệu sẵn sàng`}
+      </Text>
+    </View>
+  );
+}
 
-export function ChatEmptyState({
-  workspaceName,
-  documents = [],
-  onSelectPrompt,
-}: ChatEmptyStateProps) {
-  const auth = useOptionalAuth();
-  const user = auth?.user;
-
-  const userName = useMemo(() => {
-    if (user?.displayName?.trim()) {
-      const parts = user.displayName.trim().split(/\s+/);
-      return parts[parts.length - 1] || user.displayName.trim();
-    }
-    if (user?.email) {
-      const local = user.email.split('@')[0] ?? '';
-      return local.charAt(0).toUpperCase() + local.slice(1);
-    }
-    return 'bạn';
-  }, [user]);
-
+/**
+ * Màn mở đầu của một cuộc trò chuyện mới trong nhóm.
+ *
+ * Ảnh bìa là ảnh của chính nhóm, để người dùng nhìn là biết đang hỏi kho nào.
+ * Gợi ý dựng từ tài liệu đã sẵn sàng; bấm một gợi ý là gửi luôn.
+ */
+export function ChatEmptyState(props: ChatEmptyStateProps) {
+  const { workspaceId, workspaceName, topics, readiness, suggestions, onSelectPrompt } = props;
   return (
     <View style={styles.container}>
-      {/* Top Academic AI Badge */}
-      <View style={styles.topBadgeWrapper}>
-        <View style={styles.topModelBadge}>
-          <UCIcon name="auto-awesome" size={13} color="#00687A" />
-          <Text style={styles.topModelText}>Hỏi đáp Trí thức AI</Text>
+      <View style={styles.cover}>
+        <WorkspaceCover workspaceId={workspaceId} name={workspaceName} topics={topics} />
+        <View style={styles.coverIcon}>
+          <UCIcon name="auto-awesome" size={26} color="#FFFFFF" />
         </View>
       </View>
 
-      {/* Gemini Signature Glowing Centerpiece */}
-      <View style={styles.geminiHeroCenter}>
-        <View style={styles.starAuraContainer}>
-          {/* Diffuse glowing aura */}
-          <LinearGradient
-            colors={['rgba(87, 223, 254, 0.45)', 'rgba(168, 85, 247, 0.20)', 'transparent']}
-            style={styles.starAuraGradient}
-          />
-          {/* Multi-spectrum Gemini 4-Point Star Badge */}
-          <LinearGradient
-            colors={['#22D3EE', '#3B82F6', '#8B5CF6', '#EC4899', '#FBBF24']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.geminiStarBadge}
-          >
-            <UCIcon name="auto-awesome" size={30} color="#FFFFFF" />
-          </LinearGradient>
-        </View>
+      <Text style={styles.title} accessibilityRole="header">Hỏi kho tri thức {workspaceName}</Text>
+      <ReadinessPill readiness={readiness} />
+      <Text style={styles.subtitle}>
+        Câu trả lời luôn kèm trích dẫn. Thiếu căn cứ trong tài liệu thì trợ lý sẽ hỏi lại thay vì đoán.
+      </Text>
 
-        {/* Gemini Signature Greeting Headline */}
-        <Text style={styles.geminiHeadline}>
-          Bắt đầu luôn nào, {userName}
-        </Text>
-        <Text style={styles.geminiSubtitle}>
-          {workspaceName
-            ? `Tra cứu thông minh và lập luận đa bước dựa trên tài liệu của không gian "${workspaceName}".`
-            : 'AI sẽ tra cứu tài liệu học tập của không gian này để trích dẫn câu trả lời chính xác.'}
-        </Text>
-      </View>
-
-      {/* Referenced Documents Glass Carousel */}
-      {documents.length > 0 && (
-        <View style={styles.docsSection}>
-          <View style={styles.sectionHeaderRow}>
-            <UCIcon name="folder-open" size={13} color={colors.primary} />
-            <Text style={styles.sectionHeader}>
-              TÀI LIỆU ĐANG THAM CHIẾU ({documents.length})
-            </Text>
-          </View>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.docsScroll}
-          >
-            {documents.slice(0, 5).map((doc) => (
-              <View key={doc.id} style={styles.docChip}>
-                <UCIcon name="description" size={13} color={colors.secondary} />
-                <Text style={styles.docName} numberOfLines={1}>
-                  {doc.name || 'Tài liệu'}
-                </Text>
-              </View>
-            ))}
-          </ScrollView>
-        </View>
-      )}
-
-      {/* Minimalist Gemini-style Starter Prompt Chips */}
-      <View style={styles.promptsSection}>
-        <View style={styles.sectionHeaderRow}>
-          <UCIcon name="tips-and-updates" size={13} color={colors.secondary} />
-          <Text style={styles.sectionHeader}>GỢI Ý CÂU HỎI BẮT ĐẦU</Text>
-        </View>
-
-        <View style={styles.promptList}>
-          {STARTER_PROMPTS.map((item, idx) => (
-            <TouchableOpacity
-              key={idx}
-              style={[styles.promptCard, { borderColor: item.borderColor }]}
-              onPress={() => onSelectPrompt(item.prompt)}
-              activeOpacity={0.75}
-              testID={`starter-prompt-${idx}`}
+      {suggestions.length > 0 && (
+        <View style={styles.suggestions}>
+          <Text style={styles.section}>GỢI Ý</Text>
+          {suggestions.map((prompt, index) => (
+            <Pressable
+              key={prompt}
+              style={({ pressed }) => [styles.suggestion, pressed && styles.pressed]}
+              onPress={() => onSelectPrompt(prompt)}
+              accessibilityRole="button"
+              testID={`starter-prompt-${index}`}
             >
-              <View style={[styles.promptIconBox, { backgroundColor: item.bgColor }]}>
-                <UCIcon name={item.icon} size={16} color={item.color} />
-              </View>
-              <View style={styles.promptContent}>
-                <Text style={[styles.promptCategory, { color: item.color }]}>
-                  {item.category}
-                </Text>
-                <Text style={styles.promptText} numberOfLines={2}>
-                  {item.prompt}
-                </Text>
-              </View>
-              <View style={styles.arrowBox}>
-                <UCIcon name="arrow-forward" size={14} color={colors.outline} />
-              </View>
-            </TouchableOpacity>
+              <UCIcon name="auto-awesome" size={18} color={dock.accent} />
+              <Text style={styles.suggestionText}>{prompt}</Text>
+              <UCIcon name="north-east" size={16} color={workplace.inkMuted} />
+            </Pressable>
           ))}
         </View>
-      </View>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.sm,
-  },
-  topBadgeWrapper: {
-    alignItems: 'center',
-    marginBottom: spacing.md,
-  },
-  topModelBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(231, 238, 254, 0.75)',
-    borderWidth: 1,
-    borderColor: 'rgba(144, 168, 255, 0.35)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: radii.full,
-    gap: 6,
-  },
-  topModelText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#00687A',
-    letterSpacing: 0.2,
-  },
-  geminiHeroCenter: {
-    alignItems: 'center',
-    marginVertical: spacing.lg,
-  },
-  starAuraContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-    width: 80,
-    height: 80,
-    marginBottom: spacing.md,
-  },
-  starAuraGradient: {
+  container: { alignItems: 'center', paddingTop: 8 },
+  cover: { width: 240, height: 146, borderRadius: 20, overflow: 'hidden', marginBottom: 18, ...shadows.card },
+  coverIcon: {
     position: 'absolute',
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-  },
-  geminiStarBadge: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
+    alignSelf: 'center',
+    top: 49,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#22D3EE',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 16,
-    elevation: 8,
+    backgroundColor: 'rgba(15, 23, 42, 0.45)',
   },
-  geminiHeadline: {
-    fontSize: 26,
-    fontWeight: '600',
-    color: colors.onSurface,
-    textAlign: 'center',
-    letterSpacing: -0.6,
-    marginBottom: spacing.xs + 2,
-    fontFamily: 'Inter_600SemiBold',
-  },
-  geminiSubtitle: {
-    ...typography.bodyMd,
-    color: colors.onSurfaceVariant,
-    textAlign: 'center',
-    lineHeight: 20,
-    maxWidth: '88%',
-    fontSize: 13,
-  },
-  docsSection: {
-    marginBottom: spacing.lg,
-  },
-  sectionHeaderRow: {
+  title: { color: workplace.ink, fontSize: 24, lineHeight: 31, fontFamily: 'Inter_800ExtraBold', textAlign: 'center', letterSpacing: -0.4 },
+  pill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    marginBottom: spacing.sm,
-    paddingHorizontal: 4,
-  },
-  sectionHeader: {
-    ...typography.labelSm,
-    color: colors.onSurfaceVariant,
-    fontWeight: '700',
-    letterSpacing: 0.6,
-  },
-  docsScroll: {
-    gap: spacing.sm,
-    paddingHorizontal: 2,
-  },
-  docChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.90)',
-    paddingVertical: 7,
-    paddingHorizontal: spacing.md,
+    marginTop: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
     borderRadius: radii.full,
-    borderWidth: 1.2,
-    borderColor: 'rgba(226, 232, 248, 0.95)',
-    gap: 6,
-    maxWidth: 200,
-    shadowColor: '#00236F',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 1,
+    backgroundColor: workplace.card,
+    borderWidth: 1,
+    borderColor: workplace.line,
   },
-  docName: {
-    ...typography.labelSm,
-    color: colors.onSurface,
-    fontWeight: '600',
-    fontSize: 12,
-  },
-  promptsSection: {
-    marginBottom: spacing.md,
-  },
-  promptList: {
-    gap: spacing.sm,
-  },
-  promptCard: {
+  pillDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#16A34A' },
+  pillDotOff: { backgroundColor: workplace.inkMuted },
+  pillText: { color: workplace.inkSoft, fontSize: 13, fontFamily: 'Inter_500Medium' },
+  subtitle: { color: workplace.inkMuted, fontSize: 14, lineHeight: 21, textAlign: 'center', marginTop: 12, paddingHorizontal: 8 },
+  suggestions: { alignSelf: 'stretch', gap: 10, marginTop: 22 },
+  section: { color: workplace.inkMuted, fontSize: 12, fontFamily: 'Inter_700Bold', letterSpacing: 0.4 },
+  suggestion: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.88)',
-    padding: spacing.md,
+    gap: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
     borderRadius: radii.xl,
-    borderWidth: 1.2,
-    gap: spacing.md,
-    shadowColor: '#00236F',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    backgroundColor: workplace.card,
+    borderWidth: 1,
+    borderColor: workplace.line,
   },
-  promptIconBox: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  promptContent: {
-    flex: 1,
-  },
-  promptCategory: {
-    ...typography.labelSm,
-    fontWeight: '800',
-    fontSize: 10,
-    letterSpacing: 0.4,
-    marginBottom: 2,
-  },
-  promptText: {
-    ...typography.bodySm,
-    color: colors.onSurface,
-    lineHeight: 18,
-    fontWeight: '500',
-    fontSize: 12.5,
-  },
-  arrowBox: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: colors.surfaceContainerLow,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  pressed: { backgroundColor: workplace.canvas },
+  suggestionText: { flex: 1, color: workplace.ink, fontSize: 14.5, lineHeight: 20, fontFamily: 'Inter_600SemiBold' },
 });

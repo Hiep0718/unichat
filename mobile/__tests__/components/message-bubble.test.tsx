@@ -1,6 +1,6 @@
 import React from 'react';
-import { render } from '@testing-library/react-native';
-import { MessageBubble } from '../../src/features/chat/components/message-bubble';
+import { fireEvent, render } from '@testing-library/react-native';
+import { MessageBubble, distinctDocuments } from '../../src/features/chat/components/message-bubble';
 import { MessageItem } from '../../src/types/api';
 
 describe('MessageBubble', () => {
@@ -38,12 +38,24 @@ describe('MessageBubble', () => {
       createdAt: '2026-10-03T00:00:01Z',
     };
 
-    const { getByText, getByTestId } = await render(<MessageBubble message={aiMsg} />);
+    const onPressCitation = jest.fn();
+    const { getByText, getByTestId } = await render(<MessageBubble message={aiMsg} onPressCitation={onPressCitation} />);
 
     expect(getByTestId('ai-message-msg-a1')).toBeTruthy();
-    expect(getByText('UniChat AI')).toBeTruthy();
-    expect(getByText(/GiaoTrinhAI.pdf/)).toBeTruthy();
-    expect(getByText('95%')).toBeTruthy();
+    expect(getByText('Trợ lý AI')).toBeTruthy();
+    expect(getByText('· dựa trên 1 tài liệu')).toBeTruthy();
+    expect(getByText('GiaoTrinhAI.pdf')).toBeTruthy();
+    expect(getByText('1')).toBeTruthy();
+
+    await fireEvent.press(getByTestId('citation-card-0'));
+    expect(onPressCitation).toHaveBeenCalledWith(aiMsg.citations?.[0]);
+  });
+
+  it('counts distinct documents, not citations', () => {
+    const cite = (documentId: string) => ({ documentId, locator: '', excerpt: '', score: 1 });
+
+    expect(distinctDocuments([cite('a'), cite('a'), cite('b')])).toBe(2);
+    expect(distinctDocuments([])).toBe(0);
   });
 
   it('should disclose missing web search when expanded evidence is unavailable', async () => {
@@ -60,5 +72,6 @@ describe('MessageBubble', () => {
     const { getByText } = await render(<MessageBubble message={aiMsg} />);
 
     expect(getByText(/Chưa cấu hình tìm kiếm web/)).toBeTruthy();
+    expect(getByText('· có kiến thức ngoài')).toBeTruthy();
   });
 });
