@@ -116,7 +116,7 @@ export function refreshAccessToken(): Promise<string> {
 
 /** Logs in atomically with cookie changes, storage tombstone and /me validation. */
 export async function loginCookieSession(credentials: { email: string; password: string }): Promise<AccessResponse> {
-  const generation = invalidateSession('restoring');
+  const generation = invalidateSession('anonymous');
   const epoch = advanceBrowserEpoch();
   const progress = { sentLogin: false, issuedCookie: false };
   notifyInvalidation();
