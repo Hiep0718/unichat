@@ -1,13 +1,6 @@
 type UuidString = `${string}-${string}-${string}-${string}-${string}`;
 
-/**
- * Generates a cryptographically random RFC 4122 version-4 UUID.
- * Falls back to `crypto.getRandomValues` when `crypto.randomUUID` is unavailable on plain HTTP origins.
- */
-export function randomUuid(): UuidString {
-  if (typeof globalThis.crypto?.randomUUID === 'function') {
-    return globalThis.crypto.randomUUID();
-  }
+function generateV4Uuid(): UuidString {
   const bytes = new Uint8Array(16);
   globalThis.crypto.getRandomValues(bytes);
   bytes[6] = ((bytes[6] ?? 0) & 0x0f) | 0x40;
@@ -17,10 +10,24 @@ export function randomUuid(): UuidString {
 }
 
 /**
+ * Generates a cryptographically random RFC 4122 version-4 UUID.
+ * Falls back to `crypto.getRandomValues` when `crypto.randomUUID` is unavailable on plain HTTP origins.
+ */
+export function randomUuid(): UuidString {
+  if (typeof globalThis.crypto?.randomUUID === 'function' && globalThis.crypto.randomUUID !== randomUuid) {
+    return globalThis.crypto.randomUUID();
+  }
+  return generateV4Uuid();
+}
+
+/**
  * Polyfills `crypto.randomUUID` on non-HTTPS origins (ADR-020 HTTP demo mode) using Web Crypto CSPRNG.
  */
 export function installRandomUuidFallback(): void {
-  if (typeof globalThis.crypto === 'undefined' || typeof globalThis.crypto.randomUUID === 'function') {
+  if (
+    typeof globalThis.crypto === 'undefined'
+    || (typeof globalThis.crypto.randomUUID === 'function' && globalThis.crypto.randomUUID !== randomUuid)
+  ) {
     return;
   }
   Object.defineProperty(globalThis.crypto, 'randomUUID', {
@@ -29,4 +36,3 @@ export function installRandomUuidFallback(): void {
     writable: true,
   });
 }
-

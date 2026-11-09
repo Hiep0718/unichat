@@ -45,6 +45,7 @@ describe('randomUuid', () => {
 
     expect(typeof globalThis.crypto.randomUUID).toBe('function');
     expect(globalThis.crypto.randomUUID()).toMatch(UUID_V4_PATTERN);
+    expect(randomUuid()).toMatch(UUID_V4_PATTERN);
   });
 });
 

@@ -4372,3 +4372,17 @@ xoá test của component đã chết). Vẫn phải chạy `--maxWorkers=2` vì
 - Bối cảnh: Người dùng thấy đầu màn Tin nhắn (tiêu đề nền sáng theo mockup trước) lạc quẻ so với các tab đã dùng dải tối.
 - Quyết định: Tin nhắn chuyển sang `UCTabHero` như Bảng tin, Trợ lý AI và Tài khoản. Nút "Nhắn tin cho người cùng nhóm" thành nút mờ góc phải; ô tìm kiếm thành thẻ trắng nằm trong dải, giống ô hỏi của Trợ lý AI. Dải cuộn cùng danh sách; lề ngang chuyển xuống phần thân. Chỉ còn tab Nhóm giữ dải riêng có ảnh nền và lời chào.
 - Kiểm chứng: mobile `tsc --noEmit` 0 lỗi, `eslint` 0 lỗi, `jest` toàn bộ qua.
+
+## 2026-11-09 — Khắc phục lỗi đăng nhập trên EC2 HTTP (đệ quy vô hạn randomUuid & GuestGuard unmount)
+
+- Bối cảnh: Người dùng không thể đăng nhập trên http://52.64.17.25/login. Nút đăng nhập bấm không có phản hồi hoặc trang bị trắng và giật về form trống.
+- Nguyên nhân:
+  1. `installRandomUuidFallback()` gán `crypto.randomUUID = randomUuid`. Khi `randomUuid()` được gọi, nó kiểm tra `typeof globalThis.crypto?.randomUUID === 'function'` và tự gọi lại chính nó dẫn đến đệ quy vô hạn (RangeError: Maximum call stack size exceeded).
+  2. `loginCookieSession()` thiết lập trạng thái `invalidateSession('restoring')` khi bắt đầu đăng nhập, khiến `GuestGuard` coi đây là `isLoading` và unmount `<LoginPage>` thay bằng `<LoadingScreen>`. Khi API trả về lỗi 401, trạng thái chuyển về `anonymous` làm `LoginPage` remount từ đầu, xóa sạch form input và mất thông báo lỗi.
+- Quyết định:
+  1. Sửa `randomUuid()` và `installRandomUuidFallback()` để chặn đệ quy vô hạn (kiểm tra `globalThis.crypto.randomUUID !== randomUuid`) và tách riêng hàm tạo UUID v4 thuần túy bằng `crypto.getRandomValues`.
+  2. Bổ sung test kiểm thử chống đệ quy trong `random-uuid.test.ts`.
+  3. Cập nhật `loginCookieSession()` khởi tạo với `invalidateSession('anonymous')` để `GuestGuard` không unmount form đăng nhập, giúp giữ lại input và hiển thị đúng lỗi 401 trên giao diện.
+- Kiểm chứng: Build và triển khai trực tiếp container `frontend` trên EC2. Chạy Playwright probe tự động:
+  1. Nhập sai thông tin đăng nhập: Hiện đúng thông báo lỗi "Tài khoản hoặc mật khẩu không chính xác.", giữ nguyên email và mật khẩu trong form.
+  2. Đăng ký tài khoản mới và đăng nhập: Xác thực thành công và tự động chuyển hướng vào `/workspaces` với giao diện đầy đủ.
