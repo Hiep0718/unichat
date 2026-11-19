@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { shadows } from '../../../design/shadows';
 import { AccountSection } from '../components/account-section';
+import { palette, radii } from '../../../design/tokens';
+import { fonts } from '../../../design/typography';
 
 /** Các chế độ hiển thị bản di động dự định hỗ trợ. */
 type ThemeChoice = 'light' | 'dark';
@@ -61,21 +62,22 @@ export function AppearanceSection() {
 const styles = StyleSheet.create({
   track: {
     flexDirection: 'row',
-    backgroundColor: '#E8EDF5',
-    borderRadius: 14,
+    backgroundColor: palette.ke,
+    borderRadius: radii.full,
     padding: 4,
     gap: 4,
   },
   option: {
     flex: 1,
     height: 42,
-    borderRadius: 11,
+    borderRadius: radii.full,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  optionActive: { backgroundColor: '#FFFFFF', ...shadows.sm },
-  optionText: { color: '#64748B', fontFamily: 'Inter_500Medium', fontSize: 14 },
-  optionTextActive: { color: '#0F172A', fontFamily: 'Inter_600SemiBold' },
-  hint: { color: '#94A3B8', fontFamily: 'Inter_400Regular', fontSize: 11.5, marginTop: 10 },
-  hintLoud: { color: '#64748B' },
+  // Như thanh tab của web: chọn được nói bằng nền và mực, không bằng bóng đổ.
+  optionActive: { backgroundColor: palette.nen },
+  optionText: { color: palette.mucMo, fontFamily: fonts.medium, fontSize: 14 },
+  optionTextActive: { color: palette.muc, fontFamily: fonts.semibold },
+  hint: { color: palette.mucMo, fontFamily: fonts.regular, fontSize: 11.5, marginTop: 10 },
+  hintLoud: { color: palette.mucMo },
 });

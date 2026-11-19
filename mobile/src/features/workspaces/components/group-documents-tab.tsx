@@ -8,7 +8,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 
-import { colors, radii, spacing } from '../../../design/tokens';
+import { button, colors, palette, radii, spacing } from '../../../design/tokens';
 import { typography } from '../../../design/typography';
 import { UCIcon } from '../../../components/uc-icon';
 import { UCSkeletonList } from '../../../components/uc-skeleton';
@@ -140,7 +140,7 @@ export function GroupDocumentsTab({ workspaceId, canEdit, header }: GroupDocumen
         accessibilityRole="button"
         accessibilityLabel="Tải tệp lên"
       >
-        <UCIcon name="add" size={20} color="#FFFFFF" />
+        <UCIcon name="add" size={20} color={palette.trenAnh} />
         <Text style={styles.fabText}>Tải tệp lên</Text>
       </TouchableOpacity>
     </View>
@@ -195,12 +195,12 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     paddingHorizontal: 20,
     paddingVertical: 14,
-    borderRadius: radii.full,
-    backgroundColor: '#0F172A',
+    borderRadius: button.radius,
+    backgroundColor: button.primaryBg,
   },
   fabText: {
     ...typography.labelMd,
-    color: '#FFFFFF',
+    color: palette.trenAnh,
     fontWeight: '700',
   },
 });

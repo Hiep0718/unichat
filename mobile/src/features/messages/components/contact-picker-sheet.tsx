@@ -13,9 +13,10 @@ import { useQuery } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { UCIcon } from '../../../components/uc-icon';
-import { dock, messenger } from '../../../design/tokens';
+import { dock, messenger, palette } from '../../../design/tokens';
 import { MemberAvatar } from '../../account/components/member-avatar';
 import { messagesApi } from '../messages-api';
+import { fonts } from '../../../design/typography';
 
 import type { Contact } from '../messages-api';
 
@@ -70,7 +71,7 @@ export function ContactPickerSheet({ visible, pendingUserId, onPick, onClose }: 
             value={query}
             onChangeText={setQuery}
             placeholder="Tìm người cùng nhóm..."
-            placeholderTextColor="#94A3B8"
+            placeholderTextColor={palette.mucMo}
             testID="contact-search-input"
           />
         </View>
@@ -145,7 +146,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 12,
   },
-  title: { fontSize: 18, fontFamily: 'Inter_700Bold', color: messenger.theirsInk },
+  title: { fontSize: 18, fontFamily: fonts.bold, color: messenger.theirsInk },
   search: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -157,12 +158,12 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     backgroundColor: messenger.field,
   },
-  searchInput: { flex: 1, fontSize: 15, fontFamily: 'Inter_400Regular', color: messenger.theirsInk },
+  searchInput: { flex: 1, fontSize: 15, fontFamily: fonts.regular, color: messenger.theirsInk },
   state: { padding: 24, alignItems: 'center' },
-  stateText: { textAlign: 'center', color: messenger.chipInk, fontFamily: 'Inter_400Regular' },
+  stateText: { textAlign: 'center', color: messenger.chipInk, fontFamily: fonts.regular },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingVertical: 10 },
   rowPressed: { backgroundColor: messenger.canvas },
   rowBody: { flex: 1, minWidth: 0 },
-  rowName: { fontSize: 15, fontFamily: 'Inter_600SemiBold', color: messenger.theirsInk },
-  rowGroup: { fontSize: 13, fontFamily: 'Inter_400Regular', color: messenger.chipInk },
+  rowName: { fontSize: 15, fontFamily: fonts.semibold, color: messenger.theirsInk },
+  rowGroup: { fontSize: 13, fontFamily: fonts.regular, color: messenger.chipInk },
 });

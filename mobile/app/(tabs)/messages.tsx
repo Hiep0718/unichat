@@ -13,13 +13,14 @@ import { router } from 'expo-router';
 
 import { UCIcon } from '../../src/components/uc-icon';
 import { UCTabHero, heroButtonStyle } from '../../src/components/uc-tab-hero';
-import { dock, messenger } from '../../src/design/tokens';
+import { dock, messenger, palette } from '../../src/design/tokens';
 import { ContactPickerSheet } from '../../src/features/messages/components/contact-picker-sheet';
 import { ConversationRow } from '../../src/features/messages/components/conversation-row';
 import { filterConversations } from '../../src/features/messages/conversation-presenter';
 import { messagesApi } from '../../src/features/messages/messages-api';
 import { useConversations, useInvalidateConversations } from '../../src/features/messages/use-conversations';
 import { useToast } from '../../src/lib/toast-context';
+import { fonts } from '../../src/design/typography';
 
 import type { Contact, Conversation } from '../../src/features/messages/messages-api';
 
@@ -78,7 +79,7 @@ export default function MessagesScreen() {
               accessibilityLabel="Nhắn tin cho người cùng nhóm"
               testID="new-message-button"
             >
-              <UCIcon name="person-add-alt" size={21} color="#FFFFFF" />
+              <UCIcon name="person-add-alt" size={21} color={palette.trenAnh} />
             </Pressable>
           }
         >
@@ -89,7 +90,7 @@ export default function MessagesScreen() {
               value={query}
               onChangeText={setQuery}
               placeholder="Tìm người hoặc nhóm..."
-              placeholderTextColor="#94A3B8"
+              placeholderTextColor={palette.mucMo}
               testID="conversation-search-input"
             />
           </View>
@@ -167,7 +168,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     backgroundColor: messenger.card,
   },
-  searchInput: { flex: 1, fontSize: 16, fontFamily: 'Inter_400Regular', color: messenger.theirsInk },
+  searchInput: { flex: 1, fontSize: 16, fontFamily: fonts.regular, color: messenger.theirsInk },
   content: { paddingBottom: 120 },
   body: { paddingHorizontal: 12, paddingTop: 16 },
   card: {
@@ -178,5 +179,5 @@ const styles = StyleSheet.create({
     borderColor: messenger.line,
   },
   state: { alignItems: 'center', gap: 10, paddingVertical: 48, paddingHorizontal: 24 },
-  stateText: { textAlign: 'center', fontSize: 14, fontFamily: 'Inter_400Regular', color: messenger.chipInk },
+  stateText: { textAlign: 'center', fontSize: 14, fontFamily: fonts.regular, color: messenger.chipInk },
 });

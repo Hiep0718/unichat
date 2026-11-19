@@ -3,9 +3,10 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { UCIcon } from '../../../components/uc-icon';
-import { messenger } from '../../../design/tokens';
+import { button, messenger } from '../../../design/tokens';
 import { MemberAvatar } from '../../account/components/member-avatar';
 import { ConversationAvatar } from './conversation-avatar';
+import { fonts } from '../../../design/typography';
 
 import type { Conversation } from '../messages-api';
 
@@ -67,12 +68,12 @@ const styles = StyleSheet.create({
   },
   back: { paddingRight: 2 },
   titles: { flex: 1, minWidth: 0 },
-  title: { fontSize: 17, fontFamily: 'Inter_700Bold', color: messenger.theirsInk },
-  subtitle: { fontSize: 13, fontFamily: 'Inter_400Regular', color: messenger.chipInk },
+  title: { fontSize: 17, fontFamily: fonts.bold, color: messenger.theirsInk },
+  subtitle: { fontSize: 13, fontFamily: fonts.regular, color: messenger.chipInk },
   call: {
     width: 44,
     height: 44,
-    borderRadius: 14,
+    borderRadius: button.radius,
     backgroundColor: messenger.field,
     alignItems: 'center',
     justifyContent: 'center',

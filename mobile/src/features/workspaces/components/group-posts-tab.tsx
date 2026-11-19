@@ -10,7 +10,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
 
-import { colors, radii, spacing } from '../../../design/tokens';
+import { button, colors, palette, radii, spacing } from '../../../design/tokens';
 import { typography } from '../../../design/typography';
 import { UCIcon } from '../../../components/uc-icon';
 import { UCEmptyState } from '../../../components/uc-empty-state';
@@ -142,7 +142,7 @@ export function GroupPostsTab({ workspaceId, header }: GroupPostsTabProps) {
         accessibilityRole="button"
         accessibilityLabel="Tạo bài viết"
       >
-        <UCIcon name="add" size={20} color="#FFFFFF" />
+        <UCIcon name="add" size={20} color={palette.trenAnh} />
         <Text style={styles.fabText}>Tạo bài viết</Text>
       </TouchableOpacity>
     </View>
@@ -192,12 +192,12 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     paddingHorizontal: 20,
     paddingVertical: 14,
-    borderRadius: radii.full,
-    backgroundColor: '#0F172A',
+    borderRadius: button.radius,
+    backgroundColor: button.primaryBg,
   },
   fabText: {
     ...typography.labelMd,
-    color: '#FFFFFF',
+    color: palette.trenAnh,
     fontWeight: '700',
   },
 });

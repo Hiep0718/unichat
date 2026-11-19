@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
-import { workplace } from '../design/tokens';
+import { workplace, palette } from '../design/tokens';
 
 /**
  * Which backdrop a screen sits on.
@@ -32,7 +32,7 @@ export function UCScreenContainer({
   return (
     <View style={styles.glass}>
       <LinearGradient
-        colors={['#F4F6FC', '#EFF3FF', '#F0F9FF', '#F4F6FC']}
+        colors={[palette.beMat, palette.nhanNhat, '#F0F9FF', palette.beMat]}
         locations={[0, 0.3, 0.7, 1]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -46,7 +46,7 @@ export function UCScreenContainer({
 const styles = StyleSheet.create({
   glass: {
     flex: 1,
-    backgroundColor: '#F4F6FC',
+    backgroundColor: palette.beMat,
   },
   canvas: {
     flex: 1,

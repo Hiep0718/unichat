@@ -3,8 +3,9 @@ import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, View
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { UCIcon } from '../../../components/uc-icon';
-import { radii, workplace } from '../../../design/tokens';
+import { radii, workplace, palette } from '../../../design/tokens';
 import { presentStatus } from '../../documents/document-status';
+import { fonts } from '../../../design/typography';
 
 import type { StatusTone } from '../../documents/document-status';
 import type { DocumentItem } from '../../workspaces/workspace-types';
@@ -20,7 +21,7 @@ interface SourcesSheetProps {
 const TONE: Record<StatusTone, { bg: string; ink: string }> = {
   ready: { bg: workplace.okBg, ink: workplace.okInk },
   working: { bg: workplace.warnBg, ink: workplace.warnInk },
-  blocked: { bg: '#FEE2E2', ink: workplace.alert },
+  blocked: { bg: palette.pillHongNen, ink: workplace.alert },
 };
 
 /**
@@ -80,14 +81,14 @@ const styles = StyleSheet.create({
   handle: { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, backgroundColor: workplace.line },
   header: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingVertical: 14 },
   headText: { flex: 1, minWidth: 0 },
-  title: { color: workplace.ink, fontSize: 19, fontFamily: 'Inter_800ExtraBold' },
+  title: { color: workplace.ink, fontSize: 19, fontFamily: fonts.extrabold },
   sub: { color: workplace.inkMuted, fontSize: 13 },
   list: { paddingHorizontal: 16, paddingBottom: 8, gap: 8 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 10, borderRadius: radii.lg, backgroundColor: workplace.canvas },
   fileIcon: { width: 34, height: 34, borderRadius: 10, backgroundColor: workplace.card, alignItems: 'center', justifyContent: 'center' },
-  fileName: { flex: 1, color: workplace.ink, fontSize: 14, fontFamily: 'Inter_600SemiBold' },
+  fileName: { flex: 1, color: workplace.ink, fontSize: 14, fontFamily: fonts.semibold },
   status: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: radii.full },
-  statusText: { fontSize: 11.5, fontFamily: 'Inter_700Bold' },
+  statusText: { fontSize: 11.5, fontFamily: fonts.bold },
   state: { padding: 32 },
   empty: { color: workplace.inkMuted, textAlign: 'center', padding: 24 },
 });

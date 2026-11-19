@@ -7,6 +7,7 @@ import { formatRelativeTime } from '../../../lib/format-time';
 import { MemberAvatar } from '../../account/components/member-avatar';
 import { EMPTY_REACTIONS } from '../reactions';
 import { ReactionBar } from './reaction-bar';
+import { fonts } from '../../../design/typography';
 
 import type { ReactionSummary } from '../feed-types';
 import type { ReplyRow as ReplyRowData } from '../reply-tree';
@@ -131,7 +132,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  author: { color: workplace.ink, fontSize: 13.5, fontFamily: 'Inter_700Bold' },
+  author: { color: workplace.ink, fontSize: 13.5, fontFamily: fonts.bold },
   time: { color: workplace.inkMuted, fontSize: 12 },
   badge: {
     flexDirection: 'row',
@@ -142,14 +143,14 @@ const styles = StyleSheet.create({
     borderRadius: radii.full,
     backgroundColor: workplace.okBg,
   },
-  badgeText: { color: workplace.okInk, fontSize: 11, fontFamily: 'Inter_700Bold' },
+  badgeText: { color: workplace.okInk, fontSize: 11, fontFamily: fonts.bold },
   body: { color: workplace.ink, fontSize: 14.5, lineHeight: 21 },
-  mention: { color: workplace.accent, fontFamily: 'Inter_600SemiBold' },
+  mention: { color: workplace.accent, fontFamily: fonts.semibold },
   citations: { gap: 4 },
   citation: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  citationText: { flex: 1, color: workplace.inkSoft, fontSize: 12, fontFamily: 'Inter_500Medium' },
+  citationText: { flex: 1, color: workplace.inkSoft, fontSize: 12, fontFamily: fonts.medium },
   actions: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 4 },
   action: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 5 },
-  actionText: { color: workplace.inkMuted, fontSize: 13, fontFamily: 'Inter_500Medium' },
+  actionText: { color: workplace.inkMuted, fontSize: 13, fontFamily: fonts.medium },
   pressed: { opacity: 0.6 },
 });

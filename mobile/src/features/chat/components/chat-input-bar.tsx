@@ -4,7 +4,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 
 import { UCIcon } from '../../../components/uc-icon';
-import { dock, radii, workplace } from '../../../design/tokens';
+import { shadows } from '../../../design/shadows';
+import { button, palette, radii, workplace } from '../../../design/tokens';
+import { fonts } from '../../../design/typography';
 
 /** Giới hạn của Core API cho một câu hỏi. */
 const MIN_QUESTION = 3;
@@ -43,6 +45,9 @@ function ModeChip({ label, active, onPress, testID }: ModeChipProps) {
 /**
  * Ô hỏi ở đáy màn chat.
  *
+ * Bộ chuyển chế độ là segmented như `knowledge-mode-switch` của web: khung
+ * nền `ke`, mục đang chọn nền trắng chữ màu nhấn. Nút gửi tròn, màu nhấn.
+ *
  * "Chỉ tài liệu" giữ câu trả lời trong tài liệu của nhóm; "Mở rộng" cho phép
  * trợ lý dùng thêm kiến thức ngoài, và câu trả lời khi đó được đánh dấu rõ.
  */
@@ -67,7 +72,7 @@ export function ChatInputBar({ onSend, disabled = false, placeholder = 'Hỏi tr
           value={text}
           onChangeText={setText}
           placeholder={placeholder}
-          placeholderTextColor="#94A3B8"
+          placeholderTextColor={palette.mucMo}
           multiline
           maxLength={MAX_QUESTION}
           editable={!disabled}
@@ -82,12 +87,14 @@ export function ChatInputBar({ onSend, disabled = false, placeholder = 'Hỏi tr
           accessibilityState={{ disabled: !canSend }}
           testID="chat-send-button"
         >
-          <UCIcon name="arrow-upward" size={20} color="#FFFFFF" />
+          <UCIcon name="arrow-upward" size={20} color={palette.trenAnh} />
         </Pressable>
       </View>
-      <View style={styles.row} accessibilityRole="radiogroup">
-        <ModeChip label="Chỉ tài liệu" active={!expanded} onPress={() => setExpanded(false)} testID="mode-strict" />
-        <ModeChip label="Mở rộng" active={expanded} onPress={() => setExpanded(true)} testID="mode-expanded" />
+      <View style={styles.row}>
+        <View style={styles.modeSwitch} accessibilityRole="radiogroup">
+          <ModeChip label="Chỉ tài liệu" active={!expanded} onPress={() => setExpanded(false)} testID="mode-strict" />
+          <ModeChip label="Mở rộng" active={expanded} onPress={() => setExpanded(true)} testID="mode-expanded" />
+        </View>
         {sourceCount !== undefined && onOpenSources && (
           <Pressable style={styles.sources} onPress={onOpenSources} accessibilityRole="button" testID="chat-sources-button">
             <UCIcon name="description" size={15} color={workplace.ink} />
@@ -109,17 +116,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 13,
     paddingBottom: 13,
-    borderRadius: radii.xl,
+    borderRadius: radii['2xl'],
     backgroundColor: workplace.chip,
     color: workplace.ink,
     fontSize: 16,
   },
-  send: { width: 48, height: 48, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: '#C7CCD8' },
-  sendActive: { backgroundColor: dock.accent },
-  chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: radii.full, borderWidth: 1, borderColor: workplace.line, backgroundColor: workplace.card },
-  chipActive: { backgroundColor: workplace.ink, borderColor: workplace.ink },
-  chipText: { color: workplace.inkSoft, fontSize: 13, fontFamily: 'Inter_600SemiBold' },
-  chipTextActive: { color: '#FFFFFF', fontFamily: 'Inter_700Bold' },
+  send: { width: 48, height: 48, borderRadius: button.radius, alignItems: 'center', justifyContent: 'center', backgroundColor: button.disabledBg },
+  sendActive: { backgroundColor: button.primaryBg },
+  modeSwitch: { flexDirection: 'row', padding: 3, gap: 2, borderRadius: radii.full, borderWidth: 1, borderColor: palette.vien, backgroundColor: palette.ke },
+  chip: { paddingHorizontal: 13, paddingVertical: 6, borderRadius: radii.full },
+  chipActive: { backgroundColor: palette.nen, ...shadows.sm },
+  chipText: { color: palette.mucMo, fontSize: 13, fontFamily: fonts.semibold },
+  chipTextActive: { color: palette.nhan },
   sources: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -129,7 +137,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: radii.full,
     borderWidth: 1,
-    borderColor: workplace.line,
+    borderColor: palette.vien,
   },
-  sourcesText: { color: workplace.ink, fontSize: 13, fontFamily: 'Inter_600SemiBold' },
+  sourcesText: { color: workplace.ink, fontSize: 13, fontFamily: fonts.semibold },
 });

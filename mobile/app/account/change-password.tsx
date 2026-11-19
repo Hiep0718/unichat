@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { z } from 'zod';
-import { colors, spacing, radii } from '../../src/design/tokens';
+import { colors, spacing, radii, palette } from '../../src/design/tokens';
 import { typography } from '../../src/design/typography';
 import { UCScreenContainer } from '../../src/components/uc-screen-container';
 import { UCTextInput } from '../../src/components/uc-text-input';
@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
   scrollView: { flex: 1 },
   scrollContent: { padding: spacing.lg, paddingBottom: 60 },
   card: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: palette.nen,
     borderRadius: radii['2xl'],
     padding: spacing.xl,
     borderWidth: 1,

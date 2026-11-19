@@ -3,6 +3,7 @@ import { Image, StyleSheet, Text, View } from 'react-native';
 
 import { avatarSource } from '../account-api';
 import { avatarPaint } from '../avatar-colours';
+import { fonts } from '../../../design/typography';
 
 import type { AvatarColorKey } from '../avatar-colours';
 import type { ImageStyle, StyleProp, ViewStyle } from 'react-native';
@@ -74,5 +75,5 @@ export function MemberAvatar({
 
 const styles = StyleSheet.create({
   letter: { alignItems: 'center', justifyContent: 'center' },
-  letterText: { fontFamily: 'Inter_700Bold' },
+  letterText: { fontFamily: fonts.bold },
 });

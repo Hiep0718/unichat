@@ -1,65 +1,155 @@
 /**
  * Bộ token thiết kế của UniChat trên di động.
  *
- * Đồng bộ với frontend/src/styles/index.css. Chú thích cũ ở đây nói chúng
- * được "mirrored 1:1" từ web, nhưng điều đó đã không còn đúng từ lâu: web
- * đã đổi từ teal sang xanh cornflower, nền từ ấm sang lạnh, và thêm cả chế
- * độ tối. Những giá trị dưới đây được kéo sang cho khớp lại.
+ * Nguồn sự thật là `frontend/src/styles/index.css`. React Native không có
+ * custom property, nên `palette` dưới đây là bản sao bằng tay của lớp màu
+ * gốc trong `:root` của web, giữ nguyên tên biến (bỏ dấu, camelCase) để đối
+ * chiếu được: `--muc-nhat` ở web là `palette.mucNhat` ở đây.
  *
- * React Native không có custom property, nên đây là bản sao chứ không phải
- * một tham chiếu: mỗi lần web đổi màu thì file này phải đổi theo bằng tay.
+ * Mọi bảng màu khác (`colors`, `workplace`, `dock`, `messenger`, `glass`)
+ * chỉ trỏ vào `palette`, không tự khai mã màu. Trước bản này mobile có bốn
+ * bảng song song với ba màu nhấn khác nhau cho cùng một vai: nút gửi của
+ * Trợ lý AI là `#3346F5`, nút gửi bình luận là navy `#1E3A8A`, còn web dùng
+ * `#045CDF` ở cả hai. Gom về một gốc thì web đổi một màu là mobile đổi theo
+ * ở đúng một chỗ.
+ *
+ * Mỗi lần web đổi màu gốc thì phải đổi `palette` theo bằng tay.
  */
 
-export const colors = {
-  // Primary (Academic Navy)
-  primary: '#045CDF',
-  onPrimary: '#FFFFFF',
-  primaryContainer: '#1F4FD0',
-  onPrimaryContainer: '#E5EEFB',
-  inversePrimary: '#5A9BFC',
-  primaryFixed: '#E5EEFB',
-  onPrimaryFixed: '#0A1A3C',
+/** Lớp màu gốc, chép từ `:root` của web (chế độ sáng). */
+export const palette = {
+  /** Tờ giấy trắng mà nội dung nằm trên. */
+  nen: '#FFFFFF',
+  /** Panel, nền màn hình. */
+  beMat: '#F6F7F9',
+  /** Khung ngoài, bậc sẫm hơn panel. */
+  khung: '#E3E6EB',
+  noi: '#FFFFFF',
+  /** Viền thẻ, viền ô nhập, viền nút phụ. */
+  vien: '#D4D8E0',
+  /** Đường kẻ phân cách, nền khung bộ chuyển segmented. */
+  ke: '#EEF0F3',
+  /** Điều khiển đang tắt (nút gửi khi chưa gõ gì). */
+  dieuKhien: '#BFC5CF',
 
-  // Secondary (AI Teal Accent)
-  secondary: '#00687A',
-  onSecondary: '#FFFFFF',
-  secondaryContainer: '#57DFFE',
-  onSecondaryContainer: '#006172',
-  secondaryFixed: '#ACEDFF',
+  /** Mực chính. Chỉ có hai vai mực; thứ bậc do cỡ chữ và độ đậm gánh. */
+  muc: '#151A23',
+  mucNhat: '#555C68',
+  mucMo: '#5A616C',
 
-  // Tertiary (Warm Amber)
-  tertiary: '#4B1C00',
-  onTertiary: '#FFFFFF',
-  tertiaryContainer: '#6E2C00',
-  onTertiaryContainer: '#F39461',
+  /** Màu nhấn duy nhất: nút chính, chip đang chọn, liên kết. */
+  nhan: '#045CDF',
+  nhanNhat: '#E5EEFB',
+  /** Chữ đặt trên mảng màu nhấn. */
+  nhanMuc: '#FFFFFF',
+  /** `color-mix(in srgb, --nhan 86%, --muc)`: nút chính khi nhấn. */
+  nhanDam: '#0653C5',
+  /** Chữ cái trên chip nhận diện nhóm: cố ý không lật theo chế độ. */
+  markMuc: '#1F2328',
 
-  // Surface & Background
-  surface: '#F6F7F9',
-  surfaceDim: '#E3E6EB',
-  surfaceBright: '#FFFFFF',
-  surfaceContainerLowest: '#FFFFFF',
-  surfaceContainerLow: '#FAFBFC',
-  surfaceContainer: '#F1F3F6',
-  surfaceContainerHigh: '#EEF0F3',
-  surfaceContainerHighest: '#E3E6EB',
-  onSurface: '#151A23',
-  onSurfaceVariant: '#555C68',
-  inverseSurface: '#242A34',
-  inverseOnSurface: '#E9EDF3',
+  /** Thanh bên của web: xanh đậm, không đổi theo chế độ. */
+  rayNen: '#151F42',
+  rayNoi: '#212E59',
+  rayMuc: '#FFFFFF',
+  rayMucNhat: '#AEB5CB',
+  rayNhan: '#5A9BFC',
+  /** `--canh-bao` của chế độ tối web: đọc được trên nền xanh đậm. */
+  rayCanhBao: '#D9A23C',
 
-  // Outlines & Borders
+  /** Dải chào của trang nhóm. */
+  daiNen: '#2F4FE0',
+  daiMuc: '#FFFFFF',
+  daiMucNhat: '#D5DCF9',
+  daiO: '#2844C1',
+  daiOVien: '#5369CD',
+
+  tot: '#2E7D32',
+  hong: '#B42318',
+  canhBao: '#92400E',
+
+  pillTotNen: '#DCFAE5',
+  pillTotMuc: '#04250E',
+  pillHongNen: '#FDECEA',
+  pillHongMuc: '#7A1D14',
+  pillCanhNen: '#FFFBEB',
+  pillCanhMuc: '#92400E',
+  pillTrungNen: '#ECEEF2',
+  pillTrungMuc: '#39404B',
+
   outline: '#9BA3B1',
-  outlineVariant: '#D4D8E0',
 
-  // Functional & State
-  error: '#BA1A1A',
-  onError: '#FFFFFF',
-  errorContainer: '#FFDAD6',
-  onErrorContainer: '#93000A',
-  success: '#10B981',
-  warning: '#F59E0B',
-  aiBubble: '#ECFEFF',
-  aiBubbleBorder: '#A5F3FC',
+  /** Chữ đặt trên ảnh hoặc dải tối cố định: không đổi theo chế độ. */
+  trenAnh: '#FFFFFF',
+  trenAnhNhat: 'rgba(255, 255, 255, 0.78)',
+  trenAnhNen: 'rgba(10, 13, 20, 0.45)',
+  trenAnhVien: 'rgba(255, 255, 255, 0.38)',
+  /** Nút mờ đặt trên dải tối (góc phải của dải đầu). */
+  trenAnhNut: 'rgba(255, 255, 255, 0.12)',
+  trenAnhNutVien: 'rgba(255, 255, 255, 0.18)',
+} as const;
+
+/**
+ * Quy ước nút của web (`--btn-*`): hành động chính tô màu nhấn, hành động
+ * phụ là nút viền, cả hai bo viên thuốc. Nút icon (đóng, gửi, đính kèm,
+ * quay lại) cũng bo `radius`, tức là tròn.
+ */
+export const button = {
+  radius: 9999,
+  primaryBg: palette.nhan,
+  primaryInk: palette.nhanMuc,
+  primaryBgPressed: palette.nhanDam,
+  secondaryBg: palette.nen,
+  secondaryInk: palette.muc,
+  secondaryBorder: palette.vien,
+  secondaryBgPressed: palette.beMat,
+  disabledBg: palette.dieuKhien,
+} as const;
+
+/** Thẻ nổi bật (mời hỏi trợ lý): `--noi-bat-*` của web. */
+export const noiBat = {
+  nen: palette.rayNen,
+  muc: palette.trenAnh,
+  nutNen: palette.trenAnh,
+  nutMuc: palette.rayNen,
+} as const;
+
+/**
+ * Bảng tên kiểu Material, giữ lại vì nhiều màn đang dùng. Mọi giá trị trỏ
+ * về `palette`, theo đúng ánh xạ `--color-*` của web.
+ */
+export const colors = {
+  primary: palette.nhan,
+  onPrimary: palette.nhanMuc,
+  primaryContainer: palette.nhanDam,
+  onPrimaryContainer: palette.nhanNhat,
+  inversePrimary: palette.rayNhan,
+  primaryFixed: palette.nhanNhat,
+  onPrimaryFixed: palette.nhan,
+
+  surface: palette.beMat,
+  surfaceDim: palette.khung,
+  surfaceBright: palette.nen,
+  surfaceContainerLowest: palette.nen,
+  surfaceContainerLow: '#FAFBFC',
+  surfaceContainer: palette.beMat,
+  surfaceContainerHigh: palette.ke,
+  surfaceContainerHighest: palette.khung,
+  onSurface: palette.muc,
+  onSurfaceVariant: palette.mucNhat,
+  inverseSurface: '#242A34',
+  inverseOnSurface: palette.beMat,
+
+  outline: palette.outline,
+  outlineVariant: palette.vien,
+
+  error: palette.hong,
+  onError: palette.nen,
+  errorContainer: palette.pillHongNen,
+  onErrorContainer: palette.pillHongMuc,
+  success: palette.tot,
+  warning: palette.canhBao,
+  aiBubble: palette.nen,
+  aiBubbleBorder: palette.vien,
 } as const;
 
 export const spacing = {
@@ -71,36 +161,38 @@ export const spacing = {
   xxl: 48,
 } as const;
 
+/** Bo góc, theo `--radius-*` của web. Thẻ 22, điều khiển bo tròn hẳn. */
 export const radii = {
-  sm: 4,
+  sm: 6,
   md: 8,
   lg: 12,
   xl: 16,
-  '2xl': 20,
+  '2xl': 22,
   '3xl': 28,
   full: 9999,
 } as const;
 
+/** Lớp kính mờ của màn Quên mật khẩu; màu nền lấy từ `palette`. */
 export const glass = {
   surface: 'rgba(255, 255, 255, 0.78)',
   surfaceHeavy: 'rgba(255, 255, 255, 0.88)',
   surfaceLight: 'rgba(255, 255, 255, 0.55)',
   surfaceUltraLight: 'rgba(255, 255, 255, 0.35)',
-  surfaceNavy: 'rgba(0, 35, 111, 0.92)',
-  surfaceTeal: 'rgba(0, 104, 122, 0.88)',
+  surfaceNavy: 'rgba(21, 31, 66, 0.92)',
+  surfaceTeal: 'rgba(4, 92, 223, 0.88)',
   border: 'rgba(255, 255, 255, 0.85)',
-  borderSubtle: 'rgba(226, 232, 248, 0.65)',
-  borderAccent: 'rgba(144, 168, 255, 0.35)',
-  borderNavy: 'rgba(182, 196, 255, 0.28)',
+  borderSubtle: 'rgba(212, 216, 224, 0.65)',
+  borderAccent: 'rgba(90, 155, 252, 0.35)',
+  borderNavy: 'rgba(174, 181, 203, 0.28)',
   highlight: 'rgba(255, 255, 255, 0.95)',
   highlightShimmer: 'rgba(255, 255, 255, 0.6)',
-  innerGlow: 'rgba(87, 223, 254, 0.12)',
+  innerGlow: 'rgba(90, 155, 252, 0.12)',
   refractionStart: 'rgba(255, 255, 255, 0.4)',
   refractionEnd: 'rgba(255, 255, 255, 0.0)',
-  ambientNavy: '#00236F',
-  ambientTeal: '#00687A',
-  ambientCyan: '#57DFFE',
-  ambientViolet: 'rgba(144, 168, 255, 0.25)',
+  ambientNavy: palette.rayNen,
+  ambientTeal: palette.nhan,
+  ambientCyan: palette.rayNhan,
+  ambientViolet: 'rgba(90, 155, 252, 0.25)',
 } as const;
 
 /**
@@ -123,71 +215,68 @@ export const animation = {
 } as const;
 
 /**
- * Workplace surfaces — mirrored from the --ws-* block in
- * frontend/src/styles/index.css.
- *
- * Cards separate by elevation, not by a 1px outline: an interface whose every
- * box is drawn round reads as a wireframe. `accent` is the single saturated
- * colour and is spent on what the reader should act on, which is why a card
- * title stays `ink` here instead of taking the navy it used to have.
+ * Bề mặt làm việc: bản sao khối `--ws-*` của web, trỏ đúng vào cùng các màu
+ * gốc như ở web. `accent` là màu bão hòa duy nhất, dành cho thứ người đọc
+ * cần bấm, nên tiêu đề thẻ giữ `ink`.
  */
 export const workplace = {
-  canvas: '#F3F5F9',
-  card: '#FFFFFF',
-  line: '#EEF2F7',
-  chip: '#F1F5F9',
+  canvas: palette.beMat,
+  card: palette.nen,
+  line: palette.ke,
+  chip: palette.pillTrungNen,
 
-  ink: '#0F172A',
-  inkSoft: '#475569',
-  inkMuted: '#64748B',
+  ink: palette.muc,
+  inkSoft: palette.mucNhat,
+  inkMuted: palette.mucMo,
 
-  accent: '#1E3A8A',
-  accentInk: '#FFFFFF',
-  accentSoft: '#E6EBF7',
+  accent: palette.nhan,
+  accentInk: palette.nhanMuc,
+  accentSoft: palette.nhanNhat,
 
-  okBg: '#DCFCE7',
-  okInk: '#166534',
-  warnBg: '#FEF3C7',
-  warnInk: '#854D0E',
-  alert: '#B91C1C',
+  okBg: palette.pillTotNen,
+  okInk: palette.pillTotMuc,
+  warnBg: palette.pillCanhNen,
+  warnInk: palette.pillCanhMuc,
+  alert: palette.hong,
 } as const;
 
 /**
  * Thanh điều hướng dạng dock tối, với nút Hỏi AI nổi ở giữa.
  *
- * `accent` cũng là màu bong bóng tin của mình trong màn Tin nhắn, để nút AI
- * và hành động chính của màn chat đọc như cùng một hệ.
+ * Nền là `--ray-nen`, cùng màu thanh bên của web, để hai bản dùng chung một
+ * khối điều hướng xanh đậm. `accent` là màu nhấn chung của sản phẩm.
  */
 export const dock = {
-  surface: '#0F172A',
+  surface: palette.rayNen,
   border: 'rgba(255, 255, 255, 0.06)',
-  icon: '#94A3B8',
-  iconActive: '#FFFFFF',
-  accent: '#3346F5',
-  accentPressed: '#2737D8',
-  badge: '#EF4444',
+  icon: palette.rayMucNhat,
+  iconActive: palette.rayMuc,
+  accent: palette.nhan,
+  accentPressed: palette.nhanDam,
+  badge: palette.hong,
 } as const;
 
 /** Màn Tin nhắn: nền, bong bóng và các viên thông tin trong luồng chat. */
 export const messenger = {
-  canvas: '#F4F5F9',
-  card: '#FFFFFF',
-  line: '#E8EBF2',
-  mine: '#3346F5',
-  mineInk: '#FFFFFF',
-  theirs: '#FFFFFF',
-  theirsInk: '#0F172A',
-  chip: '#E8EBF2',
-  chipInk: '#475569',
-  field: '#EEF0F5',
-  missedInk: '#DC2626',
-  missedBorder: '#FBCFCF',
-  missedIconBg: '#FEE2E2',
-  okIconBg: '#DCFCE7',
-  okIcon: '#16A34A',
-  disabled: '#C7CCD8',
+  canvas: palette.beMat,
+  card: palette.nen,
+  line: palette.ke,
+  mine: palette.nhan,
+  mineInk: palette.nhanMuc,
+  theirs: palette.nen,
+  theirsInk: palette.muc,
+  chip: palette.ke,
+  chipInk: palette.mucNhat,
+  field: palette.ke,
+  missedInk: palette.hong,
+  missedBorder: palette.pillHongNen,
+  missedIconBg: palette.pillHongNen,
+  okIconBg: palette.pillTotNen,
+  okIcon: palette.tot,
+  disabled: palette.dieuKhien,
 } as const;
 
+export type PaletteToken = keyof typeof palette;
 export type ColorToken = keyof typeof colors;
 export type SpacingToken = keyof typeof spacing;
 export type RadiiToken = keyof typeof radii;

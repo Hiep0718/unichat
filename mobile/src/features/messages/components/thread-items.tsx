@@ -10,6 +10,7 @@ import { UCIcon } from '../../../components/uc-icon';
 import { messenger } from '../../../design/tokens';
 import { MemberAvatar } from '../../account/components/member-avatar';
 import { callIcon, callNeedsAttention, describeCall, formatClock, formatTalkTime } from '../call-log';
+import { fonts } from '../../../design/typography';
 
 import type { CallHistoryEntry, ChatAttachment } from '../messages-api';
 import type { MessageItem } from '../thread-timeline';
@@ -111,7 +112,7 @@ const styles = StyleSheet.create({
     backgroundColor: messenger.chip,
     color: messenger.chipInk,
     fontSize: 11,
-    fontFamily: 'Inter_700Bold',
+    fontFamily: fonts.bold,
   },
   callPill: {
     flexDirection: 'row',
@@ -127,9 +128,9 @@ const styles = StyleSheet.create({
   },
   callPillMissed: { borderColor: messenger.missedBorder },
   callIcon: { width: 24, height: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  callLabel: { fontSize: 13, fontFamily: 'Inter_700Bold', color: messenger.theirsInk },
+  callLabel: { fontSize: 13, fontFamily: fonts.bold, color: messenger.theirsInk },
   callLabelMissed: { color: messenger.missedInk },
-  callDetail: { fontSize: 13, fontFamily: 'Inter_400Regular', color: messenger.chipInk },
+  callDetail: { fontSize: 13, fontFamily: fonts.regular, color: messenger.chipInk },
   messageWrap: { marginBottom: 4 },
   runEnd: { marginBottom: 12 },
   messageRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 8 },
@@ -143,16 +144,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: messenger.line,
   },
-  sender: { fontSize: 11, fontFamily: 'Inter_600SemiBold', color: messenger.chipInk },
-  body: { fontSize: 15, lineHeight: 21, fontFamily: 'Inter_400Regular', color: messenger.theirsInk },
-  bodyMine: { color: messenger.mineInk, fontFamily: 'Inter_500Medium' },
+  sender: { fontSize: 11, fontFamily: fonts.semibold, color: messenger.chipInk },
+  body: { fontSize: 15, lineHeight: 21, fontFamily: fonts.regular, color: messenger.theirsInk },
+  bodyMine: { color: messenger.mineInk, fontFamily: fonts.medium },
   attachment: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  attachmentName: { flexShrink: 1, fontSize: 13, fontFamily: 'Inter_500Medium', textDecorationLine: 'underline' },
+  attachmentName: { flexShrink: 1, fontSize: 13, fontFamily: fonts.medium, textDecorationLine: 'underline' },
   sent: {
     alignSelf: 'flex-end',
     marginTop: 4,
     fontSize: 11,
-    fontFamily: 'Inter_400Regular',
+    fontFamily: fonts.regular,
     color: messenger.chipInk,
   },
 });

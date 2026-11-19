@@ -1,7 +1,7 @@
 import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { colors, radii, spacing } from '../../../design/tokens';
+import { button, colors, palette, radii, spacing } from '../../../design/tokens';
 import { typography } from '../../../design/typography';
 import { UCIcon } from '../../../components/uc-icon';
 
@@ -47,7 +47,7 @@ function nameFrom(displayName?: string, email?: string): string {
 }
 
 /**
- * Dải chào ở đầu màn Workspace.
+ * Dải chào ở đầu tab Nhóm.
  *
  * Một mảng màu đặc mang lời chào, ô hỏi nhanh và ba con số — cùng hình với
  * dải chào trên web, nên hai nơi đọc ra là một sản phẩm.
@@ -67,7 +67,7 @@ export function WorkspaceHero({
   const initial = (who || '?').charAt(0).toUpperCase();
 
   const stats = [
-    { value: workspaceCount, label: 'Workspace' },
+    { value: workspaceCount, label: 'Nhóm' },
     { value: documentCount, label: 'Tài liệu' },
     { value: memberCount, label: 'Thành viên' },
   ];
@@ -114,7 +114,7 @@ export function WorkspaceHero({
               accessibilityLabel="Thông báo"
               hitSlop={8}
             >
-              <UCIcon name="notifications" size={19} color="#FFFFFF" />
+              <UCIcon name="notifications" size={19} color={palette.trenAnh} />
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -152,7 +152,7 @@ export function WorkspaceHero({
             pointerEvents="none"
           />
           <View style={styles.askSend}>
-            <UCIcon name="arrow-upward" size={17} color="#FFFFFF" />
+            <UCIcon name="arrow-upward" size={17} color={palette.trenAnh} />
           </View>
         </TouchableOpacity>
 
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
   root: {
     /* Navy đậm, đúng màu dải chào trên web (--ray-nen: #151F42), nên hai
        client đọc ra là một sản phẩm. Ảnh nền phủ lên màu này. */
-    backgroundColor: '#151F42',
+    backgroundColor: palette.rayNen,
     borderBottomLeftRadius: 28,
     borderBottomRightRadius: 28,
     overflow: 'hidden',
@@ -204,17 +204,17 @@ const styles = StyleSheet.create({
     width: 34,
     height: 34,
     borderRadius: 11,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: palette.nen,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  brandName: { ...typography.bodyLg, color: '#FFFFFF', fontWeight: '700' },
+  brandName: { ...typography.bodyLg, color: palette.trenAnh, fontWeight: '700' },
 
   topActions: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   iconBtn: {
     width: 36,
     height: 36,
-    borderRadius: 12,
+    borderRadius: button.radius,
     // Đặc, không trong suốt: xem chú thích ở `stat`.
     backgroundColor: '#3A4360',
     alignItems: 'center',
@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
   greeting: {
     ...typography.headlineLg,
     marginTop: 4,
-    color: '#FFFFFF',
+    color: palette.trenAnh,
     fontWeight: '700',
     lineHeight: 32,
   },
@@ -251,8 +251,8 @@ const styles = StyleSheet.create({
     paddingLeft: 14,
     paddingRight: 6,
     paddingVertical: 6,
-    borderRadius: radii.full ?? 999,
-    backgroundColor: '#FFFFFF',
+    borderRadius: radii.full,
+    backgroundColor: palette.nen,
   },
   askInput: {
     flex: 1,
@@ -263,8 +263,8 @@ const styles = StyleSheet.create({
   askSend: {
     width: 38,
     height: 38,
-    borderRadius: 13,
-    backgroundColor: '#121A3A',
+    borderRadius: button.radius,
+    backgroundColor: button.primaryBg,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -289,6 +289,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#454E6C',
   },
-  statValue: { ...typography.bodyLg, color: '#FFFFFF', fontWeight: '700' },
+  statValue: { ...typography.bodyLg, color: palette.trenAnh, fontWeight: '700' },
   statLabel: { ...typography.labelSm, color: 'rgba(255, 255, 255, 0.86)' },
 });

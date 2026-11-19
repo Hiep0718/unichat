@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { UCIcon } from '../../../components/uc-icon';
 import { UCTabHero, heroButtonStyle } from '../../../components/uc-tab-hero';
-import { dock, radii, workplace } from '../../../design/tokens';
+import { button, palette, radii, workplace } from '../../../design/tokens';
 import { GroupMark } from '../../workspaces/components/group-mark';
+import { fonts } from '../../../design/typography';
 
 import type { WorkspaceItem } from '../../workspaces/workspace-types';
 
@@ -49,7 +50,7 @@ export function AssistantHero({ group, onPickGroup, onNewChat, onAsk }: Assistan
           accessibilityLabel="Cuộc trò chuyện mới"
           testID="assistant-new-chat"
         >
-          <UCIcon name="add" size={22} color="#FFFFFF" />
+          <UCIcon name="add" size={22} color={palette.trenAnh} />
         </Pressable>
       }
     >
@@ -66,7 +67,7 @@ export function AssistantHero({ group, onPickGroup, onNewChat, onAsk }: Assistan
             value={text}
             onChangeText={setText}
             placeholder={group ? `Hỏi kho ${group.name}...` : 'Chọn một nhóm để hỏi'}
-            placeholderTextColor="#94A3B8"
+            placeholderTextColor={palette.mucMo}
             multiline
             maxLength={MAX_QUESTION}
             editable={group !== null}
@@ -81,7 +82,7 @@ export function AssistantHero({ group, onPickGroup, onNewChat, onAsk }: Assistan
             accessibilityState={{ disabled: !canSend }}
             testID="assistant-send"
           >
-            <UCIcon name="arrow-upward" size={20} color="#FFFFFF" />
+            <UCIcon name="arrow-upward" size={20} color={palette.trenAnh} />
           </Pressable>
         </View>
         <Text style={styles.hint}>
@@ -110,10 +111,10 @@ const styles = StyleSheet.create({
     backgroundColor: workplace.chip,
   },
   groupLabel: { color: workplace.inkMuted, fontSize: 13 },
-  groupName: { flexShrink: 1, color: workplace.ink, fontSize: 13.5, fontFamily: 'Inter_700Bold' },
+  groupName: { flexShrink: 1, color: workplace.ink, fontSize: 13.5, fontFamily: fonts.bold },
   inputRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 10 },
   input: { flex: 1, minHeight: 44, maxHeight: 120, paddingVertical: 10, paddingHorizontal: 4, fontSize: 16, color: workplace.ink },
-  send: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: '#C7CCD8' },
-  sendActive: { backgroundColor: dock.accent },
+  send: { width: 44, height: 44, borderRadius: button.radius, alignItems: 'center', justifyContent: 'center', backgroundColor: button.disabledBg },
+  sendActive: { backgroundColor: button.primaryBg },
   hint: { color: workplace.inkMuted, fontSize: 12 },
 });

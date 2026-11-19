@@ -22,6 +22,7 @@ import {
 } from '../post-presentation';
 import { EMPTY_REACTIONS } from '../reactions';
 import { PostActions } from './post-actions';
+import { fonts } from '../../../design/typography';
 
 import type { FeedPost, ReactionSummary } from '../feed-types';
 
@@ -227,7 +228,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
     color: workplace.ink,
-    fontFamily: 'Inter_700Bold',
+    fontFamily: fonts.bold,
   },
   // Không mang màu nhấn riêng: dùng đúng nền nhạt mà bảng màu này đã dành cho
   // accent, giống dải tương ứng bên web.
@@ -247,13 +248,13 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: workplace.accent,
-    fontFamily: 'Inter_600SemiBold',
+    fontFamily: fonts.semibold,
   },
   aiView: {
     fontSize: 12,
     fontWeight: '600',
     color: workplace.inkMuted,
-    fontFamily: 'Inter_600SemiBold',
+    fontFamily: fonts.semibold,
   },
   headText: {
     flex: 1,
@@ -264,7 +265,7 @@ const styles = StyleSheet.create({
     color: workplace.ink,
     fontSize: 13,
     lineHeight: 18,
-    fontFamily: 'Inter_700Bold',
+    fontFamily: fonts.bold,
   },
   byline: {
     color: workplace.inkMuted,
@@ -277,7 +278,7 @@ const styles = StyleSheet.create({
     fontSize: 16.5,
     lineHeight: 23,
     letterSpacing: -0.2,
-    fontFamily: 'Inter_700Bold',
+    fontFamily: fonts.bold,
   },
   preview: {
     color: workplace.inkSoft,
@@ -305,7 +306,7 @@ const styles = StyleSheet.create({
   },
   chipText: {
     fontSize: 12,
-    fontFamily: 'Inter_700Bold',
+    fontFamily: fonts.bold,
   },
   chipAnnouncement: {
     backgroundColor: workplace.chip,

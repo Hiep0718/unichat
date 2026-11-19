@@ -7,7 +7,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors, spacing, radii } from '../design/tokens';
+import { colors, spacing, radii, palette } from '../design/tokens';
 import { typography } from '../design/typography';
 import { shadows } from '../design/shadows';
 import { UCIcon, IconName } from './uc-icon';
@@ -30,30 +30,30 @@ const toastConfig: Record<
 > = {
   success: {
     icon: 'check',
-    bg: '#ECFDF5',
+    bg: palette.pillTotNen,
     border: '#A7F3D0',
-    text: '#065F46',
-    iconColor: '#059669',
+    text: palette.pillTotMuc,
+    iconColor: palette.tot,
   },
   error: {
     icon: 'error',
-    bg: '#FEF2F2',
+    bg: palette.pillHongNen,
     border: '#FECACA',
-    text: '#991B1B',
+    text: palette.pillHongMuc,
     iconColor: colors.error,
   },
   warning: {
     icon: 'warning',
-    bg: '#FFFBEB',
+    bg: palette.pillCanhNen,
     border: '#FDE68A',
-    text: '#92400E',
+    text: palette.pillCanhMuc,
     iconColor: colors.warning,
   },
   info: {
     icon: 'info',
-    bg: '#EFF6FF',
+    bg: palette.nhanNhat,
     border: '#BFDBFE',
-    text: '#1E40AF',
+    text: palette.nhan,
     iconColor: colors.primary,
   },
 };

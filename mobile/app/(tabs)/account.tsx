@@ -10,6 +10,8 @@ import { AppearanceSection } from '../../src/features/account/sections/appearanc
 import { ProfileSection } from '../../src/features/account/sections/profile-section';
 import { SecuritySection } from '../../src/features/account/sections/security-section';
 import { useAuth } from '../../src/features/auth/auth-context';
+import { palette } from '../../src/design/tokens';
+import { fonts } from '../../src/design/typography';
 
 import type { UserResponse } from '../../src/types/api';
 
@@ -82,7 +84,7 @@ function displayNameOf(profile: UserResponse | null): string {
 function PlaceholderCard({ loading, failed }: { loading: boolean; failed: boolean }) {
   return (
     <View style={styles.placeholder}>
-      {loading ? <ActivityIndicator size="small" color="#64748B" /> : null}
+      {loading ? <ActivityIndicator size="small" color={palette.mucMo} /> : null}
       <Text style={styles.placeholderText}>
         {failed ? 'Không tải được hồ sơ. Kéo xuống hoặc thử lại sau.' : 'Đang tải hồ sơ…'}
       </Text>
@@ -95,11 +97,11 @@ const styles = StyleSheet.create({
   content: { paddingBottom: 118 },
   sections: { paddingHorizontal: 16, paddingTop: 18, gap: 16 },
   placeholder: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: palette.nen,
     borderRadius: 20,
     paddingVertical: 28,
     alignItems: 'center',
     gap: 10,
   },
-  placeholderText: { color: '#64748B', fontFamily: 'Inter_400Regular', fontSize: 13 },
+  placeholderText: { color: palette.mucMo, fontFamily: fonts.regular, fontSize: 13 },
 });

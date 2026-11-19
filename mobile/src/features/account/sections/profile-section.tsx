@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { UCIcon } from '../../../components/uc-icon';
-import { colors } from '../../../design/tokens';
+import { colors, palette } from '../../../design/tokens';
 import { accountApi } from '../account-api';
 import { AccountSection } from '../components/account-section';
 import { AvatarPicker } from '../components/avatar-picker';
 import { toAvatarColorKey } from '../avatar-colours';
+import { fonts } from '../../../design/typography';
 
 import type { UserResponse } from '../../../types/api';
 
@@ -75,7 +76,7 @@ export function ProfileSection({ profile, onChanged }: ProfileSectionProps) {
           editable={!saving}
           accessibilityLabel="Tên hiển thị"
           placeholder="Tên bạn muốn người khác thấy"
-          placeholderTextColor="#94A3B8"
+          placeholderTextColor={palette.mucMo}
         />
         {changed ? (
           <Pressable
@@ -85,7 +86,7 @@ export function ProfileSection({ profile, onChanged }: ProfileSectionProps) {
             accessibilityRole="button"
           >
             {saving ? (
-              <ActivityIndicator size="small" color="#FFFFFF" />
+              <ActivityIndicator size="small" color={palette.trenAnh} />
             ) : (
               <Text style={styles.saveText}>Lưu</Text>
             )}
@@ -104,7 +105,7 @@ export function ProfileSection({ profile, onChanged }: ProfileSectionProps) {
         <Text style={styles.emailValue} numberOfLines={1}>
           {profile.email}
         </Text>
-        <UCIcon name="lock-outline" size={17} color="#94A3B8" />
+        <UCIcon name="lock-outline" size={17} color={palette.mucMo} />
       </View>
       <Text style={styles.hint}>Email gắn với tài khoản tổ chức nên không đổi trực tiếp được.</Text>
     </AccountSection>
@@ -113,8 +114,8 @@ export function ProfileSection({ profile, onChanged }: ProfileSectionProps) {
 
 const styles = StyleSheet.create({
   label: {
-    color: '#334155',
-    fontFamily: 'Inter_600SemiBold',
+    color: palette.mucNhat,
+    fontFamily: fonts.semibold,
     fontSize: 13,
     marginTop: 18,
     marginBottom: 8,
@@ -126,11 +127,11 @@ const styles = StyleSheet.create({
     height: 48,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    backgroundColor: '#F8FAFC',
+    borderColor: palette.vien,
+    backgroundColor: palette.beMat,
     paddingHorizontal: 14,
-    color: '#0F172A',
-    fontFamily: 'Inter_400Regular',
+    color: palette.muc,
+    fontFamily: fonts.regular,
     fontSize: 14.5,
   },
   save: {
@@ -142,9 +143,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 14,
   },
-  saveText: { color: '#FFFFFF', fontFamily: 'Inter_700Bold', fontSize: 13.5 },
-  hint: { color: '#94A3B8', fontFamily: 'Inter_400Regular', fontSize: 11.5, marginTop: 8 },
-  hintBad: { color: '#DC2626' },
+  saveText: { color: palette.trenAnh, fontFamily: fonts.bold, fontSize: 13.5 },
+  hint: { color: palette.mucMo, fontFamily: fonts.regular, fontSize: 11.5, marginTop: 8 },
+  hintBad: { color: palette.hong },
   emailRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  emailValue: { flex: 1, color: '#64748B', fontFamily: 'Inter_400Regular', fontSize: 13.5 },
+  emailValue: { flex: 1, color: palette.mucMo, fontFamily: fonts.regular, fontSize: 13.5 },
 });

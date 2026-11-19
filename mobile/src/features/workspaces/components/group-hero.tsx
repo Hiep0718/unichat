@@ -10,8 +10,8 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { colors, radii, spacing } from '../../../design/tokens';
-import { typography } from '../../../design/typography';
+import { button, colors, palette, spacing } from '../../../design/tokens';
+import { typography, fonts } from '../../../design/typography';
 import { UCIcon } from '../../../components/uc-icon';
 import { GroupMark } from './group-mark';
 import { WorkspaceCover } from './workspace-cover';
@@ -69,7 +69,7 @@ export function GroupHero({
           accessibilityRole="button"
           accessibilityLabel="Quay lại"
         >
-          <UCIcon name="chevron-left" size={22} color="#FFFFFF" />
+          <UCIcon name="chevron-left" size={22} color={palette.trenAnh} />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -79,7 +79,7 @@ export function GroupHero({
           accessibilityRole="button"
           accessibilityLabel="Thêm tuỳ chọn"
         >
-          <UCIcon name="more-horiz" size={22} color="#FFFFFF" />
+          <UCIcon name="more-horiz" size={22} color={palette.trenAnh} />
         </TouchableOpacity>
       </View>
 
@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
   iconBtn: {
     width: 40,
     height: 40,
-    borderRadius: radii.lg,
+    borderRadius: button.radius,
     backgroundColor: 'rgba(8,20,16,0.42)',
     alignItems: 'center',
     justifyContent: 'center',
@@ -144,8 +144,8 @@ const styles = StyleSheet.create({
   },
   name: {
     ...typography.headlineXl,
-    color: '#FFFFFF',
-    fontFamily: 'Inter_700Bold',
+    color: palette.trenAnh,
+    fontFamily: fonts.bold,
   },
   meta: {
     ...typography.bodySm,
@@ -160,8 +160,8 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
     marginHorizontal: spacing.md,
     paddingVertical: 14,
-    borderRadius: radii.xl,
-    backgroundColor: '#FFFFFF',
+    borderRadius: button.radius,
+    backgroundColor: palette.nen,
   },
   askText: {
     ...typography.labelMd,

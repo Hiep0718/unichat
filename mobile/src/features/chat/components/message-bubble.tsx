@@ -3,8 +3,9 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Markdown from '@ronradtke/react-native-markdown-display';
 
 import { UCIcon } from '../../../components/uc-icon';
-import { dock, radii, workplace } from '../../../design/tokens';
+import { dock, radii, workplace, palette } from '../../../design/tokens';
 import { WorkspaceSummaryDocuments } from './workspace-summary-documents';
+import { fonts } from '../../../design/typography';
 
 import type { CitationItem, MessageItem } from '../../../types/api';
 
@@ -32,7 +33,7 @@ function AssistantMeta({ message, citations }: { readonly message: MessageItem; 
   return (
     <View style={styles.meta}>
       <View style={styles.avatar}>
-        <UCIcon name="auto-awesome" size={13} color="#FFFFFF" />
+        <UCIcon name="auto-awesome" size={13} color={palette.trenAnh} />
       </View>
       <Text style={styles.name}>Trợ lý AI</Text>
       {parts ? <Text style={styles.metaText} numberOfLines={1}>· {parts}</Text> : null}
@@ -101,12 +102,12 @@ export function MessageBubble({ message, workspaceId, onPressCitation }: Message
 
 const styles = StyleSheet.create({
   userWrap: { alignItems: 'flex-end', marginVertical: 8, paddingLeft: 40 },
-  userBubble: { maxWidth: '100%', paddingHorizontal: 16, paddingVertical: 12, borderRadius: 18, borderBottomRightRadius: 6, backgroundColor: workplace.ink },
-  userText: { color: '#FFFFFF', fontSize: 15, lineHeight: 22, fontFamily: 'Inter_500Medium' },
+  userBubble: { maxWidth: '100%', paddingHorizontal: 16, paddingVertical: 12, borderRadius: 18, borderBottomRightRadius: 6, backgroundColor: palette.nhan },
+  userText: { color: palette.nhanMuc, fontSize: 15, lineHeight: 22, fontFamily: fonts.medium },
   aiWrap: { gap: 10, marginVertical: 8 },
   meta: { flexDirection: 'row', alignItems: 'center', gap: 7 },
   avatar: { width: 24, height: 24, borderRadius: 7, backgroundColor: workplace.ink, alignItems: 'center', justifyContent: 'center' },
-  name: { color: workplace.ink, fontSize: 13.5, fontFamily: 'Inter_700Bold' },
+  name: { color: workplace.ink, fontSize: 13.5, fontFamily: fonts.bold },
   metaText: { flexShrink: 1, color: workplace.inkMuted, fontSize: 12.5 },
   aiCard: { paddingHorizontal: 16, paddingVertical: 12, borderRadius: radii.xl, backgroundColor: workplace.card, borderWidth: 1, borderColor: workplace.line },
   warning: { marginTop: 8, color: workplace.warnInk, fontSize: 13, lineHeight: 19 },
@@ -126,16 +127,16 @@ const styles = StyleSheet.create({
   },
   pressed: { backgroundColor: workplace.canvas },
   sourceIndex: { minWidth: 22, height: 22, borderRadius: 6, backgroundColor: dock.accent, alignItems: 'center', justifyContent: 'center' },
-  sourceIndexText: { color: '#FFFFFF', fontSize: 12, fontFamily: 'Inter_700Bold' },
-  sourceName: { flexShrink: 1, color: workplace.ink, fontSize: 13, fontFamily: 'Inter_600SemiBold' },
+  sourceIndexText: { color: palette.trenAnh, fontSize: 12, fontFamily: fonts.bold },
+  sourceName: { flexShrink: 1, color: workplace.ink, fontSize: 13, fontFamily: fonts.semibold },
 });
 
 const markdownStyles = {
   body: { color: workplace.ink, fontSize: 15, lineHeight: 24 },
-  strong: { fontFamily: 'Inter_700Bold', fontWeight: '700' as const, color: workplace.ink },
+  strong: { fontFamily: fonts.bold, fontWeight: '700' as const, color: workplace.ink },
   code_inline: { backgroundColor: workplace.chip, color: workplace.ink, paddingHorizontal: 6, borderRadius: 4, fontFamily: 'monospace', fontSize: 13 },
-  code_block: { backgroundColor: workplace.ink, color: '#F8FAFC', padding: 12, borderRadius: 10, marginVertical: 8, fontFamily: 'monospace', fontSize: 12.5 },
-  fence: { backgroundColor: workplace.ink, color: '#F8FAFC', padding: 12, borderRadius: 10, marginVertical: 8, fontFamily: 'monospace', fontSize: 12.5 },
+  code_block: { backgroundColor: workplace.ink, color: palette.beMat, padding: 12, borderRadius: 10, marginVertical: 8, fontFamily: 'monospace', fontSize: 12.5 },
+  fence: { backgroundColor: workplace.ink, color: palette.beMat, padding: 12, borderRadius: 10, marginVertical: 8, fontFamily: 'monospace', fontSize: 12.5 },
   bullet_list: { marginVertical: 4 },
   bullet_list_item: { marginVertical: 2 },
 };

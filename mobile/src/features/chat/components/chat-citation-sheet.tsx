@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity, ScrollView, Platform } from 'react-native';
 import { BlurView } from 'expo-blur';
-import { colors, spacing, radii } from '../../../design/tokens';
+import { colors, spacing, radii, palette } from '../../../design/tokens';
 import { typography } from '../../../design/typography';
 import { UCIcon } from '../../../components/uc-icon';
 import { CitationItem } from '../../../types/api';
@@ -54,7 +54,7 @@ export function ChatCitationSheet({ citation, onClose }: ChatCitationSheetProps)
 
           <View style={styles.scoreRow}>
             <View style={styles.scoreBadge}>
-              <UCIcon name="verified" size={14} color="#059669" />
+              <UCIcon name="verified" size={14} color={palette.tot} />
               <Text style={styles.scoreText}>Độ liên quan: {scorePercent}%</Text>
             </View>
             <Text style={styles.scoreHint}>Được xác thực bởi RAG Reasoner</Text>
@@ -82,12 +82,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   sheet: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: palette.nen,
     borderTopLeftRadius: radii['3xl'],
     borderTopRightRadius: radii['3xl'],
     padding: spacing.lg,
     maxHeight: '70%',
-    shadowColor: '#00236F',
+    shadowColor: palette.nhan,
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.15,
     shadowRadius: 20,
@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
   scoreText: {
     fontSize: 11.5,
     fontWeight: '700',
-    color: '#065F46',
+    color: palette.pillTotMuc,
   },
   scoreHint: {
     fontSize: 11,
@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.xl,
     padding: spacing.md,
     borderLeftWidth: 3.5,
-    borderLeftColor: '#00687A',
+    borderLeftColor: palette.nhan,
     borderWidth: 1,
     borderColor: 'rgba(226, 232, 248, 0.9)',
   },

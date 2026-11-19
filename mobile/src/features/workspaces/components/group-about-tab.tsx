@@ -7,7 +7,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 
-import { colors, radii, spacing } from '../../../design/tokens';
+import { colors, noiBat, palette, radii, spacing } from '../../../design/tokens';
 import { typography } from '../../../design/typography';
 import { UCIcon } from '../../../components/uc-icon';
 
@@ -207,19 +207,19 @@ const styles = StyleSheet.create({
   // Nghịch với nền trang, giống thẻ trợ lý ở bản web: cùng một lời mời ở hai
   // nơi thì không nên trông như hai thứ khác nhau.
   aiCard: {
-    backgroundColor: '#0B1220',
+    backgroundColor: noiBat.nen,
     borderRadius: radii.xl,
     padding: spacing.md,
   },
   aiTitle: {
     ...typography.headlineMd,
-    color: '#FFFFFF',
+    color: palette.trenAnh,
     fontWeight: '700',
     marginBottom: 6,
   },
   aiBody: {
     ...typography.bodySm,
-    color: 'rgba(255,255,255,0.82)',
+    color: palette.trenAnhNhat,
     lineHeight: 20,
   },
   fact: {

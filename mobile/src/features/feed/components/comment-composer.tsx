@@ -3,8 +3,9 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { UCIcon } from '../../../components/uc-icon';
-import { radii, workplace } from '../../../design/tokens';
+import { button, palette, radii, workplace } from '../../../design/tokens';
 import { MAX_REPLY_LENGTH } from '../feed-api';
+import { fonts } from '../../../design/typography';
 
 interface CommentComposerProps {
   /** Đang trả lời ai; null là bình luận thẳng vào bài. */
@@ -53,7 +54,7 @@ export function CommentComposer({ replyingTo, onCancelReply, onSubmit }: Comment
           value={text}
           onChangeText={setText}
           placeholder={replyingTo ? 'Viết câu trả lời...' : 'Viết bình luận... (gõ @AI để hỏi trợ lý)'}
-          placeholderTextColor="#94A3B8"
+          placeholderTextColor={palette.mucMo}
           multiline
           maxLength={MAX_REPLY_LENGTH}
           testID="comment-input"
@@ -67,7 +68,7 @@ export function CommentComposer({ replyingTo, onCancelReply, onSubmit }: Comment
           accessibilityState={{ disabled: !canSend }}
           testID="comment-send"
         >
-          {sending ? <ActivityIndicator size="small" color="#FFFFFF" /> : <UCIcon name="send" size={19} color="#FFFFFF" />}
+          {sending ? <ActivityIndicator size="small" color={palette.trenAnh} /> : <UCIcon name="send" size={19} color={palette.trenAnh} />}
         </Pressable>
       </View>
     </View>
@@ -85,7 +86,7 @@ const styles = StyleSheet.create({
   },
   replying: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 4 },
   replyingText: { flex: 1, color: workplace.inkMuted, fontSize: 12.5 },
-  replyingName: { color: workplace.ink, fontFamily: 'Inter_600SemiBold' },
+  replyingName: { color: workplace.ink, fontFamily: fonts.semibold },
   row: { flexDirection: 'row', alignItems: 'flex-end', gap: 10 },
   input: {
     flex: 1,
@@ -102,11 +103,10 @@ const styles = StyleSheet.create({
   send: {
     width: 44,
     height: 44,
-    borderRadius: 14,
-    backgroundColor: workplace.inkMuted,
-    opacity: 0.45,
+    borderRadius: button.radius,
+    backgroundColor: button.disabledBg,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  sendActive: { backgroundColor: workplace.accent, opacity: 1 },
+  sendActive: { backgroundColor: button.primaryBg },
 });

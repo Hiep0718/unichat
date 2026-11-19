@@ -6,6 +6,7 @@ import { colors } from '../../src/design/tokens';
 import { UCDockTabBar } from '../../src/components/uc-dock-tab-bar';
 import { totalUnread } from '../../src/features/messages/conversation-presenter';
 import { useConversations } from '../../src/features/messages/use-conversations';
+import { fonts } from '../../src/design/typography';
 
 /**
  * Bảng tin đứng đầu dock nhưng Nhóm vẫn là màn mở đầu sau khi đăng nhập, nên
@@ -67,7 +68,7 @@ export default function TabLayout() {
         },
         headerTitleStyle: {
           color: colors.primary,
-          fontFamily: 'Inter_700Bold',
+          fontFamily: fonts.bold,
           fontSize: 18,
           letterSpacing: -0.3,
         },

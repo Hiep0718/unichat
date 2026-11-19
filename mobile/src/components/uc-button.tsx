@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
-import { glass, colors, radii, spacing } from '../design/tokens';
+import { button, colors, glass, palette, spacing } from '../design/tokens';
 import { shadows } from '../design/shadows';
 import { typography } from '../design/typography';
 import { useMicroBounce } from '../design/animations';
@@ -31,8 +31,8 @@ interface UCButtonProps {
 }
 
 /**
- * Tactile button with Reanimated micro-bounce press animation.
- * Primary and danger variants trigger light haptic feedback on iOS.
+ * Nút bấm có hiệu ứng nảy nhẹ khi nhấn, theo quy ước nút của web.
+ * Nút chính và nút nguy hiểm rung nhẹ trên iOS.
  */
 export function UCButton({
   title,
@@ -110,29 +110,39 @@ export function UCButton({
 }
 
 function getTextColor(variant: ButtonVariant, disabled: boolean): string {
-  if (disabled) return colors.outline;
+  if (disabled) return palette.mucMo;
   switch (variant) {
     case 'primary':
-      return colors.onPrimary;
-    case 'secondary':
-      return colors.onSecondaryContainer;
-    case 'outline':
-      return colors.primary;
-    case 'ghost':
-      return colors.primary;
+      return button.primaryInk;
     case 'danger':
       return colors.onError;
+    case 'secondary':
+    case 'outline':
+      return button.secondaryInk;
+    case 'ghost':
     case 'glass':
       return colors.primary;
   }
 }
+
+/*
+ * Quy ước nút của web (`--btn-*`): hành động chính tô màu nhấn, hành động
+ * phụ là nút viền, cả hai bo viên thuốc. Không bóng đổ ở trạng thái nghỉ.
+ * `secondary` và `outline` trước đây là hai kiểu khác nhau (nền xanh ngọc
+ * và viền xanh); web chỉ có một kiểu nút phụ nên giờ hai tên trỏ cùng một kiểu.
+ */
+const outlined: ViewStyle = {
+  backgroundColor: button.secondaryBg,
+  borderWidth: 1,
+  borderColor: button.secondaryBorder,
+};
 
 const styles = StyleSheet.create({
   base: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: radii.xl,
+    borderRadius: button.radius,
     overflow: 'hidden',
   },
   icon: {
@@ -145,25 +155,10 @@ const styles = StyleSheet.create({
   },
   // Variants
   primary: {
-    backgroundColor: colors.primary,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
-    elevation: 4,
+    backgroundColor: button.primaryBg,
   },
-  secondary: {
-    backgroundColor: colors.secondaryContainer,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.4)',
-  },
-  outline: {
-    backgroundColor: 'transparent',
-    borderWidth: 1.2,
-    borderColor: colors.primary,
-  },
+  secondary: outlined,
+  outline: outlined,
   ghost: {
     backgroundColor: 'transparent',
   },
@@ -177,8 +172,8 @@ const styles = StyleSheet.create({
     ...shadows.glass,
   },
   disabled: {
-    backgroundColor: colors.surfaceContainerHigh,
-    borderColor: colors.outlineVariant,
+    backgroundColor: palette.ke,
+    borderColor: palette.vien,
     shadowOpacity: 0,
     elevation: 0,
   },
@@ -187,18 +182,15 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     paddingHorizontal: spacing.md,
     minHeight: 34,
-    borderRadius: radii.lg,
   },
   md: {
     paddingVertical: 12,
     paddingHorizontal: spacing.lg,
     minHeight: 48,
-    borderRadius: radii.xl,
   },
   lg: {
     paddingVertical: 15,
     paddingHorizontal: spacing.xl,
     minHeight: 54,
-    borderRadius: radii['2xl'],
   },
 });
