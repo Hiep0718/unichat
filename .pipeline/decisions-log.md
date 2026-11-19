@@ -4586,3 +4586,35 @@ xoá test của component đã chết). Vẫn phải chạy `--maxWorkers=2` vì
   4. Đánh đổi đã chấp nhận: trang co giãn lại mỗi lần thanh bên mở hoặc đóng. Độ trễ 120ms trước khi mở giảm việc trang bị xô khi chuột chỉ lướt qua mép trái; tắt chuyển động khi `prefers-reduced-motion`.
 - Kiểm chứng: E2E `side-nav-hover.spec.ts` đổi kỳ vọng: nội dung bắt đầu ở x=68 lúc nghỉ, x=224 khi mở (đúng mép phải thanh bên), về lại 68 khi rời chuột; qua cùng 3 test `workspace-ai-policy.spec.ts`. Đã xem ảnh chụp lúc mở. Vitest `styles`, `side-nav-bar`, `app` 20/20 qua; `tsc -b` 0 lỗi; `eslint . --max-warnings 0` sạch.
 - Ranh giới: Không commit, không push. Không thêm gói.
+
+## 2026-11-19 — @AI vẫn báo "chưa trả lời được": hiện lý do thật
+
+- Bối cảnh: Sau khi commit bản sửa @AI, người dùng vẫn thấy "Trợ lý chưa trả lời được câu này. Nhắc lại @AI sau ít phút để thử lại." dưới bình luận.
+- Chẩn đoán: `AssistantFallbackNote` (web) luôn in một câu cố định, nên mọi lý do backend ghi vào thông báo đều bị giấu, và câu này giống hệt kết quả của code cũ. Đã xác minh Core (cổng 8082, chạy từ `core-api/target/classes` của repo này, khởi động 22:21) và AI Service (cổng 8001, `/internal/v1/health` trả ok) đều đang chạy; đường non-stream và stream của AI Service dùng chung `prepare_answer`/`complete_answer`; `requestId` dạng `ai-mention-<uuid>` hợp lệ ở mọi tầng. Muốn đọc trực tiếp nội dung câu trả lời và mã lỗi trong `chat_operations` thì cần truy vấn Supabase dùng chung; bộ phân loại auto mode đã chặn, nên không làm.
+- Quyết định:
+  1. Backend: `AiMentionAnswer.failed(errorCode, traceId)` ghi lý do từ mã lỗi của chat operation (`AiMentionFailures`, cùng nội dung với `chat-failures.ts` của web; mã lạ được ghi nguyên văn trong ngoặc). Thông báo nào cũng kết thúc bằng "Nhắc lại @AI sau ít phút để thử lại."
+  2. Web: `AssistantFallbackNote` hiện đúng nội dung thông báo (văn bản thuần, React tự escape).
+- Còn mở: chưa biết nguyên nhân gốc. Nếu người dùng thử trên bản deploy (52.64.17.25) thì server vẫn chạy code cũ vì các commit chưa push/deploy. Nếu thử local thì cần khởi động lại Core để nạp bản này, rồi thông báo sẽ nói rõ lý do.
+- Kiểm chứng: `AiReplyServiceTest` 10 test (thêm test lý do và mã lạ), cùng `AiReplyWriterTest`, `AiMentionsTest`, `DiscussionAiMentionTest` qua; Vitest community 125 test qua; `tsc -b` 0 lỗi; eslint community sạch.
+- Ranh giới: Không commit, không push, không khởi động lại dịch vụ của người dùng, không đọc DB.
+
+## 2026-11-19 — @AI thất bại với CHAT_FAILED: ghi được vị trí lỗi vào log
+
+- Bối cảnh: Sau khi khởi động lại, thông báo dưới bình luận ghi "dịch vụ AI chưa hoàn tất yêu cầu (mã CHAT_FAILED)".
+- Chẩn đoán: `CHAT_FAILED` chỉ sinh ở `ChatOperationRunner.run` khi có `RuntimeException` không phải `AppError`; lỗi nhà cung cấp, quá tải, hết hạn đều mang mã riêng. Tức là một exception bất ngờ trong Core, nhưng runner chỉ log mã, nên không có cách biết loại lỗi và vị trí. Đã loại trừ bằng đọc mã: hai đường stream và non-stream của AI Service trả cùng JSON (`model_dump(mode="json")`); hợp đồng `AnswerSection` và `CitationItem` hai bên khớp nhau; `requestId` hợp lệ.
+- Quyết định: với lỗi bất ngờ, runner ghi thêm `cause=` gồm loại exception theo chuỗi cause và 6 frame đầu của mỗi exception (`ChatFailureTrace`). Không ghi message, vì lỗi parse và lỗi lưu trữ thường trích nguyên dữ liệu (prompt, câu trả lời, đoạn tài liệu), mà AGENTS.md cấm đưa những thứ đó vào log. Thay đổi này giúp cả Trợ lý AI, không riêng @AI.
+- Kiểm chứng: `ChatFailureTraceTest` (log không chứa message) và `ChatOperationRunnerTest` qua.
+- Còn mở: cần người dùng khởi động lại Core, thử lại @AI và gửi dòng log `chat_operation_failed ... cause=...`.
+- Ranh giới: Không commit, không push, không đọc DB.
+
+## 2026-11-19 — Một sidebar chung cho cả trong và ngoài nhóm
+
+- Bối cảnh: Người dùng muốn sidebar trong nhóm (đầu là tên nhóm, nút "Tải tài liệu mới", mục "Trợ lý AI", "Đổi nhóm") đồng bộ với sidebar bên ngoài.
+- Quyết định:
+  1. Một sidebar cho mọi trang: logo UniChat, Bảng tin, Tất cả nhóm, Tin nhắn, Tài khoản, Quản trị viên (nếu có), "Nhóm của bạn".
+  2. Nhóm đang mở được tô sáng trong danh sách (`aria-current="page"`), và "Trợ lý AI" của nó hiện thành mục con ngay dưới, vì đây là đích duy nhất của nhóm không có trong thanh tab của trang nhóm. Biểu tượng của mục con vẫn nằm cùng cột trong rail.
+  3. Bấm tên nhóm trong danh sách mở trang nhóm (`/workspaces/{id}`) thay vì trợ lý, vì trợ lý đã có mục riêng.
+  4. Bỏ đầu sidebar riêng của nhóm, nút "Tải tài liệu mới" (tab Tệp làm việc này) và "Đổi nhóm" (đã có "Tất cả nhóm"), cùng CSS chỉ dùng cho chúng.
+  5. Nếu nhóm đang mở không nằm trong trang danh sách đầu tiên sidebar tải về, `withActiveGroup` thêm nó vào đầu danh sách để vẫn tô sáng được.
+- Kiểm chứng: `tsc -b` 0 lỗi, `eslint . --max-warnings 0` sạch, Vitest 91 tệp, 637 test qua (viết lại test sidebar trong nhóm, thêm test ngoài nhóm và `side-nav-group-list.test.ts`); E2E `side-nav-hover.spec.ts` và `workspace-ai-policy.spec.ts` qua; đã xem ảnh chụp sidebar trong trang cài đặt nhóm.
+- Ranh giới: Không commit, không push.
