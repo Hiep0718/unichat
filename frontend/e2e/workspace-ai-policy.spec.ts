@@ -20,7 +20,7 @@ test('should require explicit owner saving and retain the new version across ena
   await expect(page.getByText('Cập nhật thông tin thành công.')).toBeVisible();
   expect(scenario.updates).toEqual([
     { cloudAllowed: true, expectedVersion: 3 }, { cloudAllowed: false, expectedVersion: 4 },
-    { name: 'Nhóm nghiên cứu', description: '', expectedVersion: 5 },
+    { name: 'Nhóm nghiên cứu', description: '', topics: [], expectedVersion: 5 },
   ]);
 });
 

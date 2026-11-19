@@ -40,6 +40,8 @@ async function apiRequest(route: Route, scenario: WorkspacePolicyScenario): Prom
     await json(route, { id: 'owner-1', email: 'owner@example.test', displayName: 'Chủ workspace', systemRole: 'USER', status: 'ACTIVE' }); return;
   }
   if (path === `/api/v1/workspaces/${POLICY_WORKSPACE_ID}`) { await workspaceRequest(route, scenario); return; }
+  // The topic vocabulary is a plain list, not a page.
+  if (path.endsWith('/workspaces/topics')) { await json(route, []); return; }
   await json(route, { content: [], number: 0, size: 20, totalElements: 0, totalPages: 0 });
 }
 
@@ -48,7 +50,7 @@ export async function installWorkspacePolicyScenario(page: Page, userRole: Works
   const scenario: WorkspacePolicyScenario = {
     workspace: { id: POLICY_WORKSPACE_ID, ownerId: 'owner-1', name: 'Nhóm nghiên cứu', description: '', visibility: 'PRIVATE',
       cloudAllowed: false, version: 3, userRole, documentCount: 0, memberCount: 1, recentPostCount: 0,
-      faces: [], hasCover: false, createdAt: '', updatedAt: '' },
+      faces: [], hasCover: false, topics: [], createdAt: '', updatedAt: '' },
     conflictNextSave: false, updates: [],
   };
   await page.routeWebSocket('**/*', (socket) => socket.close());
