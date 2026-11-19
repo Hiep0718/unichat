@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import { Icon } from '../../components/icon';
+import { PageHeader } from '../../components/page-header';
 import { fetchCallHistory } from '../calls/call-api';
 import type { CallHistoryEntryDto } from '../calls/call-api';
 import { useCall } from '../calls/call-provider';
@@ -213,83 +214,78 @@ export function WorkChatPage() {
   const settingsVisible = active?.kind === 'GROUP' && showSettings;
 
   return (
-    <div className={`work-chat ${settingsVisible ? 'work-chat--with-settings' : ''}`}>
-      <aside className="work-chat__sidebar">
-        <header className="work-chat__sidebar-header">
-          <h1 className="work-chat__title">Tin nhắn</h1>
-          <div className="work-chat__new-row">
-            <button
-              type="button"
-              className="work-chat__new"
-              onClick={() => setShowPicker(true)}
-            >
-              <Icon name="add_comment" size={18} />
-              <span className="work-chat__new-label">Cuộc trò chuyện mới</span>
-            </button>
-            <button
-              type="button"
-              className="work-chat__new-group"
-              onClick={() => setShowGroupForm(true)}
-              aria-label="Tạo nhóm mới"
-            >
-              <Icon name="group_add" size={18} />
-            </button>
-          </div>
-        </header>
+    <div className="work-chat-page">
+      <PageHeader
+        title="Tin nhắn"
+        subtitle="Trò chuyện riêng hoặc theo nhóm với những người cùng nhóm học tập."
+        actions={<>
+          <button type="button" className="page-header__button page-header__button--secondary"
+            onClick={() => setShowGroupForm(true)}>
+            <Icon name="group_add" size={18} />
+            Tạo nhóm chat
+          </button>
+          <button type="button" className="page-header__button" onClick={() => setShowPicker(true)}>
+            <Icon name="add_comment" size={18} />
+            Cuộc trò chuyện mới
+          </button>
+        </>}
+      />
+      <div className={`work-chat ${settingsVisible ? 'work-chat--with-settings' : ''}`}>
+        <aside className="work-chat__sidebar">
+          {!connected && (
+            <p className="work-chat__offline" role="status">
+              <Icon name="cloud_off" size={14} />
+              Đang kết nối lại — tin nhắn vẫn gửi được.
+            </p>
+          )}
 
-        {!connected && (
-          <p className="work-chat__offline" role="status">
-            <Icon name="cloud_off" size={14} />
-            Đang kết nối lại — tin nhắn vẫn gửi được.
-          </p>
-        )}
-
-        <ConversationList
-          conversations={conversations}
-          activeId={activeId}
-          onSelect={selectConversation}
-        />
-      </aside>
-
-      <main className="work-chat__main">
-        {error && (
-          <p className="work-chat__error" role="alert">
-            <Icon name="error_outline" size={16} /> {error}
-          </p>
-        )}
-
-        {active ? (
-          <MessageThread
-            conversation={active}
-            messages={messages}
-            calls={calls}
-            onSend={handleSend}
-            onToggleSettings={() => setShowSettings((open) => !open)}
-            settingsOpen={showSettings}
+          <ConversationList
+            conversations={conversations}
+            activeId={activeId}
+            onSelect={selectConversation}
           />
-        ) : (
-          <div className="work-chat__empty">
-            <Icon name="forum" size={40} />
-            <p>Chọn một cuộc trò chuyện, hoặc bắt đầu cuộc mới.</p>
-          </div>
-        )}
-      </main>
+        </aside>
 
-      {settingsVisible && (
-        <GroupSettingsPanel
-          conversation={active}
-          participants={active.participants}
-          onAdd={(userId) => handleGroupChange(() => addGroupMember(active.id, userId))}
-          onRemove={(userId) => handleGroupChange(() => removeGroupMember(active.id, userId))}
-          onLeave={handleLeave}
-          onRename={(title) => handleGroupChange(() => renameGroup(active.id, title))}
-          onPickAvatar={(file) => handleAvatarChange(
-            () => uploadGroupAvatar(active.id, file), active.id)}
-          onRemoveAvatar={() => handleAvatarChange(
-            () => removeGroupAvatar(active.id), active.id)}
-          onClose={() => setShowSettings(false)}
-        />
-      )}
+        <main className="work-chat__main">
+          {error && (
+            <p className="work-chat__error" role="alert">
+              <Icon name="error_outline" size={16} /> {error}
+            </p>
+          )}
+
+          {active ? (
+            <MessageThread
+              conversation={active}
+              messages={messages}
+              calls={calls}
+              onSend={handleSend}
+              onToggleSettings={() => setShowSettings((open) => !open)}
+              settingsOpen={showSettings}
+            />
+          ) : (
+            <div className="work-chat__empty">
+              <Icon name="forum" size={40} />
+              <p>Chọn một cuộc trò chuyện, hoặc bắt đầu cuộc mới.</p>
+            </div>
+          )}
+        </main>
+
+        {settingsVisible && (
+          <GroupSettingsPanel
+            conversation={active}
+            participants={active.participants}
+            onAdd={(userId) => handleGroupChange(() => addGroupMember(active.id, userId))}
+            onRemove={(userId) => handleGroupChange(() => removeGroupMember(active.id, userId))}
+            onLeave={handleLeave}
+            onRename={(title) => handleGroupChange(() => renameGroup(active.id, title))}
+            onPickAvatar={(file) => handleAvatarChange(
+              () => uploadGroupAvatar(active.id, file), active.id)}
+            onRemoveAvatar={() => handleAvatarChange(
+              () => removeGroupAvatar(active.id), active.id)}
+            onClose={() => setShowSettings(false)}
+          />
+        )}
+      </div>
 
       {showPicker && (
         <ContactPicker onPick={handlePick} onClose={() => setShowPicker(false)} />

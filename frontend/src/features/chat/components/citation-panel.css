@@ -69,7 +69,7 @@
 
 .citation-pill-score {
   padding: 1px 6px;
-  background: rgba(16, 185, 129, 0.15);
+  background: color-mix(in srgb, var(--tot) 15%, transparent);
   color: var(--color-success);
   border-radius: var(--radius-full);
   font-size: 11px;
@@ -129,7 +129,7 @@
   font: var(--font-label-sm);
   font-size: 11px;
   color: var(--color-success);
-  background: rgba(16, 185, 129, 0.15);
+  background: color-mix(in srgb, var(--tot) 15%, transparent);
   padding: 2px 8px;
   border-radius: var(--radius-full);
   flex-shrink: 0;
@@ -181,14 +181,14 @@
 
 .refusal-card--refuse {
   background: var(--color-error-container);
-  border: 1px solid rgba(186, 26, 26, 0.3);
+  border: 1px solid color-mix(in srgb, var(--hong) 30%, transparent);
   color: var(--color-on-error-container);
 }
 
 .refusal-card--clarify {
-  background: #fefce8;
-  border: 1px solid #fef08a;
-  color: #713f12;
+  background: var(--pill-canh-nen);
+  border: 1px solid color-mix(in srgb, var(--canh-bao) 35%, transparent);
+  color: var(--canh-bao);
 }
 
 .refusal-card__header {
@@ -239,9 +239,9 @@
   gap: 6px;
   padding: 8px 16px;
   border: none;
-  border-radius: var(--radius-lg);
-  background: var(--color-primary);
-  color: var(--color-on-primary);
+  border-radius: var(--btn-radius);
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-ink);
   font: var(--font-label-md);
   font-weight: 600;
   cursor: pointer;
@@ -250,6 +250,7 @@
 
 .refusal-card__escalation-btn:hover {
   opacity: 0.9;
+  background: var(--btn-primary-bg-hover);
 }
 
 .refusal-card__escalation-btn:active {
@@ -258,4 +259,10 @@
 
 .refusal-card__escalation-btn .material-symbols-outlined {
   font-size: 18px;
+}
+
+.citation-popover__footer .material-symbols-outlined {
+  font-size: 14px;
+  vertical-align: -3px;
+  margin-left: 4px;
 }

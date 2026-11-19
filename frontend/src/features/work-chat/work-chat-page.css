@@ -1,15 +1,29 @@
 /* Work Chat — two lifted panels on the canvas, matching the feed's surfaces. */
 
+/* Trang: dải tiêu đề dùng chung ở trên, hai khung chiếm phần còn lại.
+   Khung bao lo padding và nền; lưới bên dưới chỉ lo chia cột. */
+.work-chat-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 28px 24px 20px;
+  box-sizing: border-box;
+  background: var(--ws-canvas);
+}
+
+.work-chat-page > .page-header,
+.work-chat {
+  width: 100%;
+  max-width: var(--page-max);
+  margin-inline: auto;
+}
+
 .work-chat {
   display: grid;
   grid-template-columns: 336px minmax(0, 1fr);
   gap: 18px;
-  /* The shell has no top bar — only a left rail — so this fills its scroll
-     container rather than subtracting a header that does not exist. */
-  height: 100%;
-  padding: 20px;
-  box-sizing: border-box;
-  background: var(--ws-canvas);
+  flex: 1;
+  min-height: 0;
 }
 
 /* A group's settings take a third column rather than overlaying the thread.
@@ -41,48 +55,12 @@
   overflow: hidden;
 }
 
-.work-chat__sidebar-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 20px 20px 14px;
-}
-
-.work-chat__title {
-  margin: 0;
-  color: var(--ws-ink);
-  font-family: var(--font-family);
-  font-size: 20px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-}
-
-.work-chat__new {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 9px 13px;
-  border: none;
-  border-radius: var(--radius-lg);
-  background: var(--ws-accent-gradient);
-  color: var(--ws-accent-ink);
-  font: var(--font-label-sm);
-  font-weight: 700;
-  cursor: pointer;
-  transition: filter var(--transition-fast);
-}
-
-.work-chat__new:hover {
-  filter: brightness(1.15);
-}
-
 /* A dropped socket is not an error: sending still works over REST. */
 .work-chat__offline {
   display: flex;
   align-items: center;
   gap: 7px;
-  margin: 0 14px 10px;
+  margin: 14px 14px 10px;
   padding: 9px 13px;
   border-radius: var(--radius-lg);
   background: var(--ws-warn-bg);
@@ -129,46 +107,17 @@
 }
 
 @media (max-width: 900px) {
+  .work-chat-page {
+    padding: 16px 12px;
+  }
+
   .work-chat {
     grid-template-columns: minmax(0, 1fr);
     gap: 12px;
-    padding: 12px;
   }
 
   /* One column on a phone: the list is capped so the thread stays usable. */
   .work-chat__sidebar {
     max-height: 38vh;
   }
-
-  .work-chat__new-label {
-    display: none;
-  }
-}
-
-/* Two ways to start: a person, or a group. The group button is an icon only —
-   the sidebar is too narrow for two labelled buttons side by side. */
-.work-chat__new-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.work-chat__new-group {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  flex-shrink: 0;
-  border: 1px solid var(--ws-line);
-  border-radius: var(--radius-lg);
-  background: transparent;
-  color: var(--ws-ink-muted);
-  cursor: pointer;
-  transition: border-color var(--transition-fast), color var(--transition-fast);
-}
-
-.work-chat__new-group:hover {
-  border-color: var(--ws-accent);
-  color: var(--ws-ink);
 }

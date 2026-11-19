@@ -13,13 +13,13 @@ export function UserManagementTable() {
     <section className="admin-management">
       <div className="admin-management__box">
         <div className="admin-management__header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+          <div className="admin-management__title-row">
             <h2 className="admin-management__title">Danh sách Người dùng Hệ thống</h2>
-            <span style={{ fontSize: '0.8125rem', color: '#64748b', background: '#f1f5f9', padding: '3px 8px', borderRadius: '9999px', fontWeight: 600 }}>
+            <span className="admin-badge admin-badge--neutral">
               Tổng: {data?.totalElements ?? '—'}
             </span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          <div className="admin-management__tools">
             <label className="admin-search-wrapper">
               <span className="sr-only">Tìm kiếm email</span>
               <input
@@ -36,7 +36,7 @@ export function UserManagementTable() {
               disabled={isFetching}
               onClick={() => void refetch()}
             >
-              <span className="material-symbols-outlined" style={{ fontSize: '16px', verticalAlign: 'middle', marginRight: '4px' }}>refresh</span>
+              <span className="material-symbols-outlined" aria-hidden="true">refresh</span>
               Tải lại
             </button>
           </div>
@@ -49,7 +49,7 @@ export function UserManagementTable() {
         )}
 
         {isPending ? (
-          <div style={{ padding: '32px', textAlign: 'center', color: '#64748b' }} role="status">
+          <div className="admin-page__empty" role="status">
             Đang tải danh sách người dùng…
           </div>
         ) : (
@@ -80,7 +80,7 @@ export function UserManagementTable() {
         )}
 
         {data?.content.length === 0 && (
-          <div style={{ padding: '24px', textAlign: 'center', color: '#64748b' }}>
+          <div className="admin-page__empty">
             Không có người dùng phù hợp.
           </div>
         )}

@@ -39,10 +39,10 @@ function ChatIdentity({
           <div className="chat-header__breadcrumb">
             {workspaceId ? (
               <Link to={`/workspaces/${workspaceId}`} className="chat-header__workspace chat-header__workspace-link">
-                {workspaceName || 'Workspace'}
+                {workspaceName || 'Nhóm'}
               </Link>
             ) : (
-              <span className="chat-header__workspace">{workspaceName || 'Workspace'}</span>
+              <span className="chat-header__workspace">{workspaceName || 'Nhóm'}</span>
             )}
             <span className="chat-header__sep">/</span>
             <span className="chat-header__session-tag">Trợ lý RAG AI</span>
@@ -69,11 +69,9 @@ function ChatActions({ messageCount, onNewChat, onToggleDrawer, hasDrawerOpen, o
         </div>
 
         {onToggleStudio && <button type="button"
-          className={`chat-header__btn ${isStudioOpen ? 'chat-header__btn--active' : ''}`}
-          onClick={onToggleStudio} title="Đóng/Mở NotebookLM Knowledge Studio"
-          style={{ background: isStudioOpen ? '#0284c7' : 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
-            color: '#ffffff', fontWeight: 600, gap: '6px' }}>
-          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>auto_awesome</span><span>Studio</span>
+          className={`chat-header__btn chat-header__btn--secondary${isStudioOpen ? ' chat-header__btn--toggled' : ''}`}
+          onClick={onToggleStudio} title="Đóng/Mở Knowledge Studio" aria-pressed={Boolean(isStudioOpen)}>
+          <span className="material-symbols-outlined">auto_awesome</span><span>Studio</span>
         </button>}
 
         <button

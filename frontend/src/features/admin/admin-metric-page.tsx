@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchJson } from '../../lib/api-client';
 import { getSessionSnapshot } from '../../lib/session-store';
+import { SelectMenu } from '../../components/select-menu';
 
 interface Metrics {
   readonly status: string;
@@ -46,13 +47,13 @@ export function AdminMetricPage() {
       <div className="admin-page__toolbar">
         <label>
           Khoảng thời gian
-          <select value={days} onChange={(event) => setDays(Number(event.target.value))}>
-            {[1, 7, 28, 45].map((value) => (
-              <option key={value} value={value}>
-                {value} ngày
-              </option>
-            ))}
-          </select>
+          <SelectMenu
+            variant="field"
+            label="Khoảng thời gian"
+            value={days}
+            options={[1, 7, 28, 45].map((value) => ({ value, label: `${value} ngày` }))}
+            onChange={setDays}
+          />
         </label>
       </div>
 

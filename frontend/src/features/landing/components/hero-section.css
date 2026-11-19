@@ -102,7 +102,7 @@
   padding: 13px 24px;
   border-radius: var(--radius-full);
   background: var(--nhan);
-  color: #ffffff;
+  color: var(--btn-primary-ink);
   font: var(--font-label-md);
   font-weight: 700;
   text-decoration: none;

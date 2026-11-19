@@ -89,7 +89,7 @@ export function OverviewTab({ workspace, isLoading }: OverviewTabProps) {
       </div>
 
       <div className="overview-tab__info">
-        <h3 className="overview-tab__info-title">Thông tin workspace</h3>
+        <h3 className="overview-tab__info-title">Thông tin nhóm</h3>
         <div className="overview-tab__info-grid">
           <div className="overview-tab__info-item">
             <span className="overview-tab__info-label">Chế độ hiển thị</span>
@@ -124,7 +124,7 @@ export function OverviewTab({ workspace, isLoading }: OverviewTabProps) {
           <p className="overview-tab__description-text">{workspace.description}</p>
         ) : (
           <p className="overview-tab__description-text overview-tab__description-empty">
-            Chưa có mô tả cho workspace này.
+            Chưa có mô tả cho nhóm này.
           </p>
         )}
       </div>

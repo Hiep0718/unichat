@@ -74,7 +74,7 @@ export function SideNavBar() {
 
   const currentWorkspace = groups.find((g) => g.id === workspaceId);
   const workspaceDisplayName =
-    workspaceCtx?.workspace?.name || currentWorkspace?.name || 'Workspace';
+    workspaceCtx?.workspace?.name || currentWorkspace?.name || 'Nhóm';
 
   // The assistant alone. It is the one workspace destination that is a tool
   // rather than a part of the group's content, so it is the one that does not
@@ -246,13 +246,13 @@ export function SideNavBar() {
           <Link
             to="/workspaces"
             className="side-nav__item side-nav__switch-btn"
-            title="Đổi Workspace / Quay lại danh sách"
-            aria-label="Đổi Workspace"
+            title="Đổi nhóm / Quay lại danh sách"
+            aria-label="Đổi nhóm"
           >
             <span className="side-nav__icon-wrap">
               <Icon name="arrow_back" size={20} rounded />
             </span>
-            <span className="side-nav__label">Đổi Workspace</span>
+            <span className="side-nav__label">Đổi nhóm</span>
           </Link>
         )}
 

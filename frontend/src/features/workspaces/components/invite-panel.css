@@ -27,7 +27,6 @@
   color: var(--color-on-surface-variant, var(--muc-nhat));
 }
 
-.invite-panel__field select,
 .invite-panel__field input {
   padding: 8px 10px;
   border: 1px solid var(--color-outline-variant, var(--dieu-khien));
@@ -44,7 +43,7 @@
 .invite-panel__create {
   padding: 9px 18px;
   border: none;
-  border-radius: var(--radius-md, 6px);
+  border-radius: var(--btn-radius);
   background: var(--color-primary, var(--muc));
   color: var(--nen);
   font: inherit;
@@ -93,7 +92,7 @@
 .invite-panel__fresh-row button {
   padding: 8px 16px;
   border: 1px solid var(--color-outline-variant, var(--dieu-khien));
-  border-radius: var(--radius-md, 6px);
+  border-radius: var(--btn-radius);
   background: var(--nen);
   font: inherit;
   cursor: pointer;
@@ -147,4 +146,12 @@
   background: var(--nen);
   color: var(--color-error);
   font-size: 0.875rem;
+}
+
+/* The dropdowns here are SelectMenu fields, sized to sit beside the
+   uses input on one line. */
+.invite-panel__field .select-menu__trigger--field {
+  width: auto;
+  min-width: 140px;
+  min-height: 38px;
 }

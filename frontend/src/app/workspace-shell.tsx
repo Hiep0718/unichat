@@ -15,7 +15,7 @@ export function WorkspaceShell() {
     if (workspaceId) rememberWorkspace(workspaceId);
   }, [workspaceId]);
 
-  if (isLoading) return <LoadingScreen message="Đang tải thông tin Workspace..." />;
+  if (isLoading) return <LoadingScreen message="Đang tải thông tin nhóm..." />;
   if (error || !workspace) return <WorkspaceUnavailable />;
 
   return (
@@ -37,9 +37,9 @@ function WorkspaceUnavailable() {
   return (
     <div style={{ display: 'grid', placeItems: 'center', minHeight: '100vh', padding: '2rem' }}>
       <div>
-        <h2>Không thể tải thông tin Workspace</h2>
-        <p>Bạn không có quyền truy cập hoặc Workspace đã bị xóa.</p>
-        <Link to="/workspaces">Quay lại danh sách Workspace</Link>
+        <h2>Không thể tải thông tin nhóm</h2>
+        <p>Bạn không có quyền truy cập hoặc nhóm đã bị xóa.</p>
+        <Link to="/workspaces">Quay lại danh sách nhóm</Link>
       </div>
     </div>
   );

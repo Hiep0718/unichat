@@ -62,7 +62,7 @@ function HeroCopy() {
       </h1>
 
       <p className="hero__desc">
-        Tải giáo trình, bài giảng lên Workspace, đặt câu hỏi bằng tiếng Việt và
+        Tải giáo trình, bài giảng vào nhóm học tập, đặt câu hỏi bằng tiếng Việt và
         nhận câu trả lời kèm trích dẫn nguồn rõ ràng. Dành cho sinh viên, nghiên
         cứu sinh và giảng viên.
       </p>

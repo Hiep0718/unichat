@@ -132,7 +132,7 @@
   background: var(--ws-accent-gradient);
   color: var(--ray-nen);
   border: none;
-  border-radius: var(--radius-xl);
+  border-radius: var(--btn-radius);
   font: var(--font-label-md);
   font-weight: 600;
   cursor: pointer;
@@ -449,7 +449,7 @@ button.side-nav__item,
   inline-size: 30px;
   block-size: 30px;
   border: none;
-  border-radius: 9px;
+  border-radius: var(--btn-radius);
   background: transparent;
   color: var(--ray-muc-nhat);
   cursor: pointer;

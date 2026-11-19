@@ -97,7 +97,7 @@ export const KnowledgeStudioModal: React.FC<KnowledgeStudioModalProps> = ({
   const handleTriggerSave = useCallback(
     (title: string, content: string) => {
       onSaveNote(title, content);
-      setSavedToastMsg(`Đã lưu "${title}" vào Sổ Ghi Chú!`);
+      setSavedToastMsg(`Đã lưu "${title}" vào sổ ghi chú.`);
       setTimeout(() => setSavedToastMsg(null), 3000);
     },
     [onSaveNote]
@@ -144,19 +144,19 @@ export const KnowledgeStudioModal: React.FC<KnowledgeStudioModalProps> = ({
   const toolMeta = useMemo(() => {
     switch (toolType) {
       case 'PODCAST':
-        return { icon: 'podcasts', title: 'Tổng quan Âm thanh (Podcast)', badge: '🎙️ Audio Broadcast' };
+        return { icon: 'podcasts', title: 'Tổng quan âm thanh (podcast)', badge: 'Hội thoại 2 MC' };
       case 'FLASHCARDS':
-        return { icon: 'style', title: 'Bộ Thẻ Ghi Nhớ Khái Niệm', badge: '🎴 3D Flip Cards' };
+        return { icon: 'style', title: 'Bộ thẻ ghi nhớ khái niệm', badge: 'Thẻ lật 2 mặt' };
       case 'QUIZ':
-        return { icon: 'quiz', title: 'Kiểm Tra Trắc Nghiệm', badge: '✍️ Interactive Quiz Engine' };
+        return { icon: 'quiz', title: 'Kiểm tra trắc nghiệm', badge: 'Có đáp án và giải thích' };
       case 'MINDMAP':
-        return { icon: 'schema', title: 'Sơ Đồ Tư Duy (Mindmap)', badge: '🧠 Mermaid Diagram Studio' };
+        return { icon: 'schema', title: 'Sơ đồ tư duy', badge: 'Sơ đồ Mermaid' };
       case 'SLIDES':
-        return { icon: 'present_to_all', title: 'Kịch Bản Slide Thuyết Trình', badge: '💻 Presentation Briefing Deck' };
+        return { icon: 'present_to_all', title: 'Kịch bản slide thuyết trình', badge: 'Dàn ý từng slide' };
       case 'REPORT':
-        return { icon: 'description', title: 'Báo Cáo Tổng Hợp Tri Thức', badge: '📝 Academic Study Report' };
+        return { icon: 'description', title: 'Báo cáo tổng hợp tri thức', badge: 'Kèm trích dẫn' };
       default:
-        return { icon: 'auto_awesome', title: 'Studio Tri Thức', badge: 'AI Tool' };
+        return { icon: 'auto_awesome', title: 'Studio tri thức', badge: 'Công cụ AI' };
     }
   }, [toolType]);
 
@@ -211,7 +211,7 @@ export const KnowledgeStudioModal: React.FC<KnowledgeStudioModalProps> = ({
                 </div>
 
                 <div className="unichat-slide-card__content">
-                  <h4 className="unichat-slide-card__section-label">📌 Ý Chính Cần Trình Bày:</h4>
+                  <h4 className="unichat-slide-card__section-label">Ý chính cần trình bày</h4>
                   <ul className="unichat-slide-card__bullet-list">
                     {currentSlide.points.map((pt, i) => (
                       <li key={i} className="unichat-slide-card__bullet-item">
@@ -271,7 +271,7 @@ export const KnowledgeStudioModal: React.FC<KnowledgeStudioModalProps> = ({
                   }
                 >
                   <span className="material-symbols-outlined">push_pin</span>
-                  <span>Lưu Kịch Bản Slide vào Sổ Ghi Chú</span>
+                  <span>Lưu kịch bản slide vào sổ ghi chú</span>
                 </button>
               </div>
             </div>
@@ -288,7 +288,7 @@ export const KnowledgeStudioModal: React.FC<KnowledgeStudioModalProps> = ({
                 </div>
 
                 <div className="unichat-modal-podcast__info">
-                  <h4>Bản Tin Phát Thanh Tri Thức 2 MC</h4>
+                  <h4>Bản tin phát thanh tri thức 2 MC</h4>
                   <p>Hội thoại tóm tắt nội dung kho tri thức <strong>{workspaceName}</strong></p>
                   <div className="unichat-podcast-progress-bar">
                     <div className="unichat-podcast-progress-fill" style={{ width: `${podcastProgress}%` }} />
@@ -349,7 +349,7 @@ export const KnowledgeStudioModal: React.FC<KnowledgeStudioModalProps> = ({
                   }
                 >
                   <span className="material-symbols-outlined">push_pin</span>
-                  <span>Lưu Kịch Bản Podcast vào Sổ Ghi Chú</span>
+                  <span>Lưu kịch bản podcast vào sổ ghi chú</span>
                 </button>
               </div>
             </div>
@@ -455,7 +455,7 @@ export const KnowledgeStudioModal: React.FC<KnowledgeStudioModalProps> = ({
                   }
                 >
                   <span className="material-symbols-outlined">push_pin</span>
-                  <span>Lưu Toàn Bộ {flashcards.length} Thẻ vào Sổ Ghi Chú</span>
+                  <span>Lưu toàn bộ {flashcards.length} thẻ vào sổ ghi chú</span>
                 </button>
               </div>
             </div>
@@ -582,7 +582,7 @@ export const KnowledgeStudioModal: React.FC<KnowledgeStudioModalProps> = ({
                   }}
                 >
                   <span className="material-symbols-outlined">push_pin</span>
-                  <span>Lưu Kết Quả Kiểm Tra vào Sổ Ghi Chú</span>
+                  <span>Lưu kết quả kiểm tra vào sổ ghi chú</span>
                 </button>
               </div>
             </div>
@@ -628,7 +628,7 @@ export const KnowledgeStudioModal: React.FC<KnowledgeStudioModalProps> = ({
                     <span className="unichat-mindmap-input__suggestions-title">Những điều nên thử</span>
                     <ul className="unichat-mindmap-input__suggestions-list">
                       <li
-                        onClick={() => setMindmapPrompt('Tổng quan toàn bộ nội dung tài liệu trong workspace')}
+                        onClick={() => setMindmapPrompt('Tổng quan toàn bộ nội dung tài liệu trong nhóm')}
                       >
                         Tạo sơ đồ tổng quan toàn bộ nội dung tài liệu
                       </li>
@@ -686,7 +686,7 @@ export const KnowledgeStudioModal: React.FC<KnowledgeStudioModalProps> = ({
                       onClick={() => handleTriggerSave('🧠 Sơ Đồ Tư Duy Mermaid', mindmapCode)}
                     >
                       <span className="material-symbols-outlined">push_pin</span>
-                      <span>Lưu Sơ Đồ Tư Duy vào Sổ Ghi Chú</span>
+                      <span>Lưu sơ đồ tư duy vào sổ ghi chú</span>
                     </button>
                   </div>
                 </>
@@ -712,7 +712,7 @@ export const KnowledgeStudioModal: React.FC<KnowledgeStudioModalProps> = ({
 
                 {reportData.citations.length > 0 && (
                   <div className="unichat-report-paper__section">
-                    <h3>{reportData.sections.length + 1}. Trích Dẫn & Bằng Chứng Tài Liệu</h3>
+                    <h3>{reportData.sections.length + 1}. Trích dẫn và bằng chứng tài liệu</h3>
                     <ul className="unichat-report-citations-list">
                       {reportData.citations.map((cit, idx) => (
                         <li key={idx}>{cit.label} <em>{cit.detail}</em></li>
@@ -740,7 +740,7 @@ export const KnowledgeStudioModal: React.FC<KnowledgeStudioModalProps> = ({
                   }
                 >
                   <span className="material-symbols-outlined">push_pin</span>
-                  <span>Lưu Báo Cáo Học Thuật vào Sổ Ghi Chú</span>
+                  <span>Lưu báo cáo học thuật vào sổ ghi chú</span>
                 </button>
               </div>
             </div>

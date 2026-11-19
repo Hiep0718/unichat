@@ -54,7 +54,7 @@ export function ContributionModal({ files, onCancel, onConfirm }: ContributionMo
             <div className="contribution-modal__notice">
               <Icon name="info" size={18} />
               <span>
-                Tài liệu của bạn sẽ được <strong>chủ Workspace duyệt</strong> trước khi AI
+                Tài liệu của bạn sẽ được <strong>chủ nhóm duyệt</strong> trước khi AI
                 sử dụng. Hãy mô tả rõ để người duyệt hiểu và quyết định nhanh hơn.
               </span>
             </div>
@@ -95,7 +95,7 @@ export function ContributionModal({ files, onCancel, onConfirm }: ContributionMo
 
             <div className="contribution-modal__field">
               <label className="contribution-modal__label" htmlFor="contribution-reason">
-                Vì sao Workspace cần tài liệu này? <span aria-hidden="true">*</span>
+                Vì sao nhóm cần tài liệu này? <span aria-hidden="true">*</span>
               </label>
               <textarea
                 id="contribution-reason"

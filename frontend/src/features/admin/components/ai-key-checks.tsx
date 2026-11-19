@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchAiAdmission, sendQuickPrompt, testProviderKey } from '../admin-api';
 import { getSessionSnapshot } from '../../../lib/session-store';
+import { SelectMenu } from '../../../components/select-menu';
 import { friendlyChatError } from '../../chat/chat-failures';
 import { isDiagnosticSelectionValid } from './diagnostic-selection';
 import type { AiStudioKey, KeyVerifyResponse, QuickPromptResponse } from '../admin-api';
@@ -86,32 +87,30 @@ export function AiKeyChecks({ keys, configuredModels, activeProvider }: Props) {
       <div className="ai-form-grid">
         <label className="ai-form-field">
           Khóa kiểm tra
-          <select
-            className="ai-studio-filter-select"
+          <SelectMenu
+            variant="field"
+            label="Khóa kiểm tra"
             value={selectedKey}
-            onChange={(event) => setSelectedKey(event.target.value)}
-          >
-            <option value="">Chọn API key</option>
-            {keys.map((item) => (
-              <option key={item.keyId} value={item.keyId}>
-                {item.name} ({item.provider ?? 'chưa rõ'})
-              </option>
-            ))}
-          </select>
+            options={[
+              { value: '', label: 'Chọn API key' },
+              ...keys.map((item) => ({ value: item.keyId, label: `${item.name} (${item.provider ?? 'chưa rõ'})` })),
+            ]}
+            onChange={setSelectedKey}
+          />
         </label>
 
         <label className="ai-form-field">
           Mô hình kiểm tra
-          <select
-            className="ai-studio-filter-select"
+          <SelectMenu
+            variant="field"
+            label="Mô hình kiểm tra"
             value={model}
-            onChange={(event) => setModel(event.target.value)}
-          >
-            <option value="">Chọn mô hình</option>
-            {configuredModels.map((name) => (
-              <option key={name}>{name}</option>
-            ))}
-          </select>
+            options={[
+              { value: '', label: 'Chọn mô hình' },
+              ...configuredModels.map((name) => ({ value: name, label: name })),
+            ]}
+            onChange={setModel}
+          />
         </label>
       </div>
 

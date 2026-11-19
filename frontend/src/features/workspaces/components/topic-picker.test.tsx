@@ -15,7 +15,7 @@ vi.mock('../workspace-topics', async () => {
   return { ...actual, useWorkspaceTopics: vi.fn() };
 });
 
-const { useWorkspaceTopics } = await import('../workspace-topics');
+const { useWorkspaceTopics, visibleTopics } = await import('../workspace-topics');
 
 const TECH = { group: 'TECHNICAL', groupLabel: 'Kỹ thuật và công nghệ' };
 const LIFE = { group: 'LIFE', groupLabel: 'Đời sống và nhân văn' };
@@ -116,5 +116,36 @@ describe('TopicChips', () => {
     // Groups created before topics existed are most of them; an empty bar
     // under every card would be noise.
     expect(container).toBeEmptyDOMElement();
+  });
+});
+
+describe('visibleTopics', () => {
+  it('should follow the vocabulary order rather than the order the topics arrived in', () => {
+    // Arrange: the API does not promise an order for a workspace's topics.
+    const arrived = ['DATABASE', 'PROGRAMMING'];
+
+    // Act
+    const names = visibleTopics(OPTIONS, arrived).map((option) => option.name);
+
+    // Assert
+    expect(names).toEqual(['PROGRAMMING', 'DATABASE']);
+  });
+
+  it('should keep only as many as the limit allows', () => {
+    // Arrange and Act
+    const names = visibleTopics(OPTIONS, ['LANGUAGES', 'DATABASE', 'PROGRAMMING'], 2).map(
+      (option) => option.name,
+    );
+
+    // Assert
+    expect(names).toEqual(['PROGRAMMING', 'DATABASE']);
+  });
+
+  it('should return nothing while the vocabulary has not loaded', () => {
+    // Arrange and Act
+    const result = visibleTopics(undefined, ['PROGRAMMING']);
+
+    // Assert: no label to show yet, and a raw name is never shown instead.
+    expect(result).toEqual([]);
   });
 });

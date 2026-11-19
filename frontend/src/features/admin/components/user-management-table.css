@@ -13,11 +13,12 @@
 .admin-management__header { align-items: end; }
 .admin-management__title { margin: 0; color: var(--muc); font-size: 1.35rem; }
 .admin-search-wrapper { display: flex; flex-direction: column; gap: 6px; color: var(--muc-nhat); font-size: .82rem; font-weight: 600; }
-.admin-refresh-btn { align-self: flex-start; padding: 8px 14px; border: 1px solid var(--dieu-khien); border-radius: 8px; background: var(--nen); color: var(--muc); font-weight: 650; cursor: pointer; }
-.admin-refresh-btn:hover:not(:disabled) { background: var(--nen); }
+.admin-refresh-btn { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; padding: 8px 14px; border: 1px solid var(--btn-secondary-border); border-radius: var(--btn-radius); background: var(--btn-secondary-bg); color: var(--btn-secondary-ink); font-weight: 650; cursor: pointer; }
+.admin-refresh-btn .material-symbols-outlined { font-size: 16px; }
+.admin-refresh-btn:hover:not(:disabled) { background: var(--btn-secondary-bg-hover); }
 .admin-refresh-btn:disabled { opacity: .6; cursor: not-allowed; }
 .admin-pagination { display: flex; align-items: center; justify-content: flex-end; gap: 12px; color: var(--muc-nhat); font-size: .875rem; }
-.admin-pagination button { padding: 7px 12px; border: 1px solid var(--dieu-khien); border-radius: 7px; background: var(--nen); color: var(--muc-nhat); cursor: pointer; }
+.admin-pagination button { padding: 7px 12px; border: 1px solid var(--dieu-khien); border-radius: var(--btn-radius); background: var(--btn-secondary-bg); color: var(--muc-nhat); cursor: pointer; }
 .admin-pagination button:disabled { opacity: .5; cursor: not-allowed; }
 
 /* KPI Cards Grid */
@@ -156,7 +157,7 @@
   border: 1px solid var(--color-error);
   color: var(--color-error);
   padding: 4px 12px;
-  border-radius: 6px;
+  border-radius: var(--btn-radius);
   font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;
@@ -282,7 +283,7 @@
 
 .admin-action-btn {
   padding: 6px 12px;
-  border-radius: 6px;
+  border-radius: var(--btn-radius);
   font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
@@ -348,4 +349,12 @@
   text-align: center;
   color: var(--muc-nhat);
   font-size: 0.875rem;
+}
+
+.admin-management__title-row,
+.admin-management__tools {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
 }

@@ -79,7 +79,7 @@
   color: var(--muc-nhat);
   cursor: pointer;
   padding: 2px 6px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--btn-radius);
   transition: all var(--transition-fast);
 }
 
@@ -97,4 +97,8 @@
     opacity: 1;
     transform: translateY(0) scale(1);
   }
+}
+
+.doc-toast__icon .material-symbols-outlined {
+  font-size: 16px;
 }

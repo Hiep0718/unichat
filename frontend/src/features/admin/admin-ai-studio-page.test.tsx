@@ -26,9 +26,14 @@ function renderPage() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(<QueryClientProvider client={client}><AdminAiStudioPage /></QueryClientProvider>);
 }
+/** Opens the dropdown named `label` and clicks the option named `option`. */
+function pick(label: string, option: string) {
+  fireEvent.click(screen.getByRole('button', { name: new RegExp(`^${label}:`) }));
+  fireEvent.click(screen.getByRole('option', { name: option }));
+}
 function selectDiagnostics() {
-  fireEvent.change(screen.getByLabelText('Khóa kiểm tra'), { target: { value: 'hive-secondary' } });
-  fireEvent.change(screen.getByLabelText('Mô hình kiểm tra'), { target: { value: model } });
+  pick('Khóa kiểm tra', 'Hive dự phòng (hive)');
+  pick('Mô hình kiểm tra', model);
 }
 
 describe('AdminAiStudioPage', () => {
@@ -51,9 +56,9 @@ describe('AdminAiStudioPage', () => {
     vi.mocked(testProviderKey).mockResolvedValue({ status: 'HEALTHY', message: 'OK', latencyMs: 3, probeType: 'GENERATION' });
     vi.mocked(sendQuickPrompt).mockResolvedValue({ status: 'SUCCESS', reply: 'Kết quả', latencyMs: 12, tokensUsed: null, model });
     renderPage(); await screen.findByText(/Luồng sinh nội dung/);
-    fireEvent.change(screen.getByLabelText('API key'), { target: { value: 'gemini-primary' } });
-    fireEvent.change(screen.getByLabelText('Mô hình'), { target: { value: 'gemini-2.5-flash' } });
-    expect(screen.getByLabelText('Khóa kiểm tra')).toHaveValue('');
+    pick('API key', 'Gemini chính');
+    pick('Mô hình', 'gemini-2.5-flash');
+    expect(screen.getByRole('button', { name: 'Khóa kiểm tra: Chọn API key' })).toBeInTheDocument();
     selectDiagnostics();
     fireEvent.click(screen.getByRole('button', { name: 'Kiểm tra API key' }));
     await waitFor(() => expect(testProviderKey).toHaveBeenCalledWith('hive-secondary'));

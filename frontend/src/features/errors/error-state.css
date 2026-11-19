@@ -1,0 +1,74 @@
+/* Trang lỗi toàn màn hình: 404, 403 và lỗi bất ngờ dùng chung một bố cục. */
+
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 100vh;
+  padding: 24px;
+  background: var(--be-mat);
+  color: var(--muc);
+  text-align: center;
+}
+
+.error-state__mark {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 4px;
+  border-radius: var(--radius-xl);
+  background: var(--nen);
+  border: 1px solid var(--vien);
+  color: var(--muc-nhat);
+}
+
+.error-state--danger .error-state__mark {
+  background: var(--pill-hong-nen);
+  border-color: color-mix(in srgb, var(--hong) 30%, transparent);
+  color: var(--hong);
+}
+
+.error-state__code {
+  font: var(--font-label-md);
+  letter-spacing: 0.08em;
+  color: var(--muc-mo);
+}
+
+.error-state__title {
+  font: var(--font-headline-lg);
+  letter-spacing: var(--letter-spacing-headline-lg);
+  color: var(--muc);
+}
+
+.error-state__description {
+  max-width: 44ch;
+  margin-bottom: 12px;
+  font: var(--font-body-md);
+  color: var(--muc-nhat);
+}
+
+.error-state__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border: 1px solid transparent;
+  border-radius: var(--btn-radius);
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-ink);
+  font: var(--font-label-md);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.error-state__action:hover {
+  background: var(--btn-primary-bg-hover);
+}
+
+.error-state__action:focus-visible {
+  outline: 2px solid var(--nhan);
+  outline-offset: 2px;
+}

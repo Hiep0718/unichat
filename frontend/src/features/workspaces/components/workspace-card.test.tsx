@@ -1,12 +1,37 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { WorkspaceCard } from './workspace-card';
+
+vi.mock('../workspace-topics', async () => {
+  const actual = await vi.importActual<typeof import('../workspace-topics')>(
+    '../workspace-topics',
+  );
+  return { ...actual, useWorkspaceTopics: vi.fn() };
+});
+
+const { useWorkspaceTopics } = await import('../workspace-topics');
+
+const TECH = { group: 'TECHNICAL', groupLabel: 'Kỹ thuật và công nghệ' };
+
+// In the vocabulary's own order, which is what the card must follow.
+const VOCABULARY = [
+  { name: 'PROGRAMMING', label: 'Lập trình', icon: 'code', ...TECH },
+  { name: 'DATABASE', label: 'Cơ sở dữ liệu', icon: 'database', ...TECH },
+  { name: 'DATA_SCIENCE', label: 'Khoa học dữ liệu', icon: 'analytics', ...TECH },
+];
 
 // Vitest `globals` is disabled project-wide, so RTL auto-cleanup is not installed.
 afterEach(cleanup);
 afterEach(() => vi.restoreAllMocks());
+beforeEach(() => {
+  vi.mocked(useWorkspaceTopics).mockReturnValue({
+    data: VOCABULARY,
+    isLoading: false,
+    error: null,
+  } as unknown as ReturnType<typeof useWorkspaceTopics>);
+});
 
 URL.createObjectURL = vi.fn(() => 'blob:mock');
 URL.revokeObjectURL = vi.fn();
@@ -23,6 +48,7 @@ const base = {
     { userId: 'u2', displayName: 'Thanh', hasAvatar: false, avatarColor: null },
   ],
   hasCover: false,
+  topics: [] as readonly string[],
   updatedAt: new Date().toISOString(),
 };
 
@@ -95,5 +121,33 @@ describe('WorkspaceCard', () => {
       'href',
       `/workspaces/${base.id}`,
     );
+  });
+
+  it('should label the topics the group is filed under', () => {
+    // Arrange and Act: the topic used to decide only the picture, so a reader
+    // had to guess from a photograph what the group was about.
+    renderCard({ topics: ['DATABASE'] });
+
+    // Assert
+    expect(screen.getByText('Cơ sở dữ liệu')).toBeInTheDocument();
+  });
+
+  it('should show at most two topics, in the vocabulary order its cover uses', () => {
+    // Arrange: three topics, returned in an order the API does not promise.
+    renderCard({ topics: ['DATA_SCIENCE', 'DATABASE', 'PROGRAMMING'] });
+
+    // Act
+    const labels = screen.getAllByRole('listitem').map((item) => item.textContent);
+
+    // Assert: the first two by vocabulary, whatever order the rows came in.
+    expect(labels).toEqual(['codeLập trình', 'databaseCơ sở dữ liệu']);
+  });
+
+  it('should draw no chip row for a group without topics', () => {
+    // Arrange and Act
+    const { container } = renderCard({ topics: [] });
+
+    // Assert: an empty bar would still take room above the title.
+    expect(container.querySelector('.topic-chips')).not.toBeInTheDocument();
   });
 });

@@ -55,7 +55,10 @@ export function ConversationAvatar({ conversation, size = 36 }: ConversationAvat
     );
   }
 
-  if (!isGroup) {
+  // A group everyone else has left has no faces to stack; without this the row
+  // drew an empty slot where every other conversation has an avatar.
+  const hasOthers = conversation.participants.some((participant) => !participant.me);
+  if (!isGroup || !hasOthers) {
     return <EntityAvatar name={conversation.title} size={size} shape="circle" />;
   }
 

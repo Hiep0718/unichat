@@ -1,16 +1,23 @@
 import { expect, test } from '@playwright/test';
+import type { Page } from '@playwright/test';
 import { HIVE_MODEL, installHiveScenario, WORKSPACE_ID } from './fixtures/hive-scenario';
+
+/** Opens the app's dropdown named `label` and clicks the option named `option`. */
+async function pick(page: Page, label: string, option: string): Promise<void> {
+  await page.getByRole('button', { name: new RegExp(`^${label}:`) }).click();
+  await page.getByRole('option', { name: option, exact: true }).click();
+}
 
 test('should run explicit Hive diagnostics independently of historical filters', async ({ page }) => {
   const scenario = await installHiveScenario(page);
   await page.goto('/admin/ai-studio');
-  await expect(page.getByText(/Nhà cung cấp đang hoạt động: hive/)).toContainText(HIVE_MODEL);
+  await expect(page.getByText(/Luồng sinh nội dung/)).toContainText(HIVE_MODEL);
   expect(scenario.calls.filter((call) => call.path.endsWith('/test-key'))).toHaveLength(0);
-  await page.getByRole('combobox', { name: 'API key', exact: true }).selectOption('gemini-primary');
-  await page.getByRole('combobox', { name: 'Mô hình', exact: true }).selectOption('gemini-2.5-flash');
-  await expect(page.getByLabel('Khóa kiểm tra')).toHaveValue('');
-  await page.getByLabel('Khóa kiểm tra').selectOption('hive-primary');
-  await page.getByLabel('Mô hình kiểm tra').selectOption(HIVE_MODEL);
+  await pick(page, 'API key', 'gemini-primary');
+  await pick(page, 'Mô hình', 'gemini-2.5-flash');
+  await expect(page.getByRole('button', { name: 'Khóa kiểm tra: Chọn API key' })).toBeVisible();
+  await pick(page, 'Khóa kiểm tra', 'Hive chính (hive)');
+  await pick(page, 'Mô hình kiểm tra', HIVE_MODEL);
   await expect(page.getByText(/tiêu thụ tín dụng/)).toBeVisible();
   await page.getByRole('button', { name: 'Kiểm tra API key' }).click();
   await expect(page.getByText(/HEALTHY · Sinh nội dung/)).toBeVisible();
@@ -56,8 +63,8 @@ test('should refresh stale versions and block verification while attempts remain
 test('should disable diagnostics when active provider metadata is unavailable', async ({ page }) => {
   const scenario = await installHiveScenario(page); scenario.registryAvailable = false;
   await page.goto('/admin/ai-studio');
-  await page.getByLabel('Khóa kiểm tra').selectOption('hive-primary');
-  await page.getByLabel('Mô hình kiểm tra').selectOption(HIVE_MODEL);
+  await pick(page, 'Khóa kiểm tra', 'Hive chính (hive)');
+  await pick(page, 'Mô hình kiểm tra', HIVE_MODEL);
   await expect(page.getByText(/Chưa có metadata nhà cung cấp/)).toBeVisible();
   await expect(page.getByRole('button', { name: 'Kiểm tra API key' })).toBeDisabled();
   expect(scenario.calls.filter((call) => call.path.endsWith('/test-key'))).toHaveLength(0);

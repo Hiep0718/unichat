@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
+
+import { SelectMenu } from '../../../components/select-menu';
 
 import { createWorkspaceSchema, CreateWorkspaceFormValues } from '../workspace-schema';
 import type { WorkspaceDto } from '../workspace-schema';
@@ -19,6 +21,7 @@ export function CreateWorkspaceModal({ isOpen, onClose, onSuccess }: CreateWorks
 
   const {
     register,
+    control,
     handleSubmit,
     reset,
     formState: { errors },
@@ -56,7 +59,7 @@ export function CreateWorkspaceModal({ isOpen, onClose, onSuccess }: CreateWorks
       onSuccess(created);
       onClose();
     } catch (err: unknown) {
-      setApiError(err instanceof Error ? err.message : 'Không thể tạo Workspace');
+      setApiError(err instanceof Error ? err.message : 'Không thể tạo nhóm');
     } finally {
       setSubmitting(false);
     }
@@ -66,7 +69,7 @@ export function CreateWorkspaceModal({ isOpen, onClose, onSuccess }: CreateWorks
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h3 className="modal-title">Tạo Workspace mới</h3>
+          <h3 className="modal-title">Tạo nhóm mới</h3>
           <button className="modal-close-btn" type="button" onClick={onClose}>
             &times;
           </button>
@@ -78,21 +81,21 @@ export function CreateWorkspaceModal({ isOpen, onClose, onSuccess }: CreateWorks
 
             <div className="form-group">
               <label className="form-label" htmlFor="name">
-                Tên Workspace <span style={{ color: '#e11d48' }}>*</span>
+                Tên nhóm <span className="form-required" aria-hidden="true">*</span>
               </label>
               <input
                 id="name"
                 className="form-input"
                 type="text"
-                placeholder="Nhập tên workspace (ví dụ: Nghiên cứu sinh AI 2026)"
-                {...register('name', { required: 'Tên Workspace là bắt buộc' })}
+                placeholder="Nhập tên nhóm (ví dụ: Nghiên cứu sinh AI 2026)"
+                {...register('name', { required: 'Tên nhóm là bắt buộc' })}
               />
               {errors.name && <p className="form-error">{errors.name.message}</p>}
             </div>
 
             <div className="form-group">
               <label className="form-label" htmlFor="description">
-                Mô tả Workspace
+                Mô tả nhóm
               </label>
               <textarea
                 id="description"
@@ -106,15 +109,26 @@ export function CreateWorkspaceModal({ isOpen, onClose, onSuccess }: CreateWorks
 
             <div className="form-group">
               <label className="form-label" htmlFor="visibility">
-                Quyền truy cập <span style={{ color: '#e11d48' }}>*</span>
+                Quyền truy cập <span className="form-required" aria-hidden="true">*</span>
               </label>
-              <select id="visibility" className="form-select" {...register('visibility')}>
-                {VISIBILITY_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label} — {opt.description}
-                  </option>
-                ))}
-              </select>
+              <Controller
+                name="visibility"
+                control={control}
+                render={({ field }) => (
+                  <SelectMenu
+                    id="visibility"
+                    variant="field"
+                    label="Quyền truy cập"
+                    value={field.value}
+                    options={VISIBILITY_OPTIONS.map((opt) => ({
+                      value: opt.value,
+                      label: opt.label,
+                      description: opt.description,
+                    }))}
+                    onChange={field.onChange}
+                  />
+                )}
+              />
               {errors.visibility && <p className="form-error">{errors.visibility.message}</p>}
             </div>
           </div>
@@ -124,7 +138,7 @@ export function CreateWorkspaceModal({ isOpen, onClose, onSuccess }: CreateWorks
               Hủy
             </button>
             <button className="btn-primary" type="submit" disabled={submitting}>
-              {submitting ? 'Đang tạo...' : 'Tạo Workspace'}
+              {submitting ? 'Đang tạo...' : 'Tạo nhóm'}
             </button>
           </div>
         </form>

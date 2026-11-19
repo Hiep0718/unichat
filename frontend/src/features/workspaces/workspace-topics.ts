@@ -70,15 +70,20 @@ export function useDiscoverableTopics() {
 }
 
 /**
- * Looks topics up by name.
+ * Picks the chips to draw, in the vocabulary's order rather than the array's.
  *
- * Returns a lookup rather than a list because cards hold names and need
- * labels. A name the vocabulary does not know is skipped instead of rendered
- * raw: a workspace filed under a topic this build was not told about should
- * show nothing, not `NETWORK_SYSTEMS`.
+ * The API promises no order for a workspace's topics, so taking them as given
+ * would let a card swap its chips between two loads — and, under a `max`,
+ * show a different topic from the one its cover picture was chosen by, which
+ * also resolves by vocabulary order. A name the vocabulary does not know is
+ * dropped rather than shown raw: a card reading "NETWORK_SYSTEMS" is worse
+ * than a card with one chip fewer.
  */
-export function topicLookup(
-  options: readonly WorkspaceTopicOption[] | undefined,
-): Map<string, WorkspaceTopicOption> {
-  return new Map((options ?? []).map((option) => [option.name, option]));
+export function visibleTopics(
+  vocabulary: readonly WorkspaceTopicOption[] | undefined,
+  topics: readonly string[],
+  max: number = Number.POSITIVE_INFINITY,
+): readonly WorkspaceTopicOption[] {
+  const wanted = new Set(topics);
+  return (vocabulary ?? []).filter((option) => wanted.has(option.name)).slice(0, max);
 }

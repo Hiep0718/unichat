@@ -18,7 +18,7 @@ const PROMPTS = [
 export function ChatWelcome({ workspaceName = 'Kho tri thức', documents = [], onSelectPrompt }: ChatWelcomeProps) {
   return <div className="chat-welcome">
     <div className="chat-welcome__header"><h1 className="chat-welcome__title">Kho tri thức <span>{workspaceName}</span></h1>
-      <div className="chat-welcome__meta">📚 {documents.length} tài liệu trong danh sách hiện tại</div></div>
+      <div className="chat-welcome__meta"><span className="material-symbols-outlined" aria-hidden="true">library_books</span>{documents.length} tài liệu trong danh sách hiện tại</div></div>
     <div className="chat-welcome__overview"><p className="chat-welcome__overview-text">
       Đặt câu hỏi cụ thể về tài liệu. Câu trả lời cần có bằng chứng từ nguồn bạn được phép truy cập.
       Nếu thiếu bằng chứng, hệ thống sẽ yêu cầu làm rõ hoặc từ chối trả lời.</p></div>

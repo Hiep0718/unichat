@@ -72,9 +72,9 @@
 }
 
 .explore-topics__chip--active {
-  border-color: var(--color-primary, var(--muc));
-  background: var(--color-primary, var(--muc));
-  color: var(--nen);
+  border-color: var(--nhan);
+  background: var(--nhan);
+  color: var(--nhan-muc);
   font-weight: 600;
 }
 
@@ -92,6 +92,6 @@
 }
 
 .explore-topics__chip--active .explore-topics__count {
-  background: rgba(255, 255, 255, 0.25);
-  color: var(--nen);
+  background: color-mix(in srgb, var(--nhan-muc) 22%, transparent);
+  color: var(--nhan-muc);
 }

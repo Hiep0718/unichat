@@ -52,9 +52,9 @@
   margin-top: 8px;
   padding: 11px 20px;
   border: none;
-  border-radius: var(--radius-md, 8px);
-  background: var(--color-primary, var(--muc));
-  color: var(--nen);
+  border-radius: var(--btn-radius);
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-ink);
   font: inherit;
   font-weight: 600;
   text-align: center;
@@ -68,13 +68,17 @@
 }
 
 .invite-page__secondary {
-  color: var(--color-primary, var(--muc));
+  color: var(--btn-secondary-ink);
   font-size: 0.875rem;
   text-decoration: none;
+  background: var(--btn-secondary-bg);
+  border: 1px solid var(--btn-secondary-border);
+  border-radius: var(--btn-radius);
 }
 
 .invite-page__secondary:hover {
   text-decoration: underline;
+  background: var(--btn-secondary-bg-hover);
 }
 
 .invite-page__error {

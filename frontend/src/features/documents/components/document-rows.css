@@ -156,7 +156,7 @@
   display: inline-flex;
   padding: 5px;
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: var(--btn-radius);
   background: none;
   color: var(--ws-ink-muted);
   cursor: pointer;

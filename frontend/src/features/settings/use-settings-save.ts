@@ -37,7 +37,7 @@ export function useSettingsSave(workspaceId: string) {
 /** Converts mutation failures into safe, actionable messages without upstream details. */
 export function settingsErrorMessage(error: unknown): string {
   if (error instanceof ApiError && error.status === 409) {
-    return 'Workspace đã thay đổi. Hãy kiểm tra cài đặt mới nhất rồi lưu lại.';
+    return 'Nhóm đã thay đổi. Hãy kiểm tra cài đặt mới nhất rồi lưu lại.';
   }
   if (error instanceof ApiError && error.status === 403) return 'Bạn không có quyền thay đổi cài đặt này.';
   return 'Không thể lưu cài đặt. Vui lòng kiểm tra thông tin và thử lại.';

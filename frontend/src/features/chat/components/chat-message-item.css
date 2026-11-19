@@ -3,8 +3,8 @@
 }
 
 .chat-msg__model {
-  color: #005569;
-  background: #e9f5f6;
+  color: var(--nhan);
+  background: var(--nhan-nhat);
   border-radius: 999px;
   padding: 2px 8px;
   overflow-wrap: anywhere;
@@ -28,10 +28,10 @@
   width: 100%;
   margin: 0 0 8px;
   padding: 9px 12px;
-  border-left: 3px solid #d97706;
+  border-left: 3px solid var(--canh-bao);
   border-radius: 6px;
-  background: #fffbeb;
-  color: #78350f;
+  background: var(--pill-canh-nen);
+  color: var(--canh-bao);
   font-size: 0.875rem;
 }
 
@@ -44,7 +44,7 @@
 }
 
 .chat-thoughts[open] > .chat-thoughts__header {
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--vien);
 }
 
 .chat-thoughts[open] .chat-thoughts__toggle-icon {
@@ -88,15 +88,15 @@
 }
 
 .chat-answer-badge--document {
-  background: #ecfdf5;
-  color: #047857;
-  border: 1px solid #a7f3d0;
+  background: var(--pill-tot-nen);
+  color: var(--tot);
+  border: 1px solid color-mix(in srgb, var(--tot) 35%, transparent);
 }
 
 .chat-answer-badge--external {
-  background: #fffbeb;
-  color: #b45309;
-  border: 1px solid #fde68a;
+  background: var(--pill-canh-nen);
+  color: var(--canh-bao);
+  border: 1px solid color-mix(in srgb, var(--canh-bao) 35%, transparent);
 }
 
 /* ── Interactive Inline Citation Badges ── */
@@ -109,9 +109,9 @@
   font-size: 0.78em;
   font-weight: 700;
   line-height: 1;
-  color: #0284c7;
-  background: #e0f2fe;
-  border: 1px solid #bae6fd;
+  color: var(--nhan);
+  background: var(--nhan-nhat);
+  border: 1px solid color-mix(in srgb, var(--nhan) 35%, transparent);
   border-radius: 9999px;
   padding: 2px 6px;
   margin: 0 2px;
@@ -121,9 +121,9 @@
 }
 
 .chat-citation-badge:hover {
-  background: #0284c7;
-  color: #ffffff;
-  border-color: #0284c7;
+  background: var(--nhan);
+  color: var(--nhan-muc);
+  border-color: var(--nhan);
   transform: translateY(-1px);
   box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
 }

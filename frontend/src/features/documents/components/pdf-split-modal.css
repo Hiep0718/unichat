@@ -166,7 +166,7 @@
 
 .pdf-split-modal__btn {
   padding: 9px 16px;
-  border-radius: var(--radius-md, 8px);
+  border-radius: var(--btn-radius);
   font: var(--font-label-md);
   font-size: 13px;
   font-weight: 600;
@@ -175,26 +175,42 @@
 }
 
 .pdf-split-modal__btn--cancel {
-  background: transparent;
-  border: 1px solid var(--color-outline-variant, var(--dieu-khien));
-  color: var(--color-on-surface-variant, var(--muc-nhat));
+  background: var(--btn-secondary-bg);
+  border: 1px solid var(--btn-secondary-border);
+  color: var(--btn-secondary-ink);
+  border-radius: var(--btn-radius);
 }
 
 .pdf-split-modal__btn--cancel:hover:not(:disabled) {
-  background: var(--color-surface-container-high, var(--color-surface-dim));
+  background: var(--btn-secondary-bg-hover);
 }
 
 .pdf-split-modal__btn--confirm {
-  background: var(--color-primary, var(--muc));
+  background: var(--btn-primary-bg);
   border: 1px solid var(--color-primary, var(--muc));
-  color: var(--nen);
+  color: var(--btn-primary-ink);
+  border-radius: var(--btn-radius);
 }
 
 .pdf-split-modal__btn--confirm:hover:not(:disabled) {
-  background: var(--nhan);
+  background: var(--btn-primary-bg-hover);
 }
 
 .pdf-split-modal__btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.pdf-split-modal__icon .material-symbols-outlined {
+  font-size: 20px;
+}
+
+.pdf-split-modal__warning-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pdf-split-modal__warning-title .material-symbols-outlined {
+  font-size: 16px;
 }

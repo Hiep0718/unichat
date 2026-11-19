@@ -10,7 +10,7 @@ const STEPS = [
   {
     no: '01',
     title: 'Tải tài liệu lên',
-    body: 'Tạo Workspace cho môn học và tải giáo trình, bài giảng, tài liệu tham khảo vào đó.',
+    body: 'Tạo nhóm cho môn học và tải giáo trình, bài giảng, tài liệu tham khảo vào đó.',
   },
   {
     no: '02',

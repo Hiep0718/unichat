@@ -90,7 +90,7 @@
   background: var(--color-surface-container-low, var(--color-surface-dim));
   color: var(--color-on-surface, var(--muc-nhat));
   border: 1px solid var(--color-outline-variant, var(--dieu-khien));
-  border-radius: 8px;
+  border-radius: var(--btn-radius);
   font-size: 0.875rem;
   font-weight: 600;
   text-decoration: none;

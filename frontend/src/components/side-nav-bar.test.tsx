@@ -88,7 +88,7 @@ describe('SideNavBar', () => {
 
     expect(screen.getByText('Trợ lý AI')).toBeInTheDocument();
     expect(screen.getByText('Tải tài liệu mới')).toBeInTheDocument();
-    expect(screen.getByText('Đổi Workspace')).toBeInTheDocument();
+    expect(screen.getByText('Đổi nhóm')).toBeInTheDocument();
   });
 
   it('should not repeat destinations the group tab bar already carries', async () => {

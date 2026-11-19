@@ -77,7 +77,7 @@
   gap: 7px;
   padding: 11px 18px;
   border: none;
-  border-radius: var(--radius-lg);
+  border-radius: var(--btn-radius);
   font: var(--font-label-md);
   font-weight: 700;
   cursor: pointer;

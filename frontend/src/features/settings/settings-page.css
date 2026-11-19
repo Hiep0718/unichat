@@ -23,13 +23,13 @@
 
 .settings-page__title {
   color: var(--color-on-surface);
-  font: var(--font-headline-xl);
-  letter-spacing: var(--letter-spacing-headline-xl);
+  font: var(--font-page-title);
+  letter-spacing: var(--letter-spacing-page-title);
 }
 
 .settings-page__subtitle {
   color: var(--color-on-surface-variant);
-  font: var(--font-body-lg);
+  font: var(--font-body-md);
 }
 
 .settings-page__tabs {
@@ -39,7 +39,7 @@
   padding: 6px;
   overflow-x: auto;
   background: var(--color-surface-container-low);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-full);
 }
 
 .settings-page__tab {
@@ -48,7 +48,7 @@
   color: var(--color-on-surface-variant);
   background: transparent;
   border: 0;
-  border-radius: var(--radius-lg);
+  border-radius: var(--btn-radius);
   cursor: pointer;
   font: var(--font-label-md);
   white-space: nowrap;
@@ -61,8 +61,8 @@
 }
 
 .settings-page__tab[aria-selected='true'] {
-  color: var(--color-on-primary);
-  background: var(--color-primary);
+  color: var(--nhan-muc);
+  background: var(--nhan);
   box-shadow: var(--shadow-sm);
 }
 

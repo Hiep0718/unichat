@@ -4,7 +4,7 @@
  * Read-only. The picker that sets them is {@link TopicPicker}.
  */
 import { Icon } from '../../../components/icon';
-import { topicLookup, useWorkspaceTopics } from '../workspace-topics';
+import { useWorkspaceTopics, visibleTopics } from '../workspace-topics';
 
 import './topic-chips.css';
 
@@ -12,15 +12,16 @@ interface TopicChipsProps {
   readonly topics: readonly string[];
   /** Smaller variant for a dense card. */
   readonly compact?: boolean;
+  /** Most chips to draw; the rest are left to the group's own page. */
+  readonly max?: number;
 }
 
-export function TopicChips({ topics, compact = false }: TopicChipsProps) {
+/**
+ * Renders a workspace's known topics as labelled chips, or nothing at all.
+ */
+export function TopicChips({ topics, compact = false, max }: TopicChipsProps) {
   const { data } = useWorkspaceTopics();
-  const lookup = topicLookup(data);
-
-  // A name this build does not know is dropped rather than shown raw: a card
-  // reading "NETWORK_SYSTEMS" is worse than a card with one chip fewer.
-  const known = topics.map((name) => lookup.get(name)).filter((option) => option !== undefined);
+  const known = visibleTopics(data, topics, max);
 
   if (known.length === 0) {
     return null;

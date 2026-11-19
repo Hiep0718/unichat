@@ -15,30 +15,19 @@
 
   block-size: 100%;
   overflow-y: auto;
-  padding: 28px var(--gutter) 64px;
+  padding: 28px 24px 64px;
 }
 
+/* Bám mép trái của khung trang chung (--page-max), như Bảng tin và Tin nhắn;
+   chỉ hẹp hơn ở mép phải vì form không cần rộng hơn --canvas. */
 .settings__head,
 .profile-banner,
 .settings__body {
   max-inline-size: var(--canvas);
-  margin-inline: auto;
+  margin-inline-start: max(0px, calc((100% - var(--page-max)) / 2));
+  margin-inline-end: auto;
 }
 
-.settings__title {
-  margin: 0;
-  font-family: var(--font-doc);
-  font-size: 26px;
-  font-weight: 700;
-  letter-spacing: -0.015em;
-  color: var(--muc);
-}
-
-.settings__lede {
-  margin: 6px 0 0;
-  font: var(--font-body-sm);
-  color: var(--muc-nhat);
-}
 
 .settings__body {
   display: grid;
@@ -70,7 +59,7 @@
   gap: 10px;
   padding: 10px 12px;
   border: 0;
-  border-radius: var(--radius-md);
+  border-radius: var(--btn-radius);
   background: transparent;
   font: var(--font-label-md);
   color: var(--muc-nhat);
@@ -132,7 +121,7 @@
   gap: 7px;
   padding: 8px 14px;
   border: 1px solid var(--vien);
-  border-radius: var(--radius-md);
+  border-radius: var(--btn-radius);
   background: var(--noi);
   font: var(--font-label-md);
   font-weight: 600;
@@ -240,11 +229,11 @@
   padding-inline: 20px;
   block-size: 42px;
   border: 0;
-  border-radius: var(--radius-md);
-  background: var(--muc);
+  border-radius: var(--btn-radius);
+  background: var(--btn-primary-bg);
   font: var(--font-label-md);
   font-weight: 600;
-  color: var(--nen);
+  color: var(--btn-primary-ink);
   cursor: pointer;
 }
 
@@ -319,7 +308,7 @@
   flex: none;
   padding: 9px 16px;
   border: 1px solid var(--vien);
-  border-radius: var(--radius-md);
+  border-radius: var(--btn-radius);
   background: var(--noi);
   font: var(--font-label-md);
   font-weight: 600;

@@ -33,8 +33,8 @@
 }
 
 .topic-picker__count--full {
-  background: var(--color-primary, var(--muc));
-  color: var(--nen);
+  background: var(--nhan);
+  color: var(--nhan-muc);
 }
 
 .topic-picker__band {
@@ -93,14 +93,14 @@
    pale background alone, which was easy to miss among a dozen chips. The icon
    also swaps to a check, so the state does not rest on colour by itself. */
 .topic-picker__option--picked {
-  border-color: var(--color-primary, var(--muc));
-  background: var(--color-primary, var(--muc));
-  color: var(--nen);
+  border-color: var(--nhan);
+  background: var(--nhan);
+  color: var(--nhan-muc);
   font-weight: 600;
 }
 
 .topic-picker__option--picked:hover:not(:disabled) {
-  background: var(--color-primary, var(--muc));
+  background: var(--btn-primary-bg-hover);
   filter: brightness(1.12);
 }
 

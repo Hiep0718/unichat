@@ -7,8 +7,8 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: #ffffff;
-  border-left: 1px solid var(--color-outline-variant, #e2e8f0);
+  background: var(--nen);
+  border-left: 1px solid var(--color-outline-variant);
   box-shadow: -6px 0 24px -4px rgba(15, 23, 42, 0.08);
   z-index: 40;
   flex-shrink: 0;
@@ -34,8 +34,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #ffffff;
-  border-bottom: 1px solid var(--color-outline-variant, #e2e8f0);
+  background: var(--nen);
+  border-bottom: 1px solid var(--color-outline-variant);
   flex-shrink: 0;
   gap: 10px;
 }
@@ -52,8 +52,8 @@
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: #f0f9ff;
-  border: 1px solid #e0f2fe;
+  background: var(--nhan-nhat);
+  border: 1px solid var(--nhan-nhat);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -62,7 +62,7 @@
 
 .citation-drawer__icon {
   font-size: 18px;
-  color: var(--color-primary, #0284c7);
+  color: var(--color-primary);
 }
 
 .citation-drawer__file-meta {
@@ -76,7 +76,7 @@
 .citation-drawer__filename {
   font-size: 13.5px;
   font-weight: 700;
-  color: var(--color-on-surface, #0f172a);
+  color: var(--color-on-surface);
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
@@ -98,15 +98,15 @@
 }
 
 .citation-drawer__badge--page {
-  background: #eff6ff;
-  color: #1d4ed8;
-  border: 1px solid #dbeafe;
+  background: var(--nhan-nhat);
+  color: var(--nhan);
+  border: 1px solid var(--nhan-nhat);
 }
 
 .citation-drawer__badge--score {
-  background: #dcfce7;
-  color: #15803d;
-  border: 1px solid #bbf7d0;
+  background: var(--pill-tot-nen);
+  color: var(--tot);
+  border: 1px solid color-mix(in srgb, var(--tot) 35%, transparent);
 }
 
 .citation-drawer__header-actions {
@@ -120,9 +120,9 @@
 .citation-drawer__view-toggle {
   display: inline-flex;
   align-items: center;
-  background: #e2e8f0;
+  background: var(--khung);
   padding: 2px;
-  border-radius: var(--radius-md, 8px);
+  border-radius: var(--radius-full);
   gap: 2px;
 }
 
@@ -133,10 +133,10 @@
   padding: 4px 8px;
   border: none;
   background: transparent;
-  color: #64748b;
+  color: var(--muc-mo);
   font-size: 11px;
   font-weight: 600;
-  border-radius: 6px;
+  border-radius: var(--btn-radius);
   cursor: pointer;
   white-space: nowrap;
   transition: all var(--transition-fast, 0.15s ease);
@@ -147,8 +147,8 @@
 }
 
 .citation-drawer__toggle-tab--active {
-  background: #ffffff;
-  color: var(--color-primary, #00687a);
+  background: var(--nen);
+  color: var(--color-primary);
   font-weight: 700;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
@@ -160,10 +160,10 @@
   justify-content: center;
   width: 28px;
   height: 28px;
-  border-radius: var(--radius-md, 6px);
-  border: 1px solid var(--color-outline-variant, #cbd5e1);
-  background: var(--color-surface-container-lowest, #ffffff);
-  color: var(--color-on-surface, #475569);
+  border-radius: var(--btn-radius);
+  border: 1px solid var(--color-outline-variant);
+  background: var(--color-surface-container-lowest);
+  color: var(--color-on-surface);
   cursor: pointer;
   text-decoration: none;
   transition: all var(--transition-fast, 0.15s ease);
@@ -171,15 +171,15 @@
 }
 
 .citation-drawer__icon-btn:hover {
-  background: #e0f2fe;
-  color: #0369a1;
-  border-color: #7dd3fc;
+  background: var(--nhan-nhat);
+  color: var(--nhan);
+  border-color: color-mix(in srgb, var(--nhan) 35%, transparent);
 }
 
 .citation-drawer__icon-btn--close:hover {
-  background: #fee2e2;
-  color: #b91c1c;
-  border-color: #fca5a5;
+  background: var(--pill-hong-nen);
+  color: var(--hong);
+  border-color: color-mix(in srgb, var(--hong) 35%, transparent);
 }
 
 .citation-drawer__icon-btn .material-symbols-outlined {
@@ -196,10 +196,10 @@
   gap: 5px;
   min-height: 28px;
   padding: 3px 8px;
-  border-radius: var(--radius-md, 6px);
-  border: 1px solid var(--color-outline-variant, #cbd5e1);
-  background: var(--color-surface-container-lowest, #ffffff);
-  color: var(--color-on-surface, #334155);
+  border-radius: var(--btn-radius);
+  border: 1px solid var(--color-outline-variant);
+  background: var(--color-surface-container-lowest);
+  color: var(--color-on-surface);
   cursor: pointer;
   font: inherit;
   font-size: 11px;
@@ -211,9 +211,9 @@
 
 .citation-drawer__action-btn:hover,
 .citation-drawer__close-btn:hover {
-  background: var(--color-secondary-fixed, #e0f2fe);
-  color: var(--color-on-secondary-fixed, #075985);
-  border-color: var(--color-secondary, #0284c7);
+  background: var(--color-secondary-fixed);
+  color: var(--color-on-secondary-fixed);
+  border-color: var(--color-secondary);
 }
 
 /* ── Content Body ── */
@@ -224,7 +224,7 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  background: #f8fafc;
+  background: var(--be-mat);
 }
 
 .citation-drawer__body::-webkit-scrollbar {
@@ -236,7 +236,7 @@
 }
 
 .citation-drawer__body::-webkit-scrollbar-thumb {
-  background: var(--color-outline-variant, #cbd5e1);
+  background: var(--color-outline-variant);
   border-radius: 4px;
 }
 
@@ -245,9 +245,9 @@
   width: 100%;
   flex: 1;
   min-height: 480px;
-  border: 1px solid var(--color-outline-variant, #cbd5e1);
+  border: 1px solid var(--color-outline-variant);
   border-radius: var(--radius-lg, 8px);
-  background: #ffffff;
+  background: var(--nen);
 }
 
 /* ── States ── */
@@ -261,14 +261,14 @@
 }
 
 .citation-drawer__state--loading {
-  background: #f1f5f9;
-  color: #475569;
+  background: var(--ke);
+  color: var(--muc-nhat);
 }
 
 .citation-drawer__state-spinner {
   animation: citation-drawer-spin 1.2s linear infinite;
   font-size: 20px;
-  color: #0284c7;
+  color: var(--nhan);
 }
 
 @keyframes citation-drawer-spin {
@@ -277,9 +277,9 @@
 }
 
 .citation-drawer__state--error {
-  background: #fef2f2;
-  color: #991b1b;
-  border: 1px solid #fee2e2;
+  background: var(--pill-hong-nen);
+  color: var(--hong);
+  border: 1px solid color-mix(in srgb, var(--hong) 30%, transparent);
 }
 
 /* ── Redesigned Modern Chunk Card (Academic Quote Block) ── */
@@ -290,8 +290,8 @@
 }
 
 .citation-drawer__chunk-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: var(--nen);
+  border: 1px solid var(--vien);
   border-radius: 14px;
   box-shadow: 0 4px 18px -2px rgba(15, 23, 42, 0.05);
   overflow: hidden;
@@ -304,8 +304,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
-  background: #ffffff;
-  border-bottom: 1px solid #f1f5f9;
+  background: var(--nen);
+  border-bottom: 1px solid var(--ke);
   gap: 12px;
 }
 
@@ -321,8 +321,8 @@
   width: 28px;
   height: 28px;
   border-radius: 7px;
-  background: #e0f2fe;
-  color: #0284c7;
+  background: var(--nhan-nhat);
+  color: var(--nhan);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -331,7 +331,7 @@
 
 .citation-drawer__quote-icon-pill .citation-drawer__chunk-icon {
   font-size: 16px;
-  color: #0284c7;
+  color: var(--nhan);
 }
 
 .citation-drawer__chunk-titles {
@@ -345,7 +345,7 @@
 .citation-drawer__chunk-title {
   font-size: 13px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--muc);
   white-space: nowrap;
 }
 
@@ -354,9 +354,9 @@
   align-items: center;
   font-size: 11px;
   font-weight: 700;
-  color: #0369a1;
-  background: #f0f9ff;
-  border: 1px solid #bae6fd;
+  color: var(--nhan);
+  background: var(--nhan-nhat);
+  border: 1px solid color-mix(in srgb, var(--nhan) 35%, transparent);
   padding: 2px 8px;
   border-radius: 9999px;
   white-space: nowrap;
@@ -370,19 +370,19 @@
   padding: 5px 10px;
   font-size: 11.5px;
   font-weight: 600;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 7px;
-  color: #475569;
+  background: var(--nen);
+  border: 1px solid var(--vien);
+  border-radius: var(--btn-radius);
+  color: var(--muc-nhat);
   cursor: pointer;
   transition: all 0.15s ease;
   flex-shrink: 0;
 }
 
 .citation-drawer__copy-btn:hover {
-  border-color: #0284c7;
-  color: #0284c7;
-  background: #f0f9ff;
+  border-color: var(--nhan);
+  color: var(--nhan);
+  background: var(--nhan-nhat);
 }
 
 .citation-drawer__copy-btn .material-symbols-outlined {
@@ -390,9 +390,9 @@
 }
 
 .citation-drawer__copy-btn--copied {
-  border-color: #a7f3d0;
-  color: #059669;
-  background: #ecfdf5;
+  border-color: color-mix(in srgb, var(--tot) 35%, transparent);
+  color: var(--tot);
+  background: var(--pill-tot-nen);
   font-weight: 700;
 }
 
@@ -400,8 +400,8 @@
 .citation-drawer__chunk-content {
   margin: 12px 14px;
   padding: 16px 18px;
-  background: #f8fafc;
-  border-left: 3.5px solid #0284c7;
+  background: var(--be-mat);
+  border-left: 3.5px solid var(--nhan);
   border-radius: 8px;
   position: relative;
 }
@@ -410,7 +410,7 @@
   margin: 0;
   font-size: 13.5px;
   line-height: 1.75;
-  color: #1e293b;
+  color: var(--muc);
   font-style: normal;
   font-weight: 400;
   white-space: pre-wrap;
@@ -424,8 +424,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 10px 14px;
-  background: #ffffff;
-  border-top: 1px solid #f1f5f9;
+  background: var(--nen);
+  border-top: 1px solid var(--ke);
   gap: 8px;
   flex-wrap: wrap;
 }
@@ -436,16 +436,16 @@
   gap: 5px;
   padding: 4px 10px;
   border-radius: 6px;
-  background: #ecfdf5;
-  border: 1px solid #d1fae5;
+  background: var(--pill-tot-nen);
+  border: 1px solid color-mix(in srgb, var(--tot) 30%, transparent);
   font-size: 11.5px;
   font-weight: 600;
-  color: #047857;
+  color: var(--tot);
 }
 
 .citation-drawer__verify-badge .material-symbols-outlined {
   font-size: 15px;
-  color: #059669;
+  color: var(--tot);
 }
 
 .citation-drawer__jump-pdf-btn {
@@ -454,17 +454,17 @@
   gap: 4px;
   font-size: 11.5px;
   font-weight: 700;
-  color: #0284c7;
+  color: var(--nhan);
   background: transparent;
   border: none;
   cursor: pointer;
   padding: 4px 8px;
-  border-radius: 6px;
+  border-radius: var(--btn-radius);
   transition: all 0.15s ease;
 }
 
 .citation-drawer__jump-pdf-btn:hover {
-  background: #e0f2fe;
+  background: var(--nhan-nhat);
 }
 
 .citation-drawer__jump-pdf-btn .material-symbols-outlined {
@@ -473,9 +473,9 @@
 
 /* Fallback highlight container for backward compatibility */
 .citation-drawer__highlight-container {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-left: 3.5px solid var(--color-primary, #00687a);
+  background: var(--nen);
+  border: 1px solid var(--vien);
+  border-left: 3.5px solid var(--color-primary);
   border-radius: var(--radius-xl, 12px);
   padding: 14px;
   box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.05);
@@ -487,14 +487,14 @@
   gap: 5px;
   font-size: 11px;
   font-weight: 700;
-  color: #0369a1;
+  color: var(--nhan);
   margin-bottom: 8px;
 }
 
 .citation-drawer__highlight-body {
   font-size: 13.5px;
   line-height: 1.7;
-  color: #1e293b;
+  color: var(--muc);
   font-weight: 400;
   font-style: normal;
   white-space: pre-wrap;

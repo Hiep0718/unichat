@@ -40,7 +40,7 @@ test('should refresh a stale version and wait for another explicit owner save af
   await page.getByRole('tab', { name: 'AI & Quyền riêng tư' }).click();
   await page.getByRole('checkbox').check();
   await page.getByRole('button', { name: 'Lưu quyền AI' }).click();
-  await expect(page.getByRole('alert')).toContainText('Workspace đã thay đổi');
+  await expect(page.getByRole('alert')).toContainText('Nhóm đã thay đổi');
   await expect(page.getByText('Đã lưu quyền xử lý bằng AI.')).toHaveCount(0);
   await expect(page.getByText('Trạng thái đã lưu: Chưa cho phép')).toBeVisible();
   expect(scenario.updates).toHaveLength(1);

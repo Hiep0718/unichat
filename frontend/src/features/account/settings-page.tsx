@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 
 import { Icon } from '../../components/icon';
+import { PageHeader } from '../../components/page-header';
 import { authApi } from '../auth/api/auth-api';
 import { useAuth } from '../auth/auth-context';
 import { ProfileBanner } from './components/profile-banner';
@@ -34,10 +35,11 @@ function SettingsPage() {
 
   return (
     <main className="settings">
-      <header className="settings__head">
-        <h1 className="settings__title">Cài đặt tài khoản</h1>
-        <p className="settings__lede">Quản lý hồ sơ, bảo mật và giao diện của bạn.</p>
-      </header>
+      <PageHeader
+        className="settings__head"
+        title="Cài đặt tài khoản"
+        subtitle="Quản lý hồ sơ, bảo mật và giao diện của bạn."
+      />
 
       <ProfileBanner profile={profile} />
 

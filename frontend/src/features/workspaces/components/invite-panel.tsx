@@ -9,6 +9,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { Icon } from '../../../components/icon';
+import { SelectMenu } from '../../../components/select-menu';
 import { createInvite, getInvites, inviteUrlFor, revokeInvite } from '../invite-api';
 import { allowsMembers, ROLE_SUMMARY } from '../workspace-visibility';
 
@@ -99,7 +100,7 @@ export function InvitePanel({ workspaceId, visibility }: InvitePanelProps) {
   if (!canInvite) {
     return (
       <p className="invite-panel__disabled">
-        Workspace riêng tư không tạo được link mời. Hãy chuyển sang chế độ Chia sẻ trước.
+        Nhóm riêng tư không tạo được link mời. Hãy chuyển sang chế độ Chia sẻ trước.
       </p>
     );
   }
@@ -120,24 +121,27 @@ export function InvitePanel({ workspaceId, visibility }: InvitePanelProps) {
       <div className="invite-panel__controls">
         <label className="invite-panel__field">
           <span>Vai trò</span>
-          <select value={role} onChange={(e) => setRole(e.target.value as WorkspaceRole)}>
-            <option value="VIEWER">{ROLE_SUMMARY.VIEWER}</option>
-            <option value="EDITOR">{ROLE_SUMMARY.EDITOR}</option>
-          </select>
+          <SelectMenu
+            variant="field"
+            label="Vai trò"
+            value={role}
+            options={[
+              { value: 'VIEWER', label: ROLE_SUMMARY.VIEWER },
+              { value: 'EDITOR', label: ROLE_SUMMARY.EDITOR },
+            ]}
+            onChange={setRole}
+          />
         </label>
 
         <label className="invite-panel__field">
           <span>Hết hạn sau</span>
-          <select
+          <SelectMenu
+            variant="field"
+            label="Hết hạn sau"
             value={expiresInDays}
-            onChange={(e) => setExpiresInDays(Number(e.target.value))}
-          >
-            {EXPIRY_CHOICES.map((days) => (
-              <option key={days} value={days}>
-                {days} ngày
-              </option>
-            ))}
-          </select>
+            options={EXPIRY_CHOICES.map((days) => ({ value: days, label: `${days} ngày` }))}
+            onChange={setExpiresInDays}
+          />
         </label>
 
         <label className="invite-panel__field">

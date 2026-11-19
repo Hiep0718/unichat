@@ -40,20 +40,20 @@
 /* The assistant is what this product is for, so its card is the one that
    carries colour. Soft rather than saturated: the button inside it is the
    thing to press, and two saturated surfaces would compete. */
-/* The inverse of the page, like the rail's assistant card: the same offer in
-   two places should not read as two different things. The token pair flips
-   under the dark theme, so this stays "not the page" in both. */
+/* Same navy as the rail's assistant card: the same offer in two places should
+   not read as two different things. Fixed in both themes; the inverse pair it
+   used before turned into a glaring light card on the dark theme. */
 .group-about__card--ai {
   position: relative;
   overflow: hidden;
   border: none;
-  background: var(--color-inverse-surface);
-  color: var(--color-inverse-on-surface);
+  background: var(--noi-bat-nen);
+  color: var(--noi-bat-muc);
   box-shadow: none;
 }
 
 .group-about__card--ai .group-about__heading {
-  color: var(--color-inverse-on-surface);
+  color: var(--noi-bat-muc);
 }
 
 .group-about__card--ai .group-about__description,
@@ -63,8 +63,8 @@
 }
 
 .group-about__card--ai .group-about__cta {
-  background: var(--color-inverse-on-surface);
-  color: var(--color-inverse-surface);
+  background: var(--noi-bat-nut-nen);
+  color: var(--noi-bat-nut-muc);
 }
 
 .group-about__card--ai .group-about__cta:hover {
@@ -93,7 +93,7 @@
 .group-about__sheet {
   position: absolute;
   border-radius: 6px;
-  background: var(--color-inverse-on-surface);
+  background: var(--noi-bat-nut-nen);
   opacity: 0.1;
 }
 
@@ -217,7 +217,7 @@
   align-items: center;
   gap: 8px;
   padding: 11px 18px;
-  border-radius: 12px;
+  border-radius: var(--btn-radius);
   background: var(--ws-accent-gradient);
   color: var(--ws-accent-ink, var(--nen));
   font-size: 0.875rem;

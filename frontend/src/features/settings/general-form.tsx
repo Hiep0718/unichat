@@ -25,7 +25,7 @@ export function GeneralForm({ workspace, canEdit }: {
     <section className="settings-section">
       <h3 className="settings-section__title">Thông tin chung</h3>
       <form className="settings-form" onSubmit={handleSave}>
-        <label className="settings-form__field" htmlFor="settings-name">Tên workspace
+        <label className="settings-form__field" htmlFor="settings-name">Tên nhóm
           <input id="settings-name" className="settings-form__input" value={name}
             onChange={(event) => setName(event.target.value)} disabled={!canEdit || mutation.isPending}
             required minLength={3} maxLength={100} />

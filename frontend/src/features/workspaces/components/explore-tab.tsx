@@ -91,7 +91,7 @@ export function ExploreTab() {
             <button
               className={`view-toggle-btn ${viewMode === 'GRID' ? 'view-toggle-btn--active' : ''}`}
               type="button"
-              aria-label="Grid view"
+              aria-label="Xem dạng lưới"
               onClick={() => setViewMode('GRID')}
             >
               <Icon name="grid_view" size={18} />
@@ -99,7 +99,7 @@ export function ExploreTab() {
             <button
               className={`view-toggle-btn ${viewMode === 'LIST' ? 'view-toggle-btn--active' : ''}`}
               type="button"
-              aria-label="List view"
+              aria-label="Xem dạng danh sách"
               onClick={() => setViewMode('LIST')}
             >
               <Icon name="view_list" size={18} />
@@ -165,7 +165,7 @@ export function ExploreTab() {
             <p className="workspace-empty__desc">
               {topic
                 ? 'Chưa có nhóm công khai nào thuộc chủ đề này.'
-                : 'Không tìm thấy workspace công khai nào phù hợp.'}
+                : 'Không tìm thấy nhóm công khai nào phù hợp.'}
             </p>
             {topic && (
               <button

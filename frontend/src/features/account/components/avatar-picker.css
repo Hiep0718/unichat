@@ -31,7 +31,7 @@
   padding: 0 16px;
   block-size: 40px;
   border: 1px solid var(--vien);
-  border-radius: var(--radius-md);
+  border-radius: var(--btn-radius);
   background: var(--noi);
   font: var(--font-label-md);
   font-weight: 600;

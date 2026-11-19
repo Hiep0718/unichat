@@ -23,7 +23,7 @@ function formatLocator(locator?: string | null): string {
 }
 
 /** Normalizes fragmented PDF chunk excerpts by joining broken line breaks. */
-export function cleanExcerptText(raw: string): string {
+function cleanExcerptText(raw: string): string {
   if (!raw) return '';
   const lines = raw.replace(/\r\n/g, '\n').trim().split('\n').map((l) => l.trim());
   const paragraphs: string[] = [];

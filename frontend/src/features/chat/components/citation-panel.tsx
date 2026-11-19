@@ -73,7 +73,7 @@ export const CitationPanel: React.FC<CitationPanelProps> = ({ citations, onSelec
                   </div>
                   <div className="citation-popover__excerpt">"{c.excerpt}"</div>
                   <div className="citation-popover__footer">
-                    <span>Mở xem chi tiết bên cạnh ➔</span>
+                    <span>Mở xem chi tiết bên cạnh</span><span className="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
                   </div>
                 </div>
               )}
