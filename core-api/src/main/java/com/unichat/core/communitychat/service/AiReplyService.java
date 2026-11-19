@@ -108,7 +108,7 @@ public class AiReplyService {
         }
         log.warn("Assistant operation {} ended {} with code {}",
                 status.operationId(), status.state(), status.errorCode());
-        return AiMentionAnswer.notice(AiMentionAnswer.UNAVAILABLE, status.operationId());
+        return AiMentionAnswer.failed(status.errorCode(), status.operationId());
     }
 
     /** Strips the handle and, for a terse reply, restores the post's topic. */

@@ -372,7 +372,7 @@ describe('FeedCard thread layout', () => {
         parentReplyId: reply.id,
         authorName: 'Trợ lý AI',
         isAiAnswer: true,
-        body: 'Trợ lý chưa trả lời được lúc này. Bạn thử nhắc lại sau ít phút nhé.',
+        body: 'Trợ lý chưa trả lời được: dịch vụ AI đang quá tải. Nhắc lại @AI sau ít phút để thử lại.',
       },
     ]);
     renderCard();
@@ -380,8 +380,9 @@ describe('FeedCard thread layout', () => {
     // Act
     fireEvent.click(screen.getByText(/1 bình luận/));
 
-    // Assert: a status, with no author line and nothing to like or reply to.
-    expect(await screen.findByRole('status')).toHaveTextContent('Trợ lý chưa trả lời được câu này');
+    // Assert: a status that says why, with no author line and nothing to
+    // like or reply to.
+    expect(await screen.findByRole('status')).toHaveTextContent('dịch vụ AI đang quá tải');
     expect(screen.queryByText('Trợ lý AI')).not.toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: 'Trả lời' })).toHaveLength(1);
   });

@@ -120,14 +120,17 @@ export function ReplyNode({ reply, isAccepted, onAccept, onReply, nested }: Repl
  * comment.
  *
  * It names no author and has no actions: there is nothing to like or reply to
- * in "could not answer". The way to try again is to mention @AI again, which
- * the line says.
+ * in "could not answer". It shows the server's own words, which say why (the
+ * AI provider overloaded, the asker's quota used up, …) and how to try again;
+ * a fixed sentence here used to hide every reason behind the same line.
+ *
+ * @param message the notice the assistant posted, rendered as plain text
  */
-export function AssistantFallbackNote() {
+export function AssistantFallbackNote({ message }: { readonly message: string }) {
   return (
     <p className="reply-node__fallback" role="status">
       <Icon name="smart_toy" size={15} />
-      Trợ lý chưa trả lời được câu này. Nhắc lại @AI sau ít phút để thử lại.
+      {message}
     </p>
   );
 }

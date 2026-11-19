@@ -121,7 +121,7 @@ class AiReplyServiceTest {
     }
 
     @Test
-    void shouldTellTheReaderWhenTheOperationFailed() {
+    void shouldTellTheReaderWhyTheOperationFailed() {
         // Arrange
         reserved(true);
         finishedWith(new ChatOperationResponse(operation.id(), "FAILED", operation.conversationId(),
@@ -130,8 +130,20 @@ class AiReplyServiceTest {
         // Act
         service.onAiMention(mentionOf("@AI chỉ mục là gì và dùng khi nào?"));
 
+        // Assert: the reason, not a blanket "could not answer".
+        assertEquals("Trợ lý chưa trả lời được: không kết nối được dịch vụ AI."
+                + " Nhắc lại @AI sau ít phút để thử lại.", postedAnswer().body());
+        assertEquals(operation.id(), postedAnswer().traceId());
+    }
+
+    @Test
+    void shouldNameAnUnknownFailureCodeSoTwoFailuresCanBeToldApart() {
+        // Act
+        String body = AiMentionAnswer.failed("SOMETHING_NEW", null).body();
+
         // Assert
-        assertEquals(AiMentionAnswer.UNAVAILABLE, postedAnswer().body());
+        assertTrue(body.contains("(mã SOMETHING_NEW)"));
+        assertTrue(body.startsWith(AiMentionAnswer.NOTICE_PREFIX));
     }
 
     @Test
@@ -158,7 +170,8 @@ class AiReplyServiceTest {
         service.onAiMention(mentionOf("@AI chỉ mục là gì và dùng khi nào?"));
 
         // Assert
-        assertEquals("Trợ lý chưa trả lời được: Bạn đang có hai yêu cầu đang xử lý.", postedAnswer().body());
+        assertEquals("Trợ lý chưa trả lời được: Bạn đang có hai yêu cầu đang xử lý."
+                + " Nhắc lại @AI sau ít phút để thử lại.", postedAnswer().body());
         verify(runner, never()).start(any(), anyBoolean(), any());
     }
 

@@ -52,7 +52,7 @@ export function ReplyThread({
   const [showForm, setShowForm] = useState(false);
 
   if (isAssistantFallback(reply)) {
-    return <AssistantFallbackNote />;
+    return <AssistantFallbackNote message={reply.body} />;
   }
 
   const isAccepted = acceptedReplyId === reply.id;

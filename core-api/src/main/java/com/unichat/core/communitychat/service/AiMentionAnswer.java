@@ -28,6 +28,9 @@ public record AiMentionAnswer(String body, List<ReplyCitation> citations, UUID t
      */
     static final String NOTICE_PREFIX = "Trợ lý chưa trả lời được";
 
+    /** Closes every notice with the one way to try again. */
+    private static final String RETRY_HINT = " Nhắc lại @AI sau ít phút để thử lại.";
+
     private static final int MAX_CITATIONS = 8;
     private static final int EXCERPT_LIMIT = 500;
 
@@ -50,7 +53,18 @@ public record AiMentionAnswer(String body, List<ReplyCitation> citations, UUID t
      * @return a notice that clients recognise as a status line
      */
     public static AiMentionAnswer declined(String reason) {
-        return notice(NOTICE_PREFIX + ": " + reason, null);
+        return notice(NOTICE_PREFIX + ": " + reason + RETRY_HINT, null);
+    }
+
+    /**
+     * A notice for an operation that started but failed, naming why.
+     *
+     * @param errorCode the operation's stable error code, possibly null
+     * @param traceId   the operation that failed
+     * @return a notice that clients recognise as a status line
+     */
+    public static AiMentionAnswer failed(String errorCode, UUID traceId) {
+        return notice(NOTICE_PREFIX + ": " + AiMentionFailures.reasonFor(errorCode) + RETRY_HINT, traceId);
     }
 
     /**
