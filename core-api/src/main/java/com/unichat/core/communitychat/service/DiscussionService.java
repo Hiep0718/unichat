@@ -26,6 +26,7 @@ import com.unichat.core.communitychat.api.PostAttachmentResponse;
 import com.unichat.core.communitychat.api.ReactionSummary;
 import com.unichat.core.communitychat.api.UpdateDiscussionRequest;
 import com.unichat.core.communitychat.api.ReplyResponse;
+import com.unichat.core.communitychat.api.ReplyAuthor;
 import com.unichat.core.communitychat.domain.AiMentionEvent;
 import com.unichat.core.communitychat.domain.Discussion;
 import com.unichat.core.communitychat.domain.DiscussionReply;
@@ -233,16 +234,17 @@ public class DiscussionService {
         
         Map<UUID, ReactionSummary> reactions =
                 reactionService.summariseAll("DISCUSSION_REPLY", replyIds, userId);
-        Map<UUID, String> authorNames = userRepository
+        // One lookup for every author on the page, carrying what the client
+        // needs to draw each face: name, whether a picture exists, chosen colour.
+        Map<UUID, ReplyAuthor> authors = userRepository
                 .findAllById(replies.stream().map(DiscussionReply::getAuthorId).distinct().toList())
                 .stream()
-                .collect(Collectors.toMap(User::getId, User::getDisplayName));
+                .collect(Collectors.toMap(User::getId, ReplyAuthor::of));
 
         return replies.stream()
                 .map(r -> ReplyResponse.from(
                         r,
-                        authorNames.getOrDefault(r.getAuthorId(), "Người dùng"),
-                        null,
+                        authors.getOrDefault(r.getAuthorId(), ReplyAuthor.UNKNOWN),
                         reactions.getOrDefault(r.getId(), ReactionSummary.empty())))
                 .collect(Collectors.toList());
     }
@@ -288,8 +290,8 @@ public class DiscussionService {
                     discussion.getTitle(), request.body()));
         }
 
-        String authorName = userRepository.findById(userId).map(User::getDisplayName).orElse("Người dùng");
-        return ReplyResponse.from(reply, authorName, null, ReactionSummary.empty());
+        ReplyAuthor author = userRepository.findById(userId).map(ReplyAuthor::of).orElse(ReplyAuthor.UNKNOWN);
+        return ReplyResponse.from(reply, author, ReactionSummary.empty());
     }
 
     /**

@@ -254,10 +254,10 @@ export function PostDetailPage() {
               >
                 <GroupMark
                   workspaceId={workspaceId ?? ''}
-                  name={discussion.workspaceName ?? 'Workspace'}
+                  name={discussion.workspaceName ?? 'Nhóm'}
                   size={20}
                 />
-                {discussion.workspaceName ?? 'Workspace'}
+                {discussion.workspaceName ?? 'Nhóm'}
               </button>
               <span className="post-detail__dot">•</span>
               <span className="post-detail__author">
@@ -458,11 +458,11 @@ export function PostDetailPage() {
           <div className="post-detail__sidebar-card">
             <div className="post-detail__sidebar-header">
               <Icon name="info" size={18} />
-              <h3>Thông tin Workspace</h3>
+              <h3>Thông tin nhóm</h3>
             </div>
             <p className="post-detail__sidebar-desc">
               Nơi tập hợp các thảo luận và câu hỏi xoay quanh tài liệu RAG
-              trong Knowledge Space này.
+              trong nhóm này.
             </p>
             <div className="post-detail__sidebar-stats">
               <div className="post-detail__sidebar-stat">
@@ -478,7 +478,7 @@ export function PostDetailPage() {
               className="post-detail__sidebar-btn"
               onClick={() => navigate(`/workspaces/${workspaceId}`)}
             >
-              Xem Workspace
+              Xem nhóm
             </button>
           </div>
         </aside>

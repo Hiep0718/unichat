@@ -73,4 +73,24 @@ describe('ReactionBar', () => {
       reactionType: 'HAHA',
     });
   });
+
+  it('should label the compact trigger so it is not an unnamed icon', () => {
+    render(<ReactionBar targetType="DISCUSSION" targetId="post-1" summary={EMPTY} compact />);
+
+    expect(screen.getByRole('button', { name: /Thích/ })).toBeInTheDocument();
+  });
+
+  it('should read as a word in a comment and name the reader’s own reaction', () => {
+    render(
+      <ReactionBar
+        targetType="DISCUSSION_REPLY"
+        targetId="reply-1"
+        summary={{ counts: { LOVE: 1 }, total: 1, myReaction: 'LOVE' }}
+        variant="link"
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: 'Yêu thích' })).toBeInTheDocument();
+  });
 });
+

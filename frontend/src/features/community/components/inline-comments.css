@@ -1,22 +1,41 @@
+/* One line between the post and its comments; the footer above has none, so
+   the card no longer stacks a rule over and under its action row. */
 .inline-comments {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-top: 12px;
-  padding-top: 14px;
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 10px;
   border-top: 1px solid var(--ws-line, var(--color-outline-variant));
 }
 
 .inline-comments__list {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
 .inline-comments__state {
   margin: 2px 0;
   font: var(--font-label-md);
   color: var(--color-on-surface-variant);
+}
+
+.inline-comments__more {
+  align-self: flex-start;
+  margin-left: 42px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--color-on-surface-variant);
+  font: var(--font-label-md);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.inline-comments__more:hover {
+  color: var(--color-on-surface);
+  text-decoration: underline;
 }
 
 .inline-comments__error {
@@ -32,17 +51,11 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  margin: 0;
+  margin: 0 0 0 42px;
   font: var(--font-label-md);
-  color: var(--color-primary);
+  color: var(--nhan);
 }
 
-/* The thread is nested inside a card here, not a page, so it gives back the
-   page-level indentation the detail view can afford. */
-.inline-comments .reply-thread {
-  margin-left: 0;
-}
-
-.inline-comments .reply-form__input {
-  min-height: 62px;
+.inline-comments .reply-form--inline {
+  margin-top: 4px;
 }

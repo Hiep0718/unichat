@@ -162,3 +162,55 @@
 .reaction-bar--compact .reaction-bar__tally {
   font-size: 12.5px;
 }
+
+/* The compact pill sits in a card's footer beside "6 bình luận", which is a
+   plain text button, so it drops its border to read as a sibling of it. */
+.reaction-bar--compact.reaction-bar--pill .reaction-bar__trigger {
+  border-color: transparent;
+  padding: 4px 8px;
+  margin-left: -8px;
+  font-weight: 500;
+}
+
+.reaction-bar--compact.reaction-bar--pill .reaction-bar__trigger--mine {
+  background: transparent;
+  color: var(--nhan);
+  font-weight: 600;
+}
+
+/* ── Link variant for a comment's meta line ─────────────── */
+/* display: contents lets the trigger and the tally take part in the meta
+   line's own flex row, so the tally can sit at the end of it. */
+.reaction-bar--link {
+  display: contents;
+}
+
+.reaction-bar--link .reaction-bar__trigger {
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+}
+
+.reaction-bar--link .reaction-bar__trigger:hover:not(:disabled) {
+  background: none;
+  color: var(--color-on-surface);
+  text-decoration: underline;
+}
+
+.reaction-bar--link .reaction-bar__trigger--mine {
+  color: var(--nhan);
+}
+
+.reaction-bar--link .reaction-bar__tally {
+  order: 99;
+  margin-left: auto;
+  font-size: 12px;
+}
+
+.reaction-bar--link .reaction-bar__error {
+  order: 100;
+}

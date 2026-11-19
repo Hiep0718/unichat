@@ -9,6 +9,10 @@ import * as communityApi from '../community-api';
 import type { ReactionSummary } from '../community-api';
 import type { FeedPostResponse } from '../feed-api';
 
+// The comment box's own face reads /users/me through TanStack Query, which
+// this test does not provide; the thread is what is under test.
+vi.mock('./my-avatar', () => ({ MyAvatar: () => null }));
+
 // Vitest `globals` tắt toàn dự án nên RTL không tự gắn auto-cleanup.
 afterEach(cleanup);
 afterEach(() => vi.restoreAllMocks());

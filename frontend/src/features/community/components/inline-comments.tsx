@@ -10,10 +10,17 @@
  * restating them: nesting, citations, reactions and the assistant's answers
  * all behave here exactly as they do on the post's own page, because it is the
  * same code.
+ *
+ * Laid out for reading first. The comments come before the box to write one,
+ * the accepted answer comes first among them, and only the first few threads
+ * show until the reader asks for the rest — the full discussion is on the
+ * post's own page.
  */
 import { useEffect, useMemo, useState } from 'react';
 
 import { Icon } from '../../../components/icon';
+import { groupByParent, hiddenCount, orderRoots } from '../comment-thread';
+import { MyAvatar } from './my-avatar';
 import { ReplyForm } from './reply-form';
 import { ReplyThread } from './reply-thread';
 import { addReply, fetchReplies } from '../community-api';
@@ -38,6 +45,9 @@ interface InlineCommentsProps {
   readonly onAcceptedReplyChange?: (replyId: string | null) => void;
 }
 
+/** Threads shown before "Xem thêm"; enough to see whether it is worth opening. */
+const COLLAPSED_THREADS = 3;
+
 export function InlineComments({
   workspaceId,
   discussionId,
@@ -51,6 +61,7 @@ export function InlineComments({
   const [loading, setLoading] = useState(true);
   const [posting, setPosting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState(false);
 
   const aiReply = useAiReplyWatch(workspaceId, discussionId, (answer) =>
     setReplies((prev) => (prev.some((r) => r.id === answer.id) ? prev : [...prev, answer])));
@@ -73,16 +84,14 @@ export function InlineComments({
   }, [workspaceId, discussionId]);
 
   /** Groups replies by parent so the thread renders without re-scanning. */
-  const repliesByParent = useMemo(() => {
-    const map = new Map<string | null, ReplyResponse[]>();
-    for (const reply of replies) {
-      const key = reply.parentReplyId;
-      map.set(key, [...(map.get(key) ?? []), reply]);
-    }
-    return map;
-  }, [replies]);
+  const repliesByParent = useMemo(() => groupByParent(replies), [replies]);
 
-  const rootReplies = repliesByParent.get(null) ?? [];
+  const rootReplies = useMemo(
+    () => orderRoots(repliesByParent.get(null) ?? [], acceptedReplyId),
+    [repliesByParent, acceptedReplyId],
+  );
+  const visibleRoots = expanded ? rootReplies : rootReplies.slice(0, COLLAPSED_THREADS);
+  const hidden = hiddenCount(rootReplies.slice(visibleRoots.length), repliesByParent);
 
   const handleAddReply = async (body: string, parentId?: string) => {
     setPosting(true);
@@ -97,6 +106,9 @@ export function InlineComments({
         onReplyCountChange?.(next.length);
         return next;
       });
+      // A new comment lands at the end of the list; open it up so the writer
+      // sees what they just posted instead of it vanishing behind "Xem thêm".
+      setExpanded(true);
       // The assistant answers out of band, so the wait starts only when the
       // comment actually asked it something.
       if (mentionsAi(body)) {
@@ -132,31 +144,13 @@ export function InlineComments({
 
   return (
     <section className="inline-comments" aria-label="Bình luận">
-      <ReplyForm
-        loading={posting}
-        onSubmit={(body) => void handleAddReply(body)}
-        workspaceId={workspaceId}
-      />
-
-      {error && (
-        <p className="inline-comments__error" role="alert">
-          <Icon name="error_outline" size={15} /> {error}
-        </p>
-      )}
-
-      {aiReply.pending && (
-        <p className="inline-comments__waiting">
-          <Icon name="smart_toy" size={15} /> Trợ lý đang trả lời...
-        </p>
-      )}
-
       {loading ? (
         <p className="inline-comments__state">Đang tải bình luận...</p>
       ) : rootReplies.length === 0 ? (
         <p className="inline-comments__state">Chưa có bình luận nào. Hãy là người đầu tiên!</p>
       ) : (
         <div className="inline-comments__list">
-          {rootReplies.map((reply) => (
+          {visibleRoots.map((reply) => (
             <ReplyThread
               key={reply.id}
               reply={reply}
@@ -171,6 +165,32 @@ export function InlineComments({
           ))}
         </div>
       )}
+
+      {hidden > 0 && (
+        <button type="button" className="inline-comments__more" onClick={() => setExpanded(true)}>
+          Xem thêm {hidden} bình luận
+        </button>
+      )}
+
+      {aiReply.pending && (
+        <p className="inline-comments__waiting" role="status">
+          <Icon name="smart_toy" size={15} /> Trợ lý đang trả lời...
+        </p>
+      )}
+
+      {error && (
+        <p className="inline-comments__error" role="alert">
+          <Icon name="error_outline" size={15} /> {error}
+        </p>
+      )}
+
+      <ReplyForm
+        variant="inline"
+        loading={posting}
+        onSubmit={(body) => void handleAddReply(body)}
+        workspaceId={workspaceId}
+        avatar={<MyAvatar />}
+      />
     </section>
   );
 }
