@@ -4618,3 +4618,26 @@ xoá test của component đã chết). Vẫn phải chạy `--maxWorkers=2` vì
   5. Nếu nhóm đang mở không nằm trong trang danh sách đầu tiên sidebar tải về, `withActiveGroup` thêm nó vào đầu danh sách để vẫn tô sáng được.
 - Kiểm chứng: `tsc -b` 0 lỗi, `eslint . --max-warnings 0` sạch, Vitest 91 tệp, 637 test qua (viết lại test sidebar trong nhóm, thêm test ngoài nhóm và `side-nav-group-list.test.ts`); E2E `side-nav-hover.spec.ts` và `workspace-ai-policy.spec.ts` qua; đã xem ảnh chụp sidebar trong trang cài đặt nhóm.
 - Ranh giới: Không commit, không push.
+
+## 2026-11-09 — Khắc phục lỗi đăng nhập trên EC2 HTTP (đệ quy vô hạn randomUuid & GuestGuard unmount)
+
+- Bối cảnh: Người dùng không thể đăng nhập trên http://52.64.17.25/login. Nút đăng nhập bấm không có phản hồi hoặc trang bị trắng và giật về form trống.
+- Nguyên nhân:
+  1. `installRandomUuidFallback()` gán `crypto.randomUUID = randomUuid`. Khi `randomUuid()` được gọi, nó kiểm tra `typeof globalThis.crypto?.randomUUID === 'function'` và tự gọi lại chính nó dẫn đến đệ quy vô hạn (RangeError: Maximum call stack size exceeded).
+  2. `loginCookieSession()` thiết lập trạng thái `invalidateSession('restoring')` khi bắt đầu đăng nhập, khiến `GuestGuard` coi đây là `isLoading` và unmount `<LoginPage>` thay bằng `<LoadingScreen>`. Khi API trả về lỗi 401, trạng thái chuyển về `anonymous` làm `LoginPage` remount từ đầu, xóa sạch form input và mất thông báo lỗi.
+- Quyết định:
+  1. Sửa `randomUuid()` và `installRandomUuidFallback()` để chặn đệ quy vô hạn (kiểm tra `globalThis.crypto.randomUUID !== randomUuid`) và tách riêng hàm tạo UUID v4 thuần túy bằng `crypto.getRandomValues`.
+  2. Bổ sung test kiểm thử chống đệ quy trong `random-uuid.test.ts`.
+  3. Cập nhật `loginCookieSession()` khởi tạo với `invalidateSession('anonymous')` để `GuestGuard` không unmount form đăng nhập, giúp giữ lại input và hiển thị đúng lỗi 401 trên giao diện.
+- Kiểm chứng: Build và triển khai trực tiếp container `frontend` trên EC2. Chạy Playwright probe tự động:
+  1. Nhập sai thông tin đăng nhập: Hiện đúng thông báo lỗi "Tài khoản hoặc mật khẩu không chính xác.", giữ nguyên email và mật khẩu trong form.
+  2. Đăng ký tài khoản mới và đăng nhập: Xác thực thành công và tự động chuyển hướng vào `/workspaces` với giao diện đầy đủ.
+
+## 2026-11-19 — Merge origin/main vào feat/knowledge-gap-escalation trước khi mở PR
+
+- Bối cảnh: Người dùng yêu cầu commit hết, kéo code mới về rồi tạo pull request. `origin/main` có thêm PR #31 (`fix/insecure-context-uuid`): sửa đệ quy vô hạn của `randomUuid` và giữ form đăng nhập khi lỗi.
+- Xung đột và cách gỡ:
+  1. `frontend/src/lib/random-uuid.ts`: hai bên cùng sửa một lỗi đệ quy theo hai cách. Nhánh này cài một hàm sinh UUID riêng làm polyfill; `main` vẫn cài `randomUuid` nhưng thêm điều kiện `crypto.randomUUID !== randomUuid`. Đã hợp nhất: polyfill cài `generateV4Uuid` (tên của `main`, nên không thể tự gọi lại chính nó), và giữ điều kiện chặn của `main` ở cả `randomUuid` lẫn `installRandomUuidFallback` làm lớp bảo vệ thứ hai.
+  2. `.pipeline/decisions-log.md`: hai bên cùng thêm mục vào cuối tệp; giữ cả hai.
+  3. `cookie-session.ts` (đăng nhập khởi tạo phiên ở `anonymous`) tự merge được.
+- Kiểm chứng sau merge: `tsc -b` 0 lỗi, `eslint . --max-warnings 0` sạch, Vitest 91 tệp, 637 test qua (gồm test chống đệ quy của `main`); backend `./mvnw -o test` 609/609 qua.
