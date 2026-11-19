@@ -6,7 +6,7 @@
  * have an account yet, and a login screen tells them nothing about what they
  * were invited to.
  */
-import { fetchJson } from '../../lib/api-client';
+import { fetchJson, fetchPublicJson } from '../../lib/api-client';
 
 import type { WorkspaceRole } from './workspace-schema';
 
@@ -55,7 +55,7 @@ export function revokeInvite(workspaceId: string, inviteId: string): Promise<voi
 
 /** What a link leads to. Works signed out. */
 export function previewInvite(token: string): Promise<InvitePreviewDto> {
-  return fetchJson(`/invites/${encodeURIComponent(token)}`);
+  return fetchPublicJson(`/invites/${encodeURIComponent(token)}`);
 }
 
 /** Joins the workspace the link names. Requires a session. */

@@ -48,6 +48,7 @@ function givenSignedIn(isAuthenticated: boolean) {
 describe('InvitePage', () => {
   beforeEach(() => {
     navigate.mockClear();
+    vi.mocked(previewInvite).mockReset();
     vi.mocked(previewInvite).mockResolvedValue({
       workspaceId: 'ws-1',
       workspaceName: 'Khoa học dữ liệu',
@@ -108,12 +109,30 @@ describe('InvitePage', () => {
 
   it('should explain a dead link instead of showing an empty page', async () => {
     givenSignedIn(false);
+    const { ApiError } = await import('../../lib/api-client');
     vi.mocked(previewInvite).mockRejectedValue(
-      new Error('Link mời không hợp lệ hoặc đã hết hạn'),
+      new ApiError(404, 'Link mời không hợp lệ hoặc đã hết hạn'),
     );
     renderPage();
 
     expect(await screen.findByText('Lời mời không dùng được')).toBeInTheDocument();
     expect(screen.getByText(/hết hạn, đã dùng hết lượt, hoặc bị chủ nhóm thu hồi/)).toBeInTheDocument();
+  });
+
+  it('should not call a link dead when only loading its preview failed', async () => {
+    // Arrange: "Phiên đã thay đổi" was shown as a dead link on the deployed
+    // site; a failure that is not the server's 404 says nothing about the link.
+    givenSignedIn(false);
+    vi.mocked(previewInvite).mockRejectedValueOnce(new DOMException('Phiên đã thay đổi', 'AbortError'));
+    renderPage();
+
+    // Act
+    expect(await screen.findByText('Chưa tải được lời mời')).toBeInTheDocument();
+    expect(screen.queryByText('Lời mời không dùng được')).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Thử lại' }));
+
+    // Assert: the retry loads the invitation.
+    expect(await screen.findByText('Khoa học dữ liệu')).toBeInTheDocument();
+    expect(previewInvite).toHaveBeenCalledTimes(2);
   });
 });

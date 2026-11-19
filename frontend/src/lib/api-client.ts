@@ -52,6 +52,23 @@ export async function fetchJson<T>(endpoint: string, options: RequestInit = {}):
   return data;
 }
 
+/**
+ * Fetches a public endpoint that answers the same for everyone, such as an
+ * invite preview.
+ *
+ * Deliberately not tied to the session: no token is sent, and the result is
+ * not discarded when the session generation changes. A visitor who is not
+ * signed in has their session invalidated while the page loads (the restore
+ * attempt fails), and binding a public read to that generation made it fail
+ * with "Phiên đã thay đổi" although nothing about the answer had changed.
+ */
+export async function fetchPublicJson<T>(endpoint: string): Promise<T> {
+  const response = await fetch(`${getApiBaseUrl()}/api/v1${endpoint}`, {
+    headers: { Accept: 'application/json' },
+  });
+  return readApiResponse<T>(response);
+}
+
 /** Fetches a protected binary resource with the same refresh and race policy. */
 export async function fetchBlob(path: string, options: RequestInit = {}): Promise<Blob> {
   const generation = getSessionSnapshot().generation;
