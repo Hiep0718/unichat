@@ -99,6 +99,25 @@ class ChatOperationServiceTest {
         assertEquals(ChatTaskType.QUESTION,reservation.operation().taskType());
         verify(access,never()).readWorkspaceSummary(any(),any());
     }
+    @Test void shouldNarrowAScopedTurnToTheOneAuthorizedDocument() {
+        when(conversations.reserve(any(),any(),any())).thenReturn(UUID.randomUUID());
+        var ask=new AskQuestionRequest("Tóm tắt tài liệu này",null,false);
+
+        var reservation=service.reserve(ChatFixture.ACTOR,ChatFixture.WORKSPACE,ask,UUID.randomUUID(),"request-scope",ChatFixture.DOCUMENT);
+
+        assertEquals(List.of(ChatFixture.DOCUMENT),reservation.operation().sources().sources().stream()
+                .map(ChatSourceSnapshot.Source::documentId).toList());
+        assertEquals(ChatFixture.sources(true).fingerprint(),reservation.operation().sources().fingerprint());
+    }
+    @Test void shouldRejectAScopeOutsideTheAuthorizedSourcesBeforeAnyWrite() {
+        var ask=new AskQuestionRequest("Tóm tắt tài liệu này",null,false);
+
+        var error=assertThrows(ChatOperationError.class,() -> service.reserve(ChatFixture.ACTOR,ChatFixture.WORKSPACE,ask,
+                UUID.randomUUID(),"request-scope",UUID.randomUUID()));
+
+        assertEquals("SOURCE_UNAVAILABLE",error.getCode());
+        verify(conversations,never()).reserve(any(),any(),any());
+    }
     @Test void shouldKeepOriginalNullConversationBindingOnRetry() {
         var operation=operation("RUNNING");
         when(repository.findByKey(ChatFixture.ACTOR.userId(),operation.key())).thenReturn(Optional.of(operation));

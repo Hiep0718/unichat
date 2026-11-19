@@ -138,8 +138,13 @@ public class PostAttachment {
         this.summaryState = SummaryState.READY;
     }
 
-    /** Marks that no summary is coming, so the UI stops promising one. */
+    /** Marks that the last attempt produced no summary; a member may ask again. */
     public void markSummaryUnavailable() {
         this.summaryState = SummaryState.UNAVAILABLE;
+    }
+
+    /** Records that a member asked for a summary and one is being produced. */
+    public void markSummaryRequested() {
+        this.summaryState = SummaryState.PENDING;
     }
 }

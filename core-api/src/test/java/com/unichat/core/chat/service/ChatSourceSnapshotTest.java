@@ -15,4 +15,23 @@ class ChatSourceSnapshotTest {
 
         assertTrue(snapshot.validSummaryManifest());
     }
+
+    @Test void shouldKeepTheWorkspaceFingerprintWhenScopedToOneDocument() {
+        var kept = new ChatSourceSnapshot.Source(UUID.randomUUID(), 1, "a".repeat(64), "giữ.pdf");
+        var other = new ChatSourceSnapshot.Source(UUID.randomUUID(), 1, "b".repeat(64), "khác.pdf");
+        var snapshot = new ChatSourceSnapshot(UUID.randomUUID(), 4, 2, true, "fingerprint", java.util.List.of(kept, other));
+
+        var scoped = snapshot.scopedTo(kept.documentId());
+
+        assertEquals(java.util.List.of(kept), scoped.sources());
+        assertEquals("fingerprint", scoped.fingerprint());
+        assertEquals(4, scoped.permissionVersion());
+    }
+    @Test void shouldRefuseAScopeThatIsNotAnAuthorizedSource() {
+        var snapshot = new ChatSourceSnapshot(UUID.randomUUID(), 1, 1, true, "fingerprint", java.util.List.of());
+
+        var error = assertThrows(ChatOperationError.class, () -> snapshot.scopedTo(UUID.randomUUID()));
+
+        assertEquals("SOURCE_UNAVAILABLE", error.getCode());
+    }
 }

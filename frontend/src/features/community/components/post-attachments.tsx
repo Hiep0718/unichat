@@ -94,7 +94,11 @@ export function PostAttachments({
                   </span>
                 </span>
               </div>
-              <AttachmentSummary attachment={doc} />
+              <AttachmentSummary
+                workspaceId={workspaceId}
+                discussionId={discussionId}
+                attachment={doc}
+              />
             </li>
           ))}
         </ul>
