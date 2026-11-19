@@ -4372,3 +4372,217 @@ xoá test của component đã chết). Vẫn phải chạy `--maxWorkers=2` vì
 - Bối cảnh: Người dùng thấy đầu màn Tin nhắn (tiêu đề nền sáng theo mockup trước) lạc quẻ so với các tab đã dùng dải tối.
 - Quyết định: Tin nhắn chuyển sang `UCTabHero` như Bảng tin, Trợ lý AI và Tài khoản. Nút "Nhắn tin cho người cùng nhóm" thành nút mờ góc phải; ô tìm kiếm thành thẻ trắng nằm trong dải, giống ô hỏi của Trợ lý AI. Dải cuộn cùng danh sách; lề ngang chuyển xuống phần thân. Chỉ còn tab Nhóm giữ dải riêng có ảnh nền và lời chào.
 - Kiểm chứng: mobile `tsc --noEmit` 0 lỗi, `eslint` 0 lỗi, `jest` toàn bộ qua.
+
+
+## 2026-11-15 — Báo cáo rà soát nghiệp vụ Workspace, Mạng xã hội, @AI, Work Chat
+
+- Bối cảnh: Người dùng yêu cầu rà soát logic nghiệp vụ của workspace nhóm, mạng xã hội, @AI trong bài viết và chat, tổng hợp thành file md: đã làm gì, chưa ổn chỗ nào, cần cải thiện gì, và luồng dữ liệu chi tiết từ bảng, service, controller đến cách frontend gọi API.
+- Quyết định:
+  1. Lưu báo cáo tại `docs/reports/bao-cao-ra-soat-nghiep-vu-workspace-cong-dong-ai-chat-2026-11-15.md`, theo quy ước đặt tên các báo cáo đã có trong thư mục này.
+  2. Chỉ rà soát, không sửa mã. Mọi phát hiện được ghi kèm đường dẫn file và dòng; mục nào chưa kiểm chứng bằng test được đánh dấu "cần kiểm chứng".
+  3. "Chat" được hiểu là Work Chat (người với người). Trợ lý AI trong workspace chỉ được mô tả ngắn, làm mẫu tham chiếu để sửa @AI.
+- Phát hiện chính: @AI và tóm tắt tệp đính kèm luôn thất bại (token dịch vụ kiểu cũ bị AI Service từ chối, request thiếu trường chính sách); `POST /reactions` không kiểm tra thành viên; thông báo `MENTION` vi phạm CHECK của bảng `notifications`; link mời vượt rào chế độ PRIVATE; tab Thành viên lỗi 403 với người không phải chủ nhóm.
+- Kiểm chứng: báo cáo dựa trên đọc mã; không chạy compile, lint hay test vì không có thay đổi mã.
+
+
+## 2026-11-15 — Đồng bộ giao diện web
+
+- Bối cảnh: Người dùng yêu cầu rà soát chỗ UI chưa đồng bộ và khắc phục. Rà bằng cách quét CSS và chụp 19 trang và hộp thoại ở cả chế độ sáng và tối (API giả lập bằng Playwright, không gọi backend).
+- Phát hiện: (1) trang Trợ lý AI, Knowledge Studio, citation drawer, Admin AI Studio và hai bảng Admin viết cứng 807 mã màu theo bảng Tailwind, nên lệch màu nhấn và mất chữ ở chế độ tối; (2) nút chính dùng hai màu (nhấn/đen) và sáu kiểu bo góc; (3) tiêu đề trang ba cỡ khác nhau; (4) chữ "nhóm" lẫn với "Workspace"/"Knowledge Space"; (5) emoji làm icon; (6) các lỗi bố cục lẻ.
+- Quyết định:
+  1. Chuyển màu cứng sang token bằng ánh xạ theo thuộc tính (nền/chữ/viền); mã màu không chắc thì xử lý tay. Giữ màu cố định ở màn tải toàn trang và các ô icon nhiều màu của Studio vì chúng nằm trên nền không đổi theo chế độ.
+  2. Thêm token `--btn-*`: nút chính tô màu nhấn, nút phụ là nút viền, cả hai bo viên thuốc. Chọn màu nhấn thay vì đen vì các lối vào chính (đăng nhập, Tạo nhóm, Tạo bài viết) đã dùng nó. Chip/tab đang chọn cũng dùng màu nhấn, như bộ lọc Bảng tin.
+  3. Thêm `--tren-anh*`, `--tren-giay*` cho chữ trên nền cố định, và `--noi-bat-*` (xanh đậm của thanh bên) cho thẻ mời hỏi trợ lý, thay cho cặp đảo màu vốn lật thành thẻ sáng chói ở chế độ tối.
+  4. Tiêu đề trang dùng `--font-page-title`; serif chỉ dành cho lời chào, đúng như chú thích có sẵn trong `index.css`.
+  5. Thống nhất thuật ngữ "nhóm", theo thanh bên và trang nhóm. Cập nhật kèm các test có kiểm chuỗi.
+  6. Viết lại trang Admin Nhóm và Admin Tài liệu theo mẫu trang Người dùng (TanStack Query, class CSS, báo lỗi thay vì nuốt lỗi); sửa nhãn "Chia sẻ" bị hiển thị thành "Riêng tư".
+  7. Sửa thêm hai lỗi phát hiện khi chạy kiểm tra: cảnh báo lint có sẵn trong `citation-drawer.tsx` (bỏ `export` của hàm nội bộ), và polyfill `crypto.randomUUID` đệ quy vô hạn trên trang HTTP.
+- Kiểm chứng: `npm run typecheck` 0 lỗi, `npm run lint` 0 cảnh báo, `vitest` 575/575 qua. Playwright E2E: 10 qua, 12 lỗi có sẵn do spec lỗi thời (tìm `.evidence-rail` và chuỗi "Nhà cung cấp đang hoạt động" không còn trong mã, kỳ vọng màu teal cũ, tiêu đề trang chủ cũ, fixture thiếu `topics`); không ca nào liên quan thay đổi này. Lệnh `npx playwright` trỏ nhầm gói, phải chạy `node node_modules/@playwright/test/cli.js test`.
+
+
+## 2026-11-15 — Bo góc nút phụ và trang tổng quan nhóm
+
+- Bối cảnh: Tiếp phần đồng bộ giao diện: nút phụ còn bo góc lẻ, và trang `/workspaces/:id/overview` còn style inline.
+- Quyết định:
+  1. Rà nút theo hai cách: theo tên class trong CSS, và theo class thực sự gắn trên `<button>` trong TSX (để bắt cả nút đặt tên khác như `__close`, `__remove`). Khoảng 70 nút dùng 15 kiểu bo khác nhau được đưa về `--btn-radius`. Nút icon cũng tròn. Bộ chuyển segmented và thanh tab bo tròn cả khung lẫn mục.
+  2. Cố ý giữ nguyên: dòng menu thả xuống, dòng danh sách, thẻ, ô màu, ô nhập, nút ẩn/hiện mật khẩu nằm trong ô nhập. Ô soạn tin Work Chat chuyển sang nút tròn và ô nhập bo 22px để khớp ô soạn của Trợ lý AI.
+  3. Trang tổng quan: viết lại thành các khối nhỏ; dải đầu dùng `--noi-bat-*`; bốn ô số liệu đọc `documentCount`, `memberCount`, `postCount`, `recentPostCount` từ query `useWorkspace` mà khung trang đã nạp (không thêm request), thay cho chữ cố định "< 300ms", "Zero-Trust AI"; vai trò hiện bằng `ROLE_LABELS` tiếng Việt.
+- Kiểm chứng: typecheck 0 lỗi, lint 0 cảnh báo. `vitest --pool=threads` 575/575 qua. Với pool mặc định `forks`, 27 file lỗi kiểu `vi.mock` không được áp dụng, kể cả các file không liên quan (`stomp-connection.test.ts`). Lỗi biến mất khi đổi mtime file (stash/pop) và quay lại sau một lần chạy toàn bộ; mã nguồn giống hệt lần chạy xanh lúc 02:19. Ghi nhận là sự cố môi trường, chưa xác định được nguyên nhân, không sửa cấu hình test.
+
+
+## 2026-11-15 — Đầu trang đồng bộ cho Bảng tin, Tin nhắn, Tài khoản
+
+- Bối cảnh: Người dùng thấy đầu ba trang rời rạc: Bảng tin không có tiêu đề, tiêu đề Tin nhắn (20px, nằm trong khung danh sách) khác cỡ tiêu đề Cài đặt tài khoản (24px).
+- Quyết định:
+  1. Thêm `PageHeader` dùng chung: tiêu đề `--font-page-title`, một câu mô tả, nút hành động bên phải theo quy ước nút.
+  2. Bảng tin có tiêu đề; nút "Tạo bài viết" lên dải tiêu đề, ô tìm kiếm ở lại cột giữa.
+  3. Tin nhắn: tiêu đề và hai nút ("Tạo nhóm chat" là nút phụ, "Cuộc trò chuyện mới" là nút chính) chuyển ra dải tiêu đề phía trên hai khung. Khung bao `work-chat-page` lo padding và nền; lưới hai khung chiếm phần chiều cao còn lại. Xóa CSS của đầu khung cũ.
+  4. Thêm `--page-max` (1360px): ba trang dùng cùng khung căn giữa, nội dung bám mép trái của khung, nên tiêu đề không xê dịch khi chuyển tab. Trang Tài khoản giữ form rộng `--canvas` (1080px) nhưng bám cùng mép trái. Padding trên của ba trang thống nhất 28px.
+- Kiểm chứng: chụp ở 1440px và 1920px, cả chế độ sáng lẫn tối; tiêu đề ba trang cùng vị trí. typecheck 0 lỗi, lint 0 cảnh báo, vitest 575/575 qua.
+- Đính chính mục trước: lỗi "vi.mock không được áp dụng" không liên quan pool `forks`/`threads` hay cache. Nguyên nhân là thư mục làm việc của shell Bash trong phiên này mang ổ đĩa chữ thường (`d:`); Vitest trên Windows khi đó tạo ID module lệch chữ hoa/thường, nên mock của thư viện nạp gián tiếp bị trượt. Chạy từ thư mục `D:\...` (như khi mở terminal bình thường) thì toàn bộ test qua. Không cần đổi cấu hình test.
+
+
+## 2026-11-15 — Đồng bộ giao diện mobile với quy ước web
+
+- Bối cảnh: Người dùng yêu cầu rà UI mobile, đồng bộ chỗ lệch và cải tiến chỗ cần thiết cho khớp web. Chuẩn so sánh là quy ước web vừa chốt cùng ngày (mục "Quy ước hiện hành của web" trong `DESIGN.md`). Rà bằng cách quét mã (màu cứng, chuỗi font, bo góc nút, thuật ngữ) và chụp các tab chính ở khổ 390px qua bản web của app (react-native-web, API giả lập bằng Playwright, không gọi backend).
+- Phát hiện: (1) mobile có bốn bảng màu song song và ba màu nhấn cho cùng vai: nút gửi Trợ lý AI và tin nhắn `#3346F5`, nút gửi bình luận và chip Bảng tin navy `#1E3A8A`, web `#045CDF`; còn sót navy `#00236F` và teal `#00687A` của bảng màu cũ (chỉ báo "đang suy luận", nút trong danh sách hội thoại); (2) khoảng 240 mã màu cứng, phần lớn là xám Tailwind, trong đó `#94A3B8` chỉ đạt 2,56:1 trên nền trắng; (3) nút chính lẫn mực đen và màu nhấn, nút icon bo 12-16px thay vì tròn, `UCButton` bo 16-20px và có bóng phát sáng; (4) tab Nhóm vẫn dùng "Workspace"/"không gian"; (5) thẻ dùng bóng đổ trong khi web dùng viền 1px `--vien`; (6) trang trí chồng giấy ở dải đầu đè lên nút góc phải và dòng mô tả ở Bảng tin, Trợ lý AI, Tin nhắn; ô số liệu Bảng tin nền trong suốt nên trang trí xuyên qua; (7) bong bóng câu hỏi trong chat trợ lý tô đen, web tô màu nhấn; (8) phần tóm tắt nhóm hiện chữ trần không có kiểu.
+- Quyết định:
+  1. Thêm `palette` trong `mobile/src/design/tokens.ts`, chép đúng tên và giá trị `:root` của web; `colors`, `workplace`, `dock`, `messenger`, `glass` chỉ trỏ vào `palette`. Thêm `button` (`--btn-*`) và `noiBat` (`--noi-bat-*`). Dock dùng `--ray-nen` như thanh bên web.
+  2. Codemod thay mã màu cứng theo bảng ánh xạ (xám Tailwind sang hai vai mực của web, xanh lá/đỏ/vàng sang `tot`/`hong`/`canhBao` và pill tương ứng). Giữ nguyên các bảng màu nhận diện (ảnh bìa, avatar, chủ đề nhóm) và chữ trên ảnh. Màu trên dải tối dùng bản sắc của chế độ tối web (`rayNhan`, `rayCanhBao`) vì bản sáng chìm trên nền xanh đậm.
+  3. Gom tên font về `fonts` trong `typography.ts`; thêm `typography.pageTitle` (24px/700 như `--font-page-title`) cho tiêu đề dải đầu. Chưa đổi sang IBM Plex Sans vì cần cài gói `@expo-google-fonts/ibm-plex-sans`, chờ người dùng duyệt; khi duyệt chỉ phải sửa bảng `fonts`.
+  4. Nút chính tô màu nhấn, nút phụ là nút viền, cả hai và mọi nút icon bo tròn; segmented (Nhóm của tôi/Khám phá, Sáng/Tối, Chỉ tài liệu/Mở rộng) khung `ke`, mục chọn nền trắng như web. Nút Hỏi AI giữa dock giữ hình vuông bo góc theo mockup đã duyệt trước.
+  5. `shadows.card` thành viền 1px `palette.vien`; sửa test hợp đồng `discussion-card` vốn khóa quy ước cũ "chỉ bóng, không viền".
+  6. Tách tab Nhóm (423 dòng, vượt trần 300) thành `workspace-list-states.tsx`; chữ theo trang danh sách nhóm web. Chép bảng thông báo lỗi chat từ web (đã đổi "Workspace" thành "nhóm", thêm `PROVIDER_HTTP_400`/`405`).
+  7. Trang trí chồng giấy chỉ vẽ khi dải đầu không có nút hành động; ô số liệu Bảng tin nền đặc `rayNoi`.
+  8. Xóa `uc-badge.tsx` và `uc-card.tsx` (không nơi nào import, còn mang bảng màu cũ).
+  9. Thêm `__tests__/design/palette-sync.test.ts` đọc `frontend/src/styles/index.css` và so từng màu gốc, để lần sau web đổi màu mà mobile quên thì test đỏ.
+- Chưa làm: chế độ tối cho mobile (cần chuyển `StyleSheet` tĩnh sang theme theo ngữ cảnh ở khoảng 80 file); font IBM Plex Sans (chờ duyệt gói). Web còn hai chuỗi "workspace" trong `workspace-list-page.tsx` (ô tìm kiếm và câu mời ở trạng thái rỗng), không sửa vì ngoài phạm vi mobile.
+- Kiểm chứng: mobile `tsc --noEmit` 0 lỗi, `eslint` 0 cảnh báo, `jest` 63/63 bộ, 405/405 test qua. Ảnh chụp Nhóm, Bảng tin, Trợ lý AI, Tin nhắn, Tài khoản, trang nhóm và màn chat sau sửa không còn chỗ đè. Metro trên Windows cũng dính lỗi chữ hoa/thường ổ đĩa như Vitest: khởi động từ `d:\` thì báo "Failed to get the SHA-1"; phải chạy từ `D:\`.
+
+## 2026-11-15 — Nhãn chủ đề trên thẻ nhóm (web)
+
+- Bối cảnh: Người dùng hỏi vì sao thẻ ở "Tất cả nhóm" không có nhãn chủ đề. Truy vấn chỉ đọc trên DB dùng chung: 12/12 nhóm ACTIVE đều có chủ đề. `WorkspaceCard` nhận `topics` nhưng chỉ dùng để chọn ảnh bìa; nhãn chỉ có ở thẻ Khám phá, tab Tổng quan và Giới thiệu. Không có quyết định nào trước đó bỏ nhãn khỏi thẻ này. Người dùng duyệt việc thêm.
+- Quyết định:
+  1. Thẻ hiện tối đa 2 chip `compact` phía trên tên nhóm. Nội dung thẻ neo theo đáy, nên nhóm không có chủ đề chỉ thiếu hàng chip, tên vẫn thẳng hàng với thẻ bên cạnh. Chip thứ ba (nhóm có 3 chủ đề) bỏ qua vì sẽ xuống dòng; trang nhóm vẫn hiện đủ.
+  2. `TopicChips` sắp theo thứ tự từ điển chủ đề thay vì thứ tự mảng (`visibleTopics` trong `workspace-topics.ts`). API không cam kết thứ tự các dòng `workspace_topics`, và ảnh bìa cũng chọn theo thứ tự từ điển, nên khi cắt bớt thì chip đầu luôn khớp với ảnh. Thay đổi này áp dụng cho mọi nơi dùng `TopicChips`. Xóa `topicLookup` vì không còn nơi dùng.
+  3. Trên ảnh, chip dùng kiểu kính mờ giống nhãn hiển thị; ở chế độ xem danh sách, chip trở lại kiểu chip thường trên nền trắng, nằm sau tên nhóm.
+- Chưa làm: thẻ nhóm trên mobile cũng chưa có nhãn chủ đề, và mobile chưa có chỗ chọn chủ đề khi tạo hoặc sửa nhóm.
+- Kiểm chứng: frontend `typecheck` 0 lỗi, `eslint . --max-warnings 0` sạch, Vitest 85 tệp, 581 test qua (6 test mới). Chưa xem trực tiếp trên trình duyệt.
+- Ranh giới: Không commit, không push. Không ghi vào DB.
+
+## 2026-11-15 — Menu sổ xuống tự vẽ thay cho `<select>` gốc ở trang nhóm
+
+- Bối cảnh: Người dùng chỉ ra ô chọn nhóm trong ô hỏi nhanh ở dải chào "UI chưa đồng bộ". Đó là `<select>` gốc, nên khi mở ra là danh sách của hệ điều hành (góc vuông, nền xám, chữ hệ thống, tô xanh), lạc với các panel bo tròn của app. Nút sắp xếp "Mới cập nhật" ngay trên lưới nhóm cũng bị y như vậy.
+- Quyết định:
+  1. Thêm `components/select-menu.tsx`, dùng chung: nút kích hoạt có `aria-haspopup="listbox"`, danh sách `role="listbox"` với `aria-activedescendant`, phím mũi tên, Home/End, Enter/Space, Escape/Tab, đóng khi bấm ra ngoài. Phần tính phím tách ra `select-menu-keys.ts` thành hàm thuần. Panel vẽ theo kiểu menu bài viết (`post-menu`): nền `surface-container-lowest`, viền 1px, `radius-lg`, `shadow-lg`, mục đang chọn tô màu nhấn và có dấu tích.
+  2. Danh sách được portal ra `document.body` với `position: fixed`, vì `.welcome-banner` có `overflow: hidden` nên một danh sách `absolute` sẽ bị cắt. Đổi lại, danh sách tự đóng khi cuộn hoặc đổi kích thước, để không bị bỏ lại khi nút đã trôi đi chỗ khác.
+  3. Áp dụng cho `hero-ask.tsx` và nút sắp xếp trong `workspace-list-page.tsx`. Không thêm gói nào.
+- Chưa làm: còn khoảng 15 `<select>` gốc ở phần quản trị, thành viên, lời mời, tạo bài viết, phân trang tài liệu và form tạo nhóm. Chưa đổi để giữ phạm vi nhỏ; các chỗ đó có thể chuyển sang `SelectMenu` khi cần.
+- Kiểm chứng: frontend `typecheck` 0 lỗi, `eslint . --max-warnings 0` sạch, Vitest 86 tệp, 590 test qua (9 test mới cho `SelectMenu`). Đã chụp trang `/workspaces` bằng Playwright với API giả lập: menu mở thành panel của app, không bị banner cắt. Spec chụp ảnh là spec tạm, đã xóa.
+- Ranh giới: Không commit, không push. Không ghi vào DB.
+
+## 2026-11-15 — Chuyển toàn bộ `<select>` gốc trên web sang `SelectMenu`
+
+- Bối cảnh: Người dùng duyệt việc thay nốt các `<select>` gốc còn lại cho đồng bộ với ô chọn nhóm vừa sửa.
+- Phạm vi: 15 chỗ trong 10 file. Đó là vai trò thành viên (`member-list`), vai trò trong form mời (`invite-form`), vai trò và thời hạn trong `invite-panel`, nhóm đăng bài (`create-post-modal`), số dòng mỗi trang (`document-pagination`), quyền truy cập (`create-workspace-modal`, dùng `Controller` của react-hook-form), và các bộ lọc admin: Nhật ký kiểm toán (2), Số liệu (1), AI Studio (3), Kiểm tra khóa (2). Sau đợt này `frontend/src` không còn `<select>` nào.
+- Quyết định:
+  1. `SelectMenu` có thêm biến thể `field` (rộng hết ô, viền chữ nhật, vòng focus màu nhấn như ô nhập của admin) bên cạnh `pill`. Thêm `id` để `<label htmlFor>` trỏ vào, `disabled`, giá trị kiểu số (`T extends string | number`, trả về đúng số chứ không phải chuỗi), và `description` cho dòng phụ dưới nhãn (dùng cho mô tả từng mức quyền truy cập, trước đây bị nhồi vào một dòng "Nhãn — mô tả").
+  2. Sửa lỗi phát hiện khi chạy e2e: danh sách đóng ngay sau khi mở nếu trang còn đang cuộn. Playwright cuộn nút vào khung nhìn trước khi bấm, trackpad thì trượt quán tính, và sự kiện `scroll` đến sau cú click. Giờ danh sách bám theo nút khi cuộn hoặc đổi kích thước (gộp mỗi khung hình một lần bằng `requestAnimationFrame`) và chỉ đóng khi nút ra khỏi màn hình. Cuộn bên trong danh sách không còn làm nó đóng. `focus()` dùng `preventScroll`. Danh sách lật lên trên khi phía dưới không đủ chỗ. Phần này tách ra `select-menu-position.ts`.
+  3. Escape trong danh sách gọi `stopPropagation` để không đóng luôn modal bên ngoài. Click trong danh sách đã portal vẫn lan theo cây React nên `stopPropagation` sẵn có của các modal vẫn chặn được. `z-index` của danh sách là 100000, cao hơn lớp modal cao nhất (99999).
+  4. Xóa các rule CSS chỉ dành cho `<select>` (`.form-select`, `.invite-modal__select`, `.create-post-modal__select`, `.admin-page__toolbar select`, `.invite-panel__field select`, `.ai-studio-filter-select:focus`). Các class còn dùng làm móc kích thước được viết lại dưới dạng `.select-menu__trigger.<class>`.
+- Test cập nhật: `admin-ai-studio-page.test.tsx` thao tác bằng mở menu rồi bấm lựa chọn thay vì `fireEvent.change`. Trong `e2e/hive-flow.spec.ts`, thay `selectOption` bằng helper `pick`, và sửa một assertion đã hỏng từ trước khi đổi dropdown ("Nhà cung cấp đang hoạt động" không còn trong mã, trang hiện ghi "Luồng sinh nội dung").
+- Kiểm chứng: `typecheck` 0 lỗi, `eslint . --max-warnings 0` sạch, Vitest 86 tệp, 595 test qua. `hive-flow.spec.ts` 6/6 qua. Đã chụp trang AI Studio với API giả lập: biến thể `field` hiển thị đúng và tự lật lên ở gần đáy màn hình.
+- Lỗi e2e có sẵn, không do thay đổi này: 12 test ở `evidence-rail`, `font-loading`, `chat-message-style`, `homepage` và `workspace-ai-policy` đang đỏ vì không khớp giao diện hiện tại (ví dụ tiêu đề trang chủ đã đổi chữ, tab "AI & Quyền riêng tư" không còn). Không trang nào trong số đó dùng dropdown. Chưa sửa vì ngoài phạm vi.
+- Ranh giới: Không commit, không push. Không ghi vào DB. Không thêm gói.
+
+## 2026-11-15 — Bổ sung báo cáo rà soát nghiệp vụ: cuộc gọi, bảng dữ liệu, service I/O
+
+- Bối cảnh: Người dùng (tự nhận là người mới) yêu cầu cập nhật `docs/reports/bao-cao-ra-soat-nghiep-vu-workspace-cong-dong-ai-chat-2026-11-15.md`: thêm cuộc gọi cá nhân và gọi nhóm, tổng quan các bảng dữ liệu với giải thích từng cột, và service nào xử lý phần nào với input/output, viết chi tiết và dễ hiểu.
+- Quyết định:
+  1. Thêm mục 1.3 (từ điển thuật ngữ, có ví dụ trong dự án), 1.4 (sơ đồ quan hệ và danh sách mọi bảng), 1.5 (cách đọc bảng service). Mỗi module có mục x.2 "Dữ liệu và các service xử lý" với bảng từng cột và bảng hàm service (input, output, bảng đọc/ghi, lỗi có thể gặp).
+  2. Thêm mục 6 "Cuộc gọi" và đổi số các mục sau (7 xuyên suốt, 8 kế hoạch, 9 phụ lục). Gọi nhóm được mô tả đúng hiện trạng là chưa làm, kèm phân tích mesh và SFU và các phần cần làm. Không bịa thiết kế như thể đã có.
+  3. Danh sách cột được đối chiếu với DB dùng chung bằng truy vấn chỉ đọc `information_schema` và `pg_constraint` (không đọc dữ liệu người dùng, không ghi gì). Nhờ vậy sửa được tên cột sai trong bản trước (`added_by` thực ra là `invited_by_id`, `created_by` thực ra là `created_by_id`) và phát hiện cột/giá trị thừa (W10, S16).
+- Phát hiện mới đáng chú ý: K1 (Cao), cuộc gọi `ACTIVE` không có cơ chế dọn, nếu cả hai bên mất kết nối thì cả hai bị coi là bận vĩnh viễn; K2 (đua khi gọi đồng thời, cần kiểm chứng); K3 (không có TURN mặc định); mobile chưa gọi được.
+- Kiểm chứng: script kiểm tra mọi liên kết `#anchor` và đường dẫn tệp tương đối trong báo cáo, không có liên kết hỏng. Tệp UTF-8 không BOM. Báo cáo vẫn chỉ dựa trên đọc mã, chưa chạy thử nghiệp vụ.
+- Ranh giới: Chỉ sửa tài liệu và nhật ký. Không commit, không push, không ghi DB.
+
+## 2026-11-15 — Làm lại luồng bình luận trên thẻ bảng tin
+
+- Bối cảnh: Người dùng thấy phần bài viết mở bình luận trên bảng tin "rối và khó nhìn", duyệt toàn bộ phương án đề xuất.
+- Chẩn đoán: ô soạn ba dòng nằm trước mọi bình luận; mỗi bình luận có một hàng nút viền (ô cảm xúc trống, số đếm, Trả lời) nên 7 bình luận ra 7 hàng nút; nút cảm xúc lúc là icon không nhãn, lúc là "👍 Thích"; avatar chỉ là chữ cái đầu màu xám nên ba người tên "H" trông như nhau; lời giải lẫn trong luồng; câu "Trợ lý chưa trả lời được" hiện như một bình luận thật; hai đường kẻ kẹp hàng hành động.
+- Quyết định:
+  1. Tách `reply-node.tsx` (một bình luận: avatar, bong bóng, dòng hành động bằng chữ) khỏi `reply-thread.tsx` (đệ quy). Chỉ lồng một cấp: con của con xếp cùng hàng với cha.
+  2. `ReactionBar` thêm `variant="link"` (chữ "Thích"/tên cảm xúc trong dòng meta, số đếm dồn sang phải bằng `display: contents`). Bản `compact` trên chân thẻ hiện "Thích", không còn icon thiếu tên truy cập.
+  3. `ReplyForm` thêm `variant="inline"`: một dòng tự giãn (`field-sizing: content`), avatar người viết, nút gửi icon có `aria-label` "Gửi bình luận", gợi ý @AI/@tên chỉ hiện khi đang gõ (`:focus-within`), Esc để hủy. Bản `block` giữ nguyên cho đầu trang chi tiết bài.
+  4. `InlineComments`: bình luận trước, ô soạn ở cuối; lời giải cấp 1 lên đầu; hiện 3 luồng đầu và nút "Xem thêm N bình luận" (N tính cả bình luận con); gửi bình luận thì tự mở hết để người viết thấy bài mình.
+  5. Hàm thuần trong `comment-thread.ts`: `groupByParent`, `orderRoots`, `threadSize`, `hiddenCount`, `isAssistantFallback`. Câu lỗi của trợ lý nhận diện theo tiền tố câu cố định trong `AiReplyService`; nếu backend đổi câu thì chỉ quay về hiển thị như bình luận thường, không vỡ.
+  6. Chỉ giữ một vạch kẻ: bỏ vạch trên chân thẻ, giữ vạch mở phần bình luận.
+- Không làm, nêu rõ: avatar chưa có ảnh thật vì `ReplyResponse.authorAvatar` luôn là `null` từ backend; muốn có ảnh phải thêm `authorHasAvatar`/`authorAvatarColor` vào API. Không có nút "Thử lại" cho trợ lý như đã đề xuất: bấm thử lại sẽ đăng thêm một bình luận "@AI" trùng và vẫn thất bại cho tới khi sửa lỗi backend A1/A2; dòng trạng thái hướng dẫn nhắc lại @AI.
+- Sự cố khi kiểm chứng: `inline-comments.css` được ghi bằng `cat >` (xóa trắng rồi ghi); dev server Vite đang chạy ở cổng 5173 trên Windows chỉ bắt được lúc tệp rỗng và phục vụ stylesheet rỗng. Dev server mới trả đúng nội dung; lưu lại tệp là server cũ nạp lại. Bài học: ghi tệp CSS bằng một lần ghi nguyên khối.
+- Kiểm chứng: `typecheck` 0 lỗi, `eslint . --max-warnings 0` sạch, Vitest 87 tệp, 608 test qua (13 test mới: bố cục luồng, ghim lời giải, thu gọn, dòng lỗi trợ lý, nhãn AI, nhãn nút cảm xúc, và các hàm thuần). Đã chụp thẻ bằng Playwright với dữ liệu giả lập ở ba trạng thái: thu gọn, đang gõ, đã mở hết.
+- Ranh giới: Không commit, không push. Không ghi DB. Không thêm gói.
+
+## 2026-11-15 — Avatar thật trong bình luận; hoãn sửa @AI và nút "Thử lại"
+
+- Bối cảnh: Người dùng yêu cầu làm hai việc còn treo sau đợt làm lại luồng bình luận: (1) avatar thật trong bình luận, (2) nút "Thử lại" cho trợ lý (kéo theo sửa A1/A2).
+- (1) Đã làm:
+  - Backend: thêm record `ReplyAuthor(name, hasAvatar, avatarColor)` dựng từ `User` (`hasAvatarImage()`, `AvatarColor.key()`). `ReplyResponse` thêm `authorHasAvatar`, `authorAvatarColor`; `authorAvatar` giữ nguyên và luôn `null` để client cũ (mobile đọc trường này) không vỡ. Chỉ trả cờ, không bao giờ trả storage key; ảnh vẫn tải qua endpoint avatar với luật truy cập riêng. `getReplies` vẫn tra người dùng một lần cho cả trang.
+  - Frontend: `ReplyNode` truyền `hasAvatar`/`avatarColor` vào `EntityAvatar`. Ô bình luận dùng `MyAvatar` đọc `/users/me` cùng khóa cache `['userProfile']` với trang cài đặt, `staleTime` 5 phút. Hai trường mới để tùy chọn (`?`) trong kiểu TS để vẫn đọc được phản hồi từ server cũ.
+  - Không cần migration.
+- (2) Hoãn theo quyết định của người dùng. Lý do kỹ thuật đã trình bày: AI Service gọi ngược `/internal/v1/chat-operations/{id}/checkpoint`, nên @AI phải có `ChatOperation` thật; bảng `chat_operations` bắt buộc `conversation_id`, `user_message_id`, `session_id`. Ba phương án đã đưa: migration thêm loại operation (khuyên dùng, cần cho phép ghi schema lên DB dùng chung), tạo hội thoại Trợ lý AI cho mỗi lần @AI, hoặc chỉ làm API thử lại. Người dùng chờ env mới của AI Service rồi quyết.
+- Kiểm chứng: backend `./mvnw -o test` 570/570 qua (thêm `DiscussionReplyAuthorTest`, 3 test); frontend `typecheck` 0 lỗi, `eslint . --max-warnings 0` sạch, Vitest 87 tệp, 609 test qua (thêm 1 test màu avatar).
+- Ranh giới: Không commit, không push. Không ghi DB, không migration.
+
+## 2026-11-19 — Sửa @AI trong bình luận không trả lời
+
+- Bối cảnh: Người dùng hỏi vì sao @AI trong bình luận không trả lời, rồi yêu cầu "sửa cả 3 lỗi luôn": A1 (token bị AI Service từ chối), A2 (thiếu trường chính sách) và lỗi frontend dừng chờ dưới StrictMode.
+- Quyết định (ADR-0007):
+  1. Bỏ đường `AiRetrievalClient` cho @AI. `AiReplyService` gọi `ChatOperationService.reserve` rồi `ChatOperationRunner.start`, không stream, với `ChatActor` lấy từ JWT lúc đăng bình luận (`DiscussionService.addReply` nhận `ChatActor`, `AiMentionEvent` mang thêm `asker`). Nhờ vậy có token ràng buộc request, đủ `cloudAllowed`/`operationId`/`permissionVersion`/`sources`, checkpoint, giới hạn tần suất và admission (đồng thời đóng A3).
+  2. Khóa idempotency là id bình luận hỏi, `requestId` = `ai-mention-<id>`, nên sự kiện có bị phát lại cũng không hỏi hai lần.
+  3. `AiReplyWriter` (mới) kiểm tra lại trước khi lưu: bài còn và vẫn thuộc nhóm đó, bình luận hỏi còn, người hỏi vẫn là thành viên ACTIVE. Có gì thay đổi thì không đăng (đóng A4). Quyền tài liệu đã được `ChatOperationService.complete` kiểm lại bằng fingerprint.
+  4. Thông báo khi không trả lời được luôn bắt đầu bằng "Trợ lý chưa trả lời được", để web hiện thành dòng trạng thái thay vì một bình luận.
+  5. Một quy tắc nhận diện @AI dùng chung cho server, web và mobile: `(^|[^\w.@])@ai\b(?!\.\w)`, không dùng lookbehind để engine cũ cũng chạy được (đóng A6).
+  6. Frontend: `useAiReplyWatch` đặt lại `leftPage.current = false` mỗi lần mount. Dưới StrictMode, React chạy thử mount, unmount rồi mount lại trên cùng ref, nên cờ bị bật ngay từ đầu. `InlineComments` hiện `aiReply.error`. Thời gian chờ lên 240 s (2 s trong phút đầu, sau đó 5 s), mobile `AI_WAIT_MS` = 240 000, khớp hạn của operation (đóng A7 về thời gian).
+- Lựa chọn tự quyết, cần người dùng biết: hôm 15/11 người dùng hoãn chọn giữa (a) migration thêm loại operation và (b) tạo hội thoại Trợ lý AI cho mỗi lần @AI. Lần này chọn (b) vì không cần migration; AGENTS.md cấm ghi DB khi chưa được phép. Hệ quả: mỗi lần @AI hiện thành một hội thoại trong lịch sử Trợ lý AI của chính người hỏi. Muốn chuyển sang (a) thì cần cho phép migration.
+- Không làm: tóm tắt tệp đính kèm (`AttachmentSummaryService`) vẫn dùng `AiRetrievalClient` với token cũ nên vẫn hỏng (A1 phần tóm tắt). A5 (@AI trong nội dung bài) và A9 (ngữ cảnh luồng thảo luận) chưa làm.
+- Kiểm chứng:
+  - Backend: `./mvnw -o test` 591/591 qua. Test mới: `AiMentionsTest` (13), `AiReplyServiceTest` (viết lại, 9), `AiReplyWriterTest` (6), `DiscussionAiMentionTest` (2). Các Postgres IT (Testcontainers) không chạy trong `test`, và chưa có IT cho endpoint bình luận.
+  - Frontend: `tsc -b` 0 lỗi, eslint thư mục community sạch, Vitest 89 tệp, 625 test qua. Test mới `await-ai-reply.test.ts` và `use-ai-reply-watch.test.tsx`; đã xác nhận test StrictMode (dùng `renderHook(..., { reactStrictMode: true })`) hỏng với hook cũ và qua với hook mới. Lưu ý: chạy Vitest từ Git Bash (`/d/...`) làm `vi.mock` không áp dụng, kể cả test cũ; chạy từ PowerShell (`D:\...`) thì đúng.
+  - Mobile: jest `__tests__/features/feed` 64/64 qua, `tsc --noEmit` 0 lỗi.
+  - Chưa chạy thử end-to-end với AI Service thật.
+- Ranh giới: Không commit, không push. Không ghi DB, không migration, không thêm gói.
+
+## 2026-11-19 — Sửa tóm tắt tệp đính kèm: chuyển sang bấm nút
+
+- Bối cảnh: Người dùng yêu cầu "sửa luôn phần tóm tắt tệp đính kèm". Tóm tắt chạy tự động khi tài liệu xử lý xong (`DocumentProcessedEvent`) qua `AiRetrievalClient`, gặp cùng lỗi token và thiếu trường chính sách như @AI.
+- Vướng mắc: đường chat operation bắt buộc phải có phiên người dùng còn hoạt động, vì AI Service gọi ngược checkpoint và Core kiểm tra `sessions.isActive`. Lúc tài liệu xử lý xong không có phiên nào. Đã hỏi người dùng ba hướng: (1) bấm nút, chạy bằng phiên người bấm; (2) tự động thay người đăng, cần migration lưu phiên; (3) tác nhân hệ thống bỏ qua kiểm tra phiên. **Người dùng chọn (1).**
+- Quyết định (ADR-0008):
+  1. `POST …/attachments/{id}/summary` trả 202 `PENDING` (hoặc 200 nếu đã có tóm tắt); `GET` cùng đường dẫn để xem trạng thái. Controller mới `AttachmentSummaryController`, vì `DiscussionController` đã 269 dòng.
+  2. `ChatOperationService.reserve` có thêm overload nhận `documentScope`; `ChatSourceSnapshot.scopedTo` thu hẹp nguồn còn một tài liệu nhưng giữ fingerprint của cả workspace, nên checkpoint và complete vẫn so với workspace hiện tại.
+  3. Chỉ lưu khi `decision = ANSWER` (READY); từ chối hoặc lỗi thì lưu UNAVAILABLE và cho thử lại. `AttachmentSummaryStore.record` bỏ qua nếu bài hoặc tệp đã mất.
+  4. Lỗi trước khi chạy (không phải thành viên, ảnh, tài liệu chờ duyệt, tài liệu chưa xử lý xong `SOURCE_UNAVAILABLE`, đang bận, hết lượt) trả RFC 7807 cho client và không đổi trạng thái tệp.
+  5. Xóa listener tự động và `AiRetrievalClient` (không còn ai dùng). `DocumentProcessedEvent` vẫn được phát nhưng không còn listener.
+  6. Web: `AttachmentSummary` hiện nút "Tóm tắt bằng AI" / "Thử tóm tắt lại", trạng thái đang đọc, lý do lỗi từ server; hook `use-attachment-summary.ts`, API và polling ở `attachment-summary-api.ts` (3 s, tối đa 240 s). Mobile không hiển thị tóm tắt nên không đổi.
+- Hệ quả: tóm tắt không còn tự xuất hiện; tính vào quota AI của người bấm và hiện trong lịch sử Trợ lý AI của họ. Hai người bấm cùng lúc thì chạy hai operation, kết quả đến sau thắng.
+- Sự cố nhỏ: khi xóa `AiRetrievalClient.java`, một lệnh `git rm --cached` lỡ đưa việc xóa vào index; đã `git reset -- <file>` ngay, index sạch, tệp chỉ bị xóa trong cây làm việc.
+- Kiểm chứng:
+  - Backend: `./mvnw -o test` 607/607 qua. Test mới hoặc viết lại: `AttachmentSummaryServiceTest` (9), `AttachmentSummaryStoreTest` (8), `ChatSourceSnapshotTest` (+2), `ChatOperationServiceTest` (+2, phạm vi một tài liệu và phạm vi không hợp lệ).
+  - Frontend: `tsc -b` 0 lỗi, `eslint . --max-warnings 0` sạch, Vitest 90 tệp, 633 test qua. Thêm `attachment-summary-api.test.ts` và viết lại `attachment-summary.test.tsx` (yêu cầu, chờ, lý do lỗi, hết thời gian).
+  - Chưa chạy thử end-to-end với AI Service thật; chưa có Postgres IT cho endpoint mới.
+- Ranh giới: Không commit, không push. Không ghi DB, không migration, không thêm gói.
+
+## 2026-11-19 — Sửa link mời báo "Lời mời không dùng được" trên bản deploy
+
+- Bối cảnh: Người dùng mở link mời thật trên bản deploy (http://52.64.17.25/invite/...) và thấy "Lời mời không dùng được" kèm dòng lý do "Phiên đã thay đổi".
+- Chẩn đoán: "Phiên đã thay đổi" không phải lỗi từ server (server trả "Link mời không hợp lệ hoặc đã hết hạn" với 404), mà do `assertSessionGeneration` trong `fetchJson` ném ra. Khi một người chưa đăng nhập mở trang, `restoreCookieSession` gọi `/auth/refresh`, nhận 401 rồi gọi `invalidateSession()` làm tăng generation; trong lúc đó `previewInvite` đã gửi đi với generation cũ, nên phản hồi bị bỏ. `InvitePage` coi mọi lỗi là link chết. Trên bản production, refresh còn phải lấy CSRF trước nên chậm hơn và cuộc đua lộ rõ. Đã kiểm tra backend: preview hoạt động qua proxy (token sai trả 404 đúng); 15 test `WorkspaceInviteServiceTest` qua.
+- Quyết định:
+  1. Thêm `fetchPublicJson` trong `lib/api-client.ts` cho endpoint công khai: không gửi token, không gắn với generation của phiên. `previewInvite` dùng hàm này; `acceptInvite` vẫn dùng `fetchJson` vì cần phiên.
+  2. `InvitePage` chỉ báo "Lời mời không dùng được" khi server trả `ApiError` 404; lỗi khác hiện "Chưa tải được lời mời" và nút "Thử lại". Tách `DeadInvite` và `FailedInvite` để hàm render chính không quá dài.
+  3. Đã rà các trang công khai khác (landing, login, register, quên mật khẩu): chỉ gọi API khi người dùng bấm, sau khi phiên đã khôi phục, nên không dính lỗi này. Mobile không xử lý link mời.
+- Kiểm chứng: thêm `lib/api-client.test.ts` (3 test, trong đó một test cho thấy `fetchJson` bị từ chối đúng như lỗi trên bản deploy, còn `fetchPublicJson` thì không) và 1 test mới trong `invite-page.test.tsx` (lỗi tạm thời không bị coi là link chết, bấm thử lại thì tải được). `tsc -b` 0 lỗi, `eslint . --max-warnings 0` sạch, Vitest 91 tệp, 637 test qua. Chưa deploy lại nên chưa thử trên 52.64.17.25.
+- Ranh giới: Không commit, không push, không deploy. Không ghi DB, không thêm gói.
+
+## 2026-11-19 — Sidebar mở khi rê chuột, bỏ nút thu gọn
+
+- Bối cảnh: Người dùng muốn sidebar mở ra khi rê chuột vào thay vì dùng nút thu gọn.
+- Quyết định:
+  1. Lúc nghỉ thanh bên rộng `--rail-width` (68px, token mới) và chỉ hiện biểu tượng; rê chuột vào hoặc có tiêu điểm bàn phím (`:has(:focus-visible)`) thì nở ra `--sidebar-width` (224px) và đè lên nội dung, có bóng đổ. Nội dung chính chỉ chừa 68px nên trang không bị đẩy sang ngang.
+  2. Không dùng `:focus-within`: bấm chuột vào một mục cũng để lại tiêu điểm, khiến thanh bên mở mãi sau khi chuột đã rời đi.
+  3. Nở ra sau 120ms (thu lại thì tức thì) để chuột lướt qua mép trái không làm bung thanh bên; tắt độ trễ và chuyển động khi `prefers-reduced-motion`.
+  4. Biểu tượng không dịch chuyển: giữ nguyên đệm ở cả hai trạng thái (đệm thanh bên 12px cộng đệm mục 12px đặt tâm biểu tượng 20px ở 34px, giữa ô 68px). Nhãn chữ ẩn bằng opacity kèm visibility để nút đăng xuất và nút tạo nhóm không bấm được khi vô hình.
+  5. Bảng thông báo đang mở thì ghim thanh bên mở (`side-nav--expanded`). Khi cột lịch sử của Trợ lý AI đang mở, thanh bên giữ bề rộng hẹp (theo quy tắc cũ trong `app-shell.css`) để không che danh sách; bảng thông báo vẫn mở được nó.
+  6. Xóa nút "Thu gọn", trạng thái `collapsed` và `lib/rail-state.ts` cùng test của nó (không còn nơi dùng). Giá trị `unichat.rail` cũ trong localStorage bị bỏ qua.
+- Việc kèm theo: fixture E2E `workspace-ai-policy.ts` đã cũ so với tính năng chủ đề nhóm (thiếu `topics`, và `/workspaces/topics` rơi vào phản hồi phân trang), khiến trang settings sập vào error boundary. Đã bổ sung, và cập nhật kỳ vọng của `workspace-ai-policy.spec.ts` (form gửi thêm `topics: []`).
+- Kiểm chứng: `tsc -b` 0 lỗi, `eslint . --max-warnings 0` sạch, Vitest 90 tệp, 634 test qua (thêm 2 test SideNavBar; viết lại 2 test `shell-metrics` cho hai bề rộng; bỏ test của `rail-state`). E2E mới `side-nav-hover.spec.ts` qua: đo 68px lúc nghỉ, 224px khi rê chuột, biểu tượng giữ nguyên tọa độ x, nội dung không bị đẩy, không còn nút thu gọn; đã xem ảnh chụp hai trạng thái. Cả 3 test của `workspace-ai-policy.spec.ts` qua sau khi sửa fixture. 9 E2E khác đang hỏng từ trước và không liên quan (`homepage` chờ tiêu đề cũ, `chat-message-style` chờ nút bo 6px trong khi token là 999px, `evidence-rail` và `font-loading` không tìm thấy `.evidence-rail`); không sửa trong lượt này.
+- Ranh giới: Không commit, không push. Không thêm gói.
+
+## 2026-11-19 — Sidebar mở ra thì đẩy nội dung thay vì đè lên
+
+- Bối cảnh: Sau khi đổi sang mở bằng rê chuột, người dùng báo thanh bên lúc mở "chiếm chỗ" một số nội dung trên các trang, vì bản trước để nó đè lên trang.
+- Quyết định:
+  1. Khi thanh bên nở (rê chuột, tiêu điểm bàn phím, hoặc bảng thông báo đang mở), `.app-shell__main` tăng lề trái từ `--rail-width` lên `--sidebar-width` theo cùng nhịp và cùng độ trễ với thanh bên (token mới `--rail-motion`, `--rail-open-delay` trong `index.css`), nên không phần nào của trang bị che.
+  2. Bỏ bóng đổ của thanh bên vì không còn đè lên gì.
+  3. Bỏ ngoại lệ "giữ hẹp khi cột lịch sử Trợ lý AI đang mở" trong `app-shell.css`: lý do của nó là thanh bên đè lên cột lịch sử, nay cột chỉ dịch sang.
+  4. Đánh đổi đã chấp nhận: trang co giãn lại mỗi lần thanh bên mở hoặc đóng. Độ trễ 120ms trước khi mở giảm việc trang bị xô khi chuột chỉ lướt qua mép trái; tắt chuyển động khi `prefers-reduced-motion`.
+- Kiểm chứng: E2E `side-nav-hover.spec.ts` đổi kỳ vọng: nội dung bắt đầu ở x=68 lúc nghỉ, x=224 khi mở (đúng mép phải thanh bên), về lại 68 khi rời chuột; qua cùng 3 test `workspace-ai-policy.spec.ts`. Đã xem ảnh chụp lúc mở. Vitest `styles`, `side-nav-bar`, `app` 20/20 qua; `tsc -b` 0 lỗi; `eslint . --max-warnings 0` sạch.
+- Ranh giới: Không commit, không push. Không thêm gói.
