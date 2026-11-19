@@ -17,7 +17,7 @@ test('should rest as an icon rail and push the content aside when it opens on ho
 
   // Assert: resting, only icons, and the content reserves just that width.
   await expect.poll(async () => (await nav.boundingBox())?.width).toBe(68);
-  await expect(nav.getByText('Đổi nhóm')).toBeHidden();
+  await expect(nav.getByText('Tất cả nhóm')).toBeHidden();
   const restingIcon = await themeIcon.boundingBox();
   const restingMain = await main.boundingBox();
   expect(restingMain?.x).toBe(68);
@@ -29,7 +29,7 @@ test('should rest as an icon rail and push the content aside when it opens on ho
   // Assert: open with labels, icons in place, and the content moved aside so
   // the rail covers none of it.
   await expect.poll(async () => (await nav.boundingBox())?.width).toBe(224);
-  await expect(nav.getByText('Đổi nhóm')).toBeVisible();
+  await expect(nav.getByText('Tất cả nhóm')).toBeVisible();
   const openIcon = await themeIcon.boundingBox();
   expect(openIcon?.x).toBe(restingIcon?.x);
   await expect.poll(async () => (await main.boundingBox())?.x).toBe(224);

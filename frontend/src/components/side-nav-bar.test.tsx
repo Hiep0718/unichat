@@ -76,9 +76,11 @@ describe('SideNavBar', () => {
     expect(screen.getByRole('button', { name: 'Đăng xuất' })).toBeInTheDocument();
   });
 
-  it('offers the assistant and the way out, and leaves the rest to the group tabs', async () => {
+  it('should keep the same sidebar inside a group, marking the group and its assistant', async () => {
+    // Arrange
     const { Routes, Route } = await import('react-router-dom');
 
+    // Act
     render(
       <MemoryRouter initialEntries={['/workspaces/ws-1/chat']}>
         <Routes>
@@ -87,9 +89,29 @@ describe('SideNavBar', () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByText('Trợ lý AI')).toBeInTheDocument();
-    expect(screen.getByText('Tải tài liệu mới')).toBeInTheDocument();
-    expect(screen.getByText('Đổi nhóm')).toBeInTheDocument();
+    // Assert: the global destinations stay, the open group is marked, and
+    // its assistant sits beneath it.
+    expect(screen.getByText('Bảng tin')).toBeInTheDocument();
+    expect(screen.getByText('Tin nhắn')).toBeInTheDocument();
+    expect(screen.getByText('Quản lý dự án')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'ainhantao' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('link', { name: 'Quản lý dự án' })).not.toHaveAttribute('aria-current');
+    expect(screen.getByRole('link', { name: 'Trợ lý AI' })).toHaveAttribute('href', '/workspaces/ws-1/chat');
+    expect(screen.queryByText('Tải tài liệu mới')).not.toBeInTheDocument();
+    expect(screen.queryByText('Đổi nhóm')).not.toBeInTheDocument();
+  });
+
+  it('should show no group assistant outside a group', () => {
+    // Act
+    render(
+      <MemoryRouter initialEntries={['/feed']}>
+        <SideNavBar />
+      </MemoryRouter>,
+    );
+
+    // Assert
+    expect(screen.queryByRole('link', { name: 'Trợ lý AI' })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'ainhantao' })).toHaveAttribute('href', '/workspaces/ws-1');
   });
 
   it('should not repeat destinations the group tab bar already carries', async () => {
