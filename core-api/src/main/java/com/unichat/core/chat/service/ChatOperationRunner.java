@@ -50,7 +50,12 @@ public class ChatOperationRunner {
             String code=error instanceof AppError expected?expected.getCode():"CHAT_FAILED";
             operations.fail(operation,code);
             output.accept("error",Map.of("code",code,"operationId",operation.id(),"requestId",operation.requestId()));
-            LOGGER.warn("chat_operation_failed operationId={} requestId={} code={}",operation.id(),operation.requestId(),code);
+            if (error instanceof AppError) {
+                LOGGER.warn("chat_operation_failed operationId={} requestId={} code={}",operation.id(),operation.requestId(),code);
+            } else {
+                LOGGER.error("chat_operation_failed operationId={} requestId={} code={} cause={}",
+                        operation.id(),operation.requestId(),code,ChatFailureTrace.of(error));
+            }
             return operations.status(operation.actor(),operation.workspaceId(),operation.id());
         }
     }
