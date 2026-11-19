@@ -178,6 +178,12 @@ export function InlineComments({
         </p>
       )}
 
+      {aiReply.error && (
+        <p className="inline-comments__waiting" role="status">
+          <Icon name="error_outline" size={15} /> {aiReply.error}
+        </p>
+      )}
+
       {error && (
         <p className="inline-comments__error" role="alert">
           <Icon name="error_outline" size={15} /> {error}

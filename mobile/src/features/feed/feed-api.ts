@@ -135,7 +135,10 @@ export const feedApi = {
   },
 };
 
-/** Bình luận có gọi trợ lý không, cùng quy tắc với web. */
+/**
+ * Bình luận có gọi trợ lý không, cùng quy tắc với web và máy chủ: "@AI" phải
+ * đứng riêng, nên địa chỉ như x@ai.edu.vn hay tên @aiden không gọi trợ lý.
+ */
 export function mentionsAi(body: string): boolean {
-  return /@ai\b/i.test(body);
+  return /(^|[^\w.@])@ai\b(?!\.\w)/i.test(body);
 }

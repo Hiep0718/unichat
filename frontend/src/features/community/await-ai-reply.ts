@@ -8,15 +8,31 @@
  */
 import { fetchReplies, type ReplyResponse } from './community-api';
 
-const POLL_INTERVAL_MS = 2000;
-const MAX_ATTEMPTS = 30;
+/** Quick checks while an answer is most likely to arrive. */
+const FAST_INTERVAL_MS = 2000;
+const FAST_ATTEMPTS = 30;
+/** Slower checks after that, up to the server's four-minute answer deadline. */
+const SLOW_INTERVAL_MS = 5000;
+const SLOW_ATTEMPTS = 36;
+
+/**
+ * Same rule as the server: the handle must stand alone, so an address such as
+ * `x@ai.edu.vn` or a name such as `@aiden` does not call the assistant.
+ * Written without lookbehind so older engines parse it too.
+ */
+const AI_HANDLE = /(^|[^\w.@])@ai\b(?!\.\w)/i;
 
 /** True when a comment asks the assistant to answer. */
 export function mentionsAi(body: string): boolean {
-  return /@ai\b/i.test(body);
+  return AI_HANDLE.test(body);
 }
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/** Two seconds apart for the first minute, then every five seconds. */
+function intervalFor(attempt: number): number {
+  return attempt < FAST_ATTEMPTS ? FAST_INTERVAL_MS : SLOW_INTERVAL_MS;
+}
 
 /**
  * Polls the thread until the assistant replies to `triggerReplyId`.
@@ -33,8 +49,8 @@ export async function awaitAiReply(
   triggerReplyId: string,
   isCancelled: () => boolean = () => false,
 ): Promise<ReplyResponse | null> {
-  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt += 1) {
-    await delay(POLL_INTERVAL_MS);
+  for (let attempt = 0; attempt < FAST_ATTEMPTS + SLOW_ATTEMPTS; attempt += 1) {
+    await delay(intervalFor(attempt));
     if (isCancelled()) {
       return null;
     }

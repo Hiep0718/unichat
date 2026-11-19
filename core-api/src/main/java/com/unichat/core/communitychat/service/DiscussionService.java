@@ -16,6 +16,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.unichat.core.chat.service.ChatActor;
 import com.unichat.core.common.error.AuthorizationError;
 import com.unichat.core.common.error.NotFoundError;
 import com.unichat.core.communitychat.api.CreateDiscussionRequest;
@@ -25,8 +26,8 @@ import com.unichat.core.communitychat.api.MentionableMember;
 import com.unichat.core.communitychat.api.PostAttachmentResponse;
 import com.unichat.core.communitychat.api.ReactionSummary;
 import com.unichat.core.communitychat.api.UpdateDiscussionRequest;
-import com.unichat.core.communitychat.api.ReplyResponse;
 import com.unichat.core.communitychat.api.ReplyAuthor;
+import com.unichat.core.communitychat.api.ReplyResponse;
 import com.unichat.core.communitychat.domain.AiMentionEvent;
 import com.unichat.core.communitychat.domain.Discussion;
 import com.unichat.core.communitychat.domain.DiscussionReply;
@@ -249,8 +250,19 @@ public class DiscussionService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Adds a comment to a post and, when it names {@code @AI}, asks the assistant.
+     *
+     * @param workspaceId group the post belongs to
+     * @param discussionId post being commented on
+     * @param asker        the commenter with their current session, which also
+     *                     authorizes the assistant's answer
+     * @param request      the comment
+     * @return the stored comment
+     */
     @Transactional
-    public ReplyResponse addReply(UUID workspaceId, UUID discussionId, UUID userId, CreateReplyRequest request) {
+    public ReplyResponse addReply(UUID workspaceId, UUID discussionId, ChatActor asker, CreateReplyRequest request) {
+        UUID userId = asker.userId();
         verifyMembership(workspaceId, userId);
 
         Discussion discussion = discussionRepository.findById(discussionId)
@@ -282,12 +294,12 @@ public class DiscussionService {
         ));
         publishMentions(workspaceId, discussionId, reply.getId(), userId, request.body());
 
-        if (request.body().toLowerCase().contains("@ai")) {
+        if (AiMentions.mentions(request.body())) {
             // Answered after this transaction commits: the assistant's reply hangs
             // off this one, so its row has to exist first.
             eventPublisher.publishEvent(new AiMentionEvent(
                     workspaceId, discussionId, reply.getId(),
-                    discussion.getTitle(), request.body()));
+                    discussion.getTitle(), request.body(), asker));
         }
 
         ReplyAuthor author = userRepository.findById(userId).map(ReplyAuthor::of).orElse(ReplyAuthor.UNKNOWN);

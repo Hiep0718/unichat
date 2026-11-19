@@ -11,8 +11,11 @@ import { patchFeedPost } from './use-feed';
 
 import type { DiscussionDetail, ReactionSummary, ReplyItem } from './feed-types';
 
-/** Trợ lý trả lời ngoài luồng; chờ quá lâu thì thôi làm mới và để người dùng kéo. */
-export const AI_WAIT_MS = 120_000;
+/**
+ * Trợ lý trả lời ngoài luồng; chờ quá lâu thì thôi làm mới và để người dùng kéo.
+ * Bằng hạn bốn phút máy chủ dành cho một câu trả lời.
+ */
+export const AI_WAIT_MS = 240_000;
 export const AI_POLL_MS = 5_000;
 
 /** Đã có câu trả lời của trợ lý nào đến sau thời điểm bắt đầu chờ chưa. */
