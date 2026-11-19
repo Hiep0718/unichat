@@ -17,7 +17,6 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { authApi } from '../features/auth/api/auth-api';
 import { useAuth } from '../features/auth/auth-context';
 import { EntityAvatar } from './entity-avatar';
-import { readRailCollapsed, writeRailCollapsed } from '../lib/rail-state';
 import { Icon } from './icon';
 import { NotificationBell } from '../features/community/notification-bell';
 import { ThemeToggle } from './theme-toggle';
@@ -46,19 +45,15 @@ const GLOBAL_NAV_CONFIG = [
 
 /**
  * Renders the responsive fixed sidebar navigation with contextual workspace switching.
+ *
+ * The rail rests at icon width and expands over the content on hover, so there
+ * is no collapse button: nothing to find, and no remembered state to drift.
  */
 export function SideNavBar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { workspaceId } = useParams<{ workspaceId?: string }>();
   const { user, clearToken } = useAuth();
-  const [collapsed, setCollapsed] = useState(() => readRailCollapsed());
-
-  const toggleRail = () => {
-    const next = !collapsed;
-    setCollapsed(next);
-    writeRailCollapsed(next);
-  };
   const { data: groupPage } = useWorkspaces(0);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
 
@@ -114,10 +109,10 @@ export function SideNavBar() {
   };
 
   return (
+    // Rests as an icon rail and opens on hover or keyboard focus (CSS). The
+    // notification panel pins it open so moving onto the panel keeps it there.
     <nav
-      className={`side-nav${collapsed ? ' side-nav--collapsed' : ''}${
-        notificationsOpen ? ' side-nav--expanded' : ''
-      }`}
+      className={`side-nav${notificationsOpen ? ' side-nav--expanded' : ''}`}
       aria-label="Thanh điều hướng chính"
     >
       {/* Header Zone */}
@@ -256,25 +251,6 @@ export function SideNavBar() {
           </Link>
         )}
 
-        {/* Một mục có nhãn chữ, không phải một chấm tròn ở mép.
-
-            Bản trước là một nút 22px nằm vắt ngang đường biên thanh bên:
-            người dùng lần đầu không có cách nào đoán ra bấm vào đó thì điều
-            gì xảy ra. Đứng cùng hàng với "Nền tối" và "Thông báo", nó đọc
-            ra là một việc làm được, và nhãn chữ nói thẳng nó là việc gì. */}
-        <button
-          type="button"
-          className="side-nav__item side-nav__btn"
-          onClick={toggleRail}
-          title={collapsed ? 'Mở rộng thanh bên' : 'Thu gọn thanh bên'}
-          aria-label={collapsed ? 'Mở rộng thanh bên' : 'Thu gọn thanh bên'}
-          aria-expanded={!collapsed}
-        >
-          <span className="side-nav__icon-wrap">
-            <Icon name={collapsed ? 'right_panel_open' : 'left_panel_close'} size={20} rounded />
-          </span>
-          <span className="side-nav__label">Thu gọn</span>
-        </button>
         <ThemeToggle />
         <NotificationBell onOpenChange={setNotificationsOpen} />
         <div className="side-nav__user">

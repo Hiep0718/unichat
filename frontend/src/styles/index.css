@@ -274,20 +274,17 @@
      bản dài vẫn do --measure (68ch) giữ lại, vì một dòng chữ quá dài thì
      mắt khó dò về đầu dòng sau; nới trần không làm loãng phần đọc. */
   --container-max: 1280px;
-  /* 68px, không phải 224px.
-     Ở 224px thanh bên dành một phần tư bề ngang màn hình để hiển thị
-     biểu tượng 24px, còn nhãn chữ biện minh cho bề rộng đó thì nằm ở
-     opacity 0 — vô hình nhưng vẫn chiếm đủ 56px bố cục. Đó không phải
-     thanh bên hẹp cũng không phải thanh bên rộng.
-
-     Chú thích trong app-shell.css vẫn ghi đúng ý định ban đầu — "widens
-     from 68px to 260px on hover" — nên 224px là một lần trôi khỏi thiết
-     kế chứ không phải một lựa chọn. Trả về 68px; cơ chế nở ra 260px khi
-     rê chuột vẫn giữ, và đó là lúc nhãn chữ hiện ra. */
-  /* 224px: thanh bên luôn mở và hiện nhãn chữ, theo mockup. Đây không
-     phải lần trôi như con số 224px cũ, vì lần đó bề rộng ấy chỉ chứa biểu
-     tượng còn chữ thì ẩn ở opacity 0. */
+  /* Thanh bên có hai bề rộng, mỗi bề rộng khớp với thứ nó hiển thị.
+     Bề rộng nghỉ (rail-width) chỉ chứa biểu tượng: ô 40px cộng đệm 12px
+     mỗi bên; nội dung chính chỉ chừa đúng phần này.
+     Bề rộng mở (sidebar-width) hiện đủ nhãn chữ khi rê chuột vào; nội
+     dung trượt sang theo cùng nhịp (rail-motion, sau rail-open-delay) chứ
+     không bị che.
+     Bài học cũ vẫn giữ: không có lúc nào thanh bên rộng mà chữ lại ẩn. */
+  --rail-width: 68px;
   --sidebar-width: 224px;
+  --rail-motion: 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  --rail-open-delay: 120ms;
   --gutter: 16px;
   --margin-mobile: 16px;
   --stack-sm: 8px;
@@ -361,6 +358,9 @@
   --font-headline-sm: 600 15px/22px var(--font-family);
   --font-title-lg: 500 16px/24px var(--font-family);
   --font-title-md: 500 14px/21px var(--font-family);
+  --font-title-sm: 500 13px/18px var(--font-family);
+  --transition-medium: var(--transition-normal);
+
   /* Tiêu đề trang: một cỡ cho mọi trang làm việc. Serif chỉ dành cho lời
      chào (dải chào ở trang Nhóm, trang đăng nhập); trước đây trang Cài đặt
      nhóm dùng serif 48px, trang Tài khoản serif 26px, trang Lịch sử sans 22px. */
@@ -407,9 +407,6 @@
   --noi-bat-muc: var(--tren-anh);
   --noi-bat-nut-nen: var(--tren-anh);
   --noi-bat-nut-muc: var(--ray-nen);
-
-  --font-title-sm: 500 13px/18px var(--font-family);
-  --transition-medium: var(--transition-normal);
 
   /* Mọi con số canh thẳng cột, kể cả khi đổi giá trị. */
   font-variant-numeric: tabular-nums;

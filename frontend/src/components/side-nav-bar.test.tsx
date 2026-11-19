@@ -1,4 +1,5 @@
 import { cleanup, render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -148,5 +149,39 @@ describe('SideNavBar', () => {
     const adminLinks = screen.getAllByRole('link', { name: /Quản trị viên/i });
     expect(adminLinks).toHaveLength(1);
     expect(adminLinks[0]).toHaveAttribute('href', '/admin/ai-studio');
+  });
+  it('should open on hover alone, with no collapse button and no remembered state', () => {
+    // Arrange: a state saved by the old collapse button must not shape the rail.
+    window.localStorage.setItem('unichat.rail', 'collapsed');
+
+    // Act
+    render(
+      <MemoryRouter initialEntries={['/feed']}>
+        <SideNavBar />
+      </MemoryRouter>,
+    );
+
+    // Assert
+    const nav = screen.getByRole('navigation', { name: 'Thanh điều hướng chính' });
+    expect(nav).not.toHaveClass('side-nav--collapsed');
+    expect(screen.queryByRole('button', { name: /Thu gọn|Mở rộng thanh bên/ })).not.toBeInTheDocument();
+    window.localStorage.removeItem('unichat.rail');
+  });
+
+  it('should stay open while the notification panel is open', async () => {
+    // Arrange
+    render(
+      <MemoryRouter initialEntries={['/feed']}>
+        <SideNavBar />
+      </MemoryRouter>,
+    );
+    const nav = screen.getByRole('navigation', { name: 'Thanh điều hướng chính' });
+    expect(nav).not.toHaveClass('side-nav--expanded');
+
+    // Act: moving onto the panel leaves the rail, which must not fold under it.
+    await userEvent.click(screen.getByText('Thông báo'));
+
+    // Assert
+    expect(nav).toHaveClass('side-nav--expanded');
   });
 });

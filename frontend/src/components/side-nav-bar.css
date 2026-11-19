@@ -5,30 +5,25 @@
   position: fixed;
   left: 0;
   top: 0;
-  width: var(--sidebar-width);
+  width: var(--rail-width);
   height: 100vh;
   flex-direction: column;
   padding: 16px 12px;
   gap: 12px;
   /* Thanh bên là một mảng màu đặc, không phải một vùng giấy sẫm hơn.
-
-     Trước đây nó rộng 68px, chỉ hiện biểu tượng, và nở ra khi rê chuột.
-     Mockup cho thấy nó luôn mở với nhãn chữ, nên cơ chế nở ra không còn
-     lý do tồn tại: một thanh bên đã hiện đủ chữ thì không có gì để nở. */
+     Lúc nghỉ chỉ rộng 68px và hiện biểu tượng; rê chuột vào thì nở ra
+     (xem "Nở ra khi rê chuột" cuối tệp). */
   background: var(--ray-nen);
   color: var(--ray-muc);
   overflow: hidden;
   z-index: 100;
   white-space: nowrap;
-  transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1),
-              box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1),
-              background 0.2s ease;
+  transition: width var(--rail-motion), background 0.2s ease;
 }
 
-/* Hover / Active Expanded State */
+/* Ghim mở trong lúc bảng thông báo đang mở, để rời chuột sang bảng đó
+   không làm thanh bên thu lại dưới tay người đọc. */
 .side-nav--expanded {
-  /* Giữ lại cho các nơi gọi cũ. Thanh bên luôn mở nên lớp này không
-     còn làm gì; để trống có chủ ý thay vì xóa đi và để lại một lớp chết. */
   width: var(--sidebar-width);
 }
 
@@ -63,11 +58,6 @@
 
 .side-nav__brand-link:hover .side-nav__avatar {
   transform: translateY(-1px);
-}
-
-.side-nav__brand-info {
-  /* Hiện thẳng. Trước đây nhãn chữ bị ẩn và chỉ lộ ra khi rê chuột vào
-     thanh bên; thanh bên giờ luôn mở nên không còn gì để lộ ra. */
 }
 
 .side-nav__title {
@@ -473,41 +463,75 @@ button.side-nav__item,
   }
 }
 
-/* ---------- Thu gọn ---------- */
+/* ---------- Nở ra khi rê chuột ---------- */
 
-/* Trạng thái thu: chỉ còn biểu tượng.
+/* Lúc nghỉ thanh bên rộng 68px và chỉ hiện biểu tượng; rê chuột vào thì nở
+   ra 224px. Nội dung trượt sang theo cùng nhịp (app-shell.css) chứ không bị
+   thanh bên đè lên: bản đè từng che mất phần đầu của nhiều trang. Không còn
+   nút thu gọn.
 
-   68px là một ô biểu tượng 40px cộng đệm 12px mỗi bên. Nhãn chữ bị gỡ ra
-   khỏi bố cục bằng display: none chứ không phải opacity: 0 — đúng cái bẫy
-   cũ, khi chữ vô hình nhưng vẫn giữ chỗ và thanh bên rộng 224px để hiển
-   thị mấy biểu tượng 24px. */
-.side-nav--collapsed {
-  width: 68px;
+   Biểu tượng đứng yên ở cả hai trạng thái: đệm 12px của thanh bên cộng đệm
+   12px của mục đặt tâm biểu tượng 20px ở đúng 34px, giữa ô 68px. Chỉ có
+   chữ hiện ra, nên mắt không phải dò lại vị trí.
+
+   Nở ra sau 120ms chứ không ngay: chuột lướt qua mép trái trên đường tới
+   nội dung không làm bung thanh bên và xô cả trang. Thu lại thì tức thì.
+
+   Bàn phím mở bằng :focus-visible chứ không phải :focus-within: bấm chuột
+   vào một mục cũng để lại tiêu điểm trên mục đó, và với :focus-within thanh
+   bên sẽ cứ mở mãi sau khi chuột đã rời đi. */
+.side-nav:hover,
+.side-nav:has(:focus-visible),
+.side-nav--expanded {
+  width: var(--sidebar-width);
 }
 
-.side-nav--collapsed .side-nav__label,
-.side-nav--collapsed .side-nav__brand-info,
-.side-nav--collapsed .side-nav__upload-text,
-.side-nav--collapsed .side-nav__section,
-.side-nav--collapsed .side-nav__user-text,
-.side-nav--collapsed .side-nav__user-out {
-  display: none;
+.side-nav:hover {
+  transition-delay: var(--rail-open-delay);
 }
 
-.side-nav--collapsed .side-nav__section-row {
-  justify-content: center;
-  padding-inline: 0;
+/* Phần chỉ có nghĩa khi đã nở: ẩn bằng opacity để lúc mở thì hiện dần,
+   kèm visibility để nút đăng xuất và nút tạo nhóm không bấm được khi vô hình. */
+.side-nav :is(
+  .side-nav__label,
+  .side-nav__brand-info,
+  .side-nav__upload-text,
+  .side-nav__section,
+  .side-nav__section-add,
+  .side-nav__user-text,
+  .side-nav__user-out
+) {
+  transition: opacity 0.18s ease, visibility 0.18s;
 }
 
-.side-nav--collapsed .side-nav__item,
-.side-nav--collapsed .side-nav__btn,
-.side-nav--collapsed .side-nav__user {
-  justify-content: center;
-  padding-inline: 0;
+.side-nav:not(:hover, :has(:focus-visible), .side-nav--expanded) :is(
+  .side-nav__label,
+  .side-nav__brand-info,
+  .side-nav__upload-text,
+  .side-nav__section,
+  .side-nav__section-add,
+  .side-nav__user-text,
+  .side-nav__user-out
+) {
+  opacity: 0;
+  visibility: hidden;
 }
 
-.side-nav--collapsed .side-nav__brand-link {
-  justify-content: center;
+.side-nav:hover :is(
+  .side-nav__label,
+  .side-nav__brand-info,
+  .side-nav__upload-text,
+  .side-nav__section,
+  .side-nav__section-add,
+  .side-nav__user-text,
+  .side-nav__user-out
+) {
+  transition-delay: var(--rail-open-delay);
 }
 
-
+@media (prefers-reduced-motion: reduce) {
+  .side-nav,
+  .side-nav:hover {
+    transition: none;
+  }
+}

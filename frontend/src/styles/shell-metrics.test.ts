@@ -35,37 +35,41 @@ function pxToken(name: string): number {
 
 describe('kích thước của khung', () => {
   it('should make a wide rail earn its width by showing labels', () => {
-    // Arrange: cái hỏng thật từng xảy ra không phải là một con số sai, mà là
-    // một thanh bên rộng 224px chỉ hiện biểu tượng 24px trong khi nhãn chữ
-    // biện minh cho bề rộng đó nằm ở opacity 0. Con số nào cũng được, miễn
-    // là bề rộng và nội dung khớp nhau — nên test kiểm đúng điều đó thay vì
-    // chốt một khoảng px, vốn chỉ mã hóa thiết kế của hôm nay.
-    const rail = pxToken('--sidebar-width');
+    // Arrange: cái hỏng thật từng xảy ra là một thanh bên rộng 224px chỉ hiện
+    // biểu tượng 24px trong khi nhãn chữ biện minh cho bề rộng đó nằm ở
+    // opacity 0. Giờ thanh bên có hai bề rộng: hẹp lúc nghỉ, rộng khi rê
+    // chuột. Điều cần giữ là chữ chỉ được ẩn ở bề rộng hẹp.
+    const resting = pxToken('--rail-width');
+    const expanded = pxToken('--sidebar-width');
     const sidebar = readFileSync(
       join(process.cwd(), 'src/components/side-nav-bar.css'),
       'utf8',
     );
 
-    // Act
-    const hidesLabels = /\.side-nav__label\s*\{[^}]*(opacity:\s*0|visibility:\s*hidden)/.test(
-      sidebar,
-    );
+    // Act: mọi quy tắc ẩn nhãn chữ phải nằm sau một bộ chọn "đang nghỉ".
+    const hidingRules = [...sidebar.matchAll(/([^{}]*\.side-nav__label[^{}]*)\{([^}]*)\}/g)]
+      .filter(([, , body]) => /opacity:\s*0\b|visibility:\s*hidden/.test(body ?? ''))
+      .map(([, selector]) => selector ?? '');
 
     // Assert
-    expect(rail).toBeGreaterThanOrEqual(64);
-    if (rail > 96) {
-      expect(hidesLabels).toBe(false);
+    expect(resting).toBeGreaterThanOrEqual(64);
+    expect(resting).toBeLessThanOrEqual(96);
+    expect(expanded).toBeGreaterThan(96);
+    expect(hidingRules.length).toBeGreaterThan(0);
+    for (const selector of hidingRules) {
+      expect(selector).toContain(':not(:hover');
     }
   });
 
   it('should leave the content room to grow when the rail gives space back', () => {
-    // Arrange, Act
+    // Arrange, Act: nội dung chỉ chừa bề rộng lúc nghỉ, vì khi nở ra thanh
+    // bên đè lên nội dung chứ không đẩy nó.
     const cap = pxToken('--container-max');
-    const rail = pxToken('--sidebar-width');
+    const rail = pxToken('--rail-width');
 
     // Assert: với trần 1100px, mọi pixel giành lại từ thanh bên rơi vào lề
-    // chứ không đến được nội dung — trên màn 1920px, thu thanh bên còn làm
-    // lề rộng thêm. Trần phải đủ lớn để dùng hết chỗ trên màn 1440px.
+    // chứ không đến được nội dung. Trần phải đủ lớn để dùng hết chỗ trên
+    // màn 1440px.
     expect(cap).toBeGreaterThanOrEqual(1280);
     expect(1440 - rail - cap).toBeLessThan(120);
   });
