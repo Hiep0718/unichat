@@ -87,7 +87,7 @@ describe('WorkspaceShell', () => {
   it('should show a safe error when workspace metadata cannot be loaded', async () => {
     vi.mocked(getWorkspace).mockRejectedValue(new Error('Private server detail'));
     renderShell();
-    expect(await screen.findByText('Không thể tải thông tin Workspace')).toBeVisible();
+    expect(await screen.findByText('Không thể tải thông tin nhóm')).toBeVisible();
     expect(screen.queryByText('Private server detail')).not.toBeInTheDocument();
   });
 });

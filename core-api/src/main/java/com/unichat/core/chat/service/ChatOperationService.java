@@ -55,10 +55,21 @@ public class ChatOperationService {
      * A turn without an explicit task type is routed by {@link ChatTaskRouter} from the question intent.
      */
     public Reservation reserve(ChatActor actor, UUID workspaceId, AskQuestionRequest request, UUID key, String requestId) {
-        ChatBinding binding=ChatTaskRouter.route(workspaceId,request,workspaceSummaryEnabled);
-        return Objects.requireNonNull(transaction.execute(status -> reserveLocked(actor,binding,key,requestId)));
+        return reserve(actor,workspaceId,request,key,requestId,null);
     }
-    private Reservation reserveLocked(ChatActor actor, ChatBinding binding, UUID key, String requestId) {
+    /**
+     * Reserves one turn whose retrieval may draw on a single authorized document only.
+     *
+     * @param documentScope the document to answer from, or null for every authorized document
+     * @return the reservation, as for an ordinary turn
+     * @throws ChatOperationError SOURCE_UNAVAILABLE when the document is not a current, processed source
+     */
+    public Reservation reserve(ChatActor actor, UUID workspaceId, AskQuestionRequest request, UUID key,
+            String requestId, UUID documentScope) {
+        ChatBinding binding=ChatTaskRouter.route(workspaceId,request,workspaceSummaryEnabled);
+        return Objects.requireNonNull(transaction.execute(status -> reserveLocked(actor,binding,key,requestId,documentScope)));
+    }
+    private Reservation reserveLocked(ChatActor actor, ChatBinding binding, UUID key, String requestId, UUID documentScope) {
         Instant now=Instant.now(clock);
         var control=admission.lockShared();
         operations.lockActor(actor.userId());
@@ -71,6 +82,7 @@ public class ChatOperationService {
         ChatSourceSnapshot snapshot = binding.taskType() == com.unichat.core.chat.api.ChatTaskType.WORKSPACE_SUMMARY
                 ? access.readWorkspaceSummary(actor, binding.workspaceId())
                 : access.read(actor,binding.workspaceId());
+        if (documentScope != null) snapshot = snapshot.scopedTo(documentScope);
         var existing=operations.findByKey(actor.userId(),key);
         if (existing.isPresent()) return replayBinding(existing.get(),binding,now);
         admission.requireChat(control);

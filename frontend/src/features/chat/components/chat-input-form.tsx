@@ -47,7 +47,7 @@ function buildPlaceholder(workspaceName?: string): string {
 function CorpusScopeBadge({ ready, total }: { readonly ready?: number | undefined; readonly total?: number | undefined }) {
   if (total === undefined) return null;
   if (total === 0) {
-    return <span className="chat-composer__corpus chat-composer__corpus--empty" title="Workspace hiện chưa có tài liệu để đối chiếu">
+    return <span className="chat-composer__corpus chat-composer__corpus--empty" title="Nhóm hiện chưa có tài liệu để đối chiếu">
       <Icon name="folder_off" size={14} /><span>Chưa có nguồn</span>
     </span>;
   }

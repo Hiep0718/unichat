@@ -16,9 +16,9 @@
 
 .admin-page__header h2 {
   margin: 0;
-  font-size: 1.45rem;
-  letter-spacing: -.025em;
+  letter-spacing: var(--letter-spacing-page-title);
   color: var(--muc);
+  font: var(--font-page-title);
 }
 
 .admin-page__header p,
@@ -62,7 +62,6 @@
   font-weight: 650;
 }
 
-.admin-page__toolbar select,
 .admin-page__toolbar input,
 .admin-page__field input,
 .admin-page__field textarea {
@@ -78,7 +77,6 @@
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.admin-page__toolbar select:focus,
 .admin-page__field input:focus,
 .admin-page__field textarea:focus {
   outline: none;
@@ -91,9 +89,9 @@
   min-height: 40px;
   padding: 8px 16px;
   border: 0;
-  border-radius: 8px;
+  border-radius: var(--btn-radius);
   background: var(--nhan);
-  color: var(--nen);
+  color: var(--btn-primary-ink);
   font-weight: 650;
   font-size: 0.875rem;
   cursor: pointer;
@@ -260,7 +258,7 @@
   gap: 6px;
   padding: 8px 14px;
   border: 1px solid var(--dieu-khien);
-  border-radius: 8px;
+  border-radius: var(--btn-radius);
   background: var(--nen);
   color: var(--muc-nhat);
   font-weight: 600;
@@ -311,6 +309,64 @@
   border: 1px solid var(--canh-bao);
 }
 
+.admin-badge--neutral {
+  background: var(--pill-trung-nen);
+  color: var(--pill-trung-muc);
+  border: 1px solid var(--vien);
+}
+
+.admin-page__card td.admin-page__cell-strong {
+  color: var(--muc);
+  font-weight: 600;
+}
+
+.admin-page__empty {
+  margin: 0;
+  padding: 24px;
+  text-align: center;
+  color: var(--muc-mo);
+}
+
+.admin-page__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Nút thao tác trong hàng: nút viền nhỏ, cùng bo góc với mọi nút khác. */
+.admin-page__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  border: 1px solid var(--btn-secondary-border);
+  border-radius: var(--btn-radius);
+  background: var(--btn-secondary-bg);
+  color: var(--btn-secondary-ink);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.admin-page__action:hover:not(:disabled) {
+  background: var(--btn-secondary-bg-hover);
+}
+
+.admin-page__action:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.admin-page__action--danger {
+  border-color: color-mix(in srgb, var(--hong) 35%, transparent);
+  color: var(--hong);
+}
+
+.admin-page__action--danger:hover:not(:disabled) {
+  background: var(--pill-hong-nen);
+}
+
 @media (max-width: 640px) {
   .admin-page__card dl {
     grid-template-columns: 1fr;
@@ -318,4 +374,10 @@
   .admin-page__card dd {
     padding-top: 0;
   }
+}
+
+/* Toolbar dropdowns are SelectMenu fields; keep them from collapsing to
+   their label's width inside a wrapping flex row. */
+.admin-page__toolbar .select-menu__trigger--field {
+  min-width: 180px;
 }

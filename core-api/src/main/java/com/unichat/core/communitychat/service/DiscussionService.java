@@ -16,6 +16,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.unichat.core.chat.service.ChatActor;
 import com.unichat.core.common.error.AuthorizationError;
 import com.unichat.core.common.error.NotFoundError;
 import com.unichat.core.communitychat.api.CreateDiscussionRequest;
@@ -25,6 +26,7 @@ import com.unichat.core.communitychat.api.MentionableMember;
 import com.unichat.core.communitychat.api.PostAttachmentResponse;
 import com.unichat.core.communitychat.api.ReactionSummary;
 import com.unichat.core.communitychat.api.UpdateDiscussionRequest;
+import com.unichat.core.communitychat.api.ReplyAuthor;
 import com.unichat.core.communitychat.api.ReplyResponse;
 import com.unichat.core.communitychat.domain.AiMentionEvent;
 import com.unichat.core.communitychat.domain.Discussion;
@@ -233,22 +235,34 @@ public class DiscussionService {
         
         Map<UUID, ReactionSummary> reactions =
                 reactionService.summariseAll("DISCUSSION_REPLY", replyIds, userId);
-        Map<UUID, String> authorNames = userRepository
+        // One lookup for every author on the page, carrying what the client
+        // needs to draw each face: name, whether a picture exists, chosen colour.
+        Map<UUID, ReplyAuthor> authors = userRepository
                 .findAllById(replies.stream().map(DiscussionReply::getAuthorId).distinct().toList())
                 .stream()
-                .collect(Collectors.toMap(User::getId, User::getDisplayName));
+                .collect(Collectors.toMap(User::getId, ReplyAuthor::of));
 
         return replies.stream()
                 .map(r -> ReplyResponse.from(
                         r,
-                        authorNames.getOrDefault(r.getAuthorId(), "Người dùng"),
-                        null,
+                        authors.getOrDefault(r.getAuthorId(), ReplyAuthor.UNKNOWN),
                         reactions.getOrDefault(r.getId(), ReactionSummary.empty())))
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Adds a comment to a post and, when it names {@code @AI}, asks the assistant.
+     *
+     * @param workspaceId group the post belongs to
+     * @param discussionId post being commented on
+     * @param asker        the commenter with their current session, which also
+     *                     authorizes the assistant's answer
+     * @param request      the comment
+     * @return the stored comment
+     */
     @Transactional
-    public ReplyResponse addReply(UUID workspaceId, UUID discussionId, UUID userId, CreateReplyRequest request) {
+    public ReplyResponse addReply(UUID workspaceId, UUID discussionId, ChatActor asker, CreateReplyRequest request) {
+        UUID userId = asker.userId();
         verifyMembership(workspaceId, userId);
 
         Discussion discussion = discussionRepository.findById(discussionId)
@@ -280,16 +294,16 @@ public class DiscussionService {
         ));
         publishMentions(workspaceId, discussionId, reply.getId(), userId, request.body());
 
-        if (request.body().toLowerCase().contains("@ai")) {
+        if (AiMentions.mentions(request.body())) {
             // Answered after this transaction commits: the assistant's reply hangs
             // off this one, so its row has to exist first.
             eventPublisher.publishEvent(new AiMentionEvent(
                     workspaceId, discussionId, reply.getId(),
-                    discussion.getTitle(), request.body()));
+                    discussion.getTitle(), request.body(), asker));
         }
 
-        String authorName = userRepository.findById(userId).map(User::getDisplayName).orElse("Người dùng");
-        return ReplyResponse.from(reply, authorName, null, ReactionSummary.empty());
+        ReplyAuthor author = userRepository.findById(userId).map(ReplyAuthor::of).orElse(ReplyAuthor.UNKNOWN);
+        return ReplyResponse.from(reply, author, ReactionSummary.empty());
     }
 
     /**

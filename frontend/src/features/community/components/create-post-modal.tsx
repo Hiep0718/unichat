@@ -5,6 +5,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { Icon } from '../../../components/icon';
+import { SelectMenu } from '../../../components/select-menu';
 import { getWorkspaces } from '../../workspaces/workspace-api';
 import type { WorkspaceDto } from '../../workspaces/workspace-schema';
 import { ApiError } from '../../../lib/api-client';
@@ -14,6 +15,7 @@ import { PostBackgroundPanel } from './post-background-panel';
 import { canUseBackground } from '../post-background';
 import { ComposeSuggestions } from './compose-suggestions';
 import { MentionTextarea } from './mention-textarea';
+import { POST_LABEL_META } from '../post-labels';
 import './create-post-modal.css';
 
 interface CreatePostModalProps {
@@ -140,27 +142,22 @@ export function CreatePostModal({
             {/* Workspace selector */}
             <div className="create-post-modal__field">
               <label className="create-post-modal__label">
-                <Icon name="workspaces" size={16} /> Chọn Knowledge Space
+                <Icon name="workspaces" size={16} /> Chọn nhóm
               </label>
               {wsLoading ? (
                 <div className="create-post-modal__ws-loading">Đang tải...</div>
               ) : workspaces.length === 0 ? (
                 <div className="create-post-modal__ws-empty">
-                  Bạn chưa tham gia workspace nào. Hãy tham gia một workspace trước.
+                  Bạn chưa tham gia nhóm nào. Hãy tham gia một nhóm trước.
                 </div>
               ) : (
-                <select
-                  className="create-post-modal__select"
+                <SelectMenu
+                  variant="field"
+                  label="Nhóm đăng bài"
                   value={selectedWsId}
-                  onChange={(e) => setSelectedWsId(e.target.value)}
-                  required
-                >
-                  {workspaces.map((ws) => (
-                    <option key={ws.id} value={ws.id}>
-                      {ws.name}
-                    </option>
-                  ))}
-                </select>
+                  options={workspaces.map((ws) => ({ value: ws.id, label: ws.name }))}
+                  onChange={setSelectedWsId}
+                />
               )}
               {selectedWs && (
                 <span className="create-post-modal__ws-hint">
@@ -182,9 +179,8 @@ export function CreatePostModal({
                       className={`create-post-modal__pill ${label === l ? 'create-post-modal__pill--active' : ''}`}
                       onClick={() => setLabel(l)}
                     >
-                      {l === 'QUESTION' && '❓ Câu hỏi'}
-                      {l === 'DISCUSSION' && '💬 Thảo luận'}
-                      {l === 'ANNOUNCEMENT' && '📢 Thông báo'}
+                      <Icon name={POST_LABEL_META[l].icon} size={16} />
+                      {POST_LABEL_META[l].text}
                     </button>
                   );
                 })}

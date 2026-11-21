@@ -21,6 +21,7 @@ import { feedApi } from '../../src/features/feed/feed-api';
 import { postPath } from '../../src/features/feed/post-route';
 import { flattenFeed, patchFeedPost, useFeed, useToggleBookmark } from '../../src/features/feed/use-feed';
 import { useToast } from '../../src/lib/toast-context';
+import { fonts } from '../../src/design/typography';
 
 import type { IconName } from '../../src/components/uc-icon';
 import type { FeedFilter, FeedPost, ReactionSummary } from '../../src/features/feed/feed-types';
@@ -188,14 +189,14 @@ const styles = StyleSheet.create({
     ...shadows.card,
   },
   chipActive: { backgroundColor: workplace.accent },
-  chipText: { color: workplace.inkMuted, fontSize: 13, fontFamily: 'Inter_500Medium' },
-  chipTextActive: { color: workplace.accentInk, fontFamily: 'Inter_700Bold' },
+  chipText: { color: workplace.inkMuted, fontSize: 13, fontFamily: fonts.medium },
+  chipTextActive: { color: workplace.accentInk, fontFamily: fonts.bold },
   // Không đặt lề ngang lên danh sách: dải đầu nằm trong phần đầu của nó và
   // phải chạy hết chiều ngang. Lề thuộc về từng thẻ.
   list: { paddingBottom: 120, flexGrow: 1 },
   cardWrap: { paddingHorizontal: spacing.md },
   gap: { height: spacing.md },
   state: { alignItems: 'center', gap: 10, paddingVertical: 56, paddingHorizontal: 24 },
-  stateTitle: { color: workplace.ink, fontSize: 16, fontFamily: 'Inter_700Bold', textAlign: 'center' },
+  stateTitle: { color: workplace.ink, fontSize: 16, fontFamily: fonts.bold, textAlign: 'center' },
   stateHint: { color: workplace.inkMuted, fontSize: 14, textAlign: 'center', lineHeight: 20 },
 });

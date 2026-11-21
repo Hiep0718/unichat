@@ -1,208 +1,181 @@
 import { Link } from 'react-router-dom';
 
+import { Icon } from '../../components/icon';
+import { ROLE_LABELS } from '../members/member-schema';
 import { useWorkspace } from './workspace-context';
+import { useWorkspace as useWorkspaceRecord } from './workspace-hooks';
 import './workspace-overview-page.css';
 
+import type { WorkspaceDetails } from './workspace-context';
+import type { WorkspaceDto } from './workspace-schema';
+
+/** How each visibility level is named and drawn on the hero. */
+const VISIBILITY = {
+  PUBLIC: { label: 'Công khai', icon: 'public' },
+  SHARED: { label: 'Chia sẻ', icon: 'group' },
+  PRIVATE: { label: 'Riêng tư', icon: 'lock' },
+} as const;
+
+const FALLBACK_DESCRIPTION =
+  'Nơi lưu trữ giáo trình, tài liệu học tập và hỏi đáp có trích dẫn nguồn cho cả nhóm.';
+
+interface HeroProps {
+  readonly workspace: WorkspaceDetails;
+  readonly canEdit: boolean;
+}
+
+function OverviewHero({ workspace, canEdit }: HeroProps) {
+  const visibility = VISIBILITY[workspace.visibility];
+  return (
+    <header className="ws-overview-hero">
+      <div className="ws-overview-hero__left">
+        <div className="ws-overview-hero__icon-box">
+          <Icon name="dataset" size={30} />
+        </div>
+        <div className="ws-overview-hero__meta">
+          <div className="ws-overview-hero__title-row">
+            <h1 className="ws-overview-hero__title">{workspace.name}</h1>
+            <span className="ws-overview-badge">
+              <Icon name={visibility.icon} size={14} />
+              {visibility.label}
+            </span>
+            <span className="ws-overview-badge">{ROLE_LABELS[workspace.role]}</span>
+          </div>
+          <p className="ws-overview-hero__desc">{workspace.description || FALLBACK_DESCRIPTION}</p>
+        </div>
+      </div>
+      {canEdit && (
+        <Link to={`/workspaces/${workspace.id}/settings`} className="ws-overview-hero__settings-btn">
+          <Icon name="settings" size={18} />
+          Cài đặt nhóm
+        </Link>
+      )}
+    </header>
+  );
+}
+
+/** Counts for the group, read from the record the shell already loaded. */
+function OverviewStats({ record }: { readonly record: WorkspaceDto | undefined }) {
+  const value = (n: number | undefined) => (n === undefined ? '—' : n.toLocaleString('vi-VN'));
+  const stats = [
+    { icon: 'description', label: 'Tài liệu', value: value(record?.documentCount) },
+    { icon: 'group', label: 'Thành viên', value: value(record?.memberCount) },
+    { icon: 'forum', label: 'Bài viết', value: value(record?.postCount) },
+    { icon: 'trending_up', label: 'Bài trong 7 ngày', value: value(record?.recentPostCount) },
+  ];
+  return (
+    <div className="ws-overview-stats-grid">
+      {stats.map((stat) => (
+        <div key={stat.label} className="ws-overview-stat-card">
+          <div className="ws-overview-stat-card__icon-box">
+            <Icon name={stat.icon} size={22} />
+          </div>
+          <div className="ws-overview-stat-card__info">
+            <span className="ws-overview-stat-card__value">{stat.value}</span>
+            <span className="ws-overview-stat-card__label">{stat.label}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+interface Hub {
+  readonly to: string;
+  readonly icon: string;
+  readonly title: string;
+  readonly description: string;
+  readonly action: string;
+  readonly primary?: boolean;
+}
+
+function HubCard({ hub }: { readonly hub: Hub }) {
+  return (
+    <Link to={hub.to} className={`ws-hub-card ${hub.primary ? 'ws-hub-card--primary' : 'ws-hub-card--secondary'}`}>
+      <div className="ws-hub-card__body">
+        <div className="ws-hub-card__header">
+          <div className="ws-hub-card__icon-box">
+            <Icon name={hub.icon} size={24} />
+          </div>
+          <h3 className="ws-hub-card__title">{hub.title}</h3>
+        </div>
+        <p className="ws-hub-card__desc">{hub.description}</p>
+      </div>
+      <div className="ws-hub-card__footer">
+        <span className="ws-hub-card__action-text">
+          {hub.action}
+          <Icon name="arrow_forward" size={18} />
+        </span>
+      </div>
+    </Link>
+  );
+}
+
+function hubsFor(workspaceId: string, canEdit: boolean): readonly Hub[] {
+  return [
+    {
+      to: `/workspaces/${workspaceId}/chat`, icon: 'forum', primary: true,
+      title: 'Hỏi đáp với trợ lý AI', action: 'Bắt đầu hỏi',
+      description: 'Đặt câu hỏi và nhận câu trả lời kèm trích dẫn từ chính tài liệu của nhóm.',
+    },
+    {
+      to: `/workspaces/${workspaceId}/documents`, icon: 'upload_file',
+      title: 'Quản lý tài liệu', action: 'Mở kho tài liệu',
+      description: canEdit
+        ? 'Tải lên giáo trình PDF, DOCX, TXT để trợ lý có thêm nguồn trích dẫn.'
+        : 'Xem các tài liệu của nhóm mà trợ lý đang dùng làm nguồn.',
+    },
+    {
+      to: `/workspaces/${workspaceId}/conversations`, icon: 'history',
+      title: 'Lịch sử hỏi đáp', action: 'Xem lịch sử',
+      description: 'Mở lại các phiên hỏi đáp cũ, xem lại nguồn trích dẫn và hỏi tiếp từ chỗ đã dừng.',
+    },
+  ];
+}
+
+function SecurityNotes({ isOwner }: { readonly isOwner: boolean }) {
+  const notes = [
+    <>Chỉ tài liệu <strong>đã xử lý xong</strong> mới được trợ lý dùng làm nguồn trả lời.</>,
+    <>Quyền đọc tài liệu được <strong>Core API</strong> kiểm tra trước khi câu hỏi tới dịch vụ AI.</>,
+    isOwner
+      ? <>Bạn là <strong>chủ sở hữu</strong> nhóm: bạn quản lý thành viên và cấu hình quyền.</>
+      : <>Bạn tham gia nhóm với tư cách <strong>thành viên</strong>.</>,
+  ];
+  return (
+    <section className="ws-overview-security-card">
+      <div className="ws-overview-security-card__header">
+        <div className="ws-overview-security-card__icon-box">
+          <Icon name="shield" size={22} />
+        </div>
+        <h3 className="ws-overview-security-card__title">Phân quyền và bảo mật tri thức</h3>
+      </div>
+      <div className="ws-overview-security-list">
+        {notes.map((note, index) => (
+          <div key={index} className="ws-security-item">
+            <Icon name="check_circle" size={20} className="ws-security-item__icon" />
+            <p className="ws-security-item__text">{note}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/** A group's landing summary: identity, counts, the three ways in, and the access rules. */
 export function WorkspaceOverviewPage() {
-  const { workspace, role, isOwner, canEdit } = useWorkspace();
+  const { workspace, isOwner, canEdit } = useWorkspace();
+  const { data: record } = useWorkspaceRecord(workspace?.id ?? '');
 
   if (!workspace) return null;
 
-  const visibilityText =
-    workspace.visibility === 'PUBLIC'
-      ? 'Công khai'
-      : workspace.visibility === 'SHARED'
-      ? 'Chia sẻ'
-      : 'Riêng tư';
-
-  const visibilityClass =
-    workspace.visibility === 'PUBLIC'
-      ? 'ws-overview-badge--public'
-      : workspace.visibility === 'SHARED'
-      ? 'ws-overview-badge--shared'
-      : 'ws-overview-badge--private';
-
   return (
     <div className="ws-overview-container">
-      {/* 1. Hero Header Banner */}
-      <header className="ws-overview-hero">
-        <div className="ws-overview-hero__left">
-          <div className="ws-overview-hero__icon-box">
-            <span className="material-symbols-outlined" style={{ fontSize: '32px' }}>dataset</span>
-          </div>
-          <div className="ws-overview-hero__meta">
-            <div className="ws-overview-hero__title-row">
-              <h1 className="ws-overview-hero__title">{workspace.name}</h1>
-              <span className={`ws-overview-badge ${visibilityClass}`}>
-                <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>
-                  {workspace.visibility === 'PUBLIC' ? 'public' : workspace.visibility === 'SHARED' ? 'group' : 'lock'}
-                </span>
-                <span>{visibilityText}</span>
-              </span>
-              <span className="ws-overview-badge ws-overview-badge--role">
-                <span>Vai trò: {role}</span>
-              </span>
-            </div>
-            <p className="ws-overview-hero__desc">
-              {workspace.description ||
-                'Không gian lưu trữ và truy xuất tri thức tự động cho tài liệu giáo trình và thông tin học tập.'}
-            </p>
-          </div>
-        </div>
-
-        {canEdit && (
-          <Link to={`/workspaces/${workspace.id}/settings`} className="ws-overview-hero__settings-btn">
-            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>settings</span>
-            <span>Cài đặt Workspace</span>
-          </Link>
-        )}
-      </header>
-
-      {/* 2. Quick Stats Summary Grid */}
-      <div className="ws-overview-stats-grid">
-        <div className="ws-overview-stat-card">
-          <div className="ws-overview-stat-card__icon-box">
-            <span className="material-symbols-outlined">auto_awesome</span>
-          </div>
-          <div className="ws-overview-stat-card__info">
-            <span className="ws-overview-stat-card__value">Adaptive RAG</span>
-            <span className="ws-overview-stat-card__label">Engine RAG AI</span>
-          </div>
-        </div>
-
-        <div className="ws-overview-stat-card">
-          <div className="ws-overview-stat-card__icon-box">
-            <span className="material-symbols-outlined">speed</span>
-          </div>
-          <div className="ws-overview-stat-card__info">
-            <span className="ws-overview-stat-card__value">&lt; 300ms</span>
-            <span className="ws-overview-stat-card__label">Tốc độ Vector Search</span>
-          </div>
-        </div>
-
-        <div className="ws-overview-stat-card">
-          <div className="ws-overview-stat-card__icon-box">
-            <span className="material-symbols-outlined">verified_user</span>
-          </div>
-          <div className="ws-overview-stat-card__info">
-            <span className="ws-overview-stat-card__value">Zero-Trust AI</span>
-            <span className="ws-overview-stat-card__label">Phân quyền 2 lớp</span>
-          </div>
-        </div>
-
-        <div className="ws-overview-stat-card">
-          <div className="ws-overview-stat-card__icon-box">
-            <span className="material-symbols-outlined">database</span>
-          </div>
-          <div className="ws-overview-stat-card__info">
-            <span className="ws-overview-stat-card__value">PROCESSED</span>
-            <span className="ws-overview-stat-card__label">Chuẩn bóc tách Vector</span>
-          </div>
-        </div>
-      </div>
-
-      {/* 3. Action Hub Cards Grid */}
+      <OverviewHero workspace={workspace} canEdit={canEdit} />
+      <OverviewStats record={record} />
       <section className="ws-overview-hubs-grid">
-        {/* Hub 1: AI Chat (Primary CTA) */}
-        <Link to={`/workspaces/${workspace.id}/chat`} className="ws-hub-card ws-hub-card--primary">
-          <div>
-            <div className="ws-hub-card__header" style={{ marginBottom: '14px' }}>
-              <div className="ws-hub-card__icon-box">
-                <span className="material-symbols-outlined" style={{ fontSize: '26px' }}>forum</span>
-              </div>
-              <h3 className="ws-hub-card__title">Hỏi đáp Tri thức AI</h3>
-            </div>
-            <p className="ws-hub-card__desc">
-              Đặt câu hỏi trực tiếp và nhận phản hồi tức thì với trích dẫn minh bạch từ toàn bộ kho tài liệu trong Workspace.
-            </p>
-          </div>
-          <div className="ws-hub-card__footer">
-            <span className="ws-hub-card__action-text">
-              <span>Bắt đầu Hỏi AI</span>
-              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>arrow_forward</span>
-            </span>
-          </div>
-        </Link>
-
-        {/* Hub 2: Document Management */}
-        <Link to={`/workspaces/${workspace.id}/documents`} className="ws-hub-card ws-hub-card--secondary">
-          <div>
-            <div className="ws-hub-card__header" style={{ marginBottom: '14px' }}>
-              <div className="ws-hub-card__icon-box">
-                <span className="material-symbols-outlined" style={{ fontSize: '26px' }}>upload_file</span>
-              </div>
-              <h3 className="ws-hub-card__title">Quản lý Tài liệu</h3>
-            </div>
-            <p className="ws-hub-card__desc">
-              {canEdit
-                ? 'Tải lên giáo trình PDF, DOCX, TXT để bóc tách Vector và làm giàu kho tri thức RAG.'
-                : 'Xem danh sách tài liệu giáo trình đã được bóc tách trong không gian này.'}
-            </p>
-          </div>
-          <div className="ws-hub-card__footer">
-            <span className="ws-hub-card__action-text">
-              <span>Quản lý kho tài liệu</span>
-              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>arrow_forward</span>
-            </span>
-          </div>
-        </Link>
-
-        {/* Hub 3: Conversation History */}
-        <Link to={`/workspaces/${workspace.id}/conversations`} className="ws-hub-card ws-hub-card--secondary">
-          <div>
-            <div className="ws-hub-card__header" style={{ marginBottom: '14px' }}>
-              <div className="ws-hub-card__icon-box">
-                <span className="material-symbols-outlined" style={{ fontSize: '26px' }}>history</span>
-              </div>
-              <h3 className="ws-hub-card__title">Lịch sử Hỏi đáp</h3>
-            </div>
-            <p className="ws-hub-card__desc">
-              Truy xuất lại các phiên thảo luận cũ, rà soát lại nguồn trích dẫn và tiếp tục các câu hỏi dở dang.
-            </p>
-          </div>
-          <div className="ws-hub-card__footer">
-            <span className="ws-hub-card__action-text">
-              <span>Xem lịch sử thảo luận</span>
-              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>arrow_forward</span>
-            </span>
-          </div>
-        </Link>
+        {hubsFor(workspace.id, canEdit).map((hub) => <HubCard key={hub.to} hub={hub} />)}
       </section>
-
-      {/* 4. Security & Policy Section */}
-      <section className="ws-overview-security-card">
-        <div className="ws-overview-security-card__header">
-          <div className="ws-overview-security-card__icon-box">
-            <span className="material-symbols-outlined" style={{ fontSize: '22px' }}>shield</span>
-          </div>
-          <h3 className="ws-overview-security-card__title">Thông tin Phân quyền & Bảo mật Tri thức</h3>
-        </div>
-
-        <div className="ws-overview-security-list">
-          <div className="ws-security-item">
-            <span className="material-symbols-outlined ws-security-item__icon">check_circle</span>
-            <p className="ws-security-item__text">
-              Chỉ các tài liệu ở trạng thái <strong>PROCESSED</strong> mới được đưa vào không gian vector RAG.
-            </p>
-          </div>
-
-          <div className="ws-security-item">
-            <span className="material-symbols-outlined ws-security-item__icon">check_circle</span>
-            <p className="ws-security-item__text">
-              Quyền hạn truy cập tài liệu được kiểm soát nghiêm ngặt bởi <strong>Core API</strong> trước khi gửi truy vấn tới AI Service.
-            </p>
-          </div>
-
-          <div className="ws-security-item">
-            <span className="material-symbols-outlined ws-security-item__icon">check_circle</span>
-            <p className="ws-security-item__text">
-              {isOwner
-                ? 'Bạn là Owner của Workspace này. Bạn có toàn quyền quản lý thành viên và cấu hình phân quyền.'
-                : 'Bạn đang tham gia với tư cách thành viên trong Workspace.'}
-            </p>
-          </div>
-        </div>
-      </section>
+      <SecurityNotes isOwner={isOwner} />
     </div>
   );
 }

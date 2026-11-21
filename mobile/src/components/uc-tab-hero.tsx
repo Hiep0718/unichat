@@ -1,5 +1,8 @@
 /**
- * Dải đầu tối dùng chung cho các tab: Bảng tin, Trợ lý AI, Tài khoản.
+ * Dải đầu tối dùng chung cho các tab: Bảng tin, Trợ lý AI, Tin nhắn, Tài khoản.
+ *
+ * Nền là họ màu thanh bên của web (`--ray-*`), tiêu đề là `--font-page-title`,
+ * tức cùng vai với `PageHeader` ở web.
  *
  * Trước đây mỗi tab tự vẽ dải của mình với chuyển màu, cỡ chữ và trang trí
  * lệch nhau một chút. Gom về một chỗ thì đổi một lần là mọi tab đổi theo, và
@@ -13,6 +16,8 @@ import { StatusBar, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { button, palette } from '../design/tokens';
+import { fonts, typography } from '../design/typography';
 
 import type { ReactNode } from 'react';
 
@@ -54,19 +59,21 @@ export function UCTabHero({ title, subtitle, action, children, testID }: UCTabHe
   return (
     <View style={styles.wrap} testID={testID}>
       <LinearGradient
-        colors={['#0A1026', '#121A3C', '#1B2255']}
+        colors={[palette.rayNen, palette.rayNen, palette.rayNoi]}
         locations={[0, 0.55, 1]}
         start={{ x: 0.05, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={StyleSheet.absoluteFill}
       />
       <LinearGradient
-        colors={['rgba(99,130,255,0.35)', 'rgba(99,130,255,0)']}
+        colors={['rgba(90,155,252,0.28)', 'rgba(90,155,252,0)']}
         start={{ x: 1, y: 0 }}
         end={{ x: 0.1, y: 1 }}
         style={StyleSheet.absoluteFill}
       />
-      <PaperStack />
+      {/* Trang trí chỉ vẽ khi góc phải còn trống: ở Bảng tin, Trợ lý AI và Tin
+          nhắn nó từng đè lên nút hành động và cắt ngang dòng mô tả. */}
+      {action ? null : <PaperStack />}
 
       <View style={[styles.body, { paddingTop: insets.top + 12 }]}>
         <View style={styles.titleRow}>
@@ -81,11 +88,12 @@ export function UCTabHero({ title, subtitle, action, children, testID }: UCTabHe
 }
 
 const styles = StyleSheet.create({
-  wrap: { borderBottomLeftRadius: 28, borderBottomRightRadius: 28, overflow: 'hidden', backgroundColor: '#0A1026' },
+  wrap: { borderBottomLeftRadius: 28, borderBottomRightRadius: 28, overflow: 'hidden', backgroundColor: palette.rayNen },
   body: { paddingHorizontal: 20, paddingBottom: 20 },
   titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
-  title: { flexShrink: 1, color: '#FFFFFF', fontFamily: 'Inter_800ExtraBold', fontSize: 28, letterSpacing: -0.6 },
-  subtitle: { color: 'rgba(226,232,248,0.72)', fontSize: 14, lineHeight: 20, marginTop: 6, maxWidth: '78%' },
+  // Cỡ tiêu đề trang của web (`--font-page-title`): chuyển tab không thấy tiêu đề đổi cỡ.
+  title: { flexShrink: 1, color: palette.rayMuc, ...typography.pageTitle },
+  subtitle: { color: palette.rayMucNhat, fontFamily: fonts.regular, fontSize: 14, lineHeight: 20, marginTop: 4, maxWidth: '78%' },
   paperStack: { position: 'absolute', top: 18, right: 10, width: 128, height: 118 },
   sheet: {
     position: 'absolute',
@@ -103,14 +111,14 @@ const styles = StyleSheet.create({
   sheetLineShort: { width: '62%' },
 });
 
-/** Nút vuông mờ trên nền tối, cho góc phải của dải đầu. */
+/** Nút icon tròn mờ trên nền tối, cho góc phải của dải đầu. */
 export const heroButtonStyle = {
   width: 42,
   height: 42,
-  borderRadius: 14,
+  borderRadius: button.radius,
   alignItems: 'center' as const,
   justifyContent: 'center' as const,
-  backgroundColor: 'rgba(255,255,255,0.12)',
+  backgroundColor: palette.trenAnhNut,
   borderWidth: 1,
-  borderColor: 'rgba(255,255,255,0.18)',
+  borderColor: palette.trenAnhNutVien,
 };

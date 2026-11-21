@@ -161,8 +161,8 @@
   --pill-hong-muc: #7a1d14;
   --pill-canh-nen: #fffbeb;
   --pill-canh-muc: #92400e;
-  --pill-trung-nen: #ecebe7;
-  --pill-trung-muc: #39403a;
+  --pill-trung-nen: #eceef2; /* xám lạnh hue 220, cùng họ với nền; bản cũ #ecebe7 còn sót từ bảng màu ấm */
+  --pill-trung-muc: #39404b;
 
   /* Chiều rộng cột đọc. Câu trả lời của trợ lý là văn bản dài cần đối chiếu
      với nguồn, nên nó vẫn bị giữ trong một đo chữ đọc được. */
@@ -274,20 +274,17 @@
      bản dài vẫn do --measure (68ch) giữ lại, vì một dòng chữ quá dài thì
      mắt khó dò về đầu dòng sau; nới trần không làm loãng phần đọc. */
   --container-max: 1280px;
-  /* 68px, không phải 224px.
-     Ở 224px thanh bên dành một phần tư bề ngang màn hình để hiển thị
-     biểu tượng 24px, còn nhãn chữ biện minh cho bề rộng đó thì nằm ở
-     opacity 0 — vô hình nhưng vẫn chiếm đủ 56px bố cục. Đó không phải
-     thanh bên hẹp cũng không phải thanh bên rộng.
-
-     Chú thích trong app-shell.css vẫn ghi đúng ý định ban đầu — "widens
-     from 68px to 260px on hover" — nên 224px là một lần trôi khỏi thiết
-     kế chứ không phải một lựa chọn. Trả về 68px; cơ chế nở ra 260px khi
-     rê chuột vẫn giữ, và đó là lúc nhãn chữ hiện ra. */
-  /* 224px: thanh bên luôn mở và hiện nhãn chữ, theo mockup. Đây không
-     phải lần trôi như con số 224px cũ, vì lần đó bề rộng ấy chỉ chứa biểu
-     tượng còn chữ thì ẩn ở opacity 0. */
+  /* Thanh bên có hai bề rộng, mỗi bề rộng khớp với thứ nó hiển thị.
+     Bề rộng nghỉ (rail-width) chỉ chứa biểu tượng: ô 40px cộng đệm 12px
+     mỗi bên; nội dung chính chỉ chừa đúng phần này.
+     Bề rộng mở (sidebar-width) hiện đủ nhãn chữ khi rê chuột vào; nội
+     dung trượt sang theo cùng nhịp (rail-motion, sau rail-open-delay) chứ
+     không bị che.
+     Bài học cũ vẫn giữ: không có lúc nào thanh bên rộng mà chữ lại ẩn. */
+  --rail-width: 68px;
   --sidebar-width: 224px;
+  --rail-motion: 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  --rail-open-delay: 120ms;
   --gutter: 16px;
   --margin-mobile: 16px;
   --stack-sm: 8px;
@@ -363,6 +360,53 @@
   --font-title-md: 500 14px/21px var(--font-family);
   --font-title-sm: 500 13px/18px var(--font-family);
   --transition-medium: var(--transition-normal);
+
+  /* Tiêu đề trang: một cỡ cho mọi trang làm việc. Serif chỉ dành cho lời
+     chào (dải chào ở trang Nhóm, trang đăng nhập); trước đây trang Cài đặt
+     nhóm dùng serif 48px, trang Tài khoản serif 26px, trang Lịch sử sans 22px. */
+  --font-page-title: 700 24px/32px var(--font-family);
+  --letter-spacing-page-title: -0.01em;
+
+  /* Khung chung của các trang cấp một (Bảng tin, Tin nhắn, Tài khoản): rộng
+     tối đa bấy nhiêu, căn giữa, nội dung bám mép trái của khung. Nhờ vậy
+     tiêu đề đứng yên một chỗ khi chuyển tab. */
+  --page-max: 1360px;
+
+  /* ---------- Nút: một quy ước cho cả ứng dụng ----------
+     Trước đây mỗi màn tự đặt nút chính: nửa số nút tô màu nhấn, nửa còn
+     lại tô mực đen, và bo góc rải từ 6px tới viên thuốc — có khi ngay
+     trong cùng một luồng (nút "Mời thành viên" xanh bo tròn, nút gửi
+     trong hộp mời đen bo 8px). Quy ước: hành động chính tô màu nhấn,
+     hành động phụ là nút viền, cả hai cùng bo viên thuốc. */
+  --btn-radius: var(--radius-full);
+  --btn-primary-bg: var(--nhan);
+  --btn-primary-ink: var(--nhan-muc);
+  --btn-primary-bg-hover: color-mix(in srgb, var(--nhan) 86%, var(--muc));
+  --btn-secondary-bg: var(--nen);
+  --btn-secondary-ink: var(--muc);
+  --btn-secondary-border: var(--vien);
+  --btn-secondary-bg-hover: var(--be-mat);
+
+  /* Chữ và nút nằm trên ảnh hoặc dải tối luôn sáng, ở cả hai chế độ:
+     nền phía sau chúng không đổi theo chế độ, nên màu chữ cũng không. */
+  --tren-anh: #ffffff;
+  --tren-anh-nhat: rgb(255 255 255 / 78%);
+  --tren-anh-nen: rgb(10 13 20 / 45%);
+  --tren-anh-vien: rgb(255 255 255 / 38%);
+
+  /* Ngược lại: tờ giấy trắng cố định đặt trên dải tối (thẻ minh họa ở trang
+     đăng nhập). Giấy không đổi theo chế độ, nên mực trên nó cũng không. */
+  --tren-giay: #151a23;
+  --tren-giay-nhat: #555c68;
+  --tren-giay-ke: #eef0f3;
+
+  /* Thẻ nổi bật (lời mời hỏi trợ lý): cùng xanh đậm với thanh bên, cố định
+     ở cả hai chế độ. Bản cũ dùng nền đảo màu, nên sang chế độ tối nó thành
+     một tấm thẻ sáng chói giữa các thẻ tối. */
+  --noi-bat-nen: var(--ray-nen);
+  --noi-bat-muc: var(--tren-anh);
+  --noi-bat-nut-nen: var(--tren-anh);
+  --noi-bat-nut-muc: var(--ray-nen);
 
   /* Mọi con số canh thẳng cột, kể cả khi đổi giá trị. */
   font-variant-numeric: tabular-nums;

@@ -7,7 +7,7 @@
   border-radius: var(--radius-xl);
   overflow: hidden;
   text-decoration: none;
-  color: var(--nen);
+  color: var(--tren-anh);
   isolation: isolate;
   transition:
     box-shadow var(--transition-normal),
@@ -53,7 +53,7 @@
   background: rgb(255 255 255 / 20%);
   border: 1px solid rgb(255 255 255 / 26%);
   backdrop-filter: blur(8px);
-  color: var(--nen);
+  color: var(--tren-anh);
   font: var(--font-label-sm);
   font-weight: 600;
 }
@@ -74,7 +74,7 @@
   font-weight: 700;
   line-height: 1.25;
   letter-spacing: -0.01em;
-  color: var(--nen);
+  color: var(--tren-anh);
   /* Bỏ đổ bóng chữ: span.__scrim phía dưới đã lo phần đọc được,
      còn một lớp bóng chồng lên chỉ làm nhòe nét chữ. */
   display: -webkit-box;
@@ -84,6 +84,21 @@
   overflow: hidden;
 }
 
+/* Topic chips over the picture wear the same glass as the visibility badge;
+   the default light chip would be a white sticker on a dark photograph. One
+   row only — a wrapped second row would push the title up on some cards. */
+.workspace-card .topic-chips {
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+
+.workspace-card .topic-chips__chip {
+  background: rgb(255 255 255 / 18%);
+  border-color: rgb(255 255 255 / 24%);
+  backdrop-filter: blur(8px);
+  color: var(--tren-anh);
+  font-weight: 600;
+}
 
 .workspace-card__foot {
   display: flex;
@@ -100,7 +115,7 @@
   flex-shrink: 0;
   font: var(--font-label-sm);
   font-weight: 500;
-  color: rgb(255 255 255 / 82%);
+  color: var(--tren-anh-nhat);
 }
 
 .workspace-card__dot {
@@ -127,7 +142,7 @@
 }
 
 .workspace-card .member-faces__more {
-  color: rgb(255 255 255 / 82%);
+  color: var(--tren-anh-nhat);
 }
 
 /* List view: a compact row — picture panel left, everything else on one line. */
@@ -184,6 +199,29 @@
   text-shadow: none;
   -webkit-line-clamp: 1;
   line-clamp: 1;
+}
+
+/* In a row the chips sit on the white surface, after the name, as plain chips. */
+.workspace-grid--list .workspace-card .topic-chips {
+  order: 1;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.workspace-grid--list .workspace-card__name {
+  order: 0;
+}
+
+.workspace-grid--list .workspace-card__foot {
+  order: 2;
+}
+
+.workspace-grid--list .workspace-card .topic-chips__chip {
+  background: var(--color-surface-container-low);
+  border-color: var(--color-outline-variant);
+  backdrop-filter: none;
+  color: var(--color-on-surface-variant);
+  font-weight: 500;
 }
 
 .workspace-grid--list .workspace-card__foot {

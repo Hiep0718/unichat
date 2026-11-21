@@ -26,7 +26,7 @@ function LoadingRequest({ dispatch, message, brandTitle }: LoadingRequestProps) 
 
 /** Shares full-page loading ownership, or renders directly outside a provider. */
 export function LoadingScreen({
-  message = 'Đang tải thông tin Workspace...',
+  message = 'Đang tải thông tin nhóm...',
   brandTitle = 'UniChat AI Platform',
   fullScreen = true,
 }: LoadingScreenProps) {

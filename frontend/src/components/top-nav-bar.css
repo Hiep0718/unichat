@@ -81,7 +81,7 @@
   color: #0a0d14;
   font: var(--font-label-md);
   border: none;
-  border-radius: var(--radius-lg);
+  border-radius: var(--btn-radius);
   cursor: pointer;
   box-shadow: var(--shadow-sm);
   transition: opacity var(--transition-fast);

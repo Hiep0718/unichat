@@ -15,7 +15,7 @@ import Animated, {
   withSequence,
   Easing,
 } from 'react-native-reanimated';
-import { colors, radii, spacing, animation as animConfig } from '../design/tokens';
+import { colors, radii, spacing, animation as animConfig, palette } from '../design/tokens';
 import { typography } from '../design/typography';
 import { UCIcon, IconName } from './uc-icon';
 
@@ -81,7 +81,7 @@ export function UCTextInput({
       : 'rgba(226, 232, 248, 0.9)',
     borderWidth: borderProgress.value > 0.5 ? 1.5 : 1.2,
     backgroundColor: borderProgress.value > 0.5
-      ? '#FFFFFF'
+      ? palette.trenAnh
       : 'rgba(255, 255, 255, 0.72)',
     shadowOpacity: shadowProgress.value * 0.12,
     transform: [{ translateX: shakeX.value }],

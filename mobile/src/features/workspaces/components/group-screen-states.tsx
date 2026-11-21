@@ -13,16 +13,18 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { UCIcon } from '../../../components/uc-icon';
 import { UCSkeleton, UCSkeletonCard } from '../../../components/uc-skeleton';
-import { radii, spacing, workplace } from '../../../design/tokens';
+import { button, palette, radii, spacing, workplace } from '../../../design/tokens';
+import { fonts } from '../../../design/typography';
 
-const DARK = ['#0F172A', '#1E293B'] as const;
+/** Họ xanh đậm của dải đầu, để khung tải không đổi màu khi dữ liệu về. */
+const DARK = [palette.rayNen, palette.rayNoi] as const;
 /** Khối mờ trên nền tối; khung mặc định màu xám nhạt sẽ loá trên dải bìa. */
 const ON_DARK = { backgroundColor: 'rgba(255,255,255,0.16)' };
 
 function BackButton({ onBack }: { readonly onBack: () => void }) {
   return (
     <Pressable style={styles.iconBtn} onPress={onBack} hitSlop={10} accessibilityRole="button" accessibilityLabel="Quay lại" testID="group-back">
-      <UCIcon name="chevron-left" size={22} color="#FFFFFF" />
+      <UCIcon name="chevron-left" size={22} color={palette.trenAnh} />
     </Pressable>
   );
 }
@@ -94,7 +96,7 @@ const styles = StyleSheet.create({
   iconBtn: {
     width: 40,
     height: 40,
-    borderRadius: radii.lg,
+    borderRadius: button.radius,
     backgroundColor: 'rgba(255,255,255,0.12)',
     alignItems: 'center',
     justifyContent: 'center',
@@ -114,8 +116,8 @@ const styles = StyleSheet.create({
   cards: { padding: spacing.md, gap: spacing.md },
   errorBar: { paddingHorizontal: spacing.md, paddingBottom: spacing.md },
   errorBody: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 10, padding: spacing.xl },
-  errorTitle: { color: workplace.ink, fontSize: 17, fontFamily: 'Inter_700Bold', textAlign: 'center' },
+  errorTitle: { color: workplace.ink, fontSize: 17, fontFamily: fonts.bold, textAlign: 'center' },
   errorText: { color: workplace.inkMuted, fontSize: 14, lineHeight: 20, textAlign: 'center' },
-  retry: { marginTop: 8, paddingHorizontal: 22, paddingVertical: 12, borderRadius: radii.full, backgroundColor: workplace.ink },
-  retryText: { color: '#FFFFFF', fontSize: 14, fontFamily: 'Inter_700Bold' },
+  retry: { marginTop: 8, paddingHorizontal: 22, paddingVertical: 12, borderRadius: button.radius, backgroundColor: button.primaryBg },
+  retryText: { color: button.primaryInk, fontSize: 14, fontFamily: fonts.bold },
 });

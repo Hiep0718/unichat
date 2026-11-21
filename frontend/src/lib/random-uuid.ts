@@ -1,5 +1,13 @@
 type UuidString = `${string}-${string}-${string}-${string}-${string}`;
 
+/**
+ * Builds a version-4 UUID from `crypto.getRandomValues`.
+ *
+ * Kept separate from {@link randomUuid} on purpose: the polyfill installs this
+ * function as `crypto.randomUUID`. Installing `randomUuid` itself made it call
+ * `crypto.randomUUID`, which was now itself — an infinite recursion on every
+ * plain-HTTP origin.
+ */
 function generateV4Uuid(): UuidString {
   const bytes = new Uint8Array(16);
   globalThis.crypto.getRandomValues(bytes);
@@ -12,6 +20,10 @@ function generateV4Uuid(): UuidString {
 /**
  * Generates a cryptographically random RFC 4122 version-4 UUID.
  * Falls back to `crypto.getRandomValues` when `crypto.randomUUID` is unavailable on plain HTTP origins.
+ *
+ * The identity check is a second guard against the recursion described on
+ * {@link generateV4Uuid}, in case anything else installs this function as
+ * `crypto.randomUUID`.
  */
 export function randomUuid(): UuidString {
   if (typeof globalThis.crypto?.randomUUID === 'function' && globalThis.crypto.randomUUID !== randomUuid) {
@@ -31,7 +43,7 @@ export function installRandomUuidFallback(): void {
     return;
   }
   Object.defineProperty(globalThis.crypto, 'randomUUID', {
-    value: randomUuid,
+    value: generateV4Uuid,
     configurable: true,
     writable: true,
   });

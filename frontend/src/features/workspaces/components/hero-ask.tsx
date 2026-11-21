@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { Icon } from '../../../components/icon';
+import { SelectMenu } from '../../../components/select-menu';
 
 import type { WorkspaceDto } from '../workspace-schema';
 
@@ -49,18 +50,13 @@ export function HeroAsk({ workspaces }: HeroAskProps) {
         aria-label="Câu hỏi"
       />
 
-      <label className="hero-ask__pick">
-        <span className="sr-only">Nhóm để hỏi</span>
-        <select
-          className="hero-ask__select"
-          value={chosen}
-          onChange={(event) => setTarget(event.target.value)}
-        >
-          {workspaces.map((ws) => (
-            <option key={ws.id} value={ws.id}>{ws.name}</option>
-          ))}
-        </select>
-      </label>
+      <SelectMenu
+        className="hero-ask__select"
+        label="Nhóm để hỏi"
+        value={chosen}
+        options={workspaces.map((ws) => ({ value: ws.id, label: ws.name }))}
+        onChange={setTarget}
+      />
 
       <button type="submit" className="hero-ask__send" disabled={!ready}>
         Hỏi

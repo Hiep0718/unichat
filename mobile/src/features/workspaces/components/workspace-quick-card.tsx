@@ -1,6 +1,6 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import { radii, spacing } from '../../../design/tokens';
+import { radii, spacing, palette } from '../../../design/tokens';
 import { shadows } from '../../../design/shadows';
 import { typography } from '../../../design/typography';
 import { UCIcon } from '../../../components/uc-icon';
@@ -91,7 +91,7 @@ export function WorkspaceQuickCard({
         )}
 
         <View style={styles.chip}>
-          <UCIcon name={badge.icon} size={12} color="#FFFFFF" />
+          <UCIcon name={badge.icon} size={12} color={palette.trenAnh} />
           <Text style={styles.chipText}>{badge.label}</Text>
         </View>
       </View>
@@ -144,10 +144,10 @@ const styles = StyleSheet.create({
     borderRadius: radii.full,
     backgroundColor: 'rgba(0, 0, 0, 0.32)',
   },
-  chipText: { ...typography.labelSm, color: '#FFFFFF', fontWeight: '700' },
+  chipText: { ...typography.labelSm, color: palette.trenAnh, fontWeight: '700' },
 
   foot: {},
-  name: { ...typography.bodyLg, color: '#FFFFFF', fontWeight: '700' },
+  name: { ...typography.bodyLg, color: palette.trenAnh, fontWeight: '700' },
   meta: {
     ...typography.labelSm,
     marginTop: 3,

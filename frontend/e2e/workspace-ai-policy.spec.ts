@@ -20,7 +20,7 @@ test('should require explicit owner saving and retain the new version across ena
   await expect(page.getByText('Cập nhật thông tin thành công.')).toBeVisible();
   expect(scenario.updates).toEqual([
     { cloudAllowed: true, expectedVersion: 3 }, { cloudAllowed: false, expectedVersion: 4 },
-    { name: 'Nhóm nghiên cứu', description: '', expectedVersion: 5 },
+    { name: 'Nhóm nghiên cứu', description: '', topics: [], expectedVersion: 5 },
   ]);
 });
 
@@ -40,7 +40,7 @@ test('should refresh a stale version and wait for another explicit owner save af
   await page.getByRole('tab', { name: 'AI & Quyền riêng tư' }).click();
   await page.getByRole('checkbox').check();
   await page.getByRole('button', { name: 'Lưu quyền AI' }).click();
-  await expect(page.getByRole('alert')).toContainText('Workspace đã thay đổi');
+  await expect(page.getByRole('alert')).toContainText('Nhóm đã thay đổi');
   await expect(page.getByText('Đã lưu quyền xử lý bằng AI.')).toHaveCount(0);
   await expect(page.getByText('Trạng thái đã lưu: Chưa cho phép')).toBeVisible();
   expect(scenario.updates).toHaveLength(1);

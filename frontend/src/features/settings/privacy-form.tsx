@@ -27,7 +27,7 @@ export function PrivacyForm({ workspace, isOwner }: PrivacyFormProps) {
       <p className="settings-section__description" id="workspace-ai-description">
         Khi bật, câu hỏi và các đoạn trích liên quan từ tài liệu bạn có quyền truy cập có thể được gửi đến nhà cung cấp AI đám mây đang cấu hình để tạo câu trả lời. Quyền truy cập tài liệu vẫn được kiểm tra.
       </p>
-      {!isOwner && <p>Chỉ chủ workspace mới có thể thay đổi quyền xử lý bằng AI.</p>}
+      {!isOwner && <p>Chỉ chủ nhóm mới có thể thay đổi quyền xử lý bằng AI.</p>}
       <form className="settings-form" onSubmit={handleSave}>
         <label className="settings-form__label">
           <input type="checkbox" checked={cloudAllowed} aria-describedby="workspace-ai-description"

@@ -37,7 +37,7 @@ export const RefusalCard: React.FC<RefusalCardProps> = ({
         {isSystemFailure ? friendlyChatError({ code: refusalCode }).message : refusalReason ||
           (isClarify
             ? 'Câu hỏi chưa rõ ràng hoặc thiếu đối tượng so sánh. Vui lòng cung cấp thêm ngữ cảnh cụ thể.'
-            : knowledgeGap ? 'Tài liệu hiện có trong Workspace không chứa đủ thông tin để đưa ra câu trả lời có bằng chứng xác thực.'
+            : knowledgeGap ? 'Tài liệu hiện có trong nhóm không chứa đủ thông tin để đưa ra câu trả lời có bằng chứng xác thực.'
               : 'Chưa thể tạo câu trả lời đáng tin cậy. Vui lòng kiểm tra phạm vi câu hỏi hoặc thử lại.')}
       </div>
 

@@ -12,7 +12,7 @@
   padding: 14px 18px;
   border-radius: 20px;
   background: var(--muc);
-  color: var(--nen);
+  color: var(--tren-anh);
   box-shadow: 0 24px 48px rgb(15 23 42 / 38%), 0 2px 8px rgb(15 23 42 / 24%);
   animation: call-overlay-in 200ms cubic-bezier(0.2, 0.8, 0.3, 1);
 }

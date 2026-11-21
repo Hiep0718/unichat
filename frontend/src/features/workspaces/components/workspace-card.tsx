@@ -18,6 +18,7 @@
 import { Link } from 'react-router-dom';
 
 import { MemberFaces } from './member-faces';
+import { TopicChips } from './topic-chips';
 import { visibilityOption } from '../workspace-visibility';
 import { WorkspaceCover } from './workspace-cover';
 import { Icon } from '../../../components/icon';
@@ -36,12 +37,18 @@ interface WorkspaceCardProps {
   readonly recentPostCount: number;
   readonly faces: readonly WorkspaceFace[];
   readonly hasCover: boolean;
-  /** What the group is about, which decides its default picture. */
+  /** What the group is about: labelled on the card and decides its default picture. */
   readonly topics?: readonly string[] | undefined;
   readonly updatedAt: string;
   /** Index used for staggered entrance animation delay. */
   readonly animationIndex?: number;
 }
+
+/**
+ * Chips a card has room for. A group may carry three topics; the third would
+ * wrap onto a second row over the picture, and all three are on its own page.
+ */
+const CARD_TOPIC_LIMIT = 2;
 
 /**
  * Renders a single workspace card: picture behind, identity and activity over.
@@ -79,6 +86,10 @@ export function WorkspaceCard({
       </span>
 
       <div className="workspace-card__content">
+        {/* Above the title, not below: the content is anchored to the card's
+            foot, so a group with no topic simply has no chip row and its
+            title still lines up with its neighbours'. */}
+        <TopicChips topics={topics ?? []} compact max={CARD_TOPIC_LIMIT} />
         <h3 className="workspace-card__name">{name}</h3>
 
         <div className="workspace-card__foot">

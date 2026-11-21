@@ -3,9 +3,10 @@ import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-nati
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { UCIcon } from '../../../components/uc-icon';
-import { dock, radii, workplace } from '../../../design/tokens';
+import { dock, radii, workplace, palette } from '../../../design/tokens';
 import { GroupMark } from '../../workspaces/components/group-mark';
 import { canAsk } from '../assistant-home';
+import { fonts } from '../../../design/typography';
 
 import type { WorkspaceItem } from '../../workspaces/workspace-types';
 
@@ -91,7 +92,7 @@ function GroupRow({ workspace, selected, readiness, onPick }: GroupRowProps) {
       </View>
       {selected && (
         <View style={styles.check}>
-          <UCIcon name="check" size={16} color="#FFFFFF" />
+          <UCIcon name="check" size={16} color={palette.trenAnh} />
         </View>
       )}
     </Pressable>
@@ -109,16 +110,16 @@ const styles = StyleSheet.create({
   },
   handle: { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, backgroundColor: workplace.line },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 14 },
-  title: { color: workplace.ink, fontSize: 20, fontFamily: 'Inter_800ExtraBold' },
-  done: { color: dock.accent, fontSize: 15, fontFamily: 'Inter_700Bold' },
+  title: { color: workplace.ink, fontSize: 20, fontFamily: fonts.extrabold },
+  done: { color: dock.accent, fontSize: 15, fontFamily: fonts.bold },
   list: { paddingHorizontal: 12, paddingBottom: 8 },
-  section: { color: workplace.inkMuted, fontSize: 12, fontFamily: 'Inter_700Bold', letterSpacing: 0.4, marginTop: 10, marginBottom: 6, paddingHorizontal: 8 },
+  section: { color: workplace.inkMuted, fontSize: 12, fontFamily: fonts.bold, letterSpacing: 0.4, marginTop: 10, marginBottom: 6, paddingHorizontal: 8 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 10, borderRadius: radii.xl, borderWidth: 1.5, borderColor: 'transparent' },
-  rowSelected: { borderColor: dock.accent, backgroundColor: '#F5F7FF' },
+  rowSelected: { borderColor: dock.accent, backgroundColor: palette.nhanNhat },
   rowDisabled: { opacity: 0.45 },
   pressed: { backgroundColor: workplace.canvas },
   rowText: { flex: 1, minWidth: 0 },
-  rowName: { color: workplace.ink, fontSize: 15.5, fontFamily: 'Inter_700Bold' },
+  rowName: { color: workplace.ink, fontSize: 15.5, fontFamily: fonts.bold },
   rowSub: { color: workplace.inkMuted, fontSize: 13 },
   check: { width: 26, height: 26, borderRadius: 13, backgroundColor: dock.accent, alignItems: 'center', justifyContent: 'center' },
   empty: { color: workplace.inkMuted, textAlign: 'center', padding: 24, lineHeight: 20 },

@@ -3,6 +3,8 @@ import { StyleSheet, Text, View } from 'react-native';
 import { UCTabHero } from '../../../components/uc-tab-hero';
 
 import { MemberAvatar } from './member-avatar';
+import { palette } from '../../../design/tokens';
+import { fonts } from '../../../design/typography';
 
 import type { AvatarColorKey } from '../avatar-colours';
 
@@ -59,10 +61,10 @@ const styles = StyleSheet.create({
   avatarRing: { borderWidth: 2, borderColor: 'rgba(255,255,255,0.28)' },
   identityText: { flex: 1, marginLeft: 14 },
   name: {
-    color: '#FFFFFF',
-    fontFamily: 'Inter_700Bold',
+    color: palette.trenAnh,
+    fontFamily: fonts.bold,
     fontSize: 19,
     letterSpacing: -0.3,
   },
-  email: { color: 'rgba(226,232,248,0.66)', fontFamily: 'Inter_400Regular', fontSize: 12.5, marginTop: 3 },
+  email: { color: 'rgba(226,232,248,0.66)', fontFamily: fonts.regular, fontSize: 12.5, marginTop: 3 },
 });

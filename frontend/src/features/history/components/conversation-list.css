@@ -25,10 +25,10 @@
 
 .conversation-new-btn {
   padding: 8px 14px;
-  background: var(--color-primary);
-  color: var(--color-on-primary);
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-ink);
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: var(--btn-radius);
   font: var(--font-label-md);
   font-weight: 600;
   cursor: pointer;
@@ -80,4 +80,9 @@
 .conversation-item__delete:hover {
   background: var(--nen);
   border-radius: 4px;
+}
+
+.conversation-item__delete .material-symbols-outlined {
+  font-size: 16px;
+  vertical-align: middle;
 }

@@ -6,6 +6,7 @@ import { radii, workplace } from '../../../design/tokens';
 import { shadows } from '../../../design/shadows';
 import { GroupMark } from '../../workspaces/components/group-mark';
 import { historyTime } from '../assistant-home';
+import { fonts } from '../../../design/typography';
 
 import type { HistoryEntry, HistorySection } from '../assistant-home';
 
@@ -116,19 +117,19 @@ const styles = StyleSheet.create({
   wrap: { paddingHorizontal: 16, paddingTop: 20 },
   head: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 6 },
   headText: { flex: 1, minWidth: 0 },
-  title: { color: workplace.ink, fontSize: 22, fontFamily: 'Inter_800ExtraBold' },
+  title: { color: workplace.ink, fontSize: 22, fontFamily: fonts.extrabold },
   sub: { color: workplace.inkMuted, fontSize: 13 },
   scope: { paddingHorizontal: 14, paddingVertical: 9, borderRadius: radii.full, backgroundColor: workplace.card, ...shadows.card },
-  scopeText: { color: workplace.ink, fontSize: 13, fontFamily: 'Inter_700Bold' },
+  scopeText: { color: workplace.ink, fontSize: 13, fontFamily: fonts.bold },
   warn: { color: workplace.warnInk, fontSize: 12.5, marginVertical: 6 },
   section: { marginTop: 14 },
-  sectionTitle: { color: workplace.inkMuted, fontSize: 12, fontFamily: 'Inter_700Bold', letterSpacing: 0.4, marginBottom: 8 },
+  sectionTitle: { color: workplace.inkMuted, fontSize: 12, fontFamily: fonts.bold, letterSpacing: 0.4, marginBottom: 8 },
   card: { borderRadius: radii.xl, backgroundColor: workplace.card, ...shadows.card },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14, paddingVertical: 14 },
   rowDivider: { borderTopWidth: 1, borderTopColor: workplace.line },
   pressed: { backgroundColor: workplace.canvas },
   rowText: { flex: 1, minWidth: 0, gap: 2 },
-  rowTitle: { color: workplace.ink, fontSize: 15.5, fontFamily: 'Inter_700Bold' },
+  rowTitle: { color: workplace.ink, fontSize: 15.5, fontFamily: fonts.bold },
   rowSub: { color: workplace.inkMuted, fontSize: 12.5 },
   state: { alignItems: 'center', gap: 10, paddingVertical: 36, paddingHorizontal: 24 },
   stateText: { color: workplace.inkMuted, fontSize: 14, textAlign: 'center', lineHeight: 20 },

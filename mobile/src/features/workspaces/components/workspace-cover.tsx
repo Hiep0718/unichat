@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { defaultCoverFor } from '../default-covers';
 import { groupThemeFor } from '../group-theme';
 import { topicCoverFor } from '../topic-covers';
+import { fonts } from '../../../design/typography';
 
 interface WorkspaceCoverProps {
   workspaceId: string;
@@ -93,6 +94,6 @@ const styles = StyleSheet.create({
     lineHeight: 132,
     letterSpacing: -5,
     color: 'rgba(255, 255, 255, 0.14)',
-    fontFamily: 'Inter_700Bold',
+    fontFamily: fonts.bold,
   },
 });

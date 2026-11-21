@@ -104,7 +104,7 @@ export const KnowledgeStudio: React.FC<KnowledgeStudioProps> = ({
                   <span className="material-symbols-outlined">podcasts</span>
                 </div>
                 <div className="unichat-action-row__text">
-                  <div className="unichat-action-row__title">Tổng quan Âm thanh (Podcast)</div>
+                  <div className="unichat-action-row__title">Tổng quan âm thanh (podcast)</div>
                   <div className="unichat-action-row__desc">Nghe hội thoại 2 MC tóm tắt tài liệu</div>
                 </div>
                 <span className="material-symbols-outlined unichat-action-row__chevron">chevron_right</span>
@@ -120,7 +120,7 @@ export const KnowledgeStudio: React.FC<KnowledgeStudioProps> = ({
                   <span className="material-symbols-outlined">style</span>
                 </div>
                 <div className="unichat-action-row__text">
-                  <div className="unichat-action-row__title">Thẻ Ghi Nhớ Khái Niệm</div>
+                  <div className="unichat-action-row__title">Thẻ ghi nhớ khái niệm</div>
                   <div className="unichat-action-row__desc">Bộ thẻ lật 2 mặt giúp ghi nhớ kiến thức</div>
                 </div>
                 <span className="material-symbols-outlined unichat-action-row__chevron">chevron_right</span>
@@ -136,7 +136,7 @@ export const KnowledgeStudio: React.FC<KnowledgeStudioProps> = ({
                   <span className="material-symbols-outlined">quiz</span>
                 </div>
                 <div className="unichat-action-row__text">
-                  <div className="unichat-action-row__title">Kiểm Tra Trắc Nghiệm</div>
+                  <div className="unichat-action-row__title">Kiểm tra trắc nghiệm</div>
                   <div className="unichat-action-row__desc">Bài test 5 câu có đáp án & giải thích</div>
                 </div>
                 <span className="material-symbols-outlined unichat-action-row__chevron">chevron_right</span>
@@ -152,7 +152,7 @@ export const KnowledgeStudio: React.FC<KnowledgeStudioProps> = ({
                   <span className="material-symbols-outlined">schema</span>
                 </div>
                 <div className="unichat-action-row__text">
-                  <div className="unichat-action-row__title">Sơ Đồ Tư Duy (Mindmap)</div>
+                  <div className="unichat-action-row__title">Sơ đồ tư duy</div>
                   <div className="unichat-action-row__desc">Kết xuất sơ đồ Mermaid trực quan</div>
                 </div>
                 <span className="material-symbols-outlined unichat-action-row__chevron">chevron_right</span>
@@ -168,7 +168,7 @@ export const KnowledgeStudio: React.FC<KnowledgeStudioProps> = ({
                   <span className="material-symbols-outlined">present_to_all</span>
                 </div>
                 <div className="unichat-action-row__text">
-                  <div className="unichat-action-row__title">Kịch Bản Slide Thuyết Trình</div>
+                  <div className="unichat-action-row__title">Kịch bản slide thuyết trình</div>
                   <div className="unichat-action-row__desc">Tóm tắt cấu trúc slide báo cáo</div>
                 </div>
                 <span className="material-symbols-outlined unichat-action-row__chevron">chevron_right</span>
@@ -184,7 +184,7 @@ export const KnowledgeStudio: React.FC<KnowledgeStudioProps> = ({
                   <span className="material-symbols-outlined">description</span>
                 </div>
                 <div className="unichat-action-row__text">
-                  <div className="unichat-action-row__title">Báo Cáo Tổng Hợp Tri Thức</div>
+                  <div className="unichat-action-row__title">Báo cáo tổng hợp tri thức</div>
                   <div className="unichat-action-row__desc">Báo cáo học thuật chi tiết kèm trích dẫn</div>
                 </div>
                 <span className="material-symbols-outlined unichat-action-row__chevron">chevron_right</span>
@@ -202,7 +202,7 @@ export const KnowledgeStudio: React.FC<KnowledgeStudioProps> = ({
             {savedNotes.length === 0 ? (
               <div className="unichat-notes-empty">
                 <span className="material-symbols-outlined">bookmark_border</span>
-                <p>Chưa có ghi chú nào. Hãy nhấp chọn các công cụ ở trên và bấm <strong>📌 Lưu vào Sổ Ghi Chú</strong> để lưu trữ kết quả.</p>
+                <p>Chưa có ghi chú nào. Hãy nhấp chọn các công cụ ở trên và bấm <strong>Lưu vào sổ ghi chú</strong> để lưu trữ kết quả.</p>
               </div>
             ) : (
               <div className="unichat-notes-list">

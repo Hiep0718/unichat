@@ -18,7 +18,7 @@ const SMALL = [
   },
   {
     icon: 'grid_view',
-    title: 'Workspace cho từng môn học',
+    title: 'Nhóm cho từng môn học',
     body: 'Gom tài liệu của mỗi môn vào một không gian riêng, để câu trả lời luôn đúng phạm vi bạn đang học.',
   },
 ] as const;
@@ -77,7 +77,7 @@ export function FeaturesSection() {
             </span>
             <h3 className="feat__title">Học nhóm dễ dàng</h3>
             <p className="feat__body">
-              Chia sẻ Workspace với bạn cùng lớp hoặc nhóm nghiên cứu, cùng hỏi
+              Mời bạn cùng lớp hoặc cả nhóm nghiên cứu vào nhóm, cùng hỏi
               đáp trên một bộ tài liệu.
             </p>
           </article>
@@ -89,7 +89,7 @@ export function FeaturesSection() {
               </span>
               <h3 className="feat__title">Tài liệu của bạn là của bạn</h3>
               <p className="feat__body">
-                Bạn chọn Workspace nào riêng tư, chia sẻ hay công khai. Dữ liệu
+                Bạn chọn nhóm nào riêng tư, chia sẻ hay công khai. Dữ liệu
                 của bạn được bảo mật.
               </p>
             </div>

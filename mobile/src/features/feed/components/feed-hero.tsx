@@ -3,6 +3,8 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { UCIcon } from '../../../components/uc-icon';
 import { UCTabHero, heroButtonStyle } from '../../../components/uc-tab-hero';
+import { palette, radii } from '../../../design/tokens';
+import { fonts } from '../../../design/typography';
 
 import type { IconName } from '../../../components/uc-icon';
 import type { FeedFilter, FeedStats } from '../feed-types';
@@ -24,7 +26,12 @@ interface StatTileProps {
   readonly testID: string;
 }
 
-/** Một ô số liệu mờ trên nền tối; bấm để chuyển sang bộ lọc tương ứng. */
+/**
+ * Một ô số liệu mờ trên nền tối; bấm để chuyển sang bộ lọc tương ứng.
+ *
+ * Icon tô màu trên nền mờ thay vì đặt chữ trắng lên ô màu đặc: màu nhấn và
+ * màu cảnh báo dùng bản sắc sáng của chế độ tối web, vì dải này luôn tối.
+ */
 function StatTile({ icon, value, label, accent, selected, onPress, testID }: StatTileProps) {
   return (
     <Pressable
@@ -35,8 +42,8 @@ function StatTile({ icon, value, label, accent, selected, onPress, testID }: Sta
       accessibilityLabel={`${value ?? 'Đang tải'} ${label}`}
       testID={testID}
     >
-      <View style={[styles.tileIcon, { backgroundColor: accent }]}>
-        <UCIcon name={icon} size={16} color="#FFFFFF" />
+      <View style={styles.tileIcon}>
+        <UCIcon name={icon} size={17} color={accent} />
       </View>
       <View style={styles.tileText}>
         <Text style={styles.tileValue}>{value ?? '—'}</Text>
@@ -68,7 +75,7 @@ export function FeedHero({ stats, active, onSelect }: FeedHeroProps) {
           accessibilityLabel={saved ? 'Quay lại bài mới nhất' : 'Xem bài đã lưu'}
           testID="feed-hero-saved"
         >
-          <UCIcon name={saved ? 'bookmark' : 'bookmark-border'} size={21} color="#FFFFFF" />
+          <UCIcon name={saved ? 'bookmark' : 'bookmark-border'} size={21} color={palette.trenAnh} />
         </Pressable>
       }
     >
@@ -77,7 +84,7 @@ export function FeedHero({ stats, active, onSelect }: FeedHeroProps) {
           icon="help-outline"
           value={stats?.unansweredCount}
           label="chưa giải đáp"
-          accent="#F59E0B"
+          accent={palette.rayCanhBao}
           selected={active === 'UNANSWERED'}
           onPress={() => onSelect('UNANSWERED')}
           testID="feed-stat-unanswered"
@@ -86,7 +93,7 @@ export function FeedHero({ stats, active, onSelect }: FeedHeroProps) {
           icon="forum"
           value={stats?.totalPosts}
           label="bài viết"
-          accent="#3346F5"
+          accent={palette.rayNhan}
           selected={active === 'NEW'}
           onPress={() => onSelect('NEW')}
           testID="feed-stat-posts"
@@ -105,16 +112,18 @@ const styles = StyleSheet.create({
     gap: 10,
     paddingHorizontal: 12,
     paddingVertical: 11,
-    borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderRadius: radii.xl,
+    // Nền đặc như ô KPI ở dải chào của web (`--dai-o`): nền trong suốt để thứ
+    // phía sau xuyên qua, nên độ tương phản của chữ đổi theo từng điểm.
+    backgroundColor: palette.rayNoi,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.12)',
   },
-  tileSelected: { backgroundColor: 'rgba(255,255,255,0.16)', borderColor: 'rgba(255,255,255,0.4)' },
-  tileIcon: { width: 32, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  tileSelected: { borderColor: palette.rayNhan },
+  tileIcon: { width: 32, height: 32, borderRadius: radii.full, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.10)' },
   tileText: { flex: 1, minWidth: 0 },
-  tileValue: { color: '#FFFFFF', fontSize: 20, fontFamily: 'Inter_800ExtraBold', letterSpacing: -0.3 },
-  tileLabel: { color: 'rgba(226,232,248,0.72)', fontSize: 12.5 },
+  tileValue: { color: palette.rayMuc, fontSize: 20, fontFamily: fonts.bold, letterSpacing: -0.3 },
+  tileLabel: { color: palette.rayMucNhat, fontFamily: fonts.regular, fontSize: 12.5 },
   savedOn: { backgroundColor: 'rgba(255,255,255,0.28)', borderColor: 'rgba(255,255,255,0.5)' },
   pressed: { opacity: 0.75 },
 });

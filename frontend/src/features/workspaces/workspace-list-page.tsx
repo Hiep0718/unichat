@@ -6,6 +6,7 @@
 import { useCallback, useMemo, useState } from 'react';
 
 import { Icon } from '../../components/icon';
+import { SelectMenu } from '../../components/select-menu';
 import { WelcomeBanner } from './components/welcome-banner';
 import { WorkspaceCard } from './components/workspace-card';
 import { WorkspaceForm } from './components/workspace-form';
@@ -14,12 +15,19 @@ import { ExploreTab } from './components/explore-tab';
 import { useWorkspaces } from './workspace-hooks';
 import { VISIBILITY_OPTIONS } from './workspace-visibility';
 
+import type { SelectMenuOption } from '../../components/select-menu';
 import type { WorkspaceVisibility } from './workspace-schema';
 
 import './workspace-list-page.css';
 
 type FilterOption = 'ALL' | WorkspaceVisibility;
 type SortOption = 'UPDATED_DESC' | 'CREATED_DESC' | 'NAME_ASC';
+
+const SORT_OPTIONS: readonly SelectMenuOption<SortOption>[] = [
+  { value: 'UPDATED_DESC', label: 'Mới cập nhật' },
+  { value: 'CREATED_DESC', label: 'Mới tạo' },
+  { value: 'NAME_ASC', label: 'Tên (A-Z)' },
+];
 type ViewMode = 'GRID' | 'LIST';
 
 const FILTER_OPTIONS: readonly { value: FilterOption; label: string }[] = [
@@ -91,7 +99,7 @@ function WorkspaceListPage() {
             onClick={() => setActiveTab('MY_WORKSPACES')}
           >
             <Icon name="folder" size={18} rounded />
-            Không gian của tôi
+            Nhóm của tôi
           </button>
           <button
             className={`dashboard-tab ${activeTab === 'EXPLORE' ? 'dashboard-tab--active' : ''}`}
@@ -156,7 +164,7 @@ function RecentSection({ workspaces }: RecentSectionProps) {
           <Icon name="bolt" size={20} />
           Truy cập nhanh
         </h3>
-        <p className="recent-section__sub">Các workspace bạn mở gần đây</p>
+        <p className="recent-section__sub">Các nhóm bạn mở gần đây</p>
       </div>
       <div className="recent-section__grid">
         {workspaces.map((ws, i) => (
@@ -221,7 +229,7 @@ function AllWorkspacesSection({
       <div className="all-workspaces-section__header">
         <h3 className="all-workspaces-section__title">
           <Icon name="folder" size={20} />
-          Tất cả Workspace
+          Tất cả nhóm
           <span className="all-workspaces-section__count">{filteredWorkspaces.length}</span>
         </h3>
         <button
@@ -230,7 +238,7 @@ function AllWorkspacesSection({
           onClick={onCreateClick}
         >
           <Icon name="add" size={18} />
-          Tạo Workspace
+          Tạo nhóm
         </button>
       </div>
 
@@ -261,24 +269,20 @@ function AllWorkspacesSection({
           </div>
 
           <div className="workspace-actions-group">
-            <div className="workspace-sort">
-              <Icon name="sort" size={18} />
-              <select 
-                className="workspace-sort__select" 
-                value={sortBy} 
-                onChange={(e) => onSortChange(e.target.value as SortOption)}
-              >
-                <option value="UPDATED_DESC">Mới cập nhật</option>
-                <option value="CREATED_DESC">Mới tạo</option>
-                <option value="NAME_ASC">Tên (A-Z)</option>
-              </select>
-            </div>
+            <SelectMenu
+              className="workspace-sort"
+              icon="sort"
+              label="Sắp xếp nhóm"
+              value={sortBy}
+              options={SORT_OPTIONS}
+              onChange={onSortChange}
+            />
 
             <div className="workspace-view-toggle">
               <button
                 className={`view-toggle-btn ${viewMode === 'GRID' ? 'view-toggle-btn--active' : ''}`}
                 type="button"
-                aria-label="Grid view"
+                aria-label="Xem dạng lưới"
                 onClick={() => onViewModeChange('GRID')}
               >
                 <Icon name="grid_view" size={18} />
@@ -286,7 +290,7 @@ function AllWorkspacesSection({
               <button
                 className={`view-toggle-btn ${viewMode === 'LIST' ? 'view-toggle-btn--active' : ''}`}
                 type="button"
-                aria-label="List view"
+                aria-label="Xem dạng danh sách"
                 onClick={() => onViewModeChange('LIST')}
               >
                 <Icon name="view_list" size={18} />
@@ -342,7 +346,7 @@ function AllWorkspacesSection({
               <span className="workspace-new-tile__plus">
                 <Icon name="add" size={22} rounded />
               </span>
-              Tạo workspace mới
+              Tạo nhóm mới
             </button>
           </div>
         )}
@@ -380,7 +384,7 @@ function EmptyState({ hasFilters, onCreateClick }: EmptyStateProps) {
     <div className="workspace-empty">
       <Icon name="folder_open" size={48} />
       <h3 className="workspace-empty__title">
-        {hasFilters ? 'Không tìm thấy workspace' : 'Chưa có workspace nào'}
+        {hasFilters ? 'Không tìm thấy nhóm' : 'Chưa có nhóm nào'}
       </h3>
       <p className="workspace-empty__desc">
         {hasFilters
@@ -390,7 +394,7 @@ function EmptyState({ hasFilters, onCreateClick }: EmptyStateProps) {
       {!hasFilters && (
         <button className="workspace-empty__action" type="button" onClick={onCreateClick}>
           <Icon name="add" size={18} />
-          Tạo Workspace
+          Tạo nhóm
         </button>
       )}
     </div>

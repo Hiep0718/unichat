@@ -32,8 +32,14 @@ export function useAiReplyWatch(
   // from a ref rather than from a captured value.
   const leftPage = useRef(false);
 
-  useEffect(() => () => {
-    leftPage.current = true;
+  // Cleared again on every mount: React's StrictMode mounts, unmounts and
+  // remounts each component in development, and a flag set by that rehearsal
+  // would stop the first poll before it ever looked for the answer.
+  useEffect(() => {
+    leftPage.current = false;
+    return () => {
+      leftPage.current = true;
+    };
   }, []);
 
   const watch = (triggerReplyId: string) => {

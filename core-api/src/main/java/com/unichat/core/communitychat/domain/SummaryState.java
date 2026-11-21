@@ -12,14 +12,15 @@ public enum SummaryState {
     NOT_APPLICABLE,
 
     /**
-     * Waiting on the document. A member's contribution also waits here for an
-     * owner to approve it, since nothing is ingested before that.
+     * No summary yet. A member asks for one from the post; until the document
+     * is processed (or, for a member's contribution, approved by an owner) the
+     * request is refused with a reason. Also the state while one is produced.
      */
     PENDING,
 
     /** Summarised; {@code aiSummary} holds the text. */
     READY,
 
-    /** Ingestion failed, or the assistant could not summarise the document. */
+    /** The last attempt produced no summary; a member may ask again. */
     UNAVAILABLE
 }

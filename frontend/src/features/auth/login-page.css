@@ -177,7 +177,7 @@
   border-radius: 4px 18px 18px 18px;
   /* Tờ giấy trắng: câu trả lời là thứ người ta đọc, nên nó đứng trên giấy. */
   background: #ffffff;
-  color: var(--muc);
+  color: var(--tren-giay);
 }
 
 .login-demo__text {
@@ -202,9 +202,9 @@
   gap: 6px;
   padding: 4px 10px;
   border-radius: var(--radius-full);
-  background: var(--be-mat);
+  background: var(--tren-giay-ke);
   font: var(--font-label-sm);
-  color: var(--muc-nhat);
+  color: var(--tren-giay-nhat);
 }
 
 .login-demo__source::before {

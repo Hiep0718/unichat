@@ -1,4 +1,5 @@
-/* Workspace Overview Page Styling — Academic RAG SaaS Grade */
+/* Trang tổng quan nhóm. Chỉ dùng token: dải đầu là "thẻ nổi bật" xanh đậm
+   cố định ở cả hai chế độ, phần còn lại theo nền, viền và chữ của trang. */
 
 .ws-overview-container {
   max-width: 1160px;
@@ -6,149 +7,109 @@
   padding: 36px 40px;
   display: flex;
   flex-direction: column;
-  gap: 32px;
-  animation: msg-fade-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  gap: 28px;
 }
 
-/* ── Hero Header Banner ── */
+/* ── Dải đầu ── */
 .ws-overview-hero {
-  position: relative;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 24px;
   padding: 32px 36px;
-  background: var(--muc);
-  border-radius: var(--radius-2xl, 20px);
-  color: var(--nen);
-  overflow: hidden;
-}
-
-.ws-overview-hero::before {
-  content: '';
-  position: absolute;
-  top: -80px;
-  right: -80px;
-  width: 260px;
-  height: 260px;
-  background: radial-gradient(circle, rgba(2, 132, 199, 0.3) 0%, rgba(0, 0, 0, 0) 70%);
-  border-radius: 50%;
-  pointer-events: none;
+  border-radius: var(--radius-2xl);
+  background: var(--noi-bat-nen);
+  color: var(--noi-bat-muc);
 }
 
 .ws-overview-hero__left {
   display: flex;
   align-items: flex-start;
   gap: 20px;
-  z-index: 1;
+  min-width: 0;
 }
 
 .ws-overview-hero__icon-box {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
   width: 60px;
   height: 60px;
-  border-radius: var(--radius-xl, 16px);
-  background: var(--muc);
-  color: var(--nen);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  border-radius: var(--radius-xl);
+  background: rgb(255 255 255 / 12%);
+  color: var(--tren-anh);
 }
 
 .ws-overview-hero__meta {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  min-width: 0;
 }
 
 .ws-overview-hero__title-row {
   display: flex;
   align-items: center;
-  gap: 12px;
   flex-wrap: wrap;
+  gap: 10px;
 }
 
 .ws-overview-hero__title {
-  font: var(--font-headline-lg);
-  font-size: 26px;
-  font-weight: 800;
-  color: var(--nen);
   margin: 0;
-  letter-spacing: -0.4px;
+  font: var(--font-page-title);
+  letter-spacing: var(--letter-spacing-page-title);
+  color: var(--tren-anh);
 }
 
 .ws-overview-badge {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 4px 12px;
-  border-radius: var(--radius-full, 9999px);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.2px;
-}
-
-.ws-overview-badge--public {
-  background: rgba(56, 189, 248, 0.16);
-  color: var(--muc);
-  border: 1px solid rgba(56, 189, 248, 0.3);
-}
-
-.ws-overview-badge--shared {
-  background: rgba(251, 191, 36, 0.16);
-  color: var(--ws-warn-ink);
-  border: 1px solid rgba(251, 191, 36, 0.3);
-}
-
-.ws-overview-badge--private {
-  background: rgba(148, 163, 184, 0.16);
-  color: var(--dieu-khien);
-  border: 1px solid rgba(148, 163, 184, 0.3);
-}
-
-.ws-overview-badge--role {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--color-surface-dim);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: var(--radius-md, 8px);
+  padding: 3px 10px;
+  border: 1px solid var(--tren-anh-vien);
+  border-radius: var(--radius-full);
+  background: rgb(255 255 255 / 10%);
+  color: var(--tren-anh);
+  font: var(--font-label-sm);
+  font-weight: 600;
 }
 
 .ws-overview-hero__desc {
-  font-size: 14px;
-  color: var(--muc-mo);
+  max-width: 62ch;
   margin: 0;
+  font: var(--font-body-md);
   line-height: 1.6;
-  max-width: 620px;
+  color: var(--tren-anh-nhat);
 }
 
+/* Nút phụ đặt trên nền tối: viền sáng, cùng bo viên thuốc với mọi nút khác. */
 .ws-overview-hero__settings-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 18px;
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--nen);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: var(--radius-lg, 12px);
+  flex-shrink: 0;
+  padding: 9px 16px;
+  border: 1px solid var(--tren-anh-vien);
+  border-radius: var(--btn-radius);
+  color: var(--tren-anh);
   font: var(--font-label-md);
-  font-size: 13px;
-  font-weight: 700;
-  text-decoration: none;
-  backdrop-filter: blur(8px);
-  transition: all 0.2s ease;
-  z-index: 1;
   white-space: nowrap;
+  transition: background var(--transition-fast);
 }
 
 .ws-overview-hero__settings-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px);
+  background: rgb(255 255 255 / 12%);
 }
 
-/* ── Stats Summary Bar ── */
+.ws-overview-hero__settings-btn:focus-visible {
+  outline: 2px solid var(--tren-anh);
+  outline-offset: 2px;
+}
+
+/* ── Số liệu ── */
 .ws-overview-stats-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
 }
 
@@ -157,21 +118,20 @@
   align-items: center;
   gap: 14px;
   padding: 16px 20px;
+  border: 1px solid var(--vien);
+  border-radius: var(--radius-xl);
   background: var(--nen);
-  border: 1.5px solid var(--color-outline-variant, var(--ke));
-  border-radius: var(--radius-xl, 14px);
 }
 
 .ws-overview-stat-card__icon-box {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
   width: 42px;
   height: 42px;
-  border-radius: var(--radius-lg, 12px);
-  background: var(--color-surface-container-low, var(--color-surface-dim));
-  color: var(--color-secondary, var(--muc));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  border-radius: var(--radius-lg);
+  background: var(--nhan-nhat);
+  color: var(--nhan);
 }
 
 .ws-overview-stat-card__info {
@@ -181,20 +141,20 @@
 }
 
 .ws-overview-stat-card__value {
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--color-on-surface, var(--muc));
+  font: var(--font-headline-md);
+  font-size: 20px;
+  color: var(--muc);
 }
 
 .ws-overview-stat-card__label {
-  font-size: 12px;
-  color: var(--color-on-surface-variant, var(--muc-nhat));
+  font: var(--font-label-sm);
+  color: var(--muc-nhat);
 }
 
-/* ── Main Feature Hubs Grid ── */
+/* ── Ba lối vào ── */
 .ws-overview-hubs-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 20px;
 }
 
@@ -203,35 +163,38 @@
   flex-direction: column;
   justify-content: space-between;
   gap: 20px;
-  padding: 26px 28px;
-  border-radius: var(--radius-2xl, 18px);
-  text-decoration: none;
-  transition: all var(--transition-medium, 0.2s ease);
-  position: relative;
-  overflow: hidden;
+  padding: 24px 26px;
+  border: 1px solid var(--vien);
+  border-radius: var(--radius-2xl);
+  background: var(--nen);
+  color: var(--muc);
+  transition: border-color var(--transition-fast), background var(--transition-fast);
 }
 
-/* Primary AI Hub Card */
+.ws-hub-card:hover {
+  border-color: var(--dieu-khien);
+}
+
+.ws-hub-card:focus-visible {
+  outline: 2px solid var(--nhan);
+  outline-offset: 2px;
+}
+
 .ws-hub-card--primary {
-  background: var(--nhan);
-  color: var(--nhan-muc);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-color: transparent;
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-ink);
 }
 
 .ws-hub-card--primary:hover {
-  transform: translateY(-4px);
+  border-color: transparent;
+  background: var(--btn-primary-bg-hover);
 }
 
-/* Secondary Hub Cards */
-.ws-hub-card--secondary {
-  background: var(--nen);
-  border: 1.5px solid var(--color-outline-variant, var(--ke));
-  color: var(--color-on-surface, var(--muc));
-}
-
-.ws-hub-card--secondary:hover {
-  border-color: var(--color-secondary, var(--muc));
-  transform: translateY(-4px);
+.ws-hub-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 .ws-hub-card__header {
@@ -241,93 +204,63 @@
 }
 
 .ws-hub-card__icon-box {
-  width: 48px;
-  height: 48px;
-  border-radius: var(--radius-xl, 14px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  place-items: center;
   flex-shrink: 0;
-}
-
-.ws-hub-card--primary .ws-hub-card__icon-box {
-  background: rgba(255, 255, 255, 0.2);
-  color: var(--nen);
-}
-
-.ws-hub-card--secondary .ws-hub-card__icon-box {
+  width: 46px;
+  height: 46px;
+  border-radius: var(--radius-xl);
   background: var(--be-mat);
   color: var(--muc);
 }
 
+.ws-hub-card--primary .ws-hub-card__icon-box {
+  background: color-mix(in srgb, var(--btn-primary-ink) 16%, transparent);
+  color: var(--btn-primary-ink);
+}
+
 .ws-hub-card__title {
-  font: var(--font-headline-md);
-  font-size: 18px;
-  font-weight: 800;
   margin: 0;
-  letter-spacing: -0.2px;
-}
-
-.ws-hub-card--primary .ws-hub-card__title {
-  color: var(--nen);
-}
-
-.ws-hub-card--secondary .ws-hub-card__title {
-  color: var(--muc);
+  font: var(--font-headline-md);
+  font-size: 17px;
 }
 
 .ws-hub-card__desc {
-  font: var(--font-body-md);
-  font-size: 13.5px;
-  line-height: 1.65;
   margin: 0;
-}
-
-.ws-hub-card--primary .ws-hub-card__desc {
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.ws-hub-card--secondary .ws-hub-card__desc {
+  font: var(--font-body-md);
+  line-height: 1.6;
   color: var(--muc-nhat);
 }
 
+.ws-hub-card--primary .ws-hub-card__desc {
+  color: color-mix(in srgb, var(--btn-primary-ink) 86%, transparent);
+}
+
 .ws-hub-card__footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   padding-top: 14px;
-  border-top: 1px solid rgba(226, 232, 240, 0.6);
+  border-top: 1px solid var(--ke);
 }
 
 .ws-hub-card--primary .ws-hub-card__footer {
-  border-top-color: rgba(255, 255, 255, 0.2);
+  border-top-color: color-mix(in srgb, var(--btn-primary-ink) 22%, transparent);
 }
 
 .ws-hub-card__action-text {
-  font-size: 13px;
-  font-weight: 700;
   display: flex;
   align-items: center;
   gap: 6px;
+  font: var(--font-label-md);
 }
 
-.ws-hub-card--primary .ws-hub-card__action-text {
-  color: var(--nen);
-}
-
-.ws-hub-card--secondary .ws-hub-card__action-text {
-  color: var(--muc);
-}
-
-/* ── Security & Policy Section ── */
+/* ── Phân quyền ── */
 .ws-overview-security-card {
-  background: var(--nen);
-  border: 1.5px solid var(--color-outline-variant, var(--ke));
-  border-radius: var(--radius-2xl, 18px);
-  padding: 28px 32px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 18px;
+  padding: 26px 30px;
+  border: 1px solid var(--vien);
+  border-radius: var(--radius-2xl);
+  background: var(--nen);
 }
 
 .ws-overview-security-card__header {
@@ -337,26 +270,24 @@
 }
 
 .ws-overview-security-card__icon-box {
+  display: grid;
+  place-items: center;
   width: 40px;
   height: 40px;
-  border-radius: var(--radius-lg, 12px);
-  background: var(--nen);
-  color: var(--ws-ok-ink);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border-radius: var(--radius-lg);
+  background: var(--pill-tot-nen);
+  color: var(--pill-tot-muc);
 }
 
 .ws-overview-security-card__title {
-  font-size: 16px;
-  font-weight: 800;
-  color: var(--muc);
   margin: 0;
+  font: var(--font-headline-md);
+  color: var(--muc);
 }
 
 .ws-overview-security-list {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
 }
 
@@ -365,21 +296,40 @@
   align-items: flex-start;
   gap: 10px;
   padding: 14px 16px;
-  background: var(--color-surface-container-low, var(--nen));
-  border: 1px solid var(--color-outline-variant, var(--ke));
-  border-radius: var(--radius-lg, 12px);
+  border: 1px solid var(--ke);
+  border-radius: var(--radius-lg);
+  background: var(--be-mat);
 }
 
 .ws-security-item__icon {
-  color: var(--ws-ok-ink);
-  font-size: 20px;
   flex-shrink: 0;
   margin-top: 1px;
+  color: var(--tot);
 }
 
 .ws-security-item__text {
-  font-size: 13px;
-  color: var(--muc-nhat);
-  line-height: 1.5;
   margin: 0;
+  font: var(--font-body-sm);
+  line-height: 1.5;
+  color: var(--muc-nhat);
+}
+
+@media (max-width: 960px) {
+  .ws-overview-container {
+    padding: 24px 16px;
+  }
+
+  .ws-overview-hero {
+    flex-direction: column;
+    padding: 24px;
+  }
+
+  .ws-overview-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ws-overview-hubs-grid,
+  .ws-overview-security-list {
+    grid-template-columns: 1fr;
+  }
 }

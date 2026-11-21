@@ -32,7 +32,7 @@ export function LoadingProvider({ children }: LoadingProviderProps) {
         {children}
       </div>
       <LoadingScreenView
-        message={activeRequest?.message ?? 'Đang tải thông tin Workspace...'}
+        message={activeRequest?.message ?? 'Đang tải thông tin nhóm...'}
         brandTitle={activeRequest?.brandTitle ?? 'UniChat AI Platform'}
         fullScreen visible={Boolean(activeRequest)}
       />

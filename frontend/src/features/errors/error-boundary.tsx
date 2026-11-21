@@ -1,5 +1,7 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
 
+import { ErrorState } from './error-state';
+
 interface Props {
   readonly children: ReactNode;
 }
@@ -30,18 +32,17 @@ export class ErrorBoundary extends Component<Props, State> {
   render(): ReactNode {
     if (this.state.hasError) {
       return (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', fontFamily: 'var(--font-primary)' }}>
-          <h2 style={{ color: 'var(--color-danger)' }}>Đã xảy ra lỗi không mong muốn</h2>
-          <p style={{ color: 'var(--color-text-secondary)', marginBottom: '24px' }}>
-            Vui lòng tải lại trang hoặc liên hệ hỗ trợ.
-          </p>
-          <button 
-            style={{ padding: '8px 16px', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-            onClick={() => window.location.reload()}
-          >
-            Tải lại
-          </button>
-        </div>
+        <ErrorState
+          icon="error"
+          tone="danger"
+          title="Đã xảy ra lỗi không mong muốn"
+          description="Vui lòng tải lại trang hoặc liên hệ hỗ trợ."
+          action={
+            <button type="button" className="error-state__action" onClick={() => window.location.reload()}>
+              Tải lại
+            </button>
+          }
+        />
       );
     }
     return this.props.children;

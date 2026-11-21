@@ -53,7 +53,7 @@
   color: var(--color-on-surface-variant);
   background: transparent;
   border: none;
-  border-radius: var(--radius-default);
+  border-radius: var(--btn-radius);
   cursor: pointer;
   transition: color var(--transition-fast), background var(--transition-fast);
 }
@@ -100,23 +100,6 @@
   border-color: var(--color-error);
 }
 
-.invite-modal__select {
-  padding: 10px 12px;
-  font: var(--font-body-md);
-  color: var(--color-on-surface);
-  background: var(--ws-chip, var(--color-surface-dim));
-  border: none;
-  border-radius: 10px;
-  outline: none;
-  cursor: pointer;
-  transition: border-color var(--transition-fast);
-}
-
-.invite-modal__select:focus {
-  border-color: var(--color-secondary);
-  box-shadow: 0 0 0 2px rgba(0, 104, 122, 0.15);
-}
-
 .invite-modal__error {
   font: var(--font-label-sm);
   color: var(--color-error);
@@ -133,16 +116,16 @@
 .invite-modal__cancel-btn {
   padding: 8px 16px;
   font: var(--font-label-md);
-  color: var(--color-on-surface);
-  background: var(--ws-chip, var(--color-surface-dim));
-  border: none;
-  border-radius: 10px;
+  color: var(--btn-secondary-ink);
+  background: var(--btn-secondary-bg);
+  border: 1px solid var(--btn-secondary-border);
+  border-radius: var(--btn-radius);
   cursor: pointer;
   transition: background var(--transition-fast);
 }
 
 .invite-modal__cancel-btn:hover {
-  background: var(--color-surface-container-low);
+  background: var(--btn-secondary-bg-hover);
 }
 
 .invite-modal__submit-btn {
@@ -151,16 +134,17 @@
   gap: 6px;
   padding: 8px 20px;
   font: var(--font-label-md);
-  color: var(--color-on-primary);
-  background: var(--color-primary);
+  color: var(--btn-primary-ink);
+  background: var(--btn-primary-bg);
   border: none;
-  border-radius: var(--radius-default);
+  border-radius: var(--btn-radius);
   cursor: pointer;
   transition: opacity var(--transition-fast);
 }
 
 .invite-modal__submit-btn:hover:not(:disabled) {
   opacity: 0.9;
+  background: var(--btn-primary-bg-hover);
 }
 
 .invite-modal__submit-btn:disabled {

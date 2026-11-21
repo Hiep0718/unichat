@@ -29,7 +29,7 @@ export function DocumentToast({ notice, onClose }: DocumentToastProps) {
       role={notice.type === 'error' ? 'alert' : 'status'}
     >
       <div className={`doc-toast__icon doc-toast__icon--${notice.type}`} aria-hidden="true">
-        {notice.type === 'success' ? '✓' : '✕'}
+        <span className="material-symbols-outlined">{notice.type === 'success' ? 'check' : 'close'}</span>
       </div>
       <div className="doc-toast__body">
         <h5 className="doc-toast__title">{notice.title}</h5>

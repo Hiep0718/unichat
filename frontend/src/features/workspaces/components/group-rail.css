@@ -10,14 +10,13 @@
 }
 
 /* ---------- Thẻ trợ lý ----------
-   Dùng cặp token nghịch đảo chứ không đóng cứng một màu tối: ở nền tối cặp
-   này tự lật, nên thẻ vẫn là "nghịch với trang" ở cả hai chế độ thay vì chìm
-   vào nền. */
+   Nền xanh đậm cố định (--noi-bat-nen), trùng màu thanh bên. Cặp token
+   nghịch đảo dùng trước đây lật thành thẻ sáng chói ở chế độ tối. */
 .group-rail__ai {
   padding: 20px;
   border-radius: var(--radius-lg);
-  background: var(--color-inverse-surface);
-  color: var(--color-inverse-on-surface);
+  background: var(--noi-bat-nen);
+  color: var(--noi-bat-muc);
 }
 
 .group-rail__ai-title {
@@ -42,9 +41,9 @@
   gap: 8px;
   padding: 11px 16px;
   border: none;
-  border-radius: var(--radius-md);
-  background: var(--color-inverse-on-surface);
-  color: var(--color-inverse-surface);
+  border-radius: var(--btn-radius);
+  background: var(--noi-bat-nut-nen);
+  color: var(--noi-bat-nut-muc);
   font: var(--font-label-md);
   font-weight: 600;
   cursor: pointer;
@@ -56,7 +55,7 @@
 }
 
 .group-rail__ai-btn:focus-visible {
-  outline: 2px solid var(--color-inverse-on-surface);
+  outline: 2px solid var(--noi-bat-muc);
   outline-offset: 2px;
 }
 

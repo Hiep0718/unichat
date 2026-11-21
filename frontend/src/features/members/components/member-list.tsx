@@ -9,9 +9,11 @@ import { useCallback } from 'react';
 
 import { EntityAvatar } from '../../../components/entity-avatar';
 import { Icon } from '../../../components/icon';
+import { SelectMenu } from '../../../components/select-menu';
 import { ROLE_LABELS } from '../member-schema';
 
 import type { AvatarColorKey } from '../../../components/entity-avatar';
+import type { SelectMenuOption } from '../../../components/select-menu';
 import type { MemberDto, MemberRole } from '../member-schema';
 import './member-list.css';
 
@@ -30,6 +32,12 @@ interface MemberListProps {
 }
 
 /** The server only sends colours it accepts, but the type is a plain string. */
+/** Roles a manager may hand out; ownership is never assigned from a row. */
+const ASSIGNABLE_ROLES: readonly SelectMenuOption<MemberRole>[] = [
+  { value: 'EDITOR', label: ROLE_LABELS.EDITOR },
+  { value: 'VIEWER', label: ROLE_LABELS.VIEWER },
+];
+
 function toColourKey(value: string | null): AvatarColorKey | null {
   const keys = ['navy', 'teal', 'plum', 'moss', 'clay', 'slate'];
   return value && keys.includes(value) ? (value as AvatarColorKey) : null;
@@ -101,8 +109,8 @@ function MemberRow({ member, isSelf, canManage, onRoleChange, onRemove }: Member
   const name = member.displayName?.trim() || member.email;
 
   const handleRoleChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      onRoleChange(member.userId, e.target.value as MemberRole);
+    (role: MemberRole) => {
+      onRoleChange(member.userId, role);
     },
     [member.userId, onRoleChange],
   );
@@ -119,24 +127,27 @@ function MemberRow({ member, isSelf, canManage, onRoleChange, onRemove }: Member
       />
 
       <div className="member-list__identity">
-        <span className="member-list__email" title={member.email}>
-          {member.email}
+        <span className="member-list__name">
+          <span className="member-list__name-text">{name}</span>
+          {isSelf && <span className="member-list__self">Bạn</span>}
         </span>
-        {isSelf && <span className="member-list__self">Bạn</span>}
+        {name !== member.email && (
+          <span className="member-list__email" title={member.email}>
+            {member.email}
+          </span>
+        )}
       </div>
 
       {/* An owner's role is not editable — a group without one is a group
           nobody can administer. */}
       {canManage && !isOwner ? (
-        <select
+        <SelectMenu
           className="member-list__role-select"
+          label={`Vai trò của ${member.email}`}
           value={member.role}
+          options={ASSIGNABLE_ROLES}
           onChange={handleRoleChange}
-          aria-label={`Vai trò của ${member.email}`}
-        >
-          <option value="EDITOR">{ROLE_LABELS.EDITOR}</option>
-          <option value="VIEWER">{ROLE_LABELS.VIEWER}</option>
-        </select>
+        />
       ) : (
         <span className={`member-list__role member-list__role--${member.role.toLowerCase()}`}>
           {ROLE_LABELS[member.role]}

@@ -105,13 +105,32 @@ rounded:
   full: 9999px
 spacing:
   container-max: 1440px
-  sidebar-width: 280px
+  rail-width: 68px
+  sidebar-width: 224px
   gutter: 24px
   margin-mobile: 16px
   stack-sm: 8px
   stack-md: 16px
   stack-lg: 24px
 ---
+
+## Quy ước hiện hành của web (cập nhật 15/11/2026)
+
+Nguồn sự thật là `frontend/src/styles/index.css`. Các mục phía dưới là bản brief ban đầu (Inter, nút bo 4px, cyan) và **đã bị thay thế** ở mọi chỗ mâu thuẫn với danh sách này.
+
+- **Màu:** chỉ dùng token, không viết mã màu cứng trong CSS hay `style={{}}`. Token tự đổi theo chế độ tối; mã màu cứng thì không, và đó là lý do trang Trợ lý AI từng mất chữ ở chế độ tối.
+- **Nút chính:** `--btn-primary-bg` / `--btn-primary-ink` (màu nhấn), hover `--btn-primary-bg-hover`. **Nút phụ:** `--btn-secondary-*` (nút viền). Cả hai bo `--btn-radius` (viên thuốc).
+- **Nút icon** (đóng, xóa, gửi, đính kèm, quay lại) cũng bo `--btn-radius`, tức là tròn. Không bo kiểu viên thuốc: dòng trong menu thả xuống, dòng danh sách, thẻ, ô màu, ô nhập.
+- **Bộ chuyển kiểu segmented và thanh tab:** cả khung lẫn từng mục bo `--radius-full`.
+- **Chip / tab đang chọn:** nền `--nhan`, chữ `--nhan-muc`.
+- **Chữ đặt trên ảnh hoặc dải tối cố định:** `--tren-anh`, `--tren-anh-nhat`. **Chữ trên tờ giấy trắng cố định:** `--tren-giay*`. **Thẻ nổi bật (mời hỏi trợ lý):** `--noi-bat-*`.
+- **Chữ:** IBM Plex Sans cho giao diện, Source Serif 4 chỉ cho lời chào và minh họa trang đăng nhập. Tiêu đề trang dùng `--font-page-title` (24px, đậm 700).
+- **Đầu trang cấp một** (Bảng tin, Tin nhắn, Tài khoản): dùng `PageHeader` (`components/page-header.tsx`) với tiêu đề, một câu mô tả và nút hành động bên phải (`page-header__button`, thêm `--secondary` cho nút phụ). Nội dung đặt trong khung `--page-max`, căn giữa và bám mép trái của khung.
+- **Icon:** chỉ Material Symbols (`<Icon>`), không dùng emoji làm icon.
+- **Thuật ngữ:** gọi là "nhóm", không dùng "Workspace" hay "Knowledge Space" trong chữ hiển thị.
+- **Trang lỗi:** dùng `ErrorState` (`features/errors/error-state.tsx`).
+
+**Mobile (`mobile/src/design/tokens.ts`):** `palette` là bản chép tay của lớp màu gốc ở trên, giữ tên biến dạng camelCase (`--muc-nhat` là `palette.mucNhat`); mọi bảng màu khác của mobile trỏ vào nó, và `__tests__/design/palette-sync.test.ts` báo lỗi khi hai bên lệch nhau. Nút dùng `button.*` (tương ứng `--btn-*`), thẻ nổi bật dùng `noiBat.*`, tiêu đề dải đầu dùng `typography.pageTitle`, tên font lấy từ `fonts`. Mobile chưa có chế độ tối và vẫn dùng Inter.
 
 ## Brand & Style
 The design system is engineered for a high-performance RAG (Retrieval-Augmented Generation) learning environment. It balances the rigor of academic research with the efficiency of modern SaaS. The aesthetic is **Corporate Modern** with a focus on high information density, clarity, and trust.
@@ -139,7 +158,7 @@ This design system utilizes **Inter** exclusively to ensure maximum legibility a
 
 ## Layout & Spacing
 The layout follows a **Fixed-Fluid Hybrid** model.
-- **Desktop (1440px):** Features a fixed left sidebar (280px) for navigation and a fluid main content area for RAG analysis. Tables and chat interfaces utilize a 12-column grid.
+- **Desktop (1440px):** Features a fixed left icon rail (68px) that expands to 224px with labels on hover or keyboard focus; the main content slides aside in step with it, so nothing is covered. There is no collapse button. The main content is a fluid area for RAG analysis. Tables and chat interfaces utilize a 12-column grid.
 - **Mobile (390px):** The sidebar collapses into a bottom navigation bar or a hamburger menu. Content transitions to a single-column stack with 16px side margins.
 - **Rhythm:** An 8px base grid governs all padding and margins to maintain strict alignment in data-heavy views.
 

@@ -3,9 +3,10 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-nati
 import * as DocumentPicker from 'expo-document-picker';
 
 import { UCIcon } from '../../../components/uc-icon';
-import { colors } from '../../../design/tokens';
+import { colors, palette } from '../../../design/tokens';
 import { AVATAR_ACCEPTED_TYPES, AVATAR_MAX_BYTES, accountApi } from '../account-api';
 import { AVATAR_COLOURS, AVATAR_COLOR_KEYS, AVATAR_COLOR_LABELS } from '../avatar-colours';
+import { fonts } from '../../../design/typography';
 
 import type { AvatarColorKey } from '../avatar-colours';
 
@@ -80,7 +81,7 @@ export function AvatarPicker({ avatarColor, hasAvatar, onChanged }: AvatarPicker
           {busy ? (
             <ActivityIndicator size="small" color={colors.primary} />
           ) : (
-            <UCIcon name="photo-camera" size={17} color="#64748B" />
+            <UCIcon name="photo-camera" size={17} color={palette.mucMo} />
           )}
         </Pressable>
 
@@ -96,7 +97,7 @@ export function AvatarPicker({ avatarColor, hasAvatar, onChanged }: AvatarPicker
         ))}
 
         <Swatch
-          colour="#0F172A"
+          colour={palette.muc}
           label="Màu tự động theo tên"
           selected={avatarColor === null}
           disabled={busy}
@@ -147,8 +148,8 @@ function Swatch({ colour, label, selected, disabled, onPress }: SwatchProps) {
 
 const styles = StyleSheet.create({
   label: {
-    color: '#334155',
-    fontFamily: 'Inter_600SemiBold',
+    color: palette.mucNhat,
+    fontFamily: fonts.semibold,
     fontSize: 13,
     marginBottom: 10,
   },
@@ -165,17 +166,17 @@ const styles = StyleSheet.create({
   slotSelected: { borderColor: colors.primary },
   upload: {
     borderWidth: 1.4,
-    borderColor: '#CBD5E1',
+    borderColor: palette.vien,
     borderStyle: 'dashed',
-    backgroundColor: '#F8FAFC',
+    backgroundColor: palette.beMat,
   },
   dot: { width: 28, height: 28, borderRadius: 14 },
   removeText: {
-    color: '#64748B',
-    fontFamily: 'Inter_600SemiBold',
+    color: palette.mucMo,
+    fontFamily: fonts.semibold,
     fontSize: 12,
     marginTop: 12,
   },
-  hint: { color: '#94A3B8', fontFamily: 'Inter_400Regular', fontSize: 11.5, marginTop: 10 },
-  hintBad: { color: '#DC2626' },
+  hint: { color: palette.mucMo, fontFamily: fonts.regular, fontSize: 11.5, marginTop: 10 },
+  hintBad: { color: palette.hong },
 });

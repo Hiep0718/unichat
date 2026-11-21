@@ -2,12 +2,13 @@ import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { workplace, spacing, radii, animation } from '../../../design/tokens';
+import { workplace, spacing, radii, animation, palette } from '../../../design/tokens';
 import { shadows } from '../../../design/shadows';
 import { UCIcon } from '../../../components/uc-icon';
 
 import { WorkspaceItem } from '../workspace-types';
 import { WorkspaceCover } from './workspace-cover';
+import { fonts } from '../../../design/typography';
 
 interface WorkspaceCardProps {
   workspace: WorkspaceItem;
@@ -71,7 +72,7 @@ export function WorkspaceCard({
         <View style={styles.cover}>
           <View style={styles.coverTop}>
             <View style={styles.visibility}>
-              <UCIcon name={isPublic ? 'public' : 'lock'} size={12} color="#FFFFFF" />
+              <UCIcon name={isPublic ? 'public' : 'lock'} size={12} color={palette.trenAnh} />
               <Text style={styles.visibilityText}>
                 {isPublic ? 'Công khai' : 'Riêng tư'}
               </Text>
@@ -170,16 +171,16 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.32)',
   },
   visibilityText: {
-    color: '#FFFFFF',
+    color: palette.trenAnh,
     fontSize: 11,
-    fontFamily: 'Inter_600SemiBold',
+    fontFamily: fonts.semibold,
   },
   coverName: {
-    color: '#FFFFFF',
+    color: palette.trenAnh,
     fontSize: 18,
     lineHeight: 24,
     letterSpacing: -0.3,
-    fontFamily: 'Inter_700Bold',
+    fontFamily: fonts.bold,
   },
 
   body: {
@@ -220,7 +221,7 @@ const styles = StyleSheet.create({
   statText: {
     color: 'rgba(255, 255, 255, 0.76)',
     fontSize: 11,
-    fontFamily: 'Inter_500Medium',
+    fontFamily: fonts.medium,
   },
 
   openPill: {
@@ -235,7 +236,7 @@ const styles = StyleSheet.create({
   openPillText: {
     color: workplace.accent,
     fontSize: 12,
-    fontFamily: 'Inter_700Bold',
+    fontFamily: fonts.bold,
   },
   joinBtn: {
     flexDirection: 'row',
@@ -249,6 +250,6 @@ const styles = StyleSheet.create({
   joinBtnText: {
     color: workplace.accentInk,
     fontSize: 12,
-    fontFamily: 'Inter_700Bold',
+    fontFamily: fonts.bold,
   },
 });

@@ -10,6 +10,7 @@ import { useState, useEffect } from 'react';
 import { Icon } from '../../../components/icon';
 import { useWorkspace } from '../../workspaces/workspace-context';
 import { createDiscussion } from '../community-api';
+import { POST_LABEL_META } from '../post-labels';
 
 import type { DiscussionResponse } from '../community-api';
 import './create-post-modal.css';
@@ -74,9 +75,8 @@ export function NewDiscussionModal({ workspaceId, onClose, onCreate }: NewDiscus
                       className={`create-post-modal__pill ${label === l ? 'create-post-modal__pill--active' : ''}`}
                       onClick={() => setLabel(l)}
                     >
-                      {l === 'QUESTION' && '❓ Câu hỏi'}
-                      {l === 'DISCUSSION' && '💬 Thảo luận'}
-                      {l === 'ANNOUNCEMENT' && '📢 Thông báo'}
+                      <Icon name={POST_LABEL_META[l].icon} size={16} />
+                      {POST_LABEL_META[l].text}
                     </button>
                   );
                 })}

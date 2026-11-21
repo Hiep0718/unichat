@@ -24,14 +24,12 @@
   gap: 12px;
 }
 
-.document-pagination__size-select {
-  padding: 4px 8px;
-  border: none;
+/* A SelectMenu pill sitting in the summary line. */
+.select-menu__trigger.document-pagination__size-select {
+  padding: 4px 6px 4px 10px;
   border-radius: 10px;
   background: var(--ws-chip, var(--color-surface-dim));
   font-size: 13px;
-  color: var(--color-on-surface);
-  cursor: pointer;
 }
 
 .document-pagination__controls {
@@ -48,7 +46,7 @@
   height: 32px;
   padding: 0 8px;
   border: none;
-  border-radius: 10px;
+  border-radius: var(--btn-radius);
   background: var(--ws-chip, var(--color-surface-dim));
   color: var(--color-on-surface);
   font-size: 13px;

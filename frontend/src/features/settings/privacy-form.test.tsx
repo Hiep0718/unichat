@@ -77,7 +77,7 @@ describe('PrivacyForm', () => {
     const { user } = renderPolicy();
     await user.click(screen.getByRole('checkbox'));
     await user.click(screen.getByRole('button', { name: 'Lưu quyền AI' }));
-    expect(await screen.findByRole('alert')).toHaveTextContent('Workspace đã thay đổi');
+    expect(await screen.findByRole('alert')).toHaveTextContent('Nhóm đã thay đổi');
     expect(screen.queryByText('Đã lưu quyền xử lý bằng AI.')).not.toBeInTheDocument();
     expect(screen.getByText('Trạng thái đã lưu: Chưa cho phép')).toBeVisible();
     expect(screen.queryByText('Private upstream detail')).not.toBeInTheDocument();

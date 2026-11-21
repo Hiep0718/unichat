@@ -1,152 +1,127 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
 import { Icon } from '../../components/icon';
-import {
-  fetchAdminWorkspaces,
-  toggleWorkspaceVisibility,
-  deleteAdminWorkspace,
-  type AdminWorkspaceItem,
-} from './admin-api';
+import { deleteAdminWorkspace, fetchAdminWorkspaces, toggleWorkspaceVisibility } from './admin-api';
 
+import type { AdminWorkspaceItem } from './admin-api';
+
+const QUERY_KEY = ['admin', 'workspaces'] as const;
+
+/** What each visibility level is called, with the badge it is drawn as. */
+const VISIBILITY: Record<AdminWorkspaceItem['visibility'], { label: string; icon: string; badge: string }> = {
+  PUBLIC: { label: 'Công khai', icon: 'public', badge: 'admin-badge--success' },
+  SHARED: { label: 'Chia sẻ', icon: 'group', badge: 'admin-badge--neutral' },
+  PRIVATE: { label: 'Riêng tư', icon: 'lock', badge: 'admin-badge--neutral' },
+};
+
+/** The level a moderator toggles to: a public group is closed, anything else is opened. */
+const nextVisibilityOf = (current: AdminWorkspaceItem['visibility']) =>
+  current === 'PUBLIC' ? 'PRIVATE' : 'PUBLIC';
+
+const messageOf = (error: unknown, fallback: string) =>
+  error instanceof Error && error.message ? error.message : fallback;
+
+interface RowProps {
+  readonly workspace: AdminWorkspaceItem;
+  readonly busy: boolean;
+  readonly onToggle: (workspace: AdminWorkspaceItem) => void;
+  readonly onDelete: (workspace: AdminWorkspaceItem) => void;
+}
+
+function WorkspaceRow({ workspace, busy, onToggle, onDelete }: RowProps) {
+  const level = VISIBILITY[workspace.visibility];
+  const next = VISIBILITY[nextVisibilityOf(workspace.visibility)];
+  return (
+    <tr>
+      <td className="admin-page__cell-strong">{workspace.name}</td>
+      <td>
+        <span className={`admin-badge ${level.badge}`}>
+          <Icon name={level.icon} size={14} />
+          {level.label}
+        </span>
+      </td>
+      <td>{workspace.documentCount} tài liệu</td>
+      <td>{new Date(workspace.createdAt).toLocaleDateString('vi-VN')}</td>
+      <td>
+        <div className="admin-page__actions">
+          <button type="button" className="admin-page__action" disabled={busy} onClick={() => onToggle(workspace)}>
+            Đổi sang {next.label}
+          </button>
+          <button type="button" className="admin-page__action admin-page__action--danger" disabled={busy}
+            onClick={() => onDelete(workspace)}>
+            <Icon name="delete" size={14} />
+            Xóa
+          </button>
+        </div>
+      </td>
+    </tr>
+  );
+}
+
+/** Lets an administrator moderate any group's visibility or remove it. */
 export function AdminWorkspacePage() {
-  const [workspaces, setWorkspaces] = useState<AdminWorkspaceItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const [actionError, setActionError] = useState<string | null>(null);
+  const { data, error, isPending } = useQuery({
+    queryKey: QUERY_KEY,
+    queryFn: () => fetchAdminWorkspaces(0, 50),
+  });
+  const refresh = () => queryClient.invalidateQueries({ queryKey: QUERY_KEY });
 
-  const loadData = useCallback(() => {
-    setLoading(true);
-    fetchAdminWorkspaces(0, 50)
-      .then((res) => setWorkspaces(res.content || []))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
+  const toggle = useMutation({
+    mutationFn: (w: AdminWorkspaceItem) => toggleWorkspaceVisibility(w.id, nextVisibilityOf(w.visibility)),
+    onSuccess: refresh,
+    onError: (err) => setActionError(messageOf(err, 'Không thể đổi chế độ hiển thị.')),
+  });
+  const remove = useMutation({
+    mutationFn: (w: AdminWorkspaceItem) => deleteAdminWorkspace(w.id),
+    onSuccess: refresh,
+    onError: (err) => setActionError(messageOf(err, 'Không thể xóa nhóm.')),
+  });
 
-  useEffect(() => {
-    let isMounted = true;
-    fetchAdminWorkspaces(0, 50)
-      .then((res) => {
-        if (isMounted) setWorkspaces(res.content || []);
-      })
-      .catch(() => {})
-      .finally(() => {
-        if (isMounted) setLoading(false);
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  const handleToggleVisibility = async (w: AdminWorkspaceItem) => {
-    const nextVis = w.visibility === 'PUBLIC' ? 'PRIVATE' : 'PUBLIC';
-    if (!window.confirm(`Đổi chế độ không gian làm việc "${w.name}" sang ${nextVis}?`)) return;
-
-    try {
-      await toggleWorkspaceVisibility(w.id, nextVis);
-      loadData();
-    } catch {
-      alert('Không thể đổi chế độ hiển thị');
-    }
+  const handleToggle = (w: AdminWorkspaceItem) => {
+    const next = VISIBILITY[nextVisibilityOf(w.visibility)].label;
+    if (!window.confirm(`Đổi nhóm "${w.name}" sang chế độ ${next}?`)) return;
+    setActionError(null);
+    toggle.mutate(w);
+  };
+  const handleDelete = (w: AdminWorkspaceItem) => {
+    if (!window.confirm(`Xóa nhóm "${w.name}"? Tài liệu và dữ liệu vector của nhóm sẽ được giải phóng.`)) return;
+    setActionError(null);
+    remove.mutate(w);
   };
 
-  const handleDelete = async (w: AdminWorkspaceItem) => {
-    if (!window.confirm(`XÁC NHẬN: Bạn có chắc chắn muốn xóa nhóm "${w.name}"? Dữ liệu tài liệu và vector sẽ được giải phóng.`)) return;
-
-    try {
-      await deleteAdminWorkspace(w.id);
-      loadData();
-    } catch {
-      alert('Không thể xóa không gian làm việc');
-    }
-  };
+  const workspaces = data?.content ?? [];
+  const busy = toggle.isPending || remove.isPending;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '20px 24px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-        <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0f172a', margin: '0 0 6px 0' }}>
-          Quản trị Không gian làm việc (Workspaces & Groups)
-        </h2>
-        <p style={{ margin: 0, fontSize: '0.875rem', color: '#64748b' }}>
-          Theo dõi tất cả nhóm học tập công khai và riêng tư, kiểm duyệt quyền riêng tư hoặc gỡ bỏ nhóm vi phạm nội quy.
-        </p>
-      </div>
+    <section className="admin-page">
+      <header className="admin-page__header">
+        <h2>Quản trị nhóm</h2>
+        <p>Theo dõi mọi nhóm trong hệ thống, đổi chế độ hiển thị hoặc gỡ nhóm vi phạm nội quy.</p>
+      </header>
 
-      <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem' }}>
+      {isPending && <p className="admin-page__notice" role="status">Đang tải danh sách nhóm…</p>}
+      {error && <p className="admin-page__error" role="alert">{messageOf(error, 'Không tải được danh sách nhóm.')}</p>}
+      {actionError && <p className="admin-page__error" role="alert">{actionError}</p>}
+
+      <div className="admin-page__card">
+        <table>
           <thead>
-            <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', color: '#64748b' }}>
-              <th style={{ padding: '12px 16px' }}>Tên nhóm</th>
-              <th style={{ padding: '12px 16px' }}>Chế độ</th>
-              <th style={{ padding: '12px 16px' }}>Số tài liệu</th>
-              <th style={{ padding: '12px 16px' }}>Ngày tạo</th>
-              <th style={{ padding: '12px 16px' }}>Thao tác</th>
-            </tr>
+            <tr><th>Tên nhóm</th><th>Chế độ</th><th>Số tài liệu</th><th>Ngày tạo</th><th>Thao tác</th></tr>
           </thead>
           <tbody>
-            {loading ? (
-              <tr><td colSpan={5} style={{ padding: '24px', textAlign: 'center', color: '#64748b' }}>Đang tải danh sách...</td></tr>
-            ) : workspaces.length === 0 ? (
-              <tr><td colSpan={5} style={{ padding: '24px', textAlign: 'center', color: '#64748b' }}>Chưa có không gian làm việc nào</td></tr>
-            ) : (
-              workspaces.map((w) => (
-                <tr key={w.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                  <td style={{ padding: '14px 16px', fontWeight: 600, color: '#0f172a' }}>{w.name}</td>
-                  <td style={{ padding: '14px 16px' }}>
-                    <span style={{
-                      padding: '3px 8px',
-                      borderRadius: '9999px',
-                      fontSize: '0.75rem',
-                      fontWeight: 600,
-                      background: w.visibility === 'PUBLIC' ? '#dcfce7' : '#f1f5f9',
-                      color: w.visibility === 'PUBLIC' ? '#15803d' : '#475569',
-                    }}>
-                      {w.visibility === 'PUBLIC' ? '🌐 Công khai' : '🔒 Riêng tư'}
-                    </span>
-                  </td>
-                  <td style={{ padding: '14px 16px' }}>{w.documentCount} tài liệu</td>
-                  <td style={{ padding: '14px 16px', color: '#64748b' }}>{new Date(w.createdAt).toLocaleDateString('vi-VN')}</td>
-                  <td style={{ padding: '14px 16px' }}>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <button
-                        type="button"
-                        style={{
-                          padding: '6px 10px',
-                          borderRadius: '6px',
-                          fontSize: '0.75rem',
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                          background: '#f8fafc',
-                          border: '1px solid #cbd5e1',
-                          color: '#334155',
-                        }}
-                        onClick={() => handleToggleVisibility(w)}
-                      >
-                        Đổi sang {w.visibility === 'PUBLIC' ? 'Riêng tư' : 'Công khai'}
-                      </button>
-                      <button
-                        type="button"
-                        style={{
-                          padding: '6px 10px',
-                          borderRadius: '6px',
-                          fontSize: '0.75rem',
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                          background: '#fff1f2',
-                          border: '1px solid #fecdd3',
-                          color: '#e11d48',
-                        }}
-                        onClick={() => handleDelete(w)}
-                      >
-                        <Icon name="delete" size={14} style={{ verticalAlign: 'middle', marginRight: 4 }} />
-                        Xóa
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
+            {workspaces.map((w) => (
+              <WorkspaceRow key={w.id} workspace={w} busy={busy} onToggle={handleToggle} onDelete={handleDelete} />
+            ))}
           </tbody>
         </table>
+        {!isPending && !error && workspaces.length === 0 && (
+          <p className="admin-page__empty">Chưa có nhóm nào.</p>
+        )}
       </div>
-    </div>
+    </section>
   );
 }
 

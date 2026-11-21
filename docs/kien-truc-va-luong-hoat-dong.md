@@ -396,13 +396,9 @@ Bản đồng bộ ở trên trả về một lần. Ngoài ra có `POST /api/v1
 
 `communitychat` là feature lớn nhất (57 file). Mô hình gần giống Reddit: bài viết trong Workspace, có vote/score, reaction, bình luận lồng nhau, bookmark, mention, thông báo, tìm kiếm hợp nhất, và tệp đính kèm.
 
-Điểm thú vị về kiến trúc: **mention `@AI` trong thảo luận**. Khi người dùng tag AI, `MentionResolver` phát một `AiMentionEvent`; `AiReplyService` xử lý ở **background thread**, gọi `AiRetrievalClient` (`service/AiRetrievalClient.java`) rồi lưu reply kèm `ReplyCitation`.
+Điểm thú vị về kiến trúc: **mention `@AI` trong thảo luận** (ADR-0007). Khi một bình luận có `@AI` đứng riêng, `DiscussionService.addReply` phát `AiMentionEvent`, mang theo phiên đăng nhập của người bình luận (`ChatActor`). Sau khi commit, `AiReplyService` chạy câu hỏi như **một chat operation của chính người đó**: `ChatOperationService.reserve` rồi `ChatOperationRunner.start`, đúng đường của Trợ lý AI. Nhờ vậy @AI dùng chung token ràng buộc request, chính sách AI cloud của nhóm, checkpoint trước mỗi lần gọi model và giới hạn tần suất. `AiReplyWriter` kiểm tra lại bài viết, bình luận hỏi và tư cách thành viên trước khi lưu reply kèm `ReplyCitation`.
 
-Hai chi tiết quan trọng trong `AiRetrievalClient`:
-- Timeout rõ ràng: connect 5s, read 90s. Không có timeout thì một lần LLM treo sẽ giữ thread mãi.
-- Khi lỗi thì trả **map rỗng** chứ không ném exception, vì nó chạy trên background thread — không còn ai để propagate lên (`AiRetrievalClient.java:87`).
-
-Tương tự, "tóm tắt tệp đính kèm này" được làm bằng cách gọi AI Service với `allowedDocumentIds` **chỉ chứa đúng một document** — chính việc thu hẹp danh sách quyền là thứ buộc câu trả lời chỉ dựa trên tệp đó.
+**Tóm tắt tệp đính kèm** chạy khi một thành viên bấm "Tóm tắt bằng AI" (`POST …/attachments/{id}/summary`, xem trạng thái bằng `GET` cùng đường dẫn). Nó cũng là chat operation của người bấm, nhưng snapshot nguồn được thu hẹp còn **đúng một tài liệu** (`ChatSourceSnapshot.scopedTo`). Chính việc thu hẹp danh sách quyền buộc câu trả lời chỉ dựa trên tệp đó. Fingerprint của cả workspace vẫn giữ nguyên, nên tài liệu bị thu hồi hay đổi phiên bản giữa chừng vẫn làm operation dừng. Bản tóm tắt được lưu cho mọi thành viên cùng xem. Trước đây tóm tắt chạy tự động khi tài liệu xử lý xong, nhưng lúc đó không có phiên người dùng nào để ủy quyền, nên đã chuyển sang bấm nút.
 
 ### 4.6 Work Chat — nhắn tin realtime
 

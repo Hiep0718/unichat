@@ -1,9 +1,10 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { dock, messenger } from '../../../design/tokens';
+import { dock, messenger, palette } from '../../../design/tokens';
 import { formatListTime, previewOf } from '../conversation-presenter';
 import { ConversationAvatar } from './conversation-avatar';
+import { fonts } from '../../../design/typography';
 
 import type { Conversation } from '../messages-api';
 
@@ -65,11 +66,11 @@ const styles = StyleSheet.create({
   body: { flex: 1, minWidth: 0, gap: 3 },
   topLine: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   bottomLine: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  title: { flex: 1, fontSize: 16, fontFamily: 'Inter_700Bold', color: messenger.theirsInk },
-  time: { fontSize: 12, fontFamily: 'Inter_400Regular', color: messenger.chipInk },
-  timeUnread: { color: dock.accent, fontFamily: 'Inter_600SemiBold' },
-  preview: { flex: 1, fontSize: 14, fontFamily: 'Inter_400Regular', color: messenger.chipInk },
-  previewUnread: { color: messenger.theirsInk, fontFamily: 'Inter_600SemiBold' },
+  title: { flex: 1, fontSize: 16, fontFamily: fonts.bold, color: messenger.theirsInk },
+  time: { fontSize: 12, fontFamily: fonts.regular, color: messenger.chipInk },
+  timeUnread: { color: dock.accent, fontFamily: fonts.semibold },
+  preview: { flex: 1, fontSize: 14, fontFamily: fonts.regular, color: messenger.chipInk },
+  previewUnread: { color: messenger.theirsInk, fontFamily: fonts.semibold },
   unread: {
     minWidth: 20,
     height: 20,
@@ -79,5 +80,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  unreadText: { color: '#FFFFFF', fontSize: 11, fontFamily: 'Inter_700Bold' },
+  unreadText: { color: palette.trenAnh, fontSize: 11, fontFamily: fonts.bold },
 });

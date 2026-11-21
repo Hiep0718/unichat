@@ -164,7 +164,7 @@ function DiscussionEmptyState() {
         <Icon name="forum" size={32} />
       </div>
       <h3>Chưa có bài thảo luận</h3>
-      <p>Hãy là người đầu tiên tạo chủ đề thảo luận trong workspace này.</p>
+      <p>Hãy là người đầu tiên tạo chủ đề thảo luận trong nhóm này.</p>
     </div>
   );
 }

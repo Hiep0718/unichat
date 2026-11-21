@@ -125,16 +125,16 @@
 .reply-form__submit {
   padding: 6px 16px;
   border: none;
-  border-radius: var(--radius-full);
-  background: var(--color-primary);
-  color: var(--color-on-primary);
+  border-radius: var(--btn-radius);
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-ink);
   font: var(--font-label-md);
   cursor: pointer;
   transition: all var(--transition-fast);
 }
 
 .reply-form__submit:hover {
-  box-shadow: var(--shadow-md);
+  background: var(--btn-primary-bg-hover);
 }
 
 .reply-form__submit:disabled {
@@ -142,209 +142,28 @@
   cursor: not-allowed;
 }
 
-/* ---------- Reply Thread (threaded comments) ---------- */
+/* ---------- Reply Thread (threaded comments) ----------
+   The comment itself is styled in components/reply-node.css; this is only the
+   thread's shape. */
 .reply-thread {
   position: relative;
   display: flex;
   flex-direction: column;
 }
 
+/* One level of indent, under the parent's face (32px avatar + 10px gap). */
 .reply-thread__children {
-  padding-left: 24px;
   position: relative;
+  padding-left: 42px;
 }
 
-.reply-thread__children::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 15px;
-  width: 2px;
-  background-color: var(--ws-line, var(--ke));
-  border-radius: 2px;
-  transition: background-color var(--transition-fast);
-}
-
-.reply-thread__children:hover::before {
-  background-color: var(--color-primary);
-}
-
-.reply-node {
-  display: flex;
-  gap: 12px;
-  padding: 12px 0;
-}
-
-.reply-node--ai {
-  background: var(--color-ai-bubble, var(--nen));
-  padding: 12px;
-  border-radius: var(--radius-lg);
-  margin: 8px 0;
-}
-
-.reply-node__avatar {
-  width: 32px;
-  height: 32px;
-  min-width: 32px;
-  border-radius: 50%;
-  background: var(--color-primary-container);
-  color: var(--color-on-primary-container);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font: var(--font-label-md);
-  font-size: 13px;
-  text-transform: uppercase;
-}
-
-.reply-node--ai .reply-node__avatar {
-  background: var(--muc);
-  color: white;
-}
-
-.reply-node__content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.reply-node__meta {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 4px;
-}
-
-.reply-node__author {
-  font: var(--font-label-md);
-  color: var(--color-on-surface);
-}
-
-.reply-node__dot {
-  color: var(--muc-nhat);
-  font-size: 10px;
-}
-
-.reply-node__time {
-  font: var(--font-label-sm);
-  color: var(--color-on-surface-variant);
-}
-
-.reply-node__body {
-  font: var(--font-body-md);
-  color: var(--color-on-surface);
-  line-height: 1.6;
-  margin-bottom: 8px;
-}
-
-/* Replies are Markdown, same as post bodies. */
-.reply-node__body > :first-child { margin-top: 0; }
-.reply-node__body > :last-child { margin-bottom: 0; }
-
-.reply-node__body p {
-  margin: 0 0 8px;
-}
-
-.reply-node__body ul,
-.reply-node__body ol {
-  margin: 0 0 8px;
-  padding-left: 22px;
-}
-
-.reply-node__body blockquote {
-  margin: 0 0 8px;
-  padding: 8px 12px;
-  border-left: 3px solid var(--color-outline-variant);
-  background: var(--color-surface-container-low);
-  border-radius: var(--radius-md);
-  color: var(--color-on-surface-variant);
-}
-
-.reply-node__body code {
-  padding: 2px 5px;
-  border-radius: var(--radius-sm);
-  background: var(--color-surface-container-high);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.9em;
-}
-
-.reply-node__body pre {
-  margin: 0 0 8px;
-  padding: 10px 12px;
-  border-radius: var(--radius-md);
-  background: var(--color-surface-container-high);
-  overflow-x: auto;
-}
-
-.reply-node__body pre code {
-  padding: 0;
-  background: none;
-}
-
-.reply-node__body a {
-  color: var(--color-primary);
-  text-decoration: underline;
-}
-
-.reply-node__actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.reply-node__action-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font: var(--font-label-md);
-  color: var(--color-on-surface-variant);
-  background: none;
-  border: none;
-  padding: 4px 8px;
-  border-radius: var(--radius-full);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.reply-node__action-btn:hover {
-  background: var(--color-surface-container);
-  color: var(--color-on-surface);
-}
-
-.reply-node__action-btn--accept {
-  color: var(--ws-ok-ink);
-}
-
-.reply-node__action-btn--accept:hover {
-  background: var(--ws-ok-bg);
-  color: var(--ws-ok-ink);
-}
-
-.reply-node--accepted {
-  background: var(--nen);
-  padding: 12px;
-  border-radius: var(--radius-lg);
-  margin: 8px 0;
-}
-
-.reply-node__accepted-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font: var(--font-label-sm);
-  font-size: 10px;
-  background: var(--ws-ok-bg);
-  color: var(--ws-ok-ink);
-  padding: 2px 8px;
-  border-radius: var(--radius-full);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  margin-left: 8px;
+/* Deeper replies line up with their parent instead of stepping right again. */
+.reply-thread__children--flat {
+  padding-left: 0;
 }
 
 .reply-node__nested-form {
-  margin-top: 8px;
+  margin: 2px 0 6px 42px;
 }
 
 /* ---------- Search within the group ---------- */

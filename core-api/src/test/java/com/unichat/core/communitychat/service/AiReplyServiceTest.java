@@ -1,209 +1,244 @@
 package com.unichat.core.communitychat.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withServerError;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.springframework.http.MediaType;
-import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.test.web.client.MockRestServiceServer;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.http.HttpStatus;
 
+import com.unichat.core.chat.api.AskQuestionRequest;
+import com.unichat.core.chat.api.ChatOperationResponse;
+import com.unichat.core.chat.api.CitationResponse;
+import com.unichat.core.chat.api.QuestionResponse;
+import com.unichat.core.chat.domain.ChatOperation;
+import com.unichat.core.chat.service.ChatActor;
+import com.unichat.core.chat.service.ChatOperationError;
+import com.unichat.core.chat.service.ChatOperationRunner;
+import com.unichat.core.chat.service.ChatOperationService;
+import com.unichat.core.chat.service.ChatSourceSnapshot;
 import com.unichat.core.communitychat.domain.AiMentionEvent;
-import com.unichat.core.communitychat.domain.Discussion;
-import com.unichat.core.communitychat.domain.DiscussionReply;
-import com.unichat.core.communitychat.domain.DiscussionReplyRepository;
-import com.unichat.core.communitychat.domain.DiscussionRepository;
 import com.unichat.core.communitychat.domain.ReplyCitation;
-import com.unichat.core.document.domain.Document;
-import com.unichat.core.document.domain.DocumentRepository;
-import com.unichat.core.document.domain.DocumentStatus;
-import com.unichat.core.shared.config.ServiceTokenIssuer;
 
 /**
- * The assistant answers a thread with sources a reader can check, and says so
- * plainly when it cannot answer at all.
+ * A mention is answered through the same authorized chat operation as the AI
+ * assistant, and the thread always gets either the answer or the reason why
+ * there is none.
  */
 class AiReplyServiceTest {
-
-    private static final String ANSWERS_URL = "http://ai.test/internal/v1/retrieval/answers";
-
-    private DocumentRepository documentRepository;
-    private DiscussionRepository discussionRepository;
-    private DiscussionReplyRepository replyRepository;
-    private MockRestServiceServer aiService;
-    private AiReplyService service;
 
     private final UUID workspaceId = UUID.randomUUID();
     private final UUID discussionId = UUID.randomUUID();
     private final UUID triggerReplyId = UUID.randomUUID();
-    private final UUID askerId = UUID.randomUUID();
     private final UUID documentId = UUID.randomUUID();
+    private final ChatActor asker = new ChatActor(UUID.randomUUID(), UUID.randomUUID(), 3L);
+
+    private ChatOperationService operations;
+    private ChatOperationRunner runner;
+    private AiReplyWriter writer;
+    private AiReplyService service;
+    private ChatOperation operation;
 
     @BeforeEach
     void setUp() {
-        documentRepository = mock(DocumentRepository.class);
-        discussionRepository = mock(DiscussionRepository.class);
-        replyRepository = mock(DiscussionReplyRepository.class);
-        ServiceTokenIssuer tokenIssuer = mock(ServiceTokenIssuer.class);
-        when(tokenIssuer.issueToken()).thenReturn("Bearer test-token");
-
-        RestTemplate restTemplate = new RestTemplate();
-        aiService = MockRestServiceServer.bindTo(restTemplate).build();
-        AiRetrievalClient retrievalClient = new AiRetrievalClient(tokenIssuer, restTemplate);
-        ReflectionTestUtils.setField(retrievalClient, "aiServiceUrl", "http://ai.test");
-        service = new AiReplyService(documentRepository, discussionRepository,
-                replyRepository, retrievalClient);
-
-        when(documentRepository.findAllowedDocumentIdsForWorkspaces(List.of(workspaceId)))
-                .thenReturn(List.of(documentId));
-        when(discussionRepository.findById(discussionId)).thenReturn(Optional.of(discussion()));
+        operations = mock(ChatOperationService.class);
+        runner = mock(ChatOperationRunner.class);
+        writer = mock(AiReplyWriter.class);
+        service = new AiReplyService(operations, runner, writer);
+        operation = operation();
     }
 
     @Test
-    void postsTheAnswerAsTheAssistantRatherThanAsThePersonWhoAsked() {
-        aiService.expect(requestTo(ANSWERS_URL))
-                .andExpect(header("Authorization", "Bearer test-token"))
-                .andRespond(withSuccess(answerJson(), MediaType.APPLICATION_JSON));
+    void shouldAskAsTheCommenterWithTheCommentAsTheIdempotencyKey() {
+        // Arrange
+        reserved(true);
+        finishedWith(completed(answer()));
 
-        service.onAiMention(mentionOf("@AI chỉ số là gì và dùng khi nào?"));
+        // Act
+        service.onAiMention(mentionOf("@AI chỉ mục là gì và dùng khi nào?"));
 
-        assertEquals(AiReplyService.ASSISTANT_USER_ID, savedReply().getAuthorId());
-        assertTrue(savedReply().isAiAnswer());
-        assertEquals(triggerReplyId, savedReply().getParentReplyId());
+        // Assert
+        ArgumentCaptor<AskQuestionRequest> request = ArgumentCaptor.forClass(AskQuestionRequest.class);
+        verify(operations).reserve(eq(asker), eq(workspaceId), request.capture(),
+                eq(triggerReplyId), eq("ai-mention-" + triggerReplyId));
+        assertEquals("chỉ mục là gì và dùng khi nào?", request.getValue().question());
     }
 
     @Test
-    void keepsTheCitationsSoAReaderCanOpenTheSourceDocument() {
-        when(documentRepository.findById(documentId)).thenReturn(Optional.of(document()));
-        aiService.expect(requestTo(ANSWERS_URL))
-                .andRespond(withSuccess(answerJson(), MediaType.APPLICATION_JSON));
+    void shouldPostTheAnswerWithItsSourcesAndTheOperationAsTrace() {
+        // Arrange
+        reserved(true);
+        finishedWith(completed(answer()));
 
-        service.onAiMention(mentionOf("@AI chỉ số là gì và dùng khi nào?"));
+        // Act
+        service.onAiMention(mentionOf("@AI chỉ mục là gì và dùng khi nào?"));
 
-        List<ReplyCitation> citations = savedReply().getCitations();
-        assertEquals(1, citations.size());
-        assertEquals("1", citations.get(0).citationId());
-        assertEquals(documentId.toString(), citations.get(0).documentId());
-        assertEquals("giao-trinh-csdl.pdf", citations.get(0).fileName());
-        assertEquals("trang 12", citations.get(0).locator());
+        // Assert
+        AiMentionAnswer posted = postedAnswer();
+        assertEquals("Chỉ mục giúp truy vấn nhanh hơn [1].", posted.body());
+        assertEquals(operation.id(), posted.traceId());
+        ReplyCitation citation = posted.citations().get(0);
+        assertEquals("1", citation.citationId());
+        assertEquals(documentId.toString(), citation.documentId());
+        assertEquals("giao-trinh-csdl.pdf", citation.fileName());
+        assertEquals("trang 12", citation.locator());
     }
 
     @Test
-    void labelsACitationWhoseDocumentIsNoLongerInTheLibrary() {
-        when(documentRepository.findById(documentId)).thenReturn(Optional.empty());
-        aiService.expect(requestTo(ANSWERS_URL))
-                .andRespond(withSuccess(answerJson(), MediaType.APPLICATION_JSON));
+    void shouldRestoreThePostTopicWhenTheQuestionIsTooShortToStandAlone() {
+        // Act
+        String question = AiReplyService.questionOf(mentionOf("@AI vì sao?"));
 
-        service.onAiMention(mentionOf("@AI chỉ số là gì và dùng khi nào?"));
-
-        assertEquals("Tài liệu tham khảo", savedReply().getCitations().get(0).fileName());
+        // Assert
+        assertEquals("Trong chủ đề \"Chỉ mục trong CSDL\", vì sao?", question);
     }
 
     @Test
-    void recordsTheRetrievalTraceItAnsweredFrom() {
-        aiService.expect(requestTo(ANSWERS_URL))
-                .andExpect(jsonPath("$.requestId").exists())
-                .andRespond(withSuccess(answerJson(), MediaType.APPLICATION_JSON));
+    void shouldPassARefusalReasonThroughToTheThread() {
+        // Arrange: the workspace forbids cloud AI, so the pipeline refuses.
+        reserved(true);
+        finishedWith(completed(refusal("Workspace chưa cho phép xử lý bằng AI.")));
 
-        service.onAiMention(mentionOf("@AI chỉ số là gì và dùng khi nào?"));
+        // Act
+        service.onAiMention(mentionOf("@AI chỉ mục là gì và dùng khi nào?"));
 
-        assertNotNull(savedReply().getRetrievalTraceId());
+        // Assert
+        assertEquals("Workspace chưa cho phép xử lý bằng AI.", postedAnswer().body());
+        assertTrue(postedAnswer().citations().isEmpty());
     }
 
     @Test
-    void restoresThePostTopicWhenTheQuestionIsTooShortToStandAlone() {
-        aiService.expect(requestTo(ANSWERS_URL))
-                .andExpect(jsonPath("$.question")
-                        .value("Trong chủ đề \"Chỉ mục trong CSDL\", vì sao?"))
-                .andRespond(withSuccess(answerJson(), MediaType.APPLICATION_JSON));
+    void shouldTellTheReaderWhyTheOperationFailed() {
+        // Arrange
+        reserved(true);
+        finishedWith(new ChatOperationResponse(operation.id(), "FAILED", operation.conversationId(),
+                null, "PROVIDER_UNAVAILABLE", null, null, null));
 
-        service.onAiMention(mentionOf("@AI vì sao?"));
+        // Act
+        service.onAiMention(mentionOf("@AI chỉ mục là gì và dùng khi nào?"));
 
-        aiService.verify();
+        // Assert: the reason, not a blanket "could not answer".
+        assertEquals("Trợ lý chưa trả lời được: không kết nối được dịch vụ AI."
+                + " Nhắc lại @AI sau ít phút để thử lại.", postedAnswer().body());
+        assertEquals(operation.id(), postedAnswer().traceId());
     }
 
     @Test
-    void tellsTheReaderWhenTheAiServiceCannotBeReached() {
-        aiService.expect(requestTo(ANSWERS_URL)).andRespond(withServerError());
+    void shouldNameAnUnknownFailureCodeSoTwoFailuresCanBeToldApart() {
+        // Act
+        String body = AiMentionAnswer.failed("SOMETHING_NEW", null).body();
 
-        service.onAiMention(mentionOf("@AI chỉ số là gì và dùng khi nào?"));
-
-        assertTrue(savedReply().getBody().contains("chưa trả lời được"));
-        assertTrue(savedReply().getCitations().isEmpty());
+        // Assert
+        assertTrue(body.contains("(mã SOMETHING_NEW)"));
+        assertTrue(body.startsWith(AiMentionAnswer.NOTICE_PREFIX));
     }
 
     @Test
-    void passesTheRefusalReasonThroughWhenTheEvidenceIsInsufficient() {
-        String refusal = """
-                {"decision":"REFUSE","refusalCode":"EVIDENCE_INSUFFICIENT",
-                 "refusalReason":"Tài liệu hiện có chưa đủ để trả lời câu hỏi này."}
-                """;
-        aiService.expect(requestTo(ANSWERS_URL))
-                .andRespond(withSuccess(refusal, MediaType.APPLICATION_JSON));
+    void shouldTellTheReaderWhenTheRunEndedWithoutAStatus() {
+        // Arrange
+        reserved(true);
+        when(runner.start(eq(operation), anyBoolean(), any()))
+                .thenReturn(CompletableFuture.failedFuture(new IllegalStateException("lost")));
 
-        service.onAiMention(mentionOf("@AI chỉ số là gì và dùng khi nào?"));
+        // Act
+        service.onAiMention(mentionOf("@AI chỉ mục là gì và dùng khi nào?"));
 
-        assertEquals("Tài liệu hiện có chưa đủ để trả lời câu hỏi này.", savedReply().getBody());
+        // Assert
+        assertEquals(AiMentionAnswer.UNAVAILABLE, postedAnswer().body());
     }
 
     @Test
-    void countsTheAssistantReplyOnTheThread() {
-        Discussion discussion = discussion();
-        when(discussionRepository.findById(discussionId)).thenReturn(Optional.of(discussion));
-        aiService.expect(requestTo(ANSWERS_URL))
-                .andRespond(withSuccess(answerJson(), MediaType.APPLICATION_JSON));
+    void shouldExplainWhyTheAssistantCouldNotTakeTheQuestion() {
+        // Arrange: the commenter already has two questions running.
+        when(operations.reserve(any(), any(), any(), any(), any())).thenThrow(new ChatOperationError(
+                "CHAT_BUSY", HttpStatus.CONFLICT, "Bạn đang có hai yêu cầu đang xử lý."));
 
-        service.onAiMention(mentionOf("@AI chỉ số là gì và dùng khi nào?"));
+        // Act
+        service.onAiMention(mentionOf("@AI chỉ mục là gì và dùng khi nào?"));
 
-        assertEquals(1, discussion.getReplyCount());
-        verify(discussionRepository).save(discussion);
+        // Assert
+        assertEquals("Trợ lý chưa trả lời được: Bạn đang có hai yêu cầu đang xử lý."
+                + " Nhắc lại @AI sau ít phút để thử lại.", postedAnswer().body());
+        verify(runner, never()).start(any(), anyBoolean(), any());
     }
 
-    private DiscussionReply savedReply() {
-        ArgumentCaptor<DiscussionReply> captor = ArgumentCaptor.forClass(DiscussionReply.class);
-        verify(replyRepository).save(captor.capture());
+    @Test
+    void shouldStartEveryNoticeWithThePrefixClientsShowAsAStatusLine() {
+        // Assert: comment-thread.ts on web keys on this exact prefix.
+        assertTrue(AiMentionAnswer.UNAVAILABLE.startsWith(AiMentionAnswer.NOTICE_PREFIX));
+        assertTrue(AiMentionAnswer.declined("lý do").body().startsWith(AiMentionAnswer.NOTICE_PREFIX));
+    }
+
+    @Test
+    void shouldNotAskTwiceWhenTheMentionWasAlreadyTaken() {
+        // Arrange
+        reserved(false);
+
+        // Act
+        service.onAiMention(mentionOf("@AI chỉ mục là gì và dùng khi nào?"));
+
+        // Assert
+        verify(runner, never()).start(any(), anyBoolean(), any());
+        verify(writer, never()).post(any(), any());
+    }
+
+    private void reserved(boolean created) {
+        when(operations.reserve(any(), any(), any(), any(), any()))
+                .thenReturn(new ChatOperationService.Reservation(operation, created));
+    }
+
+    private void finishedWith(ChatOperationResponse status) {
+        when(runner.start(eq(operation), eq(false), any())).thenReturn(CompletableFuture.completedFuture(status));
+    }
+
+    private AiMentionAnswer postedAnswer() {
+        ArgumentCaptor<AiMentionAnswer> captor = ArgumentCaptor.forClass(AiMentionAnswer.class);
+        verify(writer).post(any(AiMentionEvent.class), captor.capture());
         return captor.getValue();
     }
 
+    private ChatOperationResponse completed(QuestionResponse result) {
+        return new ChatOperationResponse(operation.id(), "COMPLETED", operation.conversationId(),
+                result, null, null, null, null);
+    }
+
+    private QuestionResponse answer() {
+        CitationResponse citation = new CitationResponse(documentId, "giao-trinh-csdl.pdf", "trang 12",
+                "B-Tree index...", 0.91, "1", "chunk-1", 1, "a".repeat(64));
+        return new QuestionResponse(UUID.randomUUID(), operation.conversationId(), "ANSWER",
+                "Chỉ mục giúp truy vấn nhanh hơn [1].", "FACT", "v1.0", List.of(citation), null,
+                operation.requestId(), 0.87, false, null, operation.id(), "STRICT", List.of());
+    }
+
+    private QuestionResponse refusal(String reason) {
+        return new QuestionResponse(UUID.randomUUID(), operation.conversationId(), "REFUSE", reason,
+                "UNKNOWN", "v1.0", List.of(), "CLOUD_NOT_ALLOWED", operation.requestId(), null, null, null,
+                operation.id(), "STRICT", List.of());
+    }
+
     private AiMentionEvent mentionOf(String body) {
-        return new AiMentionEvent(workspaceId, discussionId, triggerReplyId,
-                "Chỉ mục trong CSDL", body);
+        return new AiMentionEvent(workspaceId, discussionId, triggerReplyId, "Chỉ mục trong CSDL", body, asker);
     }
 
-    private Discussion discussion() {
-        return new Discussion(discussionId, workspaceId, askerId, "Chỉ mục trong CSDL",
-                "Mình chưa rõ phần này", "QUESTION", false, "OPEN", Instant.now());
-    }
-
-    private Document document() {
-        return new Document(documentId, workspaceId, "key", "giao-trinh-csdl.pdf",
-                "application/pdf", 1024L, "sha", DocumentStatus.PROCESSED,
-                askerId, Instant.now());
-    }
-
-    private String answerJson() {
-        return """
-                {"decision":"ANSWER","intent":"FACT","evidenceScore":0.87,
-                 "answer":"Chỉ mục giúp truy vấn nhanh hơn [1].",
-                 "citations":[{"citationId":"1","documentId":"%s",
-                   "locator":"trang 12","excerpt":"B-Tree index...","score":0.91}]}
-                """.formatted(documentId);
+    private ChatOperation operation() {
+        ChatSourceSnapshot snapshot = new ChatSourceSnapshot(workspaceId, 1L, 1L, true, "f".repeat(64), List.of());
+        Instant now = Instant.now();
+        return new ChatOperation(UUID.randomUUID(), asker, triggerReplyId, "hash", workspaceId, null,
+                UUID.randomUUID(), UUID.randomUUID(), null, "chỉ mục là gì", false,
+                "ai-mention-" + triggerReplyId, "RUNNING", snapshot, null,
+                now.plusSeconds(240), now.plusSeconds(90), now.plusSeconds(86400));
     }
 }

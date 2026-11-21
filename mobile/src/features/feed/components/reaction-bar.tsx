@@ -3,10 +3,11 @@ import { Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native
 import * as Haptics from 'expo-haptics';
 
 import { UCIcon } from '../../../components/uc-icon';
-import { radii, workplace } from '../../../design/tokens';
+import { radii, workplace, palette } from '../../../design/tokens';
 import { useToast } from '../../../lib/toast-context';
 import { feedApi } from '../feed-api';
 import { REACTIONS, REACTION_EMOJI, reactionLabel } from '../reactions';
+import { fonts } from '../../../design/typography';
 
 import type { ReactionSummary, ReactionType } from '../feed-types';
 
@@ -130,11 +131,11 @@ const styles = StyleSheet.create({
   triggerMine: { backgroundColor: workplace.accentSoft },
   pressed: { opacity: 0.6 },
   emoji: { fontSize: 15 },
-  triggerText: { color: workplace.inkMuted, fontSize: 13, fontFamily: 'Inter_500Medium' },
-  triggerTextMine: { color: workplace.accent, fontFamily: 'Inter_700Bold' },
+  triggerText: { color: workplace.inkMuted, fontSize: 13, fontFamily: fonts.medium },
+  triggerTextMine: { color: workplace.accent, fontFamily: fonts.bold },
   tally: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   tallyEmojis: { fontSize: 13 },
-  tallyCount: { color: workplace.inkMuted, fontSize: 13, fontFamily: 'Inter_500Medium' },
+  tallyCount: { color: workplace.inkMuted, fontSize: 13, fontFamily: fonts.medium },
   scrim: {
     flex: 1,
     alignItems: 'center',
@@ -147,7 +148,7 @@ const styles = StyleSheet.create({
     padding: 6,
     borderRadius: 32,
     backgroundColor: workplace.card,
-    shadowColor: '#0F172A',
+    shadowColor: palette.muc,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.18,
     shadowRadius: 20,

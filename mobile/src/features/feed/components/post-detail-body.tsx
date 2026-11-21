@@ -9,6 +9,7 @@ import { GroupMark } from '../../workspaces/components/group-mark';
 import { hasResolutionState, resolveAnswerStatus } from '../answer-status';
 import { LABEL_TEXT, STATUS_BG, STATUS_INK, STATUS_TEXT } from '../post-presentation';
 import { PostActions } from './post-actions';
+import { fonts } from '../../../design/typography';
 
 import type { DiscussionDetail, ReactionSummary } from '../feed-types';
 
@@ -84,11 +85,11 @@ const styles = StyleSheet.create({
   card: { gap: 12, padding: 16, borderRadius: radii.xl, backgroundColor: workplace.card, marginBottom: 16 },
   head: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   headText: { flex: 1, minWidth: 0 },
-  group: { color: workplace.ink, fontSize: 13, fontFamily: 'Inter_700Bold' },
+  group: { color: workplace.ink, fontSize: 13, fontFamily: fonts.bold },
   byline: { color: workplace.inkMuted, fontSize: 12 },
-  title: { color: workplace.ink, fontSize: 20, lineHeight: 27, letterSpacing: -0.3, fontFamily: 'Inter_700Bold' },
+  title: { color: workplace.ink, fontSize: 20, lineHeight: 27, letterSpacing: -0.3, fontFamily: fonts.bold },
   chip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingVertical: 5, paddingHorizontal: 10, borderRadius: radii.lg },
-  chipText: { fontSize: 12, fontFamily: 'Inter_700Bold' },
+  chipText: { fontSize: 12, fontFamily: fonts.bold },
   chipPlain: { backgroundColor: workplace.chip },
   chipTextPlain: { color: workplace.inkSoft },
   attachments: { flexDirection: 'row', alignItems: 'center', gap: 6 },
@@ -97,7 +98,7 @@ const styles = StyleSheet.create({
 
 const markdownStyles = {
   body: { color: workplace.inkSoft, fontSize: 15, lineHeight: 23 },
-  heading2: { color: workplace.ink, fontSize: 17, fontFamily: 'Inter_700Bold', marginTop: 8 },
+  heading2: { color: workplace.ink, fontSize: 17, fontFamily: fonts.bold, marginTop: 8 },
   code_inline: { backgroundColor: workplace.chip, color: workplace.ink, borderRadius: 4 },
   fence: { backgroundColor: workplace.chip, borderRadius: 8, padding: 10 },
 };

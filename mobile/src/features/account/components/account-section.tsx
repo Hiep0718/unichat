@@ -2,6 +2,8 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { shadows } from '../../../design/shadows';
+import { palette } from '../../../design/tokens';
+import { fonts } from '../../../design/typography';
 
 import type { ReactNode } from 'react';
 import type { StyleProp, ViewStyle } from 'react-native';
@@ -30,7 +32,7 @@ export function AccountSection({ title, children, style }: AccountSectionProps) 
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: palette.nen,
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingTop: 14,
@@ -38,8 +40,8 @@ const styles = StyleSheet.create({
     ...shadows.md,
   },
   title: {
-    color: '#94A3B8',
-    fontFamily: 'Inter_700Bold',
+    color: palette.mucMo,
+    fontFamily: fonts.bold,
     fontSize: 11,
     letterSpacing: 0.9,
     marginBottom: 14,

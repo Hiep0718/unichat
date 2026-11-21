@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { UCIcon } from '../../../components/uc-icon';
 import { radii, workplace } from '../../../design/tokens';
 import { ReactionBar } from './reaction-bar';
+import { fonts } from '../../../design/typography';
 
 import type { ReactionSummary } from '../feed-types';
 
@@ -69,7 +70,7 @@ const styles = StyleSheet.create({
     borderTopColor: workplace.line,
   },
   replies: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 5, paddingHorizontal: 4 },
-  repliesText: { color: workplace.inkMuted, fontSize: 13, fontFamily: 'Inter_500Medium' },
+  repliesText: { color: workplace.inkMuted, fontSize: 13, fontFamily: fonts.medium },
   save: {
     width: 36,
     height: 36,

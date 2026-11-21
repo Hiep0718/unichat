@@ -60,7 +60,7 @@ describe('summariseWorkspaces', () => {
     const labels = summariseWorkspaces([]).map((stat) => stat.label);
 
     // Assert
-    expect(labels).toEqual(['Workspace', 'Tài liệu', 'Thành viên']);
+    expect(labels).toEqual(['Nhóm', 'Tài liệu', 'Thành viên']);
   });
 });
 

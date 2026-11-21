@@ -49,7 +49,7 @@ describe('WorkspaceHero', () => {
       <WorkspaceHero {...heroProps({ workspaceCount: 0, documentCount: 0, memberCount: 0 })} />,
     );
 
-    expect(getByText('Workspace')).toBeTruthy();
+    expect(getByText('Nhóm')).toBeTruthy();
     expect(getByText('Tài liệu')).toBeTruthy();
     expect(getByText('Thành viên')).toBeTruthy();
   });

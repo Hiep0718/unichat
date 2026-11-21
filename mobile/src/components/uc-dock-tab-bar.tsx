@@ -3,8 +3,9 @@ import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Tabs } from 'expo-router';
 
-import { dock } from '../design/tokens';
+import { dock, palette } from '../design/tokens';
 import { UCIcon } from './uc-icon';
+import { fonts } from '../design/typography';
 
 import type { IconName } from './uc-icon';
 
@@ -160,8 +161,8 @@ const styles = StyleSheet.create({
   },
   tab: { flex: 1, height: '100%', alignItems: 'center', justifyContent: 'center', gap: 3 },
   pressed: { opacity: 0.7, transform: [{ scale: 0.94 }] },
-  label: { fontSize: 11, fontFamily: 'Inter_500Medium', color: dock.icon },
-  labelActive: { fontFamily: 'Inter_700Bold', color: dock.iconActive },
+  label: { fontSize: 11, fontFamily: fonts.medium, color: dock.icon },
+  labelActive: { fontFamily: fonts.bold, color: dock.iconActive },
   ai: {
     width: 54,
     height: 54,
@@ -176,7 +177,7 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   // Đang ở màn Hỏi AI: nút "sáng lên" thành nền trắng viền màu nhấn, như mockup.
-  aiFocused: { backgroundColor: '#FFFFFF', borderWidth: 3, borderColor: dock.accent },
+  aiFocused: { backgroundColor: palette.nen, borderWidth: 3, borderColor: dock.accent },
   aiPressed: { opacity: 0.85, transform: [{ scale: 0.96 }] },
   badge: {
     position: 'absolute',
@@ -192,5 +193,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  badgeText: { color: '#FFFFFF', fontSize: 9, fontFamily: 'Inter_700Bold' },
+  badgeText: { color: palette.trenAnh, fontSize: 9, fontFamily: fonts.bold },
 });

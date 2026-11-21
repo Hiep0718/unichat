@@ -3,8 +3,9 @@ import { ActivityIndicator, Pressable, StyleSheet, TextInput, View } from 'react
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { UCIcon } from '../../../components/uc-icon';
-import { dock, messenger } from '../../../design/tokens';
+import { button, messenger, palette } from '../../../design/tokens';
 import { MAX_MESSAGE_LENGTH } from '../messages-api';
+import { fonts } from '../../../design/typography';
 
 interface MessageComposerProps {
   readonly sending: boolean;
@@ -37,7 +38,7 @@ export function MessageComposer({ sending, onSend }: MessageComposerProps) {
         value={text}
         onChangeText={setText}
         placeholder="Nhập tin nhắn..."
-        placeholderTextColor="#94A3B8"
+        placeholderTextColor={palette.mucMo}
         multiline
         maxLength={MAX_MESSAGE_LENGTH}
         testID="message-input"
@@ -52,8 +53,8 @@ export function MessageComposer({ sending, onSend }: MessageComposerProps) {
         testID="send-message-button"
       >
         {sending
-          ? <ActivityIndicator size="small" color="#FFFFFF" />
-          : <UCIcon name="send" size={20} color="#FFFFFF" />}
+          ? <ActivityIndicator size="small" color={palette.trenAnh} />
+          : <UCIcon name="send" size={20} color={palette.trenAnh} />}
       </Pressable>
     </View>
   );
@@ -80,16 +81,16 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     backgroundColor: messenger.field,
     fontSize: 15,
-    fontFamily: 'Inter_400Regular',
+    fontFamily: fonts.regular,
     color: messenger.theirsInk,
   },
   send: {
     width: 44,
     height: 44,
-    borderRadius: 14,
-    backgroundColor: messenger.disabled,
+    borderRadius: button.radius,
+    backgroundColor: button.disabledBg,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  sendActive: { backgroundColor: dock.accent },
+  sendActive: { backgroundColor: button.primaryBg },
 });

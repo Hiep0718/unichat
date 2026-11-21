@@ -12,7 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 
-import { colors, spacing } from '../../src/design/tokens';
+import { colors, spacing, palette } from '../../src/design/tokens';
 import { typography } from '../../src/design/typography';
 import { UCTextInput } from '../../src/components/uc-text-input';
 import { UCButton } from '../../src/components/uc-button';
@@ -93,7 +93,7 @@ export default function LoginScreen() {
         <SafeAreaView style={styles.safe} edges={['top']}>
           <View style={styles.brandRow}>
             <View style={styles.brandMark}>
-              <UCIcon name="school" size={22} color="#FFFFFF" />
+              <UCIcon name="school" size={22} color={palette.trenAnh} />
             </View>
             <View>
               <Text style={styles.brandName}>UniChat</Text>
@@ -106,7 +106,7 @@ export default function LoginScreen() {
           </Text>
 
           <View style={styles.heroNote}>
-            <UCIcon name="auto-awesome" size={15} color="#FFFFFF" />
+            <UCIcon name="auto-awesome" size={15} color={palette.trenAnh} />
             <Text style={styles.heroNoteText}>
               Hiểu sâu hơn từ chính nguồn tài liệu của bạn
             </Text>
@@ -228,13 +228,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  brandName: { ...typography.bodyLg, color: '#FFFFFF', fontWeight: '700' },
+  brandName: { ...typography.bodyLg, color: palette.trenAnh, fontWeight: '700' },
   brandSub: { ...typography.labelSm, color: 'rgba(255,255,255,0.68)' },
 
   heroTitle: {
     ...typography.headlineLg,
     marginTop: spacing.lg,
-    color: '#FFFFFF',
+    color: palette.trenAnh,
     fontWeight: '700',
     lineHeight: 34,
   },

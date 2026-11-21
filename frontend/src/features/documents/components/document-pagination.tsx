@@ -4,6 +4,8 @@
  * Rendered only when there is more than one page: a bar that always reads
  * "Trang 1 / 1" is chrome reporting on itself.
  */
+import { SelectMenu } from '../../../components/select-menu';
+
 import './document-pagination.css';
 
 interface DocumentPaginationProps {
@@ -38,19 +40,16 @@ export function DocumentPagination({
           Hiển thị <strong>{first}</strong> – <strong>{last}</strong> trong tổng số{' '}
           <strong>{totalItems}</strong> tệp
         </span>
-        <select
+        <SelectMenu
           className="document-pagination__size-select"
+          label="Số dòng mỗi trang"
           value={pageSize}
-          onChange={(e) => {
-            onPageSize(Number(e.target.value));
+          options={PAGE_SIZES.map((size) => ({ value: size, label: `${size} dòng / trang` }))}
+          onChange={(size) => {
+            onPageSize(size);
             onPage(1);
           }}
-          aria-label="Số dòng mỗi trang"
-        >
-          {PAGE_SIZES.map((size) => (
-            <option key={size} value={size}>{size} dòng / trang</option>
-          ))}
-        </select>
+        />
       </div>
 
       <div className="document-pagination__controls">

@@ -10,7 +10,7 @@
   align-items: center;
   gap: 8px;
   z-index: 30;
-  background: linear-gradient(to top, rgba(248, 250, 252, 0.98) 68%, rgba(248, 250, 252, 0.82) 86%, rgba(248, 250, 252, 0) 100%);
+  background: linear-gradient(to top, color-mix(in srgb, var(--be-mat) 98%, transparent) 68%, color-mix(in srgb, var(--be-mat) 82%, transparent) 86%, color-mix(in srgb, var(--be-mat) 0%, transparent) 100%);
   pointer-events: none;
 }
 
@@ -19,8 +19,8 @@
   max-width: 820px;
   display: flex;
   flex-direction: column;
-  background: #ffffff;
-  border: 1px solid #d5dde7;
+  background: var(--nen);
+  border: 1px solid var(--vien);
   border-radius: 18px;
   box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04), 0 14px 32px -12px rgba(15, 23, 42, 0.14);
   pointer-events: auto;
@@ -28,22 +28,22 @@
 }
 
 .chat-composer:hover:not(.chat-composer--disabled):not(:focus-within) {
-  border-color: #b8c5d6;
+  border-color: var(--dieu-khien);
 }
 
 .chat-composer:focus-within {
-  border-color: var(--color-secondary, #00687a);
+  border-color: var(--color-secondary);
   box-shadow: 0 0 0 3.5px rgba(0, 104, 122, 0.12), 0 16px 36px -14px rgba(0, 104, 122, 0.24);
 }
 
 .chat-composer--expanded:focus-within {
-  border-color: #0284c7;
+  border-color: var(--nhan);
   box-shadow: 0 0 0 3.5px rgba(2, 132, 199, 0.13), 0 16px 36px -14px rgba(2, 132, 199, 0.24);
 }
 
 .chat-composer--disabled {
-  background: #f8fafc;
-  border-color: #e2e8f0;
+  background: var(--be-mat);
+  border-color: var(--vien);
   box-shadow: none;
   opacity: 0.78;
 }
@@ -60,13 +60,13 @@
   font: var(--font-body-md);
   font-size: 14.5px;
   line-height: 1.55;
-  color: var(--color-on-surface, #0f172a);
+  color: var(--color-on-surface);
   overflow-y: auto;
   box-sizing: border-box;
 }
 
 .chat-composer__field::placeholder {
-  color: #94a3b8;
+  color: var(--muc-mo);
 }
 
 .chat-composer__field:disabled {
@@ -78,7 +78,7 @@
 }
 
 .chat-composer__field::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: var(--vien);
   border-radius: 4px;
 }
 
@@ -105,25 +105,25 @@
   gap: 5px;
   padding: 4px 10px;
   border-radius: 9999px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--be-mat);
+  border: 1px solid var(--vien);
   font: var(--font-label-sm);
   font-size: 11.5px;
   font-weight: 600;
-  color: #475569;
+  color: var(--muc-nhat);
   white-space: nowrap;
 }
 
 .chat-composer__corpus--pending {
-  background: #f0f9ff;
-  border-color: #bae6fd;
-  color: #0369a1;
+  background: var(--nhan-nhat);
+  border-color: color-mix(in srgb, var(--nhan) 35%, transparent);
+  color: var(--nhan);
 }
 
 .chat-composer__corpus--empty {
-  background: #fffbeb;
-  border-color: #fde68a;
-  color: #b45309;
+  background: var(--pill-canh-nen);
+  border-color: color-mix(in srgb, var(--canh-bao) 35%, transparent);
+  color: var(--canh-bao);
 }
 
 .chat-composer__actions {
@@ -136,7 +136,7 @@
 .chat-composer__hint {
   font: var(--font-label-sm);
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--muc-mo);
   white-space: nowrap;
 }
 
@@ -144,16 +144,16 @@
   font: var(--font-label-sm);
   font-size: 11px;
   font-variant-numeric: tabular-nums;
-  color: #64748b;
+  color: var(--muc-mo);
 }
 
 .chat-composer__counter--warn {
-  color: #b45309;
+  color: var(--canh-bao);
   font-weight: 600;
 }
 
 .chat-composer__counter--limit {
-  color: #b91c1c;
+  color: var(--hong);
   font-weight: 700;
 }
 
@@ -166,9 +166,9 @@
   height: 36px;
   padding: 0 9px;
   border: none;
-  border-radius: 11px;
-  background: linear-gradient(135deg, #00687a 0%, #0284c7 100%);
-  color: #ffffff;
+  border-radius: var(--btn-radius);
+  background: var(--nhan);
+  color: var(--nhan-muc);
   font: var(--font-label-sm);
   font-size: 12px;
   font-weight: 700;
@@ -183,26 +183,26 @@
 }
 
 .chat-composer__send:disabled {
-  background: #e2e8f0;
-  color: #94a3b8;
+  background: var(--khung);
+  color: var(--muc-mo);
   box-shadow: none;
   cursor: not-allowed;
 }
 
 .chat-composer__send--stop {
   padding: 0 13px;
-  background: #0f172a;
+  background: var(--muc);
   box-shadow: 0 3px 10px rgba(15, 23, 42, 0.2);
 }
 
 .chat-composer__send--stop:hover:not(:disabled) {
-  background: #1e293b;
+  background: var(--muc);
   box-shadow: 0 5px 14px rgba(15, 23, 42, 0.28);
 }
 
 .chat-composer__send:focus-visible,
 .knowledge-mode-switch__option:focus-visible {
-  outline: 2px solid var(--color-secondary, #00687a);
+  outline: 2px solid var(--color-secondary);
   outline-offset: 2px;
 }
 
@@ -216,25 +216,25 @@
   padding: 0 8px;
   font: var(--font-label-sm);
   font-size: 11.5px;
-  color: #64748b;
+  color: var(--muc-mo);
   pointer-events: auto;
 }
 
 .chat-composer__shortcut {
   margin-left: auto;
   white-space: nowrap;
-  color: #94a3b8;
+  color: var(--muc-mo);
 }
 
 .chat-composer__shortcut kbd {
   font-family: inherit;
   font-size: 10.5px;
   padding: 1px 5px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--vien);
   border-bottom-width: 2px;
   border-radius: 4px;
-  background: #ffffff;
-  color: #64748b;
+  background: var(--nen);
+  color: var(--muc-mo);
 }
 
 /* ── Knowledge scope segmented control ── */
@@ -242,9 +242,9 @@
   display: inline-flex;
   padding: 3px;
   gap: 2px;
-  background: #f1f5f9;
-  border: 1px solid #e2e8f0;
-  border-radius: 11px;
+  background: var(--ke);
+  border: 1px solid var(--vien);
+  border-radius: var(--radius-full);
 }
 
 .knowledge-mode-switch__option {
@@ -253,32 +253,32 @@
   gap: 5px;
   padding: 5px 11px;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--btn-radius);
   background: transparent;
   font: var(--font-label-sm);
   font-size: 12px;
   font-weight: 600;
-  color: #64748b;
+  color: var(--muc-mo);
   cursor: pointer;
   white-space: nowrap;
   transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .knowledge-mode-switch__option:hover:not(:disabled):not(.knowledge-mode-switch__option--active) {
-  color: #0f172a;
+  color: var(--muc);
 }
 
 .knowledge-mode-switch__option--active {
-  background: #ffffff;
+  background: var(--nen);
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08), 0 1px 1px rgba(15, 23, 42, 0.04);
 }
 
 .knowledge-mode-switch__option--strict {
-  color: #0f766e;
+  color: var(--nhan);
 }
 
 .knowledge-mode-switch__option--expanded {
-  color: #0284c7;
+  color: var(--nhan);
 }
 
 .knowledge-mode-switch__option:disabled {

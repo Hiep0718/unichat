@@ -2,6 +2,25 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchAdminAuditEvents } from './admin-api';
 import { getSessionSnapshot } from '../../lib/session-store';
+import { SelectMenu } from '../../components/select-menu';
+
+import type { SelectMenuOption } from '../../components/select-menu';
+
+const AUDIT_ACTIONS = [
+  'AUTH_LOGIN_SUCCESS',
+  'AUTH_LOGIN_FAILURE',
+  'CHAT_COMPLETED',
+  'CHAT_FAILED',
+  'CHAT_CANCELLED',
+  'ADMIN_KEY_PROBE',
+] as const;
+
+const AUDIT_OUTCOMES = ['SUCCESS', 'FAILURE', 'DENIED'] as const;
+
+/** Prepends the "no filter" choice, stored as an empty string. */
+function withAll(values: readonly string[]): readonly SelectMenuOption<string>[] {
+  return [{ value: '', label: 'Tất cả' }, ...values.map((value) => ({ value, label: value }))];
+}
 
 /** Reads metadata-only audit pages with explicit filters and failures. */
 export function AdminAuditPage() {
@@ -24,41 +43,30 @@ export function AdminAuditPage() {
       <div className="admin-page__toolbar">
         <label>
           Hành động
-          <select
+          <SelectMenu
+            variant="field"
+            label="Hành động"
             value={action}
-            onChange={(event) => {
-              setAction(event.target.value);
+            options={withAll(AUDIT_ACTIONS)}
+            onChange={(value) => {
+              setAction(value);
               setPage(0);
             }}
-          >
-            <option value="">Tất cả</option>
-            {[
-              'AUTH_LOGIN_SUCCESS',
-              'AUTH_LOGIN_FAILURE',
-              'CHAT_COMPLETED',
-              'CHAT_FAILED',
-              'CHAT_CANCELLED',
-              'ADMIN_KEY_PROBE',
-            ].map((value) => (
-              <option key={value}>{value}</option>
-            ))}
-          </select>
+          />
         </label>
 
         <label>
           Kết quả
-          <select
+          <SelectMenu
+            variant="field"
+            label="Kết quả"
             value={outcome}
-            onChange={(event) => {
-              setOutcome(event.target.value);
+            options={withAll(AUDIT_OUTCOMES)}
+            onChange={(value) => {
+              setOutcome(value);
               setPage(0);
             }}
-          >
-            <option value="">Tất cả</option>
-            {['SUCCESS', 'FAILURE', 'DENIED'].map((value) => (
-              <option key={value}>{value}</option>
-            ))}
-          </select>
+          />
         </label>
       </div>
 

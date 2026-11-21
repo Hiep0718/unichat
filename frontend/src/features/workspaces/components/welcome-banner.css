@@ -141,20 +141,12 @@
   outline: none;
 }
 
-.hero-ask__pick {
+.select-menu__trigger.hero-ask__select {
   flex-shrink: 0;
-  max-inline-size: 150px;
-}
-
-.hero-ask__select {
-  max-inline-size: 150px;
-  padding: 4px 6px;
-  border: none;
-  border-radius: var(--radius-md);
+  max-inline-size: 170px;
+  padding: 5px 6px 5px 11px;
   background: var(--be-mat);
-  font: var(--font-label-sm);
   color: var(--muc-nhat);
-  cursor: pointer;
 }
 
 .hero-ask__send {

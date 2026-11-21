@@ -163,11 +163,11 @@
   /* Màu nhấn đặc: đây là việc duy nhất mà màn hình này tồn tại vì nó, nên
      nó là chỗ màu nhấn xứng đáng nhất trên cả trang. */
   background: var(--nhan);
-  color: var(--nhan-muc);
+  color: var(--btn-primary-ink);
   font: var(--font-label-md);
   font-weight: 600;
   border: none;
-  border-radius: var(--radius-xl);
+  border-radius: var(--btn-radius);
   cursor: pointer;
   transition: background var(--transition-fast), opacity var(--transition-fast);
 }

@@ -113,9 +113,9 @@
   inline-size: 100%;
   padding: 13px 16px;
   border: none;
-  border-radius: var(--radius-xl);
+  border-radius: var(--btn-radius);
   background: var(--nhan);
-  color: var(--nhan-muc);
+  color: var(--btn-primary-ink);
   font: var(--font-label-md);
   font-weight: 600;
   cursor: pointer;

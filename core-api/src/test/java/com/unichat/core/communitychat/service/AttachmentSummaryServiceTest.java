@@ -2,177 +2,218 @@ package com.unichat.core.communitychat.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withServerError;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.springframework.http.MediaType;
-import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.test.web.client.MockRestServiceServer;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.http.HttpStatus;
 
+import com.unichat.core.chat.api.AskQuestionRequest;
+import com.unichat.core.chat.api.ChatOperationResponse;
+import com.unichat.core.chat.api.QuestionResponse;
+import com.unichat.core.chat.domain.ChatOperation;
+import com.unichat.core.chat.service.ChatActor;
+import com.unichat.core.chat.service.ChatOperationError;
+import com.unichat.core.chat.service.ChatOperationRunner;
+import com.unichat.core.chat.service.ChatOperationService;
+import com.unichat.core.chat.service.ChatSourceSnapshot;
+import com.unichat.core.communitychat.api.PostAttachmentResponse;
 import com.unichat.core.communitychat.domain.AttachmentKind;
 import com.unichat.core.communitychat.domain.PostAttachment;
-import com.unichat.core.communitychat.domain.PostAttachmentRepository;
 import com.unichat.core.communitychat.domain.SummaryState;
-import com.unichat.core.document.domain.DocumentProcessedEvent;
-import com.unichat.core.shared.config.ServiceTokenIssuer;
 
 /**
- * A document posted to a thread is summarised once it becomes readable, from
- * that document alone, and says so plainly when no summary could be made.
+ * A member asks for an attachment's summary; it is produced from that document
+ * alone, as their own authorized chat operation, and stored for every reader.
  */
 class AttachmentSummaryServiceTest {
 
-    private static final String ANSWERS_URL = "http://ai.test/internal/v1/retrieval/answers";
-
-    private PostAttachmentRepository attachmentRepository;
-    private MockRestServiceServer aiService;
-    private AttachmentSummaryService service;
-
     private final UUID workspaceId = UUID.randomUUID();
-    private final UUID documentId = UUID.randomUUID();
     private final UUID discussionId = UUID.randomUUID();
-    private final UUID uploaderId = UUID.randomUUID();
+    private final UUID documentId = UUID.randomUUID();
+    private final ChatActor asker = new ChatActor(UUID.randomUUID(), UUID.randomUUID(), 2L);
+
+    private AttachmentSummaryStore store;
+    private ChatOperationService operations;
+    private ChatOperationRunner runner;
+    private AttachmentSummaryService service;
+    private PostAttachment attachment;
+    private ChatOperation operation;
 
     @BeforeEach
     void setUp() {
-        attachmentRepository = mock(PostAttachmentRepository.class);
-        ServiceTokenIssuer tokenIssuer = mock(ServiceTokenIssuer.class);
-        when(tokenIssuer.issueToken()).thenReturn("Bearer test-token");
-
-        RestTemplate restTemplate = new RestTemplate();
-        aiService = MockRestServiceServer.bindTo(restTemplate).build();
-        AiRetrievalClient retrievalClient = new AiRetrievalClient(tokenIssuer, restTemplate);
-        ReflectionTestUtils.setField(retrievalClient, "aiServiceUrl", "http://ai.test");
-        service = new AttachmentSummaryService(attachmentRepository, retrievalClient);
+        store = mock(AttachmentSummaryStore.class);
+        operations = mock(ChatOperationService.class);
+        runner = mock(ChatOperationRunner.class);
+        service = new AttachmentSummaryService(store, operations, runner);
+        attachment = new PostAttachment(UUID.randomUUID(), discussionId, AttachmentKind.DOCUMENT, "key",
+                "giao-trinh.pdf", "application/pdf", 2048L, documentId, asker.userId(), Instant.now());
+        operation = operation();
+        when(store.readSummarisable(workspaceId, discussionId, attachment.getId(), asker.userId()))
+                .thenReturn(attachment);
     }
 
     @Test
-    void shouldSummariseFromTheAttachedDocumentAloneRatherThanTheWholeLibrary() {
+    void shouldSummariseFromTheAttachedDocumentAloneAsTheAskingMember() {
         // Arrange
-        when(attachmentRepository.findByDocumentId(documentId)).thenReturn(List.of(attachment()));
-        aiService.expect(requestTo(ANSWERS_URL))
-                .andExpect(jsonPath("$.allowedDocumentIds.length()").value(1))
-                .andExpect(jsonPath("$.allowedDocumentIds[0]").value(documentId.toString()))
-                .andRespond(withSuccess(summaryJson(), MediaType.APPLICATION_JSON));
+        reserved();
+        finishedWith(completed(answer("Giáo trình trình bày chỉ mục B-Tree.")));
 
         // Act
-        service.onDocumentProcessed(new DocumentProcessedEvent(documentId, workspaceId));
+        request();
 
         // Assert
-        aiService.verify();
+        ArgumentCaptor<AskQuestionRequest> question = ArgumentCaptor.forClass(AskQuestionRequest.class);
+        verify(operations).reserve(eq(asker), eq(workspaceId), question.capture(), any(), any(), eq(documentId));
+        assertEquals(AttachmentSummaryService.QUESTION, question.getValue().question());
     }
 
     @Test
-    void shouldStoreTheSummaryAndMarkItReadyForTheReader() {
+    void shouldStoreTheSummaryForEveryReader() {
         // Arrange
-        when(attachmentRepository.findByDocumentId(documentId)).thenReturn(List.of(attachment()));
-        aiService.expect(requestTo(ANSWERS_URL))
-                .andRespond(withSuccess(summaryJson(), MediaType.APPLICATION_JSON));
+        reserved();
+        finishedWith(completed(answer("  Giáo trình trình bày chỉ mục B-Tree.  ")));
 
         // Act
-        service.onDocumentProcessed(new DocumentProcessedEvent(documentId, workspaceId));
+        request();
 
         // Assert
-        PostAttachment saved = savedAttachment();
-        assertEquals(SummaryState.READY, saved.getSummaryState());
-        assertTrue(saved.getAiSummary().contains("chỉ mục"));
+        verify(store).record(workspaceId, discussionId, attachment.getId(), "Giáo trình trình bày chỉ mục B-Tree.");
     }
 
     @Test
-    void shouldMarkTheSummaryUnavailableWhenTheAssistantRefuses() {
-        // Arrange: a refusal carries no answer, and is not a summary.
-        when(attachmentRepository.findByDocumentId(documentId)).thenReturn(List.of(attachment()));
-        String refusal = """
-                {"decision":"REFUSE","refusalCode":"EVIDENCE_INSUFFICIENT",
-                 "refusalReason":"Không đủ dữ liệu."}
-                """;
-        aiService.expect(requestTo(ANSWERS_URL))
-                .andRespond(withSuccess(refusal, MediaType.APPLICATION_JSON));
-
-        // Act
-        service.onDocumentProcessed(new DocumentProcessedEvent(documentId, workspaceId));
-
-        // Assert
-        PostAttachment saved = savedAttachment();
-        assertEquals(SummaryState.UNAVAILABLE, saved.getSummaryState());
-        assertNull(saved.getAiSummary());
-    }
-
-    @Test
-    void shouldMarkTheSummaryUnavailableWhenTheAiServiceCannotBeReached() {
+    void shouldAnswerPendingAndMarkTheRequestBeforeTheOperationRuns() {
         // Arrange
-        when(attachmentRepository.findByDocumentId(documentId)).thenReturn(List.of(attachment()));
-        aiService.expect(requestTo(ANSWERS_URL)).andRespond(withServerError());
+        reserved();
+        when(runner.start(eq(operation), eq(false), any())).thenReturn(new CompletableFuture<>());
 
         // Act
-        service.onDocumentProcessed(new DocumentProcessedEvent(documentId, workspaceId));
+        PostAttachmentResponse response = request();
 
         // Assert
-        assertEquals(SummaryState.UNAVAILABLE, savedAttachment().getSummaryState());
+        assertEquals(SummaryState.PENDING, response.summaryState());
+        verify(store).markRequested(attachment.getId());
+        verify(store, never()).record(any(), any(), any(), any());
     }
 
     @Test
-    void shouldSummariseEverySharedAttachmentWhenTheSameFileWasPostedTwice() {
+    void shouldReturnAnExistingSummaryWithoutAskingAgain() {
         // Arrange
-        when(attachmentRepository.findByDocumentId(documentId))
-                .thenReturn(List.of(attachment(), attachment()));
-        aiService.expect(requestTo(ANSWERS_URL))
-                .andRespond(withSuccess(summaryJson(), MediaType.APPLICATION_JSON));
+        attachment.attachSummary("Đã có tóm tắt.");
 
         // Act
-        service.onDocumentProcessed(new DocumentProcessedEvent(documentId, workspaceId));
+        PostAttachmentResponse response = request();
 
-        // Assert: one retrieval run, both attachments updated.
-        aiService.verify();
-        verify(attachmentRepository, org.mockito.Mockito.times(2)).save(any());
+        // Assert
+        assertEquals(SummaryState.READY, response.summaryState());
+        verify(operations, never()).reserve(any(), any(), any(), any(), any(), any());
     }
 
     @Test
-    void shouldNotCallTheAiServiceForAnOrdinaryLibraryUpload() {
-        // Arrange: a document nobody attached to a post.
-        when(attachmentRepository.findByDocumentId(documentId)).thenReturn(List.of());
+    void shouldStoreNoSummaryWhenTheAssistantRefuses() {
+        // Arrange
+        reserved();
+        finishedWith(completed(refusal()));
 
         // Act
-        service.onDocumentProcessed(new DocumentProcessedEvent(documentId, workspaceId));
+        request();
 
         // Assert
-        aiService.verify();
-        verify(attachmentRepository, never()).save(any());
+        verify(store).record(eq(workspaceId), eq(discussionId), eq(attachment.getId()), isNull());
     }
 
-    private PostAttachment savedAttachment() {
-        ArgumentCaptor<PostAttachment> captor = ArgumentCaptor.forClass(PostAttachment.class);
-        verify(attachmentRepository, org.mockito.Mockito.atLeastOnce()).save(captor.capture());
-        return captor.getValue();
+    @Test
+    void shouldStoreNoSummaryWhenTheOperationFailed() {
+        // Arrange
+        reserved();
+        finishedWith(new ChatOperationResponse(operation.id(), "FAILED", operation.conversationId(),
+                null, "PROVIDER_UNAVAILABLE", null, null, null));
+
+        // Act
+        request();
+
+        // Assert
+        verify(store).record(eq(workspaceId), eq(discussionId), eq(attachment.getId()), isNull());
     }
 
-    private PostAttachment attachment() {
-        return new PostAttachment(UUID.randomUUID(), discussionId, AttachmentKind.DOCUMENT,
-                "posts/key", "giao-trinh-csdl.pdf", "application/pdf", 2048L,
-                documentId, uploaderId, Instant.now());
+    @Test
+    void shouldLeaveTheAttachmentUntouchedWhenTheMemberCannotAskRightNow() {
+        // Arrange: the member already has two questions running.
+        when(operations.reserve(any(), any(), any(), any(), any(), any())).thenThrow(new ChatOperationError(
+                "CHAT_BUSY", HttpStatus.CONFLICT, "Bạn đang có hai yêu cầu đang xử lý."));
+
+        // Act & Assert
+        assertThrows(ChatOperationError.class, this::request);
+        verify(store, never()).markRequested(any());
+        verify(runner, never()).start(any(), anyBoolean(), any());
     }
 
-    private String summaryJson() {
-        return """
-                {"decision":"ANSWER","intent":"SUMMARY","evidenceScore":0.9,
-                 "answer":"Tài liệu trình bày cách đánh chỉ mục trong CSDL quan hệ.",
-                 "citations":[]}
-                """;
+    @Test
+    void shouldCutAnOverlongSummary() {
+        // Act
+        String summary = AttachmentSummaryService.summaryOf(completed(answer("a".repeat(2000))), null);
+
+        // Assert
+        assertEquals(1501, summary.length());
+        assertTrue(summary.endsWith("…"));
+    }
+
+    @Test
+    void shouldTreatALostOperationAsNoSummary() {
+        // Act & Assert
+        assertNull(AttachmentSummaryService.summaryOf(null, new IllegalStateException("lost")));
+    }
+
+    private PostAttachmentResponse request() {
+        return service.request(workspaceId, discussionId, attachment.getId(), asker);
+    }
+
+    private void reserved() {
+        when(operations.reserve(any(), any(), any(), any(), any(), any()))
+                .thenReturn(new ChatOperationService.Reservation(operation, true));
+    }
+
+    private void finishedWith(ChatOperationResponse status) {
+        when(runner.start(eq(operation), eq(false), any())).thenReturn(CompletableFuture.completedFuture(status));
+    }
+
+    private ChatOperationResponse completed(QuestionResponse result) {
+        return new ChatOperationResponse(operation.id(), "COMPLETED", operation.conversationId(),
+                result, null, null, null, null);
+    }
+
+    private QuestionResponse answer(String text) {
+        return new QuestionResponse(UUID.randomUUID(), operation.conversationId(), "ANSWER", text, "SUMMARY",
+                "v1.0", List.of(), null, operation.requestId(), 0.9, false, null, operation.id(), "STRICT", List.of());
+    }
+
+    private QuestionResponse refusal() {
+        return new QuestionResponse(UUID.randomUUID(), operation.conversationId(), "REFUSE",
+                "Tài liệu chưa đủ để tóm tắt.", "UNKNOWN", "v1.0", List.of(), "EVIDENCE_INSUFFICIENT",
+                operation.requestId(), null, null, null, operation.id(), "STRICT", List.of());
+    }
+
+    private ChatOperation operation() {
+        ChatSourceSnapshot snapshot = new ChatSourceSnapshot(workspaceId, 1L, 1L, true, "f".repeat(64), List.of());
+        Instant now = Instant.now();
+        return new ChatOperation(UUID.randomUUID(), asker, UUID.randomUUID(), "hash", workspaceId, null,
+                UUID.randomUUID(), UUID.randomUUID(), null, AttachmentSummaryService.QUESTION, false,
+                "attachment-summary-1", "RUNNING", snapshot, null,
+                now.plusSeconds(240), now.plusSeconds(90), now.plusSeconds(86400));
     }
 }

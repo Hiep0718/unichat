@@ -13,7 +13,7 @@ const questionSchema = z.object({ question: z.string().min(3).max(2000),
   conversationId: z.string().uuid().optional(), allowExternalKnowledge: z.boolean().default(false),
   taskType: z.enum(['QUESTION', 'WORKSPACE_SUMMARY']).optional() }).superRefine((value, context) => {
     if (value.taskType === 'WORKSPACE_SUMMARY' && value.allowExternalKnowledge) {
-      context.addIssue({ code: 'custom', message: 'Tóm tắt Workspace chỉ dùng tài liệu.' });
+      context.addIssue({ code: 'custom', message: 'Tóm tắt nhóm chỉ dùng tài liệu.' });
     }
   });
 const keySchema = z.string().uuid();

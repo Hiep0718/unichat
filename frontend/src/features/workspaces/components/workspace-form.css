@@ -49,7 +49,7 @@
   height: 32px;
   background: none;
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: var(--btn-radius);
   color: var(--color-on-surface-variant);
   cursor: pointer;
   transition: background var(--transition-fast);
@@ -229,32 +229,33 @@
 
 .workspace-form__cancel-btn {
   padding: 10px 16px;
-  background: none;
-  border: 1px solid var(--color-outline-variant);
-  border-radius: var(--radius-lg);
+  background: var(--btn-secondary-bg);
+  border: 1px solid var(--btn-secondary-border);
+  border-radius: var(--btn-radius);
   font: var(--font-label-md);
-  color: var(--color-on-surface-variant);
+  color: var(--btn-secondary-ink);
   cursor: pointer;
   transition: background var(--transition-fast);
 }
 
 .workspace-form__cancel-btn:hover {
-  background: var(--color-surface-container-low);
+  background: var(--btn-secondary-bg-hover);
 }
 
 .workspace-form__submit-btn {
   padding: 10px 20px;
-  background: var(--color-primary);
-  color: var(--color-on-primary);
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-ink);
   font: var(--font-label-md);
   border: none;
-  border-radius: var(--radius-lg);
+  border-radius: var(--btn-radius);
   cursor: pointer;
   transition: opacity var(--transition-fast);
 }
 
 .workspace-form__submit-btn:hover:not(:disabled) {
   opacity: 0.9;
+  background: var(--btn-primary-bg-hover);
 }
 
 .workspace-form__submit-btn:disabled {

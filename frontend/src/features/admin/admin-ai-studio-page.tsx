@@ -5,6 +5,8 @@ import { AiMeasurements } from './components/ai-measurements';
 import { AiKeyChecks } from './components/ai-key-checks';
 import { AiAdmissionControl } from './components/ai-admission-control';
 import { getSessionSnapshot } from '../../lib/session-store';
+import { SelectMenu } from '../../components/select-menu';
+import type { SelectMenuOption } from '../../components/select-menu';
 import './admin-ai-studio-page.css';
 
 interface SummaryProps {
@@ -67,6 +69,24 @@ function StudioSummary({ data }: SummaryProps) {
   );
 }
 
+/**
+ * Key filter choices: configured keys first, then up to 100 keys seen only in
+ * history, each named when the configuration still knows it.
+ */
+function keyFilterOptions(data: AiStudioMetricsResponse | undefined): readonly SelectMenuOption<string>[] {
+  const configured = data?.keys.map((key) => key.keyId) ?? [];
+  const historical = data?.historicalKeys?.slice(0, 100).map((key) => key.keyId) ?? [];
+  const ids = [...new Set([...configured, ...historical])];
+  const named = ids.map((id) => ({ value: id, label: data?.keys.find((key) => key.keyId === id)?.name ?? id }));
+  return [{ value: '', label: 'Tất cả API key' }, ...named];
+}
+
+/** Model filter choices: configured models and any model seen in the window. */
+function modelFilterOptions(data: AiStudioMetricsResponse | undefined): readonly SelectMenuOption<string>[] {
+  const names = [...new Set([...(data?.configuredModels ?? []), ...(data?.models ?? [])])];
+  return [{ value: 'ALL', label: 'Tất cả mô hình' }, ...names.map((name) => ({ value: name, label: name }))];
+}
+
 /** Displays durable Core measurements and stable key-bound provider checks. */
 export function AdminAiStudioPage() {
   const [days, setDays] = useState(28);
@@ -90,24 +110,19 @@ export function AdminAiStudioPage() {
           <div className="ai-studio-toolbar__filters">
             <label className="ai-studio-filter-label">
               API key
-              <select className="ai-studio-filter-select" value={keyId} onChange={(e) => setKeyId(e.target.value)}>
-                <option value="">Tất cả API key</option>
-                {[...new Set([...(data?.keys.map((k) => k.keyId) ?? []), ...(data?.historicalKeys?.slice(0, 100).map((k) => k.keyId) ?? [])])]
-                  .map((id) => <option key={id} value={id}>{data?.keys.find((k) => k.keyId === id)?.name ?? id}</option>)}
-              </select>
+              <SelectMenu variant="field" className="ai-studio-filter-select" label="API key"
+                value={keyId} options={keyFilterOptions(data)} onChange={setKeyId} />
             </label>
             <label className="ai-studio-filter-label">
               Khoảng thời gian
-              <select className="ai-studio-filter-select" value={days} onChange={(e) => setDays(Number(e.target.value))}>
-                {[1, 7, 14, 28, 45].map((val) => <option key={val} value={val}>{val} ngày</option>)}
-              </select>
+              <SelectMenu variant="field" className="ai-studio-filter-select" label="Khoảng thời gian"
+                value={days} options={[1, 7, 14, 28, 45].map((val) => ({ value: val, label: `${val} ngày` }))}
+                onChange={setDays} />
             </label>
             <label className="ai-studio-filter-label">
               Mô hình
-              <select className="ai-studio-filter-select" value={model} onChange={(e) => setModel(e.target.value)}>
-                <option value="ALL">Tất cả mô hình</option>
-                {[...new Set([...(data?.configuredModels ?? []), ...(data?.models ?? [])])].map((name) => <option key={name}>{name}</option>)}
-              </select>
+              <SelectMenu variant="field" className="ai-studio-filter-select" label="Mô hình"
+                value={model} options={modelFilterOptions(data)} onChange={setModel} />
             </label>
             <button className="ai-studio-btn-refresh" disabled={isFetching} onClick={() => void refetch()}>
               <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>refresh</span>

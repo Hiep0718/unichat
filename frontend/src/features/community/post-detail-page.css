@@ -380,9 +380,9 @@
 .post-detail__sidebar-btn {
   width: 100%;
   padding: 10px;
-  border-radius: var(--radius-full);
-  background: var(--color-primary);
-  color: var(--color-on-primary);
+  border-radius: var(--btn-radius);
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-ink);
   border: none;
   font: var(--font-label-md);
   cursor: pointer;
@@ -391,7 +391,7 @@
 
 .post-detail__sidebar-btn:hover {
   opacity: 0.9;
-  box-shadow: var(--shadow-sm);
+  background: var(--btn-primary-bg-hover);
 }
 
 /* ---------- Error State ---------- */
@@ -414,9 +414,9 @@
 
 .post-detail-error__btn {
   padding: 10px 24px;
-  border-radius: var(--radius-full);
-  background: var(--color-primary);
-  color: var(--color-on-primary);
+  border-radius: var(--btn-radius);
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-ink);
   border: none;
   font: var(--font-label-md);
   cursor: pointer;
@@ -424,7 +424,7 @@
 }
 
 .post-detail-error__btn:hover {
-  box-shadow: var(--shadow-md);
+  background: var(--btn-primary-bg-hover);
 }
 
 /* ---------- Skeleton Loading ---------- */

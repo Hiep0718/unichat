@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.unichat.core.chat.service.ChatActor;
 import com.unichat.core.communitychat.service.ComposeSuggestionService;
 import com.unichat.core.communitychat.service.DiscussionService;
 import com.unichat.core.communitychat.service.PostAttachmentService;
@@ -158,8 +159,7 @@ public class DiscussionController {
             @Valid @RequestBody CreateReplyRequest request,
             @AuthenticationPrincipal Jwt jwt) {
         
-        UUID userId = UUID.fromString(jwt.getSubject());
-        ReplyResponse reply = discussionService.addReply(workspaceId, discussionId, userId, request);
+        ReplyResponse reply = discussionService.addReply(workspaceId, discussionId, ChatActor.from(jwt), request);
         return ResponseEntity.ok(reply);
     }
 

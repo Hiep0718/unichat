@@ -7,7 +7,7 @@ import Animated, {
   withTiming,
   Easing,
 } from 'react-native-reanimated';
-import { spacing, radii } from '../../../design/tokens';
+import { spacing, radii, palette } from '../../../design/tokens';
 import { typography } from '../../../design/typography';
 import { UCIcon } from '../../../components/uc-icon';
 import { SseThoughtPayload } from '../../../types/api';
@@ -46,7 +46,7 @@ export function ThinkingIndicator({ thoughtSteps }: ThinkingIndicatorProps) {
         activeOpacity={hasSteps ? 0.7 : 1}
       >
         <Animated.View style={[styles.iconWrap, animatedStyle]}>
-          <UCIcon name="auto-awesome" size={16} color="#00687A" />
+          <UCIcon name="auto-awesome" size={16} color={palette.nhan} />
         </Animated.View>
 
         <Text style={styles.headerText}>
@@ -60,7 +60,7 @@ export function ThinkingIndicator({ thoughtSteps }: ThinkingIndicatorProps) {
             <UCIcon
               name={expanded ? 'expand-less' : 'expand-more'}
               size={16}
-              color="#00687A"
+              color={palette.nhan}
             />
           </View>
         )}
@@ -92,18 +92,13 @@ export function ThinkingIndicator({ thoughtSteps }: ThinkingIndicatorProps) {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'rgba(240, 253, 250, 0.92)',
-    borderWidth: 1.2,
-    borderColor: 'rgba(153, 246, 228, 0.85)',
+    // Bảng teal cũ đã bỏ ở web; trạng thái của trợ lý dùng màu nhấn nhạt,
+    // không bóng đổ ở trạng thái nghỉ.
+    backgroundColor: palette.nhanNhat,
     borderRadius: radii.xl,
     marginVertical: spacing.xs + 2,
     overflow: 'hidden',
     position: 'relative',
-    shadowColor: '#57DFFE',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 6,
-    elevation: 2,
   },
   specularHighlight: {
     position: 'absolute',
@@ -124,13 +119,13 @@ const styles = StyleSheet.create({
     width: 26,
     height: 26,
     borderRadius: 13,
-    backgroundColor: 'rgba(87, 223, 254, 0.25)',
+    backgroundColor: palette.nen,
     alignItems: 'center',
     justifyContent: 'center',
   },
   headerText: {
     ...typography.labelSm,
-    color: '#0F766E',
+    color: palette.nhan,
     fontWeight: '700',
     flex: 1,
     fontSize: 12.5,
@@ -143,7 +138,7 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.sm + 4,
     paddingTop: 4,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(153, 246, 228, 0.6)',
+    borderTopColor: palette.vien,
   },
   stepRow: {
     flexDirection: 'row',
@@ -157,19 +152,19 @@ const styles = StyleSheet.create({
     width: 18,
     height: 18,
     borderRadius: 9,
-    backgroundColor: '#0D9488',
+    backgroundColor: palette.nhan,
     alignItems: 'center',
     justifyContent: 'center',
   },
   stepDotIndex: {
     fontSize: 10,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: palette.nhanMuc,
   },
   stepLine: {
     width: 1.5,
     flex: 1,
-    backgroundColor: '#99F6E4',
+    backgroundColor: palette.vien,
     marginVertical: 2,
   },
   stepContent: {
@@ -178,13 +173,13 @@ const styles = StyleSheet.create({
   },
   stepTitle: {
     ...typography.labelSm,
-    color: '#115E59',
+    color: palette.muc,
     fontWeight: '700',
     fontSize: 12,
   },
   stepDetail: {
     ...typography.bodySm,
-    color: '#0F766E',
+    color: palette.mucNhat,
     fontSize: 11,
     lineHeight: 16,
     marginTop: 2,

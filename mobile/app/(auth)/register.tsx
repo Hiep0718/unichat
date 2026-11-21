@@ -13,7 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 
-import { colors, spacing } from '../../src/design/tokens';
+import { button, colors, palette, spacing } from '../../src/design/tokens';
 import { typography } from '../../src/design/typography';
 import { UCTextInput } from '../../src/components/uc-text-input';
 import { UCButton } from '../../src/components/uc-button';
@@ -104,12 +104,12 @@ export default function RegisterScreen() {
             accessibilityLabel="Quay lại"
             hitSlop={8}
           >
-            <UCIcon name="chevron-left" size={22} color="#FFFFFF" />
+            <UCIcon name="chevron-left" size={22} color={palette.trenAnh} />
           </Pressable>
 
           <View style={styles.brandRow}>
             <View style={styles.brandMark}>
-              <UCIcon name="school" size={22} color="#FFFFFF" />
+              <UCIcon name="school" size={22} color={palette.trenAnh} />
             </View>
             <View>
               <Text style={styles.brandName}>UniChat</Text>
@@ -180,7 +180,7 @@ export default function RegisterScreen() {
             accessibilityLabel="Đồng ý với điều khoản sử dụng và chính sách bảo mật"
           >
             <View style={[styles.box, agreed && styles.boxOn]}>
-              {agreed ? <UCIcon name="check" size={13} color="#FFFFFF" /> : null}
+              {agreed ? <UCIcon name="check" size={13} color={palette.trenAnh} /> : null}
             </View>
             <Text style={styles.termsText}>
               Tôi đồng ý với Điều khoản sử dụng và Chính sách bảo mật của UniChat.
@@ -236,7 +236,7 @@ const styles = StyleSheet.create({
   back: {
     width: 40,
     height: 40,
-    borderRadius: 12,
+    borderRadius: button.radius,
     marginTop: spacing.sm,
     backgroundColor: 'rgba(10, 15, 34, 0.72)',
     borderWidth: 1,
@@ -258,12 +258,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  brandName: { ...typography.bodyLg, color: '#FFFFFF', fontWeight: '700' },
+  brandName: { ...typography.bodyLg, color: palette.trenAnh, fontWeight: '700' },
   brandSub: { ...typography.labelSm, color: 'rgba(255,255,255,0.68)' },
   heroTitle: {
     ...typography.headlineLg,
     marginTop: spacing.md,
-    color: '#FFFFFF',
+    color: palette.trenAnh,
     fontWeight: '700',
     lineHeight: 34,
   },

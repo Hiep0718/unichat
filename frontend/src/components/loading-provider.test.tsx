@@ -27,7 +27,7 @@ describe('LoadingProvider', () => {
     const { rerender } = render(
       <LoadingProvider>
         <LoadingScreen key="session" message="Đang xác minh phiên đăng nhập…" />
-        <LoadingScreen key="workspace" message="Đang tải thông tin Workspace..." />
+        <LoadingScreen key="workspace" message="Đang tải thông tin nhóm..." />
       </LoadingProvider>,
     );
     const indicator = screen.getByRole('status');

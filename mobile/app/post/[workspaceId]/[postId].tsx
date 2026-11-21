@@ -24,6 +24,7 @@ import { useToggleBookmark } from '../../../src/features/feed/use-feed';
 import { usePostDetail } from '../../../src/features/feed/use-post-detail';
 import { useToast } from '../../../src/lib/toast-context';
 import { isValidUuid } from '../../../src/lib/uuid';
+import { fonts } from '../../../src/design/typography';
 
 import type { ReplyRow as ReplyRowData } from '../../../src/features/feed/reply-tree';
 
@@ -182,14 +183,14 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: workplace.line,
   },
-  headerTitle: { flex: 1, color: workplace.ink, fontSize: 16, fontFamily: 'Inter_700Bold' },
+  headerTitle: { flex: 1, color: workplace.ink, fontSize: 16, fontFamily: fonts.bold },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, padding: 24 },
   list: { padding: 14, paddingBottom: 24 },
   heading: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 },
-  headingText: { color: workplace.ink, fontSize: 15, fontFamily: 'Inter_700Bold' },
+  headingText: { color: workplace.ink, fontSize: 15, fontFamily: fonts.bold },
   waiting: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  waitingText: { color: workplace.accent, fontSize: 12.5, fontFamily: 'Inter_500Medium' },
+  waitingText: { color: workplace.accent, fontSize: 12.5, fontFamily: fonts.medium },
   stateText: { textAlign: 'center', color: workplace.inkMuted, fontSize: 14 },
   repliesEmpty: { paddingVertical: 24 },
-  link: { color: workplace.accent, fontSize: 15, fontFamily: 'Inter_600SemiBold' },
+  link: { color: workplace.accent, fontSize: 15, fontFamily: fonts.semibold },
 });

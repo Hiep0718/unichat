@@ -145,7 +145,7 @@ export function ConversationListPage() {
           <p className="conv-list-empty__desc">
             {searchQuery
               ? 'Thử thay đổi từ khóa tìm kiếm hoặc tạo một cuộc trò chuyện hoàn toàn mới.'
-              : 'Bắt đầu bằng cách hỏi UniChat AI một câu hỏi từ kho tài liệu trong Workspace.'}
+              : 'Bắt đầu bằng cách hỏi UniChat AI một câu hỏi từ kho tài liệu của nhóm.'}
           </p>
           <button
             type="button"

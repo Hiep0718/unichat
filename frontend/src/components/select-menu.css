@@ -1,0 +1,162 @@
+/* Select menu — the app's own dropdown, drawn like the post menu panel. */
+
+.select-menu__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 6px 8px 6px 10px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-container-high);
+  color: var(--color-on-surface);
+  font: var(--font-label-sm);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.select-menu__trigger:hover {
+  background: var(--color-surface-container-highest, var(--color-surface-container-high));
+}
+
+.select-menu__trigger:focus-visible {
+  outline: 2px solid var(--nhan);
+  outline-offset: 2px;
+}
+
+/* Field: reads as an input, so it lines up with text boxes in a form. */
+.select-menu__trigger--field {
+  justify-content: space-between;
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 10px 8px 12px;
+  border: 1px solid var(--dieu-khien);
+  border-radius: var(--radius-md, 8px);
+  background: var(--nen);
+  color: var(--muc);
+  font: var(--font-body-md);
+  font-size: 0.875rem;
+  text-align: left;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.select-menu__trigger--field:hover {
+  background: var(--nen);
+  border-color: var(--muc-nhat);
+}
+
+.select-menu__trigger--field:focus-visible,
+.select-menu__trigger--field[aria-expanded='true'] {
+  outline: none;
+  border-color: var(--nhan);
+  box-shadow: 0 0 0 3px rgb(4 92 223 / 12%);
+}
+
+.select-menu__trigger:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.select-menu__value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.select-menu__chevron {
+  flex-shrink: 0;
+  color: var(--color-on-surface-variant);
+  transition: transform var(--transition-fast, 0.15s ease);
+}
+
+.select-menu__trigger[aria-expanded='true'] .select-menu__chevron {
+  transform: rotate(180deg);
+}
+
+.select-menu__list {
+  position: fixed;
+  /* Above every modal layer in the app (the highest is 99999), because the
+     list is often opened from inside one. */
+  z-index: 100000;
+  max-width: min(320px, calc(100vw - 24px));
+  max-height: min(320px, 60vh);
+  margin: 0;
+  padding: 6px;
+  overflow-y: auto;
+  list-style: none;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-container-lowest);
+  box-shadow: var(--shadow-lg);
+  animation: selectMenuIn 0.12s ease-out;
+}
+
+.select-menu__list:focus {
+  outline: none;
+}
+
+.select-menu__option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 10px 8px 12px;
+  border-radius: var(--radius-md);
+  color: var(--color-on-surface);
+  font: var(--font-body-md);
+  cursor: pointer;
+}
+
+.select-menu__option--active {
+  background: var(--color-surface-container-high);
+}
+
+.select-menu__option[aria-selected='true'] {
+  color: var(--nhan);
+  font-weight: 600;
+}
+
+.select-menu__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.select-menu__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.select-menu__description {
+  color: var(--color-on-surface-variant);
+  font: var(--font-body-sm);
+  font-weight: 400;
+  white-space: normal;
+}
+
+.select-menu__check {
+  flex-shrink: 0;
+}
+
+@keyframes selectMenuIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .select-menu__list {
+    animation: none;
+  }
+
+  .select-menu__chevron {
+    transition: none;
+  }
+}

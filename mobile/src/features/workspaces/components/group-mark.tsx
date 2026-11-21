@@ -2,6 +2,8 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
 import { defaultCoverFor } from '../default-covers';
+import { palette } from '../../../design/tokens';
+import { fonts } from '../../../design/typography';
 
 interface GroupMarkProps {
   workspaceId: string;
@@ -46,7 +48,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   initial: {
-    color: '#FFFFFF',
-    fontFamily: 'Inter_700Bold',
+    color: palette.trenAnh,
+    fontFamily: fonts.bold,
   },
 });

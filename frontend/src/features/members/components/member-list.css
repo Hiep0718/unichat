@@ -109,7 +109,15 @@
   gap: 2px;
 }
 
-.member-list__email {
+/* Tên là thứ người ta nhận ra nhau ở mọi màn khác; email là dòng phụ. */
+.member-list__name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.member-list__name-text {
   overflow: hidden;
   color: var(--ws-ink);
   font: var(--font-label-md);
@@ -118,8 +126,20 @@
   white-space: nowrap;
 }
 
-.member-list__self {
+.member-list__email {
+  overflow: hidden;
   color: var(--ws-ink-muted);
+  font: var(--font-label-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.member-list__self {
+  flex-shrink: 0;
+  padding: 1px 8px;
+  border-radius: var(--radius-full);
+  background: var(--pill-trung-nen);
+  color: var(--pill-trung-muc);
   font: var(--font-label-sm);
 }
 
@@ -140,15 +160,14 @@
   color: var(--ws-accent);
 }
 
-.member-list__role-select {
+/* A compact SelectMenu pill: a role is edited in place on the row. */
+.select-menu__trigger.member-list__role-select {
   flex-shrink: 0;
-  padding: 6px 10px;
+  padding: 5px 6px 5px 10px;
   border: 1px solid var(--ws-line);
   border-radius: var(--radius-md);
   background: var(--ws-card);
   color: var(--ws-ink-soft);
-  font: var(--font-label-sm);
-  cursor: pointer;
 }
 
 /* Reserves the column so rows with no button still line up with those
@@ -164,7 +183,7 @@
   display: inline-flex;
   padding: 6px;
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: var(--btn-radius);
   background: none;
   color: var(--ws-ink-muted);
   cursor: pointer;

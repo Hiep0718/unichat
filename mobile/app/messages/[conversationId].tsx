@@ -20,6 +20,7 @@ import { useConversations } from '../../src/features/messages/use-conversations'
 import { useThread } from '../../src/features/messages/use-thread';
 import { useToast } from '../../src/lib/toast-context';
 import { isValidUuid } from '../../src/lib/uuid';
+import { fonts } from '../../src/design/typography';
 
 import type { TimelineItem } from '../../src/features/messages/thread-timeline';
 
@@ -115,6 +116,6 @@ const styles = StyleSheet.create({
   list: { paddingHorizontal: 14, paddingVertical: 12, flexGrow: 1 },
   // Danh sách đảo ngược lật cả phần trống, nên lật lại cho chữ đứng thẳng.
   empty: { transform: [{ scaleY: -1 }], marginTop: 24 },
-  stateText: { textAlign: 'center', fontSize: 14, fontFamily: 'Inter_400Regular', color: messenger.chipInk },
-  link: { fontSize: 15, fontFamily: 'Inter_600SemiBold', color: dock.accent },
+  stateText: { textAlign: 'center', fontSize: 14, fontFamily: fonts.regular, color: messenger.chipInk },
+  link: { fontSize: 15, fontFamily: fonts.semibold, color: dock.accent },
 });

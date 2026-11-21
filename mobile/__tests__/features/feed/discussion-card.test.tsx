@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet } from 'react-native';
 import { render, fireEvent } from '@testing-library/react-native';
 
-import { workplace } from '../../../src/design/tokens';
+import { palette, workplace } from '../../../src/design/tokens';
 import { DiscussionCard } from '../../../src/features/feed/components/discussion-card';
 import { FeedPost } from '../../../src/features/feed/feed-types';
 
@@ -117,16 +117,16 @@ function rootStyle(tree: Awaited<ReturnType<typeof renderCard>>) {
 }
 
 describe('DiscussionCard visual contract', () => {
-  it('should separate the card by elevation alone, never by a border', async () => {
-    // A card carrying both a border and a shadow reads as a wireframe, which
-    // is what the web design notes set out to leave behind. This card used to
-    // draw a 1px #E2E8F0 outline on top of its shadow.
+  it('should separate the card by one hairline in the border colour, never by a drop shadow', async () => {
+    // Web's card is `--ws-card-shadow: 0 0 0 1px var(--vien)` with no shadow
+    // at rest; a border and a shadow together read as a wireframe. Mobile
+    // follows the same rule so a post looks the same on both.
     const style = rootStyle(await renderCard());
 
     expect(style.backgroundColor).toBe(workplace.card);
-    expect(style.shadowOpacity).toBeGreaterThan(0);
-    expect(style.borderWidth).toBeUndefined();
-    expect(style.borderColor).toBeUndefined();
+    expect(style.borderWidth).toBe(1);
+    expect(style.borderColor).toBe(palette.vien);
+    expect(style.shadowOpacity ?? 0).toBe(0);
   });
 
   it('should keep the title in ink, leaving accent for what can be acted on', async () => {

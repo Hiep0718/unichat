@@ -52,19 +52,20 @@
 }
 
 /* Inside the assistant's tinted panel the fade has to end on that panel's own
-   colour. The token is --color-ai-bubble, the one .reply-node--ai uses;
+   colour. reply-node.css publishes it as --reply-bubble-bg (falling back to
+   --color-ai-bubble);
    --color-tertiary-container looks related but resolves to a dark brown and
    painted a muddy band across the cut. */
 .reply-node--ai .foldable__body--folded::after {
   background: linear-gradient(
     to bottom,
-    rgb(236 254 255 / 0%),
-    var(--color-ai-bubble, var(--nen)) 92%
+    transparent,
+    var(--reply-bubble-bg, var(--color-ai-bubble, var(--nen))) 92%
   );
 }
 
 .reply-node--ai .foldable__toggle {
-  background: rgb(255 255 255 / 70%);
+  background: color-mix(in srgb, var(--nen) 70%, transparent);
 }
 
 .reply-node--ai .foldable__toggle:hover {

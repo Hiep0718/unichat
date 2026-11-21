@@ -4,6 +4,8 @@ import { router } from 'expo-router';
 
 import { UCIcon } from '../../../components/uc-icon';
 import { AccountSection } from '../components/account-section';
+import { palette } from '../../../design/tokens';
+import { fonts } from '../../../design/typography';
 
 import type { IconName } from '../../../components/uc-icon';
 
@@ -47,7 +49,7 @@ interface SecurityRowProps {
 
 /** Một dòng hành động: biểu tượng, nhãn, mũi tên. */
 function SecurityRow({ icon, label, danger = false, onPress }: SecurityRowProps) {
-  const tint = danger ? '#DC2626' : '#0F172A';
+  const tint = danger ? palette.hong : palette.muc;
   return (
     <Pressable
       style={styles.row}
@@ -57,13 +59,13 @@ function SecurityRow({ icon, label, danger = false, onPress }: SecurityRowProps)
     >
       <UCIcon name={icon} size={19} color={tint} />
       <Text style={[styles.rowLabel, { color: tint }]}>{label}</Text>
-      <UCIcon name="chevron-right" size={20} color="#CBD5E1" />
+      <UCIcon name="chevron-right" size={20} color={palette.vien} />
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12 },
-  rowLabel: { flex: 1, fontFamily: 'Inter_600SemiBold', fontSize: 14.5 },
-  divider: { height: 1, backgroundColor: '#F1F5F9' },
+  rowLabel: { flex: 1, fontFamily: fonts.semibold, fontSize: 14.5 },
+  divider: { height: 1, backgroundColor: palette.ke },
 });

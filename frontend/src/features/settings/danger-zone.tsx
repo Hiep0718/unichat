@@ -21,14 +21,14 @@ export function DangerZone({ workspace }: { readonly workspace: SettingsWorkspac
     <section className="settings-section settings-section--danger">
       <h3 className="settings-section__title settings-section__title--danger">Vùng nguy hiểm</h3>
       <p className="settings-section__description">
-        Xóa workspace sẽ xóa vĩnh viễn tất cả tài liệu, cuộc trò chuyện và thành viên. Hành động này không thể hoàn tác.
+        Xóa nhóm sẽ xóa vĩnh viễn tất cả tài liệu, cuộc trò chuyện và thành viên. Hành động này không thể hoàn tác.
       </p>
       <button className="danger-zone__delete-btn" type="button" onClick={() => setShowConfirm(true)}>
-        <Icon name="delete_forever" size={18} />Xóa workspace
+        <Icon name="delete_forever" size={18} />Xóa nhóm
       </button>
       {showConfirm && <div className="danger-zone__overlay" role="presentation">
         <div className="danger-zone__modal" role="dialog" aria-modal="true" aria-labelledby="delete-title">
-          <h3 id="delete-title" className="danger-zone__modal-title">Xác nhận xóa workspace</h3>
+          <h3 id="delete-title" className="danger-zone__modal-title">Xác nhận xóa nhóm</h3>
           <label className="danger-zone__modal-text">Nhập {workspace.name} để xác nhận xóa vĩnh viễn workspace này.
             <input className="danger-zone__confirm-input" value={confirmText}
               onChange={(event) => setConfirmText(event.target.value)} placeholder={workspace.name} />

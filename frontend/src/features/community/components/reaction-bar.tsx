@@ -16,8 +16,14 @@ interface ReactionBarProps {
   readonly targetType: 'DISCUSSION' | 'DISCUSSION_REPLY';
   readonly targetId: string;
   readonly summary: ReactionSummary;
-  /** Smaller variant used inside reply threads. */
+  /** Smaller pill, for a card's footer. */
   readonly compact?: boolean;
+  /**
+   * `link` draws the trigger as a word in a comment's meta line ("Thích"),
+   * the way a comment's actions read on Facebook, and moves the tally to the
+   * end of that line. `pill` is the bordered button used on posts.
+   */
+  readonly variant?: 'pill' | 'link';
 }
 
 /**
@@ -38,7 +44,51 @@ const EMOJI: Record<ReactionType, string> = Object.fromEntries(
   REACTIONS.map((reaction) => [reaction.type, reaction.emoji]),
 ) as Record<ReactionType, string>;
 
-export function ReactionBar({ targetType, targetId, summary, compact = false }: ReactionBarProps) {
+/**
+ * What the trigger says.
+ *
+ * Unreacted, a compact or link trigger says "Thích" rather than showing a bare
+ * add-reaction icon: an icon with no words had no accessible name, and next
+ * to a "👍 1" tally it read as a second, empty reaction.
+ */
+function TriggerContent({ mine, compact, variant }: {
+  readonly mine: ReactionType | null;
+  readonly compact: boolean;
+  readonly variant: 'pill' | 'link';
+}) {
+  const label = REACTIONS.find((r) => r.type === mine)?.label;
+  if (variant === 'link') return <>{label ?? 'Thích'}</>;
+  if (mine) {
+    return (
+      <>
+        <span aria-hidden="true">{EMOJI[mine]}</span>
+        {label}
+      </>
+    );
+  }
+  if (compact) {
+    return (
+      <>
+        <Icon name="thumb_up" size={16} />
+        Thích
+      </>
+    );
+  }
+  return (
+    <>
+      <Icon name="add_reaction" size={17} />
+      Bày tỏ cảm xúc
+    </>
+  );
+}
+
+export function ReactionBar({
+  targetType,
+  targetId,
+  summary,
+  compact = false,
+  variant = 'pill',
+}: ReactionBarProps) {
   const [current, setCurrent] = useState<ReactionSummary>(summary);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -62,7 +112,7 @@ export function ReactionBar({ targetType, targetId, summary, compact = false }: 
   const mine = current.myReaction;
 
   return (
-    <div className={`reaction-bar ${compact ? 'reaction-bar--compact' : ''}`}>
+    <div className={`reaction-bar reaction-bar--${variant} ${compact ? 'reaction-bar--compact' : ''}`}>
       <div className="reaction-bar__trigger-wrap">
         <button
           type="button"
@@ -72,17 +122,7 @@ export function ReactionBar({ targetType, targetId, summary, compact = false }: 
           aria-haspopup="menu"
           aria-expanded={pickerOpen}
         >
-          {mine ? (
-            <>
-              <span aria-hidden="true">{EMOJI[mine]}</span>
-              {REACTIONS.find((r) => r.type === mine)?.label}
-            </>
-          ) : (
-            <>
-              <Icon name="add_reaction" size={compact ? 15 : 17} />
-              {!compact && 'Bày tỏ cảm xúc'}
-            </>
-          )}
+          <TriggerContent mine={mine} compact={compact} variant={variant} />
         </button>
 
         {pickerOpen && (

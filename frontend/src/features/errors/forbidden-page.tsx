@@ -1,17 +1,17 @@
 import { Link } from 'react-router-dom';
-import { Icon } from '../../components/icon';
 
+import { ErrorState } from './error-state';
+
+/** Shown when the signed-in user lacks the role a route requires. */
 export function ForbiddenPage() {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', fontFamily: 'var(--font-primary)' }}>
-      <Icon name="block" size={64} className="text-danger" />
-      <h2 style={{ color: 'var(--color-danger)', marginTop: '16px' }}>403 - Không có quyền truy cập</h2>
-      <p style={{ color: 'var(--color-text-secondary)', marginBottom: '24px' }}>
-        Bạn không có quyền xem trang này hoặc thực hiện hành động này.
-      </p>
-      <Link to="/" style={{ padding: '8px 16px', backgroundColor: 'var(--color-primary)', color: 'white', textDecoration: 'none', borderRadius: '4px' }}>
-        Trở về trang chủ
-      </Link>
-    </div>
+    <ErrorState
+      icon="block"
+      code="403"
+      tone="danger"
+      title="Không có quyền truy cập"
+      description="Bạn không có quyền xem trang này hoặc thực hiện hành động này."
+      action={<Link to="/" className="error-state__action">Trở về trang chủ</Link>}
+    />
   );
 }

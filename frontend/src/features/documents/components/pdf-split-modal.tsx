@@ -23,7 +23,7 @@ export const PdfSplitModal: React.FC<PdfSplitModalProps> = ({
     <div className="pdf-split-overlay" role="dialog" aria-modal="true">
       <div className="pdf-split-modal">
         <div className="pdf-split-modal__header">
-          <div className="pdf-split-modal__icon">⚠️</div>
+          <div className="pdf-split-modal__icon"><span className="material-symbols-outlined" aria-hidden="true">warning</span></div>
           <div>
             <h4 className="pdf-split-modal__title">Phát hiện tệp vượt quá giới hạn 20 MiB</h4>
             <p className="pdf-split-modal__subtitle">
@@ -42,13 +42,13 @@ export const PdfSplitModal: React.FC<PdfSplitModalProps> = ({
         </div>
 
         <div className="pdf-split-modal__warning-box">
-          <h5 className="pdf-split-modal__warning-title">⚠️ Lưu ý tác dụng phụ khi cắt tệp:</h5>
+          <h5 className="pdf-split-modal__warning-title"><span className="material-symbols-outlined" aria-hidden="true">info</span>Lưu ý tác dụng phụ khi cắt tệp:</h5>
           <ul className="pdf-split-modal__warning-list">
             <li>
               <strong>Đứt đoạn ngữ cảnh (Context Fragmentation):</strong> Các bảng biểu, sơ đồ hoặc đoạn văn vắt qua ranh giới trang cắt có thể bị chia làm 2 phần khi RAG bóc tách vector.
             </li>
             <li>
-              <strong>Tiêu tốn hạn ngạch Workspace:</strong> 1 tệp lớn cắt thành nhiều phần nhỏ sẽ chiếm tương ứng số lượng vị trí tài liệu trong hạn ngạch 100 tài liệu/Workspace.
+              <strong>Tiêu tốn hạn ngạch của nhóm:</strong> 1 tệp lớn cắt thành nhiều phần nhỏ sẽ chiếm tương ứng số lượng vị trí tài liệu trong hạn ngạch 100 tài liệu mỗi nhóm.
             </li>
             <li>
               <strong>Tên trích dẫn nguồn (Citation Label):</strong> Trích dẫn RAG trong câu trả lời AI sẽ hiển thị tên tệp theo phần (ví dụ: <em>OOP_02_Java_can_ban_Part1.pdf</em>).

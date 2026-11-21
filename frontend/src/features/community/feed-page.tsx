@@ -9,6 +9,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { Icon } from '../../components/icon';
+import { PageHeader } from '../../components/page-header';
 import {
   FeedPostResponse,
   FeedScope,
@@ -32,7 +33,7 @@ const VIEWS: readonly { id: FeedSort; label: string; icon: string }[] = [
 ];
 
 const SCOPES: readonly { id: FeedScope; label: string; icon: string }[] = [
-  { id: 'JOINED', label: 'Không gian của tôi', icon: 'home' },
+  { id: 'JOINED', label: 'Nhóm của tôi', icon: 'home' },
   { id: 'SAVED', label: 'Đã lưu', icon: 'bookmark' },
 ];
 
@@ -131,6 +132,17 @@ export function FeedPage() {
 
   return (
     <div className="feed-page">
+      <PageHeader
+        className="feed-page__title-band"
+        title="Bảng tin"
+        subtitle="Câu hỏi và thảo luận mới từ các nhóm bạn tham gia."
+        actions={
+          <button type="button" className="page-header__button" onClick={() => setShowCreate(true)}>
+            <Icon name="edit_square" size={18} />
+            Tạo bài viết
+          </button>
+        }
+      />
       <div className="feed-page__layout">
         <nav className="feed-page__scopes" aria-label="Phạm vi bảng tin">
           {SCOPES.map((s) => (
@@ -158,14 +170,6 @@ export function FeedPage() {
                 aria-label="Tìm kiếm bài viết"
               />
             </div>
-            <button
-              type="button"
-              className="feed-page__ask"
-              onClick={() => setShowCreate(true)}
-            >
-              <Icon name="edit_square" size={18} />
-              Tạo bài viết
-            </button>
           </header>
 
           {isSearching ? (

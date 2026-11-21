@@ -40,11 +40,11 @@ export function WorkspaceSettingsPage() {
   return (
     <main className="settings-page">
       <header className="settings-page__header">
-        <p className="settings-page__eyebrow">Quản trị Workspace</p>
+        <p className="settings-page__eyebrow">Quản trị nhóm</p>
         <h1 className="settings-page__title">Cài đặt Workspace — {workspace.name}</h1>
         <p className="settings-page__subtitle">Cấu hình thông tin, quyền truy cập thành viên và tùy chọn bảo mật.</p>
       </header>
-      <div className="settings-page__tabs" role="tablist" aria-label="Cài đặt Workspace">
+      <div className="settings-page__tabs" role="tablist" aria-label="Cài đặt nhóm">
         {TABS.filter((tab) => !tab.ownerOnly || isOwner).map((tab) => (
           <button className="settings-page__tab" key={tab.value} role="tab" type="button"
             id={`settings-tab-${tab.value}`} aria-controls="settings-panel" aria-selected={activeTab === tab.value}

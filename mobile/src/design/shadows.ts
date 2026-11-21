@@ -1,5 +1,7 @@
 import { ViewStyle } from 'react-native';
 
+import { palette } from './tokens';
+
 /**
  * Elevation shadows for mobile design tokens.
  */
@@ -29,7 +31,7 @@ export const shadows = {
   } as ViewStyle,
 
   xl: {
-    shadowColor: '#00236F',
+    shadowColor: palette.rayNen,
     shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.12,
     shadowRadius: 32,
@@ -37,7 +39,7 @@ export const shadows = {
   } as ViewStyle,
 
   glass: {
-    shadowColor: '#00236F',
+    shadowColor: palette.rayNen,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.08,
     shadowRadius: 20,
@@ -45,7 +47,7 @@ export const shadows = {
   } as ViewStyle,
 
   glassFloating: {
-    shadowColor: '#00236F',
+    shadowColor: palette.rayNen,
     shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.14,
     shadowRadius: 28,
@@ -53,7 +55,7 @@ export const shadows = {
   } as ViewStyle,
 
   glassGlow: {
-    shadowColor: '#57DFFE',
+    shadowColor: palette.rayNhan,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 16,
@@ -61,21 +63,18 @@ export const shadows = {
   } as ViewStyle,
 
   /**
-   * The workplace card lift: --ws-card-shadow, 0 1px 3px rgb(15 23 42 / 8%).
-   * A card carrying this takes no border — the two together read as a
-   * wireframe, which is the look the web design notes set out to leave behind.
+   * Thẻ nằm yên: `--ws-card-shadow` của web, tức `0 0 0 1px var(--vien)`.
+   * Web bỏ bóng đổ ở trạng thái nghỉ và tách thẻ bằng một nét viền, nên ở
+   * đây cũng là viền chứ không phải bóng. Chỉ hộp thoại nổi thật mới có bóng.
    */
   card: {
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 3,
-    elevation: 2,
+    borderWidth: 1,
+    borderColor: palette.vien,
   } as ViewStyle,
 
   /** Colored ambient glow shadows for liquid glass depth */
   ambientNavy: {
-    shadowColor: '#00236F',
+    shadowColor: palette.rayNen,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.20,
     shadowRadius: 24,
@@ -83,7 +82,7 @@ export const shadows = {
   } as ViewStyle,
 
   ambientTeal: {
-    shadowColor: '#00687A',
+    shadowColor: palette.nhan,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.18,
     shadowRadius: 20,
@@ -91,7 +90,7 @@ export const shadows = {
   } as ViewStyle,
 
   ambientCyan: {
-    shadowColor: '#57DFFE',
+    shadowColor: palette.rayNhan,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.30,
     shadowRadius: 18,

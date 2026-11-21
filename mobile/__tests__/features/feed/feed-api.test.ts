@@ -96,4 +96,10 @@ describe('mentionsAi', () => {
     expect(mentionsAi('hỏi @ai nhé')).toBe(true);
     expect(mentionsAi('email@aiden.vn')).toBe(false);
   });
+
+  it('ignores an e-mail address on the ai domain, matching the server rule', () => {
+    expect(mentionsAi('gửi x@ai.edu.vn')).toBe(false);
+    expect(mentionsAi('@ai.edu.vn')).toBe(false);
+    expect(mentionsAi('cảm ơn @AI.')).toBe(true);
+  });
 });

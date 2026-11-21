@@ -103,7 +103,7 @@ export function MemberPanel({ workspaceId, isOwner, visibility }: MemberPanelPro
 
       {isOwner && !canInvite && (
         <p className="member-section__private-notice">
-          Workspace đang ở chế độ <strong>Riêng tư</strong> nên chỉ mình bạn truy cập được.
+          Nhóm đang ở chế độ <strong>Riêng tư</strong> nên chỉ mình bạn truy cập được.
           Hãy{' '}
           <Link to={`/workspaces/${workspaceId}/settings?tab=access`}>
             chuyển sang chế độ Chia sẻ

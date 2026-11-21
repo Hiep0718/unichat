@@ -23,7 +23,20 @@ import './invite-page.css';
 type LoadState =
   | { readonly status: 'loading' }
   | { readonly status: 'ready'; readonly invite: InvitePreviewDto }
-  | { readonly status: 'dead'; readonly message: string };
+  | { readonly status: 'dead'; readonly message: string }
+  | { readonly status: 'failed' };
+
+/**
+ * Only the server saying the link is unknown makes it dead. Anything else — a
+ * dropped connection, a timeout, a server error — says nothing about the link,
+ * and calling it dead sent people to ask for a new one that would fail the same way.
+ */
+function stateForFailure(error: unknown): LoadState {
+  if (error instanceof ApiError && error.status === 404) {
+    return { status: 'dead', message: error.message };
+  }
+  return { status: 'failed' };
+}
 
 export function InvitePage() {
   const { token = '' } = useParams<{ token: string }>();
@@ -31,6 +44,7 @@ export function InvitePage() {
   const navigate = useNavigate();
 
   const [state, setState] = useState<LoadState>({ status: 'loading' });
+  const [attempt, setAttempt] = useState(0);
   const [joining, setJoining] = useState(false);
   const [joinError, setJoinError] = useState<string | null>(null);
 
@@ -40,18 +54,11 @@ export function InvitePage() {
     let active = true;
     previewInvite(token)
       .then((invite) => active && setState({ status: 'ready', invite }))
-      .catch((error: unknown) =>
-        active &&
-        setState({
-          status: 'dead',
-          message:
-            error instanceof Error ? error.message : 'Link mời không hợp lệ hoặc đã hết hạn',
-        }),
-      );
+      .catch((error: unknown) => active && setState(stateForFailure(error)));
     return () => {
       active = false;
     };
-  }, [token]);
+  }, [token, attempt]);
 
   const handleJoin = useCallback(async () => {
     setJoining(true);
@@ -83,21 +90,17 @@ export function InvitePage() {
   }
 
   if (state.status === 'dead') {
+    return <DeadInvite message={state.message} />;
+  }
+
+  if (state.status === 'failed') {
     return (
-      <main className="invite-page">
-        <section className="invite-page__card invite-page__card--dead">
-          <Icon name="link_off" size={40} />
-          <h1 className="invite-page__title">Lời mời không dùng được</h1>
-          <p className="invite-page__reason">{state.message}</p>
-          <p className="invite-page__hint">
-            Link mời có thể đã hết hạn, đã dùng hết lượt, hoặc bị chủ nhóm thu hồi.
-            Hãy xin người mời một link mới.
-          </p>
-          <Link className="invite-page__secondary" to="/">
-            Về trang chủ
-          </Link>
-        </section>
-      </main>
+      <FailedInvite
+        onRetry={() => {
+          setState({ status: 'loading' });
+          setAttempt((current) => current + 1);
+        }}
+      />
     );
   }
 
@@ -142,6 +145,44 @@ export function InvitePage() {
             </Link>
           </>
         )}
+      </section>
+    </main>
+  );
+}
+
+/** The server says the link is unknown, spent, expired or revoked. */
+function DeadInvite({ message }: { readonly message: string }) {
+  return (
+    <main className="invite-page">
+      <section className="invite-page__card invite-page__card--dead">
+        <Icon name="link_off" size={40} />
+        <h1 className="invite-page__title">Lời mời không dùng được</h1>
+        <p className="invite-page__reason">{message}</p>
+        <p className="invite-page__hint">
+          Link mời có thể đã hết hạn, đã dùng hết lượt, hoặc bị chủ nhóm thu hồi.
+          Hãy xin người mời một link mới.
+        </p>
+        <Link className="invite-page__secondary" to="/">
+          Về trang chủ
+        </Link>
+      </section>
+    </main>
+  );
+}
+
+/** The preview could not be read; that says nothing about the link itself. */
+function FailedInvite({ onRetry }: { readonly onRetry: () => void }) {
+  return (
+    <main className="invite-page">
+      <section className="invite-page__card">
+        <Icon name="cloud_off" size={40} />
+        <h1 className="invite-page__title">Chưa tải được lời mời</h1>
+        <p className="invite-page__hint">
+          Kết nối tới máy chủ bị gián đoạn. Link mời của bạn vẫn có thể dùng được.
+        </p>
+        <button type="button" className="invite-page__primary" onClick={onRetry}>
+          Thử lại
+        </button>
       </section>
     </main>
   );

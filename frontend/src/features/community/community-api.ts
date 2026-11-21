@@ -3,6 +3,8 @@
  */
 import { fetchJson, getAccessToken } from '../../lib/api-client';
 
+import type { AvatarColorKey } from '../../components/entity-avatar';
+
 /* ---------- Types ---------- */
 
 /** The reactions a member can leave. All of them are positive. */
@@ -137,7 +139,12 @@ export interface ReplyResponse {
   voteScore: number;
   reactions: ReactionSummary;
   authorName: string;
+  /** Always null from the server; kept for older payloads. */
   authorAvatar: string | null;
+  /** Whether the author uploaded a picture. Optional for older servers. */
+  authorHasAvatar?: boolean;
+  /** The colour the author chose for their initial, or null to derive one. */
+  authorAvatarColor?: AvatarColorKey | null;
   /** Empty for a human reply. */
   citations: ReplyCitation[];
 }

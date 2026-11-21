@@ -8,7 +8,7 @@ export function EvaluationPage() {
     <div style={{ padding: '2rem', maxWidth: '1000px', margin: '0 auto' }}>
       <header style={{ marginBottom: '2rem' }}>
         <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0f172a', margin: '0 0 0.5rem 0' }}>
-          Đánh giá RAG — {workspace?.name || 'Workspace'}
+          Đánh giá RAG — {workspace?.name || 'Nhóm'}
         </h1>
         <p style={{ fontSize: '0.875rem', color: '#64748b', margin: 0 }}>
           Chạy benchmark so sánh chất lượng giữa BASELINE và ADAPTIVE Retrieval.

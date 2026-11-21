@@ -50,7 +50,7 @@ export function FeedSidebar({
           onClick={() => onNavigate('/workspaces')}
         >
           <Icon name="workspaces" size={16} />
-          Tới Knowledge Space
+          Xem các nhóm của bạn
         </button>
       </section>
     </aside>

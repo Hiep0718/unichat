@@ -1,4 +1,5 @@
 import { cleanup, render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -75,9 +76,11 @@ describe('SideNavBar', () => {
     expect(screen.getByRole('button', { name: 'Đăng xuất' })).toBeInTheDocument();
   });
 
-  it('offers the assistant and the way out, and leaves the rest to the group tabs', async () => {
+  it('should keep the same sidebar inside a group, marking the group and its assistant', async () => {
+    // Arrange
     const { Routes, Route } = await import('react-router-dom');
 
+    // Act
     render(
       <MemoryRouter initialEntries={['/workspaces/ws-1/chat']}>
         <Routes>
@@ -86,9 +89,29 @@ describe('SideNavBar', () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByText('Trợ lý AI')).toBeInTheDocument();
-    expect(screen.getByText('Tải tài liệu mới')).toBeInTheDocument();
-    expect(screen.getByText('Đổi Workspace')).toBeInTheDocument();
+    // Assert: the global destinations stay, the open group is marked, and
+    // its assistant sits beneath it.
+    expect(screen.getByText('Bảng tin')).toBeInTheDocument();
+    expect(screen.getByText('Tin nhắn')).toBeInTheDocument();
+    expect(screen.getByText('Quản lý dự án')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'ainhantao' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('link', { name: 'Quản lý dự án' })).not.toHaveAttribute('aria-current');
+    expect(screen.getByRole('link', { name: 'Trợ lý AI' })).toHaveAttribute('href', '/workspaces/ws-1/chat');
+    expect(screen.queryByText('Tải tài liệu mới')).not.toBeInTheDocument();
+    expect(screen.queryByText('Đổi nhóm')).not.toBeInTheDocument();
+  });
+
+  it('should show no group assistant outside a group', () => {
+    // Act
+    render(
+      <MemoryRouter initialEntries={['/feed']}>
+        <SideNavBar />
+      </MemoryRouter>,
+    );
+
+    // Assert
+    expect(screen.queryByRole('link', { name: 'Trợ lý AI' })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'ainhantao' })).toHaveAttribute('href', '/workspaces/ws-1');
   });
 
   it('should not repeat destinations the group tab bar already carries', async () => {
@@ -148,5 +171,39 @@ describe('SideNavBar', () => {
     const adminLinks = screen.getAllByRole('link', { name: /Quản trị viên/i });
     expect(adminLinks).toHaveLength(1);
     expect(adminLinks[0]).toHaveAttribute('href', '/admin/ai-studio');
+  });
+  it('should open on hover alone, with no collapse button and no remembered state', () => {
+    // Arrange: a state saved by the old collapse button must not shape the rail.
+    window.localStorage.setItem('unichat.rail', 'collapsed');
+
+    // Act
+    render(
+      <MemoryRouter initialEntries={['/feed']}>
+        <SideNavBar />
+      </MemoryRouter>,
+    );
+
+    // Assert
+    const nav = screen.getByRole('navigation', { name: 'Thanh điều hướng chính' });
+    expect(nav).not.toHaveClass('side-nav--collapsed');
+    expect(screen.queryByRole('button', { name: /Thu gọn|Mở rộng thanh bên/ })).not.toBeInTheDocument();
+    window.localStorage.removeItem('unichat.rail');
+  });
+
+  it('should stay open while the notification panel is open', async () => {
+    // Arrange
+    render(
+      <MemoryRouter initialEntries={['/feed']}>
+        <SideNavBar />
+      </MemoryRouter>,
+    );
+    const nav = screen.getByRole('navigation', { name: 'Thanh điều hướng chính' });
+    expect(nav).not.toHaveClass('side-nav--expanded');
+
+    // Act: moving onto the panel leaves the rail, which must not fold under it.
+    await userEvent.click(screen.getByText('Thông báo'));
+
+    // Assert
+    expect(nav).toHaveClass('side-nav--expanded');
   });
 });

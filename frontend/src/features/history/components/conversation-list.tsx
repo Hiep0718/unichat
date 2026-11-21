@@ -86,8 +86,9 @@ export const ConversationList: React.FC<ConversationListProps> = ({
               className="conversation-item__delete"
               onClick={(e) => handleDelete(e, item.id)}
               title="Xóa hội thoại"
+              aria-label="Xóa hội thoại"
             >
-              ✕
+              <span className="material-symbols-outlined" aria-hidden="true">close</span>
             </button>
           </div>
         ))}

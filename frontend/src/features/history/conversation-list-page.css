@@ -45,12 +45,10 @@
 }
 
 .conv-list-header__title {
-  font: var(--font-headline-lg);
-  font-size: 22px;
-  font-weight: 800;
+  font: var(--font-page-title);
   color: var(--color-on-surface, var(--muc));
   margin: 0;
-  letter-spacing: -0.3px;
+  letter-spacing: var(--letter-spacing-page-title);
 }
 
 .conv-list-header__desc {
@@ -65,10 +63,10 @@
   align-items: center;
   gap: 8px;
   padding: 12px 22px;
-  background: var(--nhan);
-  color: var(--nhan-muc);
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-ink);
   border: none;
-  border-radius: var(--radius-lg, 12px);
+  border-radius: var(--btn-radius);
   font: var(--font-label-md);
   font-size: 14px;
   font-weight: 700;
@@ -78,7 +76,7 @@
 }
 
 .conv-list-header__new-btn:hover {
-  transform: translateY(-2px);
+  background: var(--btn-primary-bg-hover);
 }
 
 /* ── Toolbar & Search Controls ── */
@@ -236,7 +234,7 @@
   background: var(--color-surface-container-low, var(--color-surface-dim));
   color: var(--color-secondary, var(--muc));
   border: 1px solid var(--color-outline-variant, var(--ke));
-  border-radius: var(--radius-md, 8px);
+  border-radius: var(--btn-radius);
   font: var(--font-label-md);
   font-size: 13px;
   font-weight: 700;
@@ -254,7 +252,7 @@
   background: transparent;
   border: none;
   color: var(--muc-nhat);
-  border-radius: var(--radius-md, 8px);
+  border-radius: var(--btn-radius);
   cursor: pointer;
   display: flex;
   align-items: center;

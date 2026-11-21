@@ -1,0 +1,104 @@
+/* Inline reply form: one line that grows as it fills. The boxed `block`
+   shape keeps its rules in discussion-page.css. */
+
+.reply-form--inline {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 0;
+  background: none;
+  border-radius: 0;
+}
+
+.reply-form--inline:focus-within {
+  box-shadow: none;
+}
+
+.reply-form__avatar {
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+.reply-form__field {
+  flex: 1;
+  min-width: 0;
+}
+
+.reply-form--inline .reply-form__input {
+  display: block;
+  width: 100%;
+  min-height: 36px;
+  max-height: 160px;
+  padding: 8px 14px;
+  border: 1px solid transparent;
+  border-radius: 18px;
+  background: var(--color-surface-container-low, var(--be-mat));
+  resize: none;
+  line-height: 1.4;
+  /* Grows with its content where the browser supports it; elsewhere it stays
+     one line and scrolls, which is still usable. */
+  field-sizing: content;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.reply-form--inline .reply-form__input:focus {
+  border-color: var(--nhan);
+  background: var(--nen);
+}
+
+.reply-form__hint {
+  display: none;
+  margin: 4px 0 0 14px;
+  font: var(--font-label-sm);
+  color: var(--color-on-surface-variant);
+}
+
+.reply-form--inline:focus-within .reply-form__hint {
+  display: block;
+}
+
+.reply-form__send {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--nhan);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.reply-form__send:hover:not(:disabled) {
+  background: var(--nhan-nhat);
+}
+
+.reply-form__send:disabled {
+  color: var(--color-on-surface-variant);
+  opacity: 0.45;
+  cursor: default;
+}
+
+.reply-form__send:focus-visible {
+  outline: 2px solid var(--nhan);
+  outline-offset: 1px;
+}
+
+.reply-form__cancel-link {
+  flex-shrink: 0;
+  align-self: center;
+  padding: 0 4px;
+  border: none;
+  background: none;
+  color: var(--color-on-surface-variant);
+  font: var(--font-label-md);
+  cursor: pointer;
+}
+
+.reply-form__cancel-link:hover {
+  color: var(--color-on-surface);
+  text-decoration: underline;
+}

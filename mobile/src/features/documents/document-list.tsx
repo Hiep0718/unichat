@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert } from 'react-native';
 
-import { colors, spacing, radii } from '../../design/tokens';
-import { typography } from '../../design/typography';
+import { colors, spacing, radii, palette } from '../../design/tokens';
+import { typography, fonts } from '../../design/typography';
 import { UCIcon } from '../../components/uc-icon';
 import { UCEmptyState } from '../../components/uc-empty-state';
 import {
@@ -164,15 +164,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 7,
     paddingVertical: 4,
     borderRadius: radii.sm,
-    backgroundColor: '#FDE7E7',
+    backgroundColor: palette.pillHongNen,
     marginRight: spacing.md,
   },
   kindText: {
     fontSize: 10,
     fontWeight: '800',
     letterSpacing: 0.4,
-    color: '#B4301F',
-    fontFamily: 'Inter_700Bold',
+    color: palette.hong,
+    fontFamily: fonts.bold,
   },
   contentWrap: {
     flex: 1,

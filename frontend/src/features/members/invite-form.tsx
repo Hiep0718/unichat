@@ -6,6 +6,7 @@
 import { useCallback, useState } from 'react';
 
 import { Icon } from '../../components/icon';
+import { SelectMenu } from '../../components/select-menu';
 
 import { inviteMemberSchema, ROLE_LABELS } from './member-schema';
 import type { InviteMemberInput } from './member-schema';
@@ -110,15 +111,17 @@ export function InviteForm({
             <label className="invite-modal__label" htmlFor="invite-role">
               Vai trò
             </label>
-            <select
+            <SelectMenu
               id="invite-role"
-              className="invite-modal__select"
+              variant="field"
+              label="Vai trò"
               value={role}
-              onChange={(e) => setRole(e.target.value as 'EDITOR' | 'VIEWER')}
-            >
-              <option value="EDITOR">{ROLE_LABELS.EDITOR}</option>
-              <option value="VIEWER">{ROLE_LABELS.VIEWER}</option>
-            </select>
+              options={[
+                { value: 'EDITOR', label: ROLE_LABELS.EDITOR },
+                { value: 'VIEWER', label: ROLE_LABELS.VIEWER },
+              ]}
+              onChange={setRole}
+            />
           </div>
 
           {serverError && (

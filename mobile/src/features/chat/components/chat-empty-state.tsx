@@ -2,9 +2,10 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { UCIcon } from '../../../components/uc-icon';
-import { dock, radii, workplace } from '../../../design/tokens';
+import { dock, radii, workplace, palette } from '../../../design/tokens';
 import { shadows } from '../../../design/shadows';
 import { WorkspaceCover } from '../../workspaces/components/workspace-cover';
+import { fonts } from '../../../design/typography';
 
 interface ChatEmptyStateProps {
   readonly workspaceId: string;
@@ -42,7 +43,7 @@ export function ChatEmptyState(props: ChatEmptyStateProps) {
       <View style={styles.cover}>
         <WorkspaceCover workspaceId={workspaceId} name={workspaceName} topics={topics} />
         <View style={styles.coverIcon}>
-          <UCIcon name="auto-awesome" size={26} color="#FFFFFF" />
+          <UCIcon name="auto-awesome" size={26} color={palette.trenAnh} />
         </View>
       </View>
 
@@ -88,7 +89,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: 'rgba(15, 23, 42, 0.45)',
   },
-  title: { color: workplace.ink, fontSize: 24, lineHeight: 31, fontFamily: 'Inter_800ExtraBold', textAlign: 'center', letterSpacing: -0.4 },
+  title: { color: workplace.ink, fontSize: 24, lineHeight: 31, fontFamily: fonts.extrabold, textAlign: 'center', letterSpacing: -0.4 },
   pill: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -101,12 +102,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: workplace.line,
   },
-  pillDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#16A34A' },
+  pillDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: palette.tot },
   pillDotOff: { backgroundColor: workplace.inkMuted },
-  pillText: { color: workplace.inkSoft, fontSize: 13, fontFamily: 'Inter_500Medium' },
+  pillText: { color: workplace.inkSoft, fontSize: 13, fontFamily: fonts.medium },
   subtitle: { color: workplace.inkMuted, fontSize: 14, lineHeight: 21, textAlign: 'center', marginTop: 12, paddingHorizontal: 8 },
   suggestions: { alignSelf: 'stretch', gap: 10, marginTop: 22 },
-  section: { color: workplace.inkMuted, fontSize: 12, fontFamily: 'Inter_700Bold', letterSpacing: 0.4 },
+  section: { color: workplace.inkMuted, fontSize: 12, fontFamily: fonts.bold, letterSpacing: 0.4 },
   suggestion: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -119,5 +120,5 @@ const styles = StyleSheet.create({
     borderColor: workplace.line,
   },
   pressed: { backgroundColor: workplace.canvas },
-  suggestionText: { flex: 1, color: workplace.ink, fontSize: 14.5, lineHeight: 20, fontFamily: 'Inter_600SemiBold' },
+  suggestionText: { flex: 1, color: workplace.ink, fontSize: 14.5, lineHeight: 20, fontFamily: fonts.semibold },
 });

@@ -3,7 +3,8 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { UCIcon } from '../../../components/uc-icon';
-import { radii, workplace } from '../../../design/tokens';
+import { button, palette, workplace } from '../../../design/tokens';
+import { fonts } from '../../../design/typography';
 
 interface ChatHeaderProps {
   readonly workspaceName: string;
@@ -43,7 +44,7 @@ export function ChatHeader(props: ChatHeaderProps) {
         >
           <View style={[styles.dot, isStreaming && styles.dotBusy]} />
           <Text style={styles.groupName} numberOfLines={1}>{workspaceName}</Text>
-          {onPickGroup && <UCIcon name="keyboard-arrow-down" size={16} color="#15803D" />}
+          {onPickGroup && <UCIcon name="keyboard-arrow-down" size={16} color={palette.tot} />}
         </Pressable>
         <Text style={styles.title} numberOfLines={1}>{isStreaming ? 'Trợ lý đang trả lời...' : title}</Text>
       </View>
@@ -62,7 +63,7 @@ export function ChatHeader(props: ChatHeaderProps) {
           accessibilityLabel="Cuộc trò chuyện mới"
           testID="chat-header-new"
         >
-          <UCIcon name="add" size={22} color="#FFFFFF" />
+          <UCIcon name="add" size={22} color={palette.trenAnh} />
         </Pressable>
       )}
     </View>
@@ -83,11 +84,11 @@ const styles = StyleSheet.create({
   back: { paddingRight: 2 },
   titles: { flex: 1, minWidth: 0 },
   group: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start', maxWidth: '100%' },
-  dot: { width: 9, height: 9, borderRadius: 3, backgroundColor: '#16A34A' },
-  dotBusy: { backgroundColor: '#F59E0B' },
-  groupName: { flexShrink: 1, color: '#15803D', fontSize: 13, fontFamily: 'Inter_700Bold' },
-  title: { color: workplace.ink, fontSize: 17, fontFamily: 'Inter_800ExtraBold', letterSpacing: -0.2 },
+  dot: { width: 9, height: 9, borderRadius: 3, backgroundColor: palette.tot },
+  dotBusy: { backgroundColor: palette.canhBao },
+  groupName: { flexShrink: 1, color: palette.tot, fontSize: 13, fontFamily: fonts.bold },
+  title: { color: workplace.ink, fontSize: 17, fontFamily: fonts.extrabold, letterSpacing: -0.2 },
   ghost: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  newChat: { width: 44, height: 44, borderRadius: radii.lg, backgroundColor: workplace.ink, alignItems: 'center', justifyContent: 'center' },
+  newChat: { width: 44, height: 44, borderRadius: button.radius, backgroundColor: button.primaryBg, alignItems: 'center', justifyContent: 'center' },
   pressed: { opacity: 0.75 },
 });

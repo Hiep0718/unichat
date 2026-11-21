@@ -160,8 +160,9 @@
   align-items: center;
   gap: 18px;
   margin-top: 2px;
-  padding-top: 12px;
-  border-top: 1px solid var(--ws-line);
+  /* No rule above the actions: the only rule on the card is the one that
+     opens the comments, so the action row is not boxed in by two lines. */
+  padding-top: 6px;
 }
 
 .feed-card__replies {
@@ -189,7 +190,7 @@
   height: 34px;
   margin-left: auto;
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: var(--btn-radius);
   background: none;
   color: var(--ws-ink-muted);
   cursor: pointer;
@@ -270,7 +271,7 @@
   flex-shrink: 0;
   padding: 2px 6px;
   border: none;
-  border-radius: var(--radius-sm, 6px);
+  border-radius: var(--btn-radius);
   background: none;
   color: var(--ws-ink-muted);
   font: var(--font-label-sm);

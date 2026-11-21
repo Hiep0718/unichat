@@ -12,8 +12,8 @@ import {
 import Animated, { FadeInUp, FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { colors, spacing } from '../../src/design/tokens';
-import { typography } from '../../src/design/typography';
+import { colors, spacing, palette } from '../../src/design/tokens';
+import { typography, fonts } from '../../src/design/typography';
 import { UCTextInput } from '../../src/components/uc-text-input';
 import { UCButton } from '../../src/components/uc-button';
 import { UCIcon } from '../../src/components/uc-icon';
@@ -225,7 +225,7 @@ export default function ForgotPasswordScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#F4F6FC',
+    backgroundColor: palette.beMat,
   },
   safeArea: {
     flex: 1,
@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
   },
   title: {
     color: colors.primary,
-    fontFamily: 'Inter_800ExtraBold',
+    fontFamily: fonts.extrabold,
     letterSpacing: -0.5,
   },
   subtitle: {
