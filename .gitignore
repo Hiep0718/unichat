@@ -3,6 +3,7 @@
 .tmp/
 .agents/
 .local-archive/
+.worktrees/
 .pipeline/*
 !.pipeline/decisions-log.md
 .repository-reorganization/
@@ -65,8 +66,9 @@ desktop.ini
 # Evaluation and data
 data/
 
-# Office temporary locks
+# Office & Draw.io temporary locks/backups
 ~$*
+*.drawio.bkp
 
 # Ignore local markdown files
 huong-dan-giai-quyet-merge-conflict.md
