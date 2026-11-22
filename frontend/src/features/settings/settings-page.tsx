@@ -57,7 +57,7 @@ export function WorkspaceSettingsPage() {
         {activeTab === 'access' && isOwner && <div className="settings-tab">
           <AccessForm key={workspace.id} workspace={workspace} />
           <section className="settings-section">
-            <h3 className="settings-section__title">Link mời</h3>
+            <h3 className="settings-section__title">Link mời đã tạo</h3>
             <InvitePanel workspaceId={workspace.id} visibility={workspace.visibility} />
           </section>
           <section className="settings-section">

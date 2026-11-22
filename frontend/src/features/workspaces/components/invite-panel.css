@@ -5,97 +5,12 @@
 }
 
 .invite-panel__intro,
-.invite-panel__disabled {
+.invite-panel__disabled,
+.invite-panel__empty {
   margin: 0;
   color: var(--color-on-surface-variant, var(--muc-nhat));
   font-size: 0.875rem;
   line-height: 1.55;
-}
-
-.invite-panel__controls {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 12px;
-}
-
-.invite-panel__field {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: 0.8125rem;
-  color: var(--color-on-surface-variant, var(--muc-nhat));
-}
-
-.invite-panel__field input {
-  padding: 8px 10px;
-  border: 1px solid var(--color-outline-variant, var(--dieu-khien));
-  border-radius: var(--radius-md, 6px);
-  font: inherit;
-  color: var(--color-on-surface, var(--muc));
-  background: var(--color-surface, var(--nen));
-}
-
-.invite-panel__field input {
-  width: 88px;
-}
-
-.invite-panel__create {
-  padding: 9px 18px;
-  border: none;
-  border-radius: var(--btn-radius);
-  background: var(--color-primary, var(--muc));
-  color: var(--nen);
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.invite-panel__create:disabled {
-  opacity: 0.65;
-  cursor: progress;
-}
-
-/* Shown once and never again, so it is loud on purpose. */
-.invite-panel__fresh {
-  padding: 12px 14px;
-  border: 1px solid var(--ws-warn-ink);
-  border-radius: var(--radius-md, 8px);
-  background: var(--nen);
-}
-
-.invite-panel__fresh-note {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 0 0 8px;
-  color: var(--ws-warn-ink);
-  font-size: 0.8125rem;
-}
-
-.invite-panel__fresh-row {
-  display: flex;
-  gap: 8px;
-}
-
-.invite-panel__fresh-row input {
-  flex: 1;
-  min-width: 0;
-  padding: 8px 10px;
-  border: 1px solid var(--color-outline-variant, var(--dieu-khien));
-  border-radius: var(--radius-md, 6px);
-  font-family: ui-monospace, monospace;
-  font-size: 0.8125rem;
-  background: var(--nen);
-}
-
-.invite-panel__fresh-row button {
-  padding: 8px 16px;
-  border: 1px solid var(--color-outline-variant, var(--dieu-khien));
-  border-radius: var(--btn-radius);
-  background: var(--nen);
-  font: inherit;
-  cursor: pointer;
 }
 
 .invite-panel__list {
@@ -146,12 +61,4 @@
   background: var(--nen);
   color: var(--color-error);
   font-size: 0.875rem;
-}
-
-/* The dropdowns here are SelectMenu fields, sized to sit beside the
-   uses input on one line. */
-.invite-panel__field .select-menu__trigger--field {
-  width: auto;
-  min-width: 140px;
-  min-height: 38px;
 }

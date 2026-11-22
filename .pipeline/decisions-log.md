@@ -4641,3 +4641,17 @@ xoá test của component đã chết). Vẫn phải chạy `--maxWorkers=2` vì
   2. `.pipeline/decisions-log.md`: hai bên cùng thêm mục vào cuối tệp; giữ cả hai.
   3. `cookie-session.ts` (đăng nhập khởi tạo phiên ở `anonymous`) tự merge được.
 - Kiểm chứng sau merge: `tsc -b` 0 lỗi, `eslint . --max-warnings 0` sạch, Vitest 91 tệp, 637 test qua (gồm test chống đệ quy của `main`); backend `./mvnw -o test` 609/609 qua.
+
+## 2026-11-22 — Đưa tạo link mời ra modal "Mời thành viên"
+
+- Bối cảnh: Người dùng thấy chỗ tạo link mời nằm quá sâu (Cài đặt → Quyền truy cập & Thành viên) và đồng ý hướng gộp vào modal mời.
+- Quyết định:
+  1. Modal "Mời thành viên" (`members/components/invite-dialog.tsx`, thay cho `members/invite-form.tsx`) có hai tab "Qua email" và "Qua link". Hai tab cùng mount, chỉ ẩn bằng `hidden`, để đổi tab không làm mất link vừa tạo (token chỉ có trong phản hồi tạo).
+  2. Tab "Qua link" (`workspaces/components/invite-link-creator.tsx`) tạo bằng một lần bấm với mặc định Thành viên, 7 ngày, 1 lượt; hạn và số lượt thu gọn trong `<details>`.
+  3. Tự sao chép ngay khi tạo bằng `lib/copy-text.ts`: dùng Clipboard API trong secure context, ngược lại chọn ô và gọi `execCommand('copy')`, vì môi trường triển khai đang chạy HTTP. Đóng modal (nút, Escape, bấm nền, link quản lý) khi link chưa sao chép thì hỏi xác nhận.
+  4. Trang Cài đặt chỉ còn danh sách link ("Link mời đã tạo"), lượt dùng và thu hồi; không giữ form tạo thứ hai ngay phía trên nút "Mời thành viên".
+  5. Dữ liệu link chuyển sang React Query (`workspaces/invite-hooks.ts`) để tạo trong modal thì danh sách ở Cài đặt cập nhật ngay.
+  6. Quyền giữ nguyên: chỉ chủ nhóm thấy nút mời; `WorkspaceInviteService` ở Core API vẫn kiểm tra OWNER. Không đổi backend.
+- Phát hiện khi kiểm chứng: Vitest chạy từ đường dẫn có ổ đĩa chữ thường (`d:/…`) thì `vi.mock` không áp dụng, 34 tệp test hỏng với `vi.mocked(...).mockReset is not a function`; chạy từ `D:/…` thì qua hết. Đây là lỗi môi trường trên Windows, không do thay đổi này.
+- Kiểm chứng (chạy từ `D:\`): `tsc` 0 lỗi, `eslint . --max-warnings 0` sạch, `npm run build` qua, Vitest 95 tệp, 666 test qua (thêm `copy-text`, `invite-link-creator`, `invite-panel`, `invite-dialog` và 2 test modal trong `member-panel`); độ phủ các tệp mới 93,6% câu lệnh; Playwright `e2e/invite-link.spec.ts` 2/2 qua.
+- Ranh giới: Không commit, không push, không triển khai.

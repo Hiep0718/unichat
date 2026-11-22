@@ -1,17 +1,14 @@
 /**
- * Issuing and revoking invite links, on the workspace access settings.
+ * The invite links a workspace has issued, on the access settings.
  *
- * Sits beside the member table because the two are the same job reached two
- * ways: the table admits people who already have an account, this admits the
- * ones who do not — and the ones Work Chat cannot reach, since Work Chat only
- * reaches people who already share a workspace with you.
+ * Only management lives here — reading usage and revoking. Issuing a link moved
+ * into the "Mời thành viên" dialog, beside the email invite, because inviting is
+ * an everyday job and settings is the page nobody visits to do one.
  */
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
 
-import { Icon } from '../../../components/icon';
-import { SelectMenu } from '../../../components/select-menu';
-import { createInvite, getInvites, inviteUrlFor, revokeInvite } from '../invite-api';
-import { allowsMembers, ROLE_SUMMARY } from '../workspace-visibility';
+import { useInvites, useRevokeInvite } from '../invite-hooks';
+import { allowsMembers } from '../workspace-visibility';
 
 import type { InviteDto } from '../invite-api';
 import type { WorkspaceRole, WorkspaceVisibility } from '../workspace-schema';
@@ -23,7 +20,11 @@ interface InvitePanelProps {
   readonly visibility: WorkspaceVisibility;
 }
 
-const EXPIRY_CHOICES = [1, 7, 30] as const;
+const ROLE_SHORT: Record<WorkspaceRole, string> = {
+  OWNER: 'Chủ sở hữu',
+  EDITOR: 'Biên tập viên',
+  VIEWER: 'Thành viên',
+};
 
 /** Formats an ISO instant as a Vietnamese date and time. */
 function formatMoment(iso: string): string {
@@ -36,65 +37,19 @@ function formatMoment(iso: string): string {
   });
 }
 
+/** Lists the workspace's links with their usage and a revoke action. */
 export function InvitePanel({ workspaceId, visibility }: InvitePanelProps) {
-  const [invites, setInvites] = useState<readonly InviteDto[]>([]);
-  const [role, setRole] = useState<WorkspaceRole>('VIEWER');
-  const [expiresInDays, setExpiresInDays] = useState<number>(7);
-  const [maxUses, setMaxUses] = useState<number>(1);
-  const [creating, setCreating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  /** Held in state, not refetched: the server cannot show a token twice. */
-  const [freshLink, setFreshLink] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
-
   const canInvite = allowsMembers(visibility);
+  const { data: invites = [], error: loadError } = useInvites(workspaceId, canInvite);
+  const revoke = useRevokeInvite(workspaceId);
+  const [error, setError] = useState<string | null>(null);
 
-  const reload = useCallback(() => {
-    getInvites(workspaceId)
-      .then(setInvites)
-      .catch(() => setInvites([]));
-  }, [workspaceId]);
-
-  useEffect(() => {
-    if (canInvite) reload();
-  }, [canInvite, reload]);
-
-  const handleCreate = async () => {
-    setCreating(true);
+  const handleRevoke = (inviteId: string) => {
+    if (!window.confirm('Thu hồi link này? Ai đang giữ link sẽ không dùng được nữa.')) return;
     setError(null);
-    try {
-      const invite = await createInvite(workspaceId, { role, expiresInDays, maxUses });
-      // The token exists only in this response; losing it means issuing a new link.
-      setFreshLink(invite.token ? inviteUrlFor(invite.token) : null);
-      setCopied(false);
-      reload();
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Không tạo được link mời');
-    } finally {
-      setCreating(false);
-    }
-  };
-
-  const handleCopy = async () => {
-    if (!freshLink) return;
-    try {
-      await navigator.clipboard.writeText(freshLink);
-      setCopied(true);
-    } catch {
-      // Clipboard access is refused in some browsers and over plain HTTP; the
-      // link stays selectable on screen, so this is not worth an error banner.
-      setCopied(false);
-    }
-  };
-
-  const handleRevoke = async (inviteId: string) => {
-    if (!confirm('Thu hồi link này? Ai đang giữ link sẽ không dùng được nữa.')) return;
-    try {
-      await revokeInvite(workspaceId, inviteId);
-      reload();
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Không thu hồi được link');
-    }
+    revoke.mutate(inviteId, {
+      onError: (err) => setError(err.message || 'Không thu hồi được link'),
+    });
   };
 
   if (!canInvite) {
@@ -105,99 +60,42 @@ export function InvitePanel({ workspaceId, visibility }: InvitePanelProps) {
     );
   }
 
+  const shownError = error ?? (loadError ? 'Không tải được danh sách link mời' : null);
   return (
     <div className="invite-panel">
       <p className="invite-panel__intro">
-        Link mời dùng được cho cả người chưa có tài khoản UniChat. Bạn gửi link qua
-        bất kỳ kênh nào — Zalo, email, lớp học — và người nhận tự tham gia.
+        Tạo link mới bằng nút <strong>Mời thành viên</strong> → tab <strong>Qua link</strong>.
+        Ở đây bạn xem lượt dùng và thu hồi các link đã tạo.
       </p>
-
-      {error && (
-        <p className="invite-panel__error" role="alert">
-          {error}
-        </p>
+      {shownError && <p className="invite-panel__error" role="alert">{shownError}</p>}
+      {invites.length === 0 && !loadError && (
+        <p className="invite-panel__empty">Chưa có link mời nào.</p>
       )}
-
-      <div className="invite-panel__controls">
-        <label className="invite-panel__field">
-          <span>Vai trò</span>
-          <SelectMenu
-            variant="field"
-            label="Vai trò"
-            value={role}
-            options={[
-              { value: 'VIEWER', label: ROLE_SUMMARY.VIEWER },
-              { value: 'EDITOR', label: ROLE_SUMMARY.EDITOR },
-            ]}
-            onChange={setRole}
-          />
-        </label>
-
-        <label className="invite-panel__field">
-          <span>Hết hạn sau</span>
-          <SelectMenu
-            variant="field"
-            label="Hết hạn sau"
-            value={expiresInDays}
-            options={EXPIRY_CHOICES.map((days) => ({ value: days, label: `${days} ngày` }))}
-            onChange={setExpiresInDays}
-          />
-        </label>
-
-        <label className="invite-panel__field">
-          <span>Số lượt dùng</span>
-          <input
-            type="number"
-            min={1}
-            max={200}
-            value={maxUses}
-            onChange={(e) => setMaxUses(Math.max(1, Math.min(200, Number(e.target.value))))}
-          />
-        </label>
-
-        <button
-          type="button"
-          className="invite-panel__create"
-          onClick={handleCreate}
-          disabled={creating}
-        >
-          {creating ? 'Đang tạo…' : 'Tạo link mời'}
-        </button>
-      </div>
-
-      {freshLink && (
-        <div className="invite-panel__fresh">
-          <p className="invite-panel__fresh-note">
-            <Icon name="warning" size={16} />
-            Sao chép ngay — link chỉ hiện một lần duy nhất và không xem lại được.
-          </p>
-          <div className="invite-panel__fresh-row">
-            <input readOnly value={freshLink} onFocus={(e) => e.target.select()} />
-            <button type="button" onClick={handleCopy}>
-              {copied ? 'Đã chép' : 'Sao chép'}
-            </button>
-          </div>
-        </div>
-      )}
-
       {invites.length > 0 && (
         <ul className="invite-panel__list">
           {invites.map((invite) => (
-            <li key={invite.id} className={invite.active ? '' : 'invite-panel__item--dead'}>
-              <span className="invite-panel__item-role">{invite.role}</span>
-              <span className="invite-panel__item-meta">
-                {invite.usedCount}/{invite.maxUses} lượt · hết hạn {formatMoment(invite.expiresAt)}
-                {!invite.active && ' · đã ngừng'}
-              </span>
-              {invite.active && (
-                <button type="button" onClick={() => handleRevoke(invite.id)}>
-                  Thu hồi
-                </button>
-              )}
-            </li>
+            <InviteRow key={invite.id} invite={invite} onRevoke={handleRevoke} />
           ))}
         </ul>
       )}
     </div>
+  );
+}
+
+/** One link: who it admits, how much it has been used, and when it ends. */
+function InviteRow({ invite, onRevoke }: { readonly invite: InviteDto; readonly onRevoke: (id: string) => void }) {
+  return (
+    <li className={invite.active ? '' : 'invite-panel__item--dead'}>
+      <span className="invite-panel__item-role">{ROLE_SHORT[invite.role]}</span>
+      <span className="invite-panel__item-meta">
+        {invite.usedCount}/{invite.maxUses} lượt · hết hạn {formatMoment(invite.expiresAt)}
+        {!invite.active && ' · đã ngừng'}
+      </span>
+      {invite.active && (
+        <button type="button" onClick={() => onRevoke(invite.id)}>
+          Thu hồi
+        </button>
+      )}
+    </li>
   );
 }

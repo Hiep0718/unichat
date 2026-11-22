@@ -1,0 +1,132 @@
+.invite-link {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.invite-link__intro {
+  margin: 0;
+  color: var(--color-on-surface-variant, var(--muc-nhat));
+  font-size: 0.875rem;
+  line-height: 1.55;
+}
+
+.invite-link__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.8125rem;
+  color: var(--color-on-surface-variant, var(--muc-nhat));
+}
+
+.invite-link__field .select-menu__trigger--field {
+  width: 100%;
+  min-height: 38px;
+}
+
+.invite-link__field input {
+  width: 100px;
+  padding: 8px 10px;
+  border: 1px solid var(--color-outline-variant, var(--dieu-khien));
+  border-radius: var(--radius-md, 6px);
+  font: inherit;
+  color: var(--color-on-surface, var(--muc));
+  background: var(--color-surface, var(--nen));
+}
+
+.invite-link__advanced summary {
+  width: fit-content;
+  color: var(--color-on-surface-variant, var(--muc-nhat));
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+
+.invite-link__advanced-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.invite-link__advanced-body .select-menu__trigger--field {
+  min-width: 120px;
+}
+
+.invite-link__create {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border: none;
+  border-radius: var(--btn-radius);
+  background: var(--btn-primary-bg, var(--muc));
+  color: var(--btn-primary-ink, var(--nen));
+  font: var(--font-label-md, inherit);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.invite-link__create:disabled {
+  opacity: 0.65;
+  cursor: progress;
+}
+
+.invite-link__error {
+  margin: 0;
+  color: var(--color-error);
+  font-size: 0.875rem;
+}
+
+/* Shown once and never again, so it is loud until it has been copied. */
+.invite-link__fresh {
+  padding: 12px 14px;
+  border: 1px solid var(--ws-warn-ink);
+  border-radius: var(--radius-md, 8px);
+  background: var(--nen);
+}
+
+.invite-link__fresh--copied {
+  border-color: var(--color-secondary, var(--ke));
+}
+
+.invite-link__fresh-note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 8px;
+  color: var(--ws-warn-ink);
+  font-size: 0.8125rem;
+}
+
+.invite-link__fresh--copied .invite-link__fresh-note {
+  color: var(--color-secondary, var(--muc));
+}
+
+.invite-link__fresh-row {
+  display: flex;
+  gap: 8px;
+}
+
+.invite-link__fresh-row input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--color-outline-variant, var(--dieu-khien));
+  border-radius: var(--radius-md, 6px);
+  font-family: ui-monospace, monospace;
+  font-size: 0.8125rem;
+  color: var(--color-on-surface, var(--muc));
+  background: var(--nen);
+}
+
+.invite-link__fresh-row button {
+  padding: 8px 16px;
+  border: 1px solid var(--color-outline-variant, var(--dieu-khien));
+  border-radius: var(--btn-radius);
+  background: var(--nen);
+  color: var(--color-on-surface, var(--muc));
+  font: inherit;
+  cursor: pointer;
+}

@@ -1,8 +1,7 @@
 /* ==========================================================================
-   Invite form — the modal for inviting a member to a group.
-   Renamed from member-table.css, which also held the styles of a table
-   that no longer exists; .member-section now belongs to member-list.css,
-   and two files defining it was a conflict decided by import order.
+   Invite dialog — the modal for inviting a member to a group, by email or
+   by link. Formerly invite-form.css (and before that member-table.css);
+   .member-section belongs to member-list.css.
    ========================================================================== */
 
 /* ==========================================================================
@@ -61,6 +60,49 @@
 .invite-modal__close:hover {
   color: var(--color-on-surface);
   background: var(--color-surface-container-low);
+}
+
+.invite-modal__tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: var(--stack-md);
+  padding: 4px;
+  background: var(--ws-chip, var(--color-surface-container-low));
+  border-radius: 10px;
+}
+
+.invite-modal__tab {
+  display: inline-flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 12px;
+  font: var(--font-label-md);
+  color: var(--color-on-surface-variant);
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.invite-modal__tab[aria-selected='true'] {
+  color: var(--color-on-surface);
+  background: var(--ws-card, var(--nen));
+  box-shadow: 0 1px 3px rgb(15 23 42 / 10%);
+}
+
+.invite-modal__manage {
+  display: inline-block;
+  margin-top: var(--stack-md);
+  font: var(--font-label-sm);
+  color: var(--color-secondary);
+  text-decoration: none;
+}
+
+.invite-modal__manage:hover {
+  text-decoration: underline;
 }
 
 .invite-modal__form {

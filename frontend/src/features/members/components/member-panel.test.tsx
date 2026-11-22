@@ -190,3 +190,35 @@ describe('MemberPanel visibility guidance', () => {
       expect(screen.getByRole('button', { name: /Mời thành viên/ })).toBeTruthy());
   });
 });
+
+describe('MemberPanel invite dialog', () => {
+  it('should open one dialog offering both email and link invites', async () => {
+    // Arrange
+    renderPanel({ visibility: 'SHARED' });
+    const button = await screen.findByRole('button', { name: /Mời thành viên/ });
+
+    // Act
+    await userEvent.click(button);
+
+    // Assert
+    expect(screen.getByRole('dialog', { name: 'Mời thành viên' })).toBeTruthy();
+    expect(screen.getByRole('tab', { name: /Qua email/ })).toBeTruthy();
+    expect(screen.getByRole('tab', { name: /Qua link/ })).toBeTruthy();
+  });
+
+  it('should close the dialog after an email invite succeeds', async () => {
+    // Arrange
+    vi.spyOn(memberApi, 'inviteMember').mockResolvedValue(
+      { ...member({ userId: 'u-new' }), workspaceId: WORKSPACE_ID },
+    );
+    renderPanel({ visibility: 'SHARED' });
+    await userEvent.click(await screen.findByRole('button', { name: /Mời thành viên/ }));
+
+    // Act
+    await userEvent.type(screen.getByLabelText('Email'), 'ban@example.com');
+    await userEvent.click(screen.getByRole('button', { name: /Gửi lời mời/ }));
+
+    // Assert
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+  });
+});

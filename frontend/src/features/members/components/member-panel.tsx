@@ -12,13 +12,13 @@ import { Link } from 'react-router-dom';
 import { Icon } from '../../../components/icon';
 import { useAuth } from '../../auth/auth-context';
 import { allowsMembers } from '../../workspaces/workspace-visibility';
-import { InviteForm } from '../invite-form';
 import {
   useInviteMember,
   useMembers,
   useRemoveMember,
   useUpdateMemberRole,
 } from '../member-hooks';
+import { InviteDialog } from './invite-dialog';
 import { MemberList } from './member-list';
 
 import type { InviteMemberInput, MemberRole } from '../member-schema';
@@ -123,12 +123,16 @@ export function MemberPanel({ workspaceId, isOwner, visibility }: MemberPanelPro
         onInviteClick={() => setInviteOpen(true)}
       />
 
-      <InviteForm
+      <InviteDialog
         isOpen={isInviteOpen}
+        workspaceId={workspaceId}
         isPending={invite.isPending}
         serverError={invite.error ? messageOf(invite.error, 'Không mời được thành viên') : null}
         onSubmit={handleInvite}
-        onClose={() => setInviteOpen(false)}
+        onClose={() => {
+          invite.reset();
+          setInviteOpen(false);
+        }}
       />
     </>
   );
