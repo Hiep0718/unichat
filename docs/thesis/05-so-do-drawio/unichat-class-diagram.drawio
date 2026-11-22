@@ -1,0 +1,962 @@
+<mxfile host="Electron" agent="Codex" pages="5">
+  <diagram id="diag_system_master" name="00 - Tong the Toan he thong">
+    <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="2500" pageHeight="1400" background="#ffffff" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="pkg_hub" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF8E1;strokeColor=#FFA000;strokeWidth=1.5;strokeFactor=1;dashed=1;align=left;verticalAlign=top;spacingLeft=12;spacingTop=8;fontSize=12;fontColor=#D84315;" value="&lt;b&gt;Package: Identity &amp; Workspace Hub&lt;/b&gt;" vertex="1">
+          <mxGeometry height="540" width="1450" x="40" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="pkg_rag" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#43A047;strokeWidth=1.5;strokeFactor=1;dashed=1;align=left;verticalAlign=top;spacingLeft=12;spacingTop=8;fontSize=12;fontColor=#1B5E20;" value="&lt;b&gt;Package: Adaptive Knowledge RAG Engine&lt;/b&gt;" vertex="1">
+          <mxGeometry height="720" width="840" x="650" y="630" as="geometry" />
+        </mxCell>
+        <mxCell id="pkg_ingest" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EDE7F6;strokeColor=#7E57C2;strokeWidth=1.5;strokeFactor=1;dashed=1;align=left;verticalAlign=top;spacingLeft=12;spacingTop=8;fontSize=12;fontColor=#4A148C;" value="&lt;b&gt;Package: Document Ingestion &amp; Storage Saga&lt;/b&gt;" vertex="1">
+          <mxGeometry height="1290" width="890" x="1530" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="pkg_comm" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1F5FE;strokeColor=#0288D1;strokeWidth=1.5;strokeFactor=1;dashed=1;align=left;verticalAlign=top;spacingLeft=12;spacingTop=8;fontSize=12;fontColor=#01579B;" value="&lt;b&gt;Package: Community Collaboration &amp; Realtime&lt;/b&gt;" vertex="1">
+          <mxGeometry height="720" width="580" x="40" y="630" as="geometry" />
+        </mxCell>
+        <mxCell id="m_user" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«entity»&lt;br&gt;&lt;b&gt;User&lt;/b&gt;" vertex="1">
+          <mxGeometry height="173" width="240" x="420" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="m_user_attrs" parent="m_user" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- id: UUID&lt;br&gt;- email: String&lt;br&gt;- displayName: String&lt;br&gt;- systemRole: SystemRole&lt;br&gt;- status: UserStatus" vertex="1">
+          <mxGeometry height="90" width="240" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="m_user_meth" parent="m_user" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ getAuthorities()&lt;br&gt;+ isAccountNonLocked()" vertex="1">
+          <mxGeometry height="45" width="240" y="128" as="geometry" />
+        </mxCell>
+        <mxCell id="m_wsmem" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«entity»&lt;br&gt;&lt;b&gt;WorkspaceMember&lt;/b&gt;" vertex="1">
+          <mxGeometry height="153" width="230" x="790" y="110" as="geometry" />
+        </mxCell>
+        <mxCell id="m_wsmem_attrs" parent="m_wsmem" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- workspaceId: UUID&lt;br&gt;- userId: UUID&lt;br&gt;- role: WorkspaceRole&lt;br&gt;- status: MemberStatus" vertex="1">
+          <mxGeometry height="75" width="230" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="m_wsmem_meth" parent="m_wsmem" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ canManage(): boolean" vertex="1">
+          <mxGeometry height="40" width="230" y="113" as="geometry" />
+        </mxCell>
+        <mxCell id="m_notif" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«entity»&lt;br&gt;&lt;b&gt;Notification&lt;/b&gt;" vertex="1">
+          <mxGeometry height="168" width="220" x="70" y="102.5" as="geometry" />
+        </mxCell>
+        <mxCell id="m_notif_attrs" parent="m_notif" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- id: UUID&lt;br&gt;- userId: UUID&lt;br&gt;- type: String&lt;br&gt;- payload: String&lt;br&gt;- isRead: boolean" vertex="1">
+          <mxGeometry height="90" width="220" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="m_notif_meth" parent="m_notif" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ markAsRead()" vertex="1">
+          <mxGeometry height="40" width="220" y="128" as="geometry" />
+        </mxCell>
+        <mxCell id="m_ws" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«entity»&lt;br&gt;&lt;b&gt;Workspace&lt;/b&gt;" vertex="1">
+          <mxGeometry height="173" width="250" x="780" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="m_ws_attrs" parent="m_ws" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- id: UUID&lt;br&gt;- ownerId: UUID&lt;br&gt;- name: String&lt;br&gt;- visibility: WorkspaceVisibility&lt;br&gt;- status: WorkspaceStatus" vertex="1">
+          <mxGeometry height="90" width="250" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="m_ws_meth" parent="m_ws" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ isAccessibleBy(user): boolean" vertex="1">
+          <mxGeometry height="45" width="250" y="128" as="geometry" />
+        </mxCell>
+        <mxCell id="m_disc" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«entity»&lt;br&gt;&lt;b&gt;Discussion&lt;/b&gt;" vertex="1">
+          <mxGeometry height="168" width="230" x="360" y="680" as="geometry" />
+        </mxCell>
+        <mxCell id="m_disc_attrs" parent="m_disc" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- id: UUID&lt;br&gt;- workspaceId: UUID&lt;br&gt;- authorId: UUID&lt;br&gt;- title: String&lt;br&gt;- replyCount: int" vertex="1">
+          <mxGeometry height="85" width="230" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="m_disc_meth" parent="m_disc" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ addReply(reply)" vertex="1">
+          <mxGeometry height="45" width="230" y="123" as="geometry" />
+        </mxCell>
+        <mxCell id="m_reply" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«entity»&lt;br&gt;&lt;b&gt;DiscussionReply&lt;/b&gt;" vertex="1">
+          <mxGeometry height="168" width="230" x="360" y="868" as="geometry" />
+        </mxCell>
+        <mxCell id="m_reply_attrs" parent="m_reply" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- id: UUID&lt;br&gt;- discussionId: UUID&lt;br&gt;- authorId: UUID&lt;br&gt;- body: String&lt;br&gt;- isAiAnswer: boolean" vertex="1">
+          <mxGeometry height="85" width="230" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="m_reply_meth" parent="m_reply" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ upvote()&lt;br&gt;+ downvote()" vertex="1">
+          <mxGeometry height="45" width="230" y="123" as="geometry" />
+        </mxCell>
+        <mxCell id="m_react" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«entity»&lt;br&gt;&lt;b&gt;Reaction&lt;/b&gt;" vertex="1">
+          <mxGeometry height="148" width="220" x="70" y="890" as="geometry" />
+        </mxCell>
+        <mxCell id="m_react_attrs" parent="m_react" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- id: UUID&lt;br&gt;- userId: UUID&lt;br&gt;- replyId: UUID&lt;br&gt;- reactionType: String" vertex="1">
+          <mxGeometry height="75" width="220" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="m_react_meth" parent="m_react" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ getEmoji(): String" vertex="1">
+          <mxGeometry height="35" width="220" y="113" as="geometry" />
+        </mxCell>
+        <mxCell id="m_disc_ctrl" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«rest-controller»&lt;br&gt;&lt;b&gt;DiscussionController&lt;/b&gt;" vertex="1">
+          <mxGeometry height="118" width="220" x="70" y="1055" as="geometry" />
+        </mxCell>
+        <mxCell id="m_disc_ctrl_attrs" parent="m_disc_ctrl" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- discussionService: DiscussionService" vertex="1">
+          <mxGeometry height="35" width="220" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="m_disc_ctrl_meth" parent="m_disc_ctrl" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ createDiscussion(req)&lt;br&gt;+ getDiscussion(id)" vertex="1">
+          <mxGeometry height="45" width="220" y="73" as="geometry" />
+        </mxCell>
+        <mxCell id="m_disc_svc" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«service»&lt;br&gt;&lt;b&gt;DiscussionService&lt;/b&gt;" vertex="1">
+          <mxGeometry height="128" width="230" x="360" y="1072" as="geometry" />
+        </mxCell>
+        <mxCell id="m_disc_svc_attrs" parent="m_disc_svc" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- discRepo: DiscussionRepository&lt;br&gt;- broadcaster: WorkChatBroadcaster" vertex="1">
+          <mxGeometry height="45" width="230" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="m_disc_svc_meth" parent="m_disc_svc" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ postDiscussion(req)&lt;br&gt;+ addReply(req)" vertex="1">
+          <mxGeometry height="45" width="230" y="83" as="geometry" />
+        </mxCell>
+        <mxCell id="m_ws_bc" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«component»&lt;br&gt;&lt;b&gt;WorkChatBroadcaster&lt;/b&gt;" vertex="1">
+          <mxGeometry height="118" width="230" x="360" y="1222" as="geometry" />
+        </mxCell>
+        <mxCell id="m_ws_bc_attrs" parent="m_ws_bc" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- template: SimpMessagingTemplate" vertex="1">
+          <mxGeometry height="35" width="230" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="m_ws_bc_meth" parent="m_ws_bc" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ broadcastToWorkspace(wsId, msg)" vertex="1">
+          <mxGeometry height="45" width="230" y="73" as="geometry" />
+        </mxCell>
+        <mxCell id="m_conv" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«entity»&lt;br&gt;&lt;b&gt;Conversation&lt;/b&gt;" vertex="1">
+          <mxGeometry height="153" width="220" x="1040" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="m_conv_attrs" parent="m_conv" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- id: UUID&lt;br&gt;- workspaceId: UUID&lt;br&gt;- userId: UUID&lt;br&gt;- title: String" vertex="1">
+          <mxGeometry height="75" width="220" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="m_conv_meth" parent="m_conv" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ updateSummary(summary)" vertex="1">
+          <mxGeometry height="40" width="220" y="113" as="geometry" />
+        </mxCell>
+        <mxCell id="m_msg" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«entity»&lt;br&gt;&lt;b&gt;Message&lt;/b&gt;" vertex="1">
+          <mxGeometry height="168" width="220" x="1040" y="680" as="geometry" />
+        </mxCell>
+        <mxCell id="m_msg_attrs" parent="m_msg" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- id: UUID&lt;br&gt;- conversationId: UUID&lt;br&gt;- role: String&lt;br&gt;- content: String&lt;br&gt;- intent: String" vertex="1">
+          <mxGeometry height="85" width="220" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="m_msg_meth" parent="m_msg" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ hasCitations(): boolean" vertex="1">
+          <mxGeometry height="45" width="220" y="123" as="geometry" />
+        </mxCell>
+        <mxCell id="m_cite" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«entity»&lt;br&gt;&lt;b&gt;CitationHistory&lt;/b&gt;" vertex="1">
+          <mxGeometry height="158" width="230" x="1560" y="685" as="geometry" />
+        </mxCell>
+        <mxCell id="m_cite_attrs" parent="m_cite" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- id: UUID&lt;br&gt;- messageId: UUID&lt;br&gt;- documentId: UUID&lt;br&gt;- chunkId: String&lt;br&gt;- excerpt: String" vertex="1">
+          <mxGeometry height="85" width="230" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="m_cite_meth" parent="m_cite" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ formatSnippet(): String" vertex="1">
+          <mxGeometry height="35" width="230" y="123" as="geometry" />
+        </mxCell>
+        <mxCell id="m_chat_ctrl" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«rest-controller»&lt;br&gt;&lt;b&gt;ChatController&lt;/b&gt;" vertex="1">
+          <mxGeometry height="133" width="240" x="700" y="680" as="geometry" />
+        </mxCell>
+        <mxCell id="m_chat_ctrl_attrs" parent="m_chat_ctrl" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- chatService: ChatService&lt;br&gt;- operations: ChatOperationService" vertex="1">
+          <mxGeometry height="45" width="240" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="m_chat_ctrl_meth" parent="m_chat_ctrl" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ askQuestion(req): QuestionResponse&lt;br&gt;+ streamQuestion(req): SseEmitter" vertex="1">
+          <mxGeometry height="50" width="240" y="83" as="geometry" />
+        </mxCell>
+        <mxCell id="m_chat_ops" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«service»&lt;br&gt;&lt;b&gt;ChatOperationService&lt;/b&gt;" vertex="1">
+          <mxGeometry height="133" width="240" x="700" y="870" as="geometry" />
+        </mxCell>
+        <mxCell id="m_chat_ops_attrs" parent="m_chat_ops" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- operations: ChatOperationRepository&lt;br&gt;- runner: ChatOperationRunner" vertex="1">
+          <mxGeometry height="45" width="240" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="m_chat_ops_meth" parent="m_chat_ops" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ createOperation(req)&lt;br&gt;+ executeAsync(opId)" vertex="1">
+          <mxGeometry height="50" width="240" y="83" as="geometry" />
+        </mxCell>
+        <mxCell id="m_ai_gw" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«interface»&lt;br&gt;&lt;b&gt;ChatAiGateway&lt;/b&gt;" vertex="1">
+          <mxGeometry height="108" width="220" x="1040" y="880" as="geometry" />
+        </mxCell>
+        <mxCell id="m_ai_gw_attrs" parent="m_ai_gw" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="&amp;nbsp;" vertex="1">
+          <mxGeometry height="25" width="220" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="m_ai_gw_meth" parent="m_ai_gw" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ queryRag(req): AiAnswer" vertex="1">
+          <mxGeometry height="45" width="220" y="63" as="geometry" />
+        </mxCell>
+        <mxCell id="m_ai_impl" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«service»&lt;br&gt;&lt;b&gt;ChatHttpAiGateway&lt;/b&gt;" vertex="1">
+          <mxGeometry height="128" width="220" x="1040" y="1050" as="geometry" />
+        </mxCell>
+        <mxCell id="m_ai_impl_attrs" parent="m_ai_impl" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- client: RestClient&lt;br&gt;- keys: ServiceKeys" vertex="1">
+          <mxGeometry height="45" width="220" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="m_ai_impl_meth" parent="m_ai_impl" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ queryRag(req): AiAnswer" vertex="1">
+          <mxGeometry height="45" width="220" y="83" as="geometry" />
+        </mxCell>
+        <mxCell id="m_doc_ent" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«entity»&lt;br&gt;&lt;b&gt;Document&lt;/b&gt;" vertex="1">
+          <mxGeometry height="173" width="240" x="1560" y="200" as="geometry" />
+        </mxCell>
+        <mxCell id="m_doc_ent_attrs" parent="m_doc_ent" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- id: UUID&lt;br&gt;- workspaceId: UUID&lt;br&gt;- originalName: String&lt;br&gt;- status: DocumentStatus&lt;br&gt;- sha256: String" vertex="1">
+          <mxGeometry height="90" width="240" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="m_doc_ent_meth" parent="m_doc_ent" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ markProcessed(chunks)" vertex="1">
+          <mxGeometry height="45" width="240" y="128" as="geometry" />
+        </mxCell>
+        <mxCell id="m_doc_ctrl" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«rest-controller»&lt;br&gt;&lt;b&gt;DocumentController&lt;/b&gt;" vertex="1">
+          <mxGeometry height="123" width="240" x="2000" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="m_doc_ctrl_attrs" parent="m_doc_ctrl" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- documentService: DocumentService" vertex="1">
+          <mxGeometry height="35" width="240" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="m_doc_ctrl_meth" parent="m_doc_ctrl" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ uploadDocument(file): DocumentResponse&lt;br&gt;+ getDocument(id): DocumentResponse" vertex="1">
+          <mxGeometry height="50" width="240" y="73" as="geometry" />
+        </mxCell>
+        <mxCell id="m_doc_svc" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«service»&lt;br&gt;&lt;b&gt;DocumentService&lt;/b&gt;" vertex="1">
+          <mxGeometry height="148" width="250" x="1760" y="380" as="geometry" />
+        </mxCell>
+        <mxCell id="m_doc_svc_attrs" parent="m_doc_svc" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- documentRepo: DocumentRepository&lt;br&gt;- storagePort: StoragePort&lt;br&gt;- producer: DocumentProducer" vertex="1">
+          <mxGeometry height="60" width="250" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="m_doc_svc_meth" parent="m_doc_svc" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ initiateIngestion(file): Document&lt;br&gt;+ handleResult(res)" vertex="1">
+          <mxGeometry height="50" width="250" y="98" as="geometry" />
+        </mxCell>
+        <mxCell id="m_storage" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«interface»&lt;br&gt;&lt;b&gt;StoragePort&lt;/b&gt;" vertex="1">
+          <mxGeometry height="113" width="230" x="2120" y="397.5" as="geometry" />
+        </mxCell>
+        <mxCell id="m_storage_attrs" parent="m_storage" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="&amp;nbsp;" vertex="1">
+          <mxGeometry height="25" width="230" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="m_storage_meth" parent="m_storage" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ store(file): String&lt;br&gt;+ retrieve(key): InputStream" vertex="1">
+          <mxGeometry height="50" width="230" y="63" as="geometry" />
+        </mxCell>
+        <mxCell id="m_producer" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«service»&lt;br&gt;&lt;b&gt;DocumentProducer&lt;/b&gt;" vertex="1">
+          <mxGeometry height="118" width="240" x="1810" y="680" as="geometry" />
+        </mxCell>
+        <mxCell id="m_producer_attrs" parent="m_producer" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- rabbitTemplate: RabbitTemplate" vertex="1">
+          <mxGeometry height="35" width="240" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="m_producer_meth" parent="m_producer" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ sendIngestionTask(task)" vertex="1">
+          <mxGeometry height="45" width="240" y="73" as="geometry" />
+        </mxCell>
+        <mxCell id="m_consumer" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«component»&lt;br&gt;&lt;b&gt;IngestionConsumer&lt;/b&gt;" vertex="1">
+          <mxGeometry height="118" width="240" x="2160" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="m_consumer_attrs" parent="m_consumer" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- documentService: DocumentService" vertex="1">
+          <mxGeometry height="35" width="240" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="m_consumer_meth" parent="m_consumer" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ onIngestionResult(payload)" vertex="1">
+          <mxGeometry height="45" width="240" y="73" as="geometry" />
+        </mxCell>
+        <mxCell id="e_u_notif" edge="1" parent="1" source="m_user" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=diamond;startFill=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="m_notif" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_u_wsm" edge="1" parent="1" source="m_user" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="m_wsmem" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_ws_wsm" edge="1" parent="1" source="m_ws" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="m_wsmem_meth" value="">
+          <mxGeometry relative="1" x="0.0783" as="geometry" />
+        </mxCell>
+        <mxCell id="e_ws_disc" edge="1" parent="1" source="m_ws" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=diamond;startFill=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="m_disc" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_ws_conv" edge="1" parent="1" source="m_ws" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=diamond;startFill=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.75;entryDx=0;entryDy=0;" target="m_conv_attrs" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_ws_doc" edge="1" parent="1" source="m_ws" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=diamond;startFill=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="m_doc_ent" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_disc_reply" edge="1" parent="1" source="m_disc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=diamond;startFill=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="m_reply" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_reply_react" edge="1" parent="1" source="m_reply" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="m_react" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_disc_ctrl_svc" edge="1" parent="1" source="m_disc_ctrl" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="m_disc_svc" value="delegates">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_disc_svc_reply" edge="1" parent="1" source="m_disc_svc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="m_reply" value="manages">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_disc_svc_bc" edge="1" parent="1" source="m_disc_svc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="m_ws_bc" value="notifies">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_conv_msg" edge="1" parent="1" source="m_conv" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=diamond;startFill=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="m_msg" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_msg_cite" edge="1" parent="1" source="m_msg" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=diamond;startFill=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="m_cite" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_doc_cite" edge="1" parent="1" source="m_doc_ent" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="m_cite" value="cited in">
+          <mxGeometry relative="1" x="0.0031" as="geometry">
+            <Array as="points">
+              <mxPoint x="1670" y="373" />
+              <mxPoint x="1670" y="685" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_chat_ctrl_ops" edge="1" parent="1" source="m_chat_ctrl" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="m_chat_ops" value="delegates">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_chat_ops_msg" edge="1" parent="1" source="m_chat_ops" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=1;exitY=0.3;exitDx=0;exitDy=0;entryX=0;entryY=0.7;entryDx=0;entryDy=0;" target="m_msg" value="persists">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="990" y="890" />
+              <mxPoint x="990" y="740" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_chat_ops_gw" edge="1" parent="1" source="m_chat_ops" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=1;exitY=0.7;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="m_ai_gw" value="invokes">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="990" y="940" />
+              <mxPoint x="990" y="900" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_ai_impl_gw" edge="1" parent="1" source="m_ai_impl" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=block;endFill=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="m_ai_gw" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_doc_ctrl_svc" edge="1" parent="1" source="m_doc_ctrl" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="m_doc_svc" value="delegates">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_doc_svc_ent" edge="1" parent="1" source="m_doc_svc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0.25;exitY=0;exitDx=0;exitDy=0;entryX=1;entryY=0.467;entryDx=0;entryDy=0;entryPerimeter=0;" target="m_doc_ent_attrs" value="manages">
+          <mxGeometry relative="1" x="0.1404" as="geometry">
+            <Array as="points">
+              <mxPoint x="1830" y="380" />
+              <mxPoint x="1830" y="280" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_doc_svc_storage" edge="1" parent="1" source="m_doc_svc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="m_storage" value="saves">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_doc_svc_prod" edge="1" parent="1" source="m_doc_svc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="m_producer" value="dispatches">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_doc_cons_svc" edge="1" parent="1" source="m_consumer" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=1;entryDx=0;entryDy=0;" target="m_doc_svc_attrs" value="completes">
+          <mxGeometry relative="1" x="-0.0091" as="geometry">
+            <Array as="points">
+              <mxPoint x="2160" y="650" />
+              <mxPoint x="2080" y="650" />
+              <mxPoint x="2080" y="478" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="diag_domain_model" name="01 - So do lop Thuc the (Domain Model)">
+    <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="1500" pageHeight="1200" background="#ffffff" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="f1_frame" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;width=420;height=30;fontColor=#000000;strokeColor=#000000;strokeWidth=2;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingTop=5;fontSize=12;fontStyle=1;" value="&lt;b&gt;cd&lt;/b&gt; [UniChat - Sơ đồ Lớp Thực thể (Domain Entity Model)]" vertex="1">
+          <mxGeometry height="1140" width="1440" x="20" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="e_notif" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«entity»&lt;br&gt;&lt;b&gt;Notification&lt;/b&gt;" vertex="1">
+          <mxGeometry height="188" width="240" x="60" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="e_notif_attrs" parent="e_notif" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- id: UUID&lt;br&gt;- userId: UUID&lt;br&gt;- type: String&lt;br&gt;- workspaceId: UUID&lt;br&gt;- payload: String&lt;br&gt;- isRead: boolean&lt;br&gt;- createdAt: Instant" vertex="1">
+          <mxGeometry height="115" width="240" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="e_notif_meth" parent="e_notif" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ markAsRead()" vertex="1">
+          <mxGeometry height="35" width="240" y="153" as="geometry" />
+        </mxCell>
+        <mxCell id="e_user" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«entity»&lt;br&gt;&lt;b&gt;User&lt;/b&gt;" vertex="1">
+          <mxGeometry height="213" width="250" x="380" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="e_user_attrs" parent="e_user" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- id: UUID&lt;br&gt;- email: String&lt;br&gt;- passwordHash: String&lt;br&gt;- displayName: String&lt;br&gt;- systemRole: SystemRole&lt;br&gt;- status: UserStatus&lt;br&gt;- failedLoginCount: int&lt;br&gt;- lockedUntil: Instant" vertex="1">
+          <mxGeometry height="130" width="250" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="e_user_meth" parent="e_user" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ getAuthorities()&lt;br&gt;+ isAccountNonLocked()" vertex="1">
+          <mxGeometry height="45" width="250" y="168" as="geometry" />
+        </mxCell>
+        <mxCell id="e_wsmem" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«entity»&lt;br&gt;&lt;b&gt;WorkspaceMember&lt;/b&gt;" vertex="1">
+          <mxGeometry height="178" width="240" x="720" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="e_wsmem_attrs" parent="e_wsmem" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- workspaceId: UUID&lt;br&gt;- userId: UUID&lt;br&gt;- role: WorkspaceRole&lt;br&gt;- status: MemberStatus&lt;br&gt;- invitedById: UUID&lt;br&gt;- createdAt: Instant" vertex="1">
+          <mxGeometry height="105" width="240" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="e_wsmem_meth" parent="e_wsmem" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ canManage(): boolean" vertex="1">
+          <mxGeometry height="35" width="240" y="143" as="geometry" />
+        </mxCell>
+        <mxCell id="e_ws" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«entity»&lt;br&gt;&lt;b&gt;Workspace&lt;/b&gt;" vertex="1">
+          <mxGeometry height="213" width="260" x="720" y="380" as="geometry" />
+        </mxCell>
+        <mxCell id="e_ws_attrs" parent="e_ws" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- id: UUID&lt;br&gt;- ownerId: UUID&lt;br&gt;- name: String&lt;br&gt;- description: String&lt;br&gt;- visibility: WorkspaceVisibility&lt;br&gt;- status: WorkspaceStatus&lt;br&gt;- cloudAllowed: boolean&lt;br&gt;- permissionVersion: long" vertex="1">
+          <mxGeometry height="130" width="260" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="e_ws_meth" parent="e_ws" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ isAccessibleBy(user): boolean" vertex="1">
+          <mxGeometry height="45" width="260" y="168" as="geometry" />
+        </mxCell>
+        <mxCell id="e_disc" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«entity»&lt;br&gt;&lt;b&gt;Discussion&lt;/b&gt;" vertex="1">
+          <mxGeometry height="218" width="250" x="380" y="380" as="geometry" />
+        </mxCell>
+        <mxCell id="e_disc_attrs" parent="e_disc" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- id: UUID&lt;br&gt;- workspaceId: UUID&lt;br&gt;- authorId: UUID&lt;br&gt;- title: String&lt;br&gt;- body: String&lt;br&gt;- label: String&lt;br&gt;- status: String&lt;br&gt;- replyCount: int&lt;br&gt;- voteScore: int" vertex="1">
+          <mxGeometry height="140" width="250" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="e_disc_meth" parent="e_disc" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ addReply(reply)" vertex="1">
+          <mxGeometry height="40" width="250" y="178" as="geometry" />
+        </mxCell>
+        <mxCell id="e_reply" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«entity»&lt;br&gt;&lt;b&gt;DiscussionReply&lt;/b&gt;" vertex="1">
+          <mxGeometry height="198" width="250" x="380" y="680" as="geometry" />
+        </mxCell>
+        <mxCell id="e_reply_attrs" parent="e_reply" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- id: UUID&lt;br&gt;- discussionId: UUID&lt;br&gt;- authorId: UUID&lt;br&gt;- body: String&lt;br&gt;- parentReplyId: UUID&lt;br&gt;- isAiAnswer: boolean&lt;br&gt;- voteScore: int" vertex="1">
+          <mxGeometry height="115" width="250" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="e_reply_meth" parent="e_reply" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ upvote()&lt;br&gt;+ downvote()" vertex="1">
+          <mxGeometry height="45" width="250" y="153" as="geometry" />
+        </mxCell>
+        <mxCell id="e_react" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«entity»&lt;br&gt;&lt;b&gt;Reaction&lt;/b&gt;" vertex="1">
+          <mxGeometry height="178" width="240" x="60" y="680" as="geometry" />
+        </mxCell>
+        <mxCell id="e_react_attrs" parent="e_react" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- id: UUID&lt;br&gt;- userId: UUID&lt;br&gt;- targetType: String&lt;br&gt;- targetId: UUID&lt;br&gt;- reactionType: String&lt;br&gt;- createdAt: Instant" vertex="1">
+          <mxGeometry height="105" width="240" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="e_react_meth" parent="e_react" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ getEmoji(): String" vertex="1">
+          <mxGeometry height="35" width="240" y="143" as="geometry" />
+        </mxCell>
+        <mxCell id="e_conv" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«entity»&lt;br&gt;&lt;b&gt;Conversation&lt;/b&gt;" vertex="1">
+          <mxGeometry height="193" width="250" x="720" y="680" as="geometry" />
+        </mxCell>
+        <mxCell id="e_conv_attrs" parent="e_conv" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- id: UUID&lt;br&gt;- workspaceId: UUID&lt;br&gt;- userId: UUID&lt;br&gt;- title: String&lt;br&gt;- status: String&lt;br&gt;- summary: String&lt;br&gt;- summaryVersion: int" vertex="1">
+          <mxGeometry height="115" width="250" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="e_conv_meth" parent="e_conv" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ updateSummary(summary)" vertex="1">
+          <mxGeometry height="40" width="250" y="153" as="geometry" />
+        </mxCell>
+        <mxCell id="e_msg" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«entity»&lt;br&gt;&lt;b&gt;Message&lt;/b&gt;" vertex="1">
+          <mxGeometry height="208" width="250" x="720" y="930" as="geometry" />
+        </mxCell>
+        <mxCell id="e_msg_attrs" parent="e_msg" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- id: UUID&lt;br&gt;- conversationId: UUID&lt;br&gt;- role: String&lt;br&gt;- content: String&lt;br&gt;- intent: String&lt;br&gt;- refusalCode: String&lt;br&gt;- providerModel: String&lt;br&gt;- createdAt: Instant" vertex="1">
+          <mxGeometry height="130" width="250" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="e_msg_meth" parent="e_msg" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ hasCitations(): boolean" vertex="1">
+          <mxGeometry height="40" width="250" y="168" as="geometry" />
+        </mxCell>
+        <mxCell id="e_doc" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«entity»&lt;br&gt;&lt;b&gt;Document&lt;/b&gt;" vertex="1">
+          <mxGeometry height="233" width="260" x="1080" y="380" as="geometry" />
+        </mxCell>
+        <mxCell id="e_doc_attrs" parent="e_doc" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- id: UUID&lt;br&gt;- workspaceId: UUID&lt;br&gt;- storageKey: String&lt;br&gt;- originalName: String&lt;br&gt;- mediaType: String&lt;br&gt;- byteSize: long&lt;br&gt;- sha256: String&lt;br&gt;- status: DocumentStatus&lt;br&gt;- ingestionVersion: int&lt;br&gt;- indexedChunkCount: Integer" vertex="1">
+          <mxGeometry height="155" width="260" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="e_doc_meth" parent="e_doc" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ markProcessed(chunks)" vertex="1">
+          <mxGeometry height="40" width="260" y="193" as="geometry" />
+        </mxCell>
+        <mxCell id="e_cite" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«entity»&lt;br&gt;&lt;b&gt;CitationHistory&lt;/b&gt;" vertex="1">
+          <mxGeometry height="228" width="260" x="1080" y="930" as="geometry" />
+        </mxCell>
+        <mxCell id="e_cite_attrs" parent="e_cite" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- id: UUID&lt;br&gt;- messageId: UUID&lt;br&gt;- documentId: UUID&lt;br&gt;- chunkId: String&lt;br&gt;- fileName: String&lt;br&gt;- locatorType: String&lt;br&gt;- locatorValue: String&lt;br&gt;- excerpt: String&lt;br&gt;- contentHash: String&lt;br&gt;- ordinal: int" vertex="1">
+          <mxGeometry height="155" width="260" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="e_cite_meth" parent="e_cite" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ formatSnippet(): String" vertex="1">
+          <mxGeometry height="35" width="260" y="193" as="geometry" />
+        </mxCell>
+        <mxCell id="r_u_notif" edge="1" parent="1" source="e_user" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=diamond;startFill=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="e_notif" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r_u_wsm" edge="1" parent="1" source="e_user" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="e_wsmem" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r_ws_wsm" edge="1" parent="1" source="e_ws" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="e_wsmem" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r_ws_disc" edge="1" parent="1" source="e_ws" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=diamond;startFill=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="e_disc" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r_disc_reply" edge="1" parent="1" source="e_disc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=diamond;startFill=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="e_reply" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r_reply_react" edge="1" parent="1" source="e_reply" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="e_react" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r_u_react" edge="1" parent="1" source="e_user" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0.2;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="e_react" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="430" y="340" />
+              <mxPoint x="330" y="340" />
+              <mxPoint x="330" y="630" />
+              <mxPoint x="180" y="630" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="r_ws_conv" edge="1" parent="1" source="e_ws" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=diamond;startFill=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="e_conv" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r_conv_msg" edge="1" parent="1" source="e_conv" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=diamond;startFill=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="e_msg" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r_msg_cite" edge="1" parent="1" source="e_msg" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=diamond;startFill=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="e_cite" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r_ws_doc" edge="1" parent="1" source="e_ws" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=diamond;startFill=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="e_doc" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r_doc_cite" edge="1" parent="1" source="e_doc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="e_cite" value="references">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="diag_chat_rag" name="02 - Thiet ke Lop Chat &amp; Adaptive RAG">
+    <mxGraphModel dx="1609" dy="978" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="1350" background="#ffffff" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="f2_frame" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;width=420;height=30;fontColor=#000000;strokeColor=#000000;strokeWidth=2;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingTop=5;fontSize=12;fontStyle=1;" value="&lt;b&gt;cd&lt;/b&gt; [UniChat - Thiết kế Chi tiết Phân hệ Chat &amp; Adaptive RAG]" vertex="1">
+          <mxGeometry height="1280" width="1340" x="20" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="dto_ask_req" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«dto»&lt;br&gt;&lt;b&gt;AskQuestionRequest&lt;/b&gt;" vertex="1">
+          <mxGeometry height="143" width="240" x="80" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="dto_ask_req_attrs" parent="dto_ask_req" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- question: String&lt;br&gt;- conversationId: UUID&lt;br&gt;- knowledgeMode: KnowledgeMode&lt;br&gt;- taskType: ChatTaskType" vertex="1">
+          <mxGeometry height="80" width="240" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="dto_ask_req_meth" parent="dto_ask_req" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="&amp;nbsp;" vertex="1">
+          <mxGeometry height="25" width="240" y="118" as="geometry" />
+        </mxCell>
+        <mxCell id="c_chat_ctrl" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«rest-controller»&lt;br&gt;&lt;b&gt;ChatController&lt;/b&gt;" vertex="1">
+          <mxGeometry height="143" width="260" x="400" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="c_chat_ctrl_attrs" parent="c_chat_ctrl" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- chat: ChatService&lt;br&gt;- streams: SseChatService&lt;br&gt;- operations: ChatOperationService" vertex="1">
+          <mxGeometry height="60" width="260" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="c_chat_ctrl_meth" parent="c_chat_ctrl" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ askQuestion(req): QuestionResponse&lt;br&gt;+ streamQuestion(req): SseEmitter" vertex="1">
+          <mxGeometry height="45" width="260" y="98" as="geometry" />
+        </mxCell>
+        <mxCell id="dto_q_resp" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«dto»&lt;br&gt;&lt;b&gt;QuestionResponse&lt;/b&gt;" vertex="1">
+          <mxGeometry height="178" width="260" x="740" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="dto_q_resp_attrs" parent="dto_q_resp" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- messageId: UUID&lt;br&gt;- conversationId: UUID&lt;br&gt;- decision: String&lt;br&gt;- answer: String&lt;br&gt;- intent: String&lt;br&gt;- citations: List&amp;lt;CitationResponse&amp;gt;&lt;br&gt;- providerModel: String" vertex="1">
+          <mxGeometry height="115" width="260" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="dto_q_resp_meth" parent="dto_q_resp" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="&amp;nbsp;" vertex="1">
+          <mxGeometry height="25" width="260" y="153" as="geometry" />
+        </mxCell>
+        <mxCell id="repo_chat_op" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«repository»&lt;br&gt;&lt;b&gt;ChatOperationRepository&lt;/b&gt;" vertex="1">
+          <mxGeometry height="118" width="240" x="80" y="340" as="geometry" />
+        </mxCell>
+        <mxCell id="repo_chat_op_attrs" parent="repo_chat_op" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- operationsMap: ConcurrentMap" vertex="1">
+          <mxGeometry height="35" width="240" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="repo_chat_op_meth" parent="repo_chat_op" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ save(op): ChatOperation&lt;br&gt;+ findById(id): Optional" vertex="1">
+          <mxGeometry height="45" width="240" y="73" as="geometry" />
+        </mxCell>
+        <mxCell id="s_chat_ops" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«service»&lt;br&gt;&lt;b&gt;ChatOperationService&lt;/b&gt;" vertex="1">
+          <mxGeometry height="158" width="260" x="400" y="340" as="geometry" />
+        </mxCell>
+        <mxCell id="s_chat_ops_attrs" parent="s_chat_ops" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- operations: ChatOperationRepository&lt;br&gt;- admission: AiAdmissionService&lt;br&gt;- access: ChatAccessService&lt;br&gt;- runner: ChatOperationRunner" vertex="1">
+          <mxGeometry height="75" width="260" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="s_chat_ops_meth" parent="s_chat_ops" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ createOperation(req): ChatOperation&lt;br&gt;+ executeAsync(opId)" vertex="1">
+          <mxGeometry height="45" width="260" y="113" as="geometry" />
+        </mxCell>
+        <mxCell id="s_chat_runner" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«service»&lt;br&gt;&lt;b&gt;ChatOperationRunner&lt;/b&gt;" vertex="1">
+          <mxGeometry height="158" width="260" x="400" y="580" as="geometry" />
+        </mxCell>
+        <mxCell id="s_chat_runner_attrs" parent="s_chat_runner" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- operations: ChatOperationService&lt;br&gt;- messages: ChatMessageStore&lt;br&gt;- gateway: ChatAiGateway&lt;br&gt;- results: ChatResultMapper" vertex="1">
+          <mxGeometry height="75" width="260" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="s_chat_runner_meth" parent="s_chat_runner" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ run(op): ChatExecutionResult&lt;br&gt;+ handleFailure(op, ex)" vertex="1">
+          <mxGeometry height="45" width="260" y="113" as="geometry" />
+        </mxCell>
+        <mxCell id="s_msg_store" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«service»&lt;br&gt;&lt;b&gt;ChatMessageStore&lt;/b&gt;" vertex="1">
+          <mxGeometry height="163" width="270" x="180" y="830" as="geometry" />
+        </mxCell>
+        <mxCell id="s_msg_store_attrs" parent="s_msg_store" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- messages: MessageRepository&lt;br&gt;- conversations: ConversationRepository&lt;br&gt;- citations: CitationHistoryRepository" vertex="1">
+          <mxGeometry height="65" width="270" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="s_msg_store_meth" parent="s_msg_store" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ saveUserMessage(msg): Message&lt;br&gt;+ saveAssistantMessage(msg, cites): Message&lt;br&gt;+ loadContext(convId): List&amp;lt;Message&amp;gt;" vertex="1">
+          <mxGeometry height="60" width="270" y="103" as="geometry" />
+        </mxCell>
+        <mxCell id="i_ai_gateway" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«interface»&lt;br&gt;&lt;b&gt;ChatAiGateway&lt;/b&gt;" vertex="1">
+          <mxGeometry height="113" width="250" x="740" y="580" as="geometry" />
+        </mxCell>
+        <mxCell id="i_ai_gateway_attrs" parent="i_ai_gateway" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="&amp;nbsp;" vertex="1">
+          <mxGeometry height="25" width="250" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="i_ai_gateway_meth" parent="i_ai_gateway" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ queryRag(req): AiAnswer&lt;br&gt;+ streamRag(req): Flux&amp;lt;ChatChunk&amp;gt;" vertex="1">
+          <mxGeometry height="50" width="250" y="63" as="geometry" />
+        </mxCell>
+        <mxCell id="impl_http_gw" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«service»&lt;br&gt;&lt;b&gt;ChatHttpAiGateway&lt;/b&gt;" vertex="1">
+          <mxGeometry height="148" width="250" x="740" y="830" as="geometry" />
+        </mxCell>
+        <mxCell id="impl_http_gw_attrs" parent="impl_http_gw" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- client: RestClient&lt;br&gt;- keys: ServiceKeys&lt;br&gt;- verifier: ServiceRequestVerifier" vertex="1">
+          <mxGeometry height="60" width="250" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="impl_http_gw_meth" parent="impl_http_gw" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ queryRag(req): AiAnswer&lt;br&gt;+ streamRag(req): Flux&amp;lt;ChatChunk&amp;gt;" vertex="1">
+          <mxGeometry height="50" width="250" y="98" as="geometry" />
+        </mxCell>
+        <mxCell id="dto_rag_req" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«ai-contract»&lt;br&gt;&lt;b&gt;RetrievalAnswerRequest&lt;/b&gt;" vertex="1">
+          <mxGeometry height="183" width="260" x="740" y="1070" as="geometry" />
+        </mxCell>
+        <mxCell id="dto_rag_req_attrs" parent="dto_rag_req" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- requestId: String&lt;br&gt;- operationId: UUID&lt;br&gt;- workspaceId: UUID&lt;br&gt;- question: String&lt;br&gt;- allowedDocumentIds: List&amp;lt;UUID&amp;gt;&lt;br&gt;- strategyVersion: String&lt;br&gt;- allowExternalKnowledge: boolean" vertex="1">
+          <mxGeometry height="120" width="260" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="dto_rag_req_meth" parent="dto_rag_req" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="&amp;nbsp;" vertex="1">
+          <mxGeometry height="25" width="260" y="158" as="geometry" />
+        </mxCell>
+        <mxCell id="repo_msg" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«repository»&lt;br&gt;&lt;b&gt;MessageRepository&lt;/b&gt;" vertex="1">
+          <mxGeometry height="108" width="230" x="60" y="1070" as="geometry" />
+        </mxCell>
+        <mxCell id="repo_msg_attrs" parent="repo_msg" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="&amp;nbsp;" vertex="1">
+          <mxGeometry height="25" width="230" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="repo_msg_meth" parent="repo_msg" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ save(msg): Message&lt;br&gt;+ findByConversationId(convId): List" vertex="1">
+          <mxGeometry height="45" width="230" y="63" as="geometry" />
+        </mxCell>
+        <mxCell id="repo_conv" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«repository»&lt;br&gt;&lt;b&gt;ConversationRepository&lt;/b&gt;" vertex="1">
+          <mxGeometry height="108" width="230" x="330" y="1070" as="geometry" />
+        </mxCell>
+        <mxCell id="repo_conv_attrs" parent="repo_conv" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="&amp;nbsp;" vertex="1">
+          <mxGeometry height="25" width="230" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="repo_conv_meth" parent="repo_conv" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ save(conv): Conversation&lt;br&gt;+ findById(id): Optional" vertex="1">
+          <mxGeometry height="45" width="230" y="63" as="geometry" />
+        </mxCell>
+        <mxCell id="r2_ctrl_req" edge="1" parent="1" source="c_chat_ctrl" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;endFill=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="dto_ask_req" value="uses">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r2_ctrl_res" edge="1" parent="1" source="c_chat_ctrl" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;endFill=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="dto_q_resp" value="returns">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r2_ctrl_svc" edge="1" parent="1" source="c_chat_ctrl" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="s_chat_ops" value="delegates">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r2_ops_repo" edge="1" parent="1" source="s_chat_ops" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="repo_chat_op" value="persists">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r2_ops_run" edge="1" parent="1" source="s_chat_ops" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="s_chat_runner" value="triggers">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r2_run_gw" edge="1" parent="1" source="s_chat_runner" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="i_ai_gateway" value="invokes">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r2_run_msg" edge="1" parent="1" source="s_chat_runner" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0.2;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="s_msg_store" value="loads &amp; saves">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="452" y="790" />
+              <mxPoint x="315" y="790" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="r2_gw_impl" edge="1" parent="1" source="impl_http_gw" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=block;endFill=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="i_ai_gateway" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r2_impl_dto" edge="1" parent="1" source="impl_http_gw" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;endFill=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="dto_rag_req" value="serializes">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r2_msg_repo" edge="1" parent="1" source="s_msg_store" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="repo_msg" value="persists">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="247" y="1020" />
+              <mxPoint x="175" y="1020" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="r2_conv_repo" edge="1" parent="1" source="s_msg_store" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="repo_conv" value="persists">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="382" y="1020" />
+              <mxPoint x="445" y="1020" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="diag_doc_ingest" name="03 - Thiet ke Lop Document Ingestion">
+    <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="1500" pageHeight="1250" background="#ffffff" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="f3_frame" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;width=480;height=30;fontColor=#000000;strokeColor=#000000;strokeWidth=2;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingTop=5;fontSize=12;fontStyle=1;" value="&lt;b&gt;cd&lt;/b&gt; [UniChat - Thiết kế Chi tiết Phân hệ Document Ingestion &amp; Storage Saga]" vertex="1">
+          <mxGeometry height="1180" width="1440" x="20" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="dto_doc_resp" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«dto»&lt;br&gt;&lt;b&gt;DocumentResponse&lt;/b&gt;" vertex="1">
+          <mxGeometry height="178" width="240" x="80" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="dto_doc_resp_attrs" parent="dto_doc_resp" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- id: UUID&lt;br&gt;- workspaceId: UUID&lt;br&gt;- originalName: String&lt;br&gt;- byteSize: long&lt;br&gt;- status: DocumentStatus&lt;br&gt;- indexedChunkCount: Integer&lt;br&gt;- createdAt: Instant" vertex="1">
+          <mxGeometry height="115" width="240" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="dto_doc_resp_meth" parent="dto_doc_resp" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="&amp;nbsp;" vertex="1">
+          <mxGeometry height="25" width="240" y="153" as="geometry" />
+        </mxCell>
+        <mxCell id="c_doc_ctrl" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«rest-controller»&lt;br&gt;&lt;b&gt;DocumentController&lt;/b&gt;" vertex="1">
+          <mxGeometry height="118" width="260" x="450" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="c_doc_ctrl_attrs" parent="c_doc_ctrl" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- documentService: DocumentService" vertex="1">
+          <mxGeometry height="35" width="260" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="c_doc_ctrl_meth" parent="c_doc_ctrl" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ uploadDocument(file): DocumentResponse&lt;br&gt;+ getDocument(id): DocumentResponse" vertex="1">
+          <mxGeometry height="45" width="260" y="73" as="geometry" />
+        </mxCell>
+        <mxCell id="s_doc_svc" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«service»&lt;br&gt;&lt;b&gt;DocumentService&lt;/b&gt;" vertex="1">
+          <mxGeometry height="153" width="260" x="450" y="340" as="geometry" />
+        </mxCell>
+        <mxCell id="s_doc_svc_attrs" parent="s_doc_svc" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- documentRepo: DocumentRepository&lt;br&gt;- storagePort: StoragePort&lt;br&gt;- producer: DocumentIngestionProducer" vertex="1">
+          <mxGeometry height="60" width="260" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="s_doc_svc_meth" parent="s_doc_svc" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ initiateIngestion(file): Document&lt;br&gt;+ handleIngestionComplete(res)&lt;br&gt;+ getDocument(id): Document" vertex="1">
+          <mxGeometry height="55" width="260" y="98" as="geometry" />
+        </mxCell>
+        <mxCell id="repo_doc" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«repository»&lt;br&gt;&lt;b&gt;DocumentRepository&lt;/b&gt;" vertex="1">
+          <mxGeometry height="118" width="260" x="450" y="640" as="geometry" />
+        </mxCell>
+        <mxCell id="repo_doc_attrs" parent="repo_doc" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="&amp;nbsp;" vertex="1">
+          <mxGeometry height="25" width="260" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="repo_doc_meth" parent="repo_doc" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ save(doc): Document&lt;br&gt;+ findById(id): Optional&lt;br&gt;+ findByWorkspaceId(wsId): List" vertex="1">
+          <mxGeometry height="55" width="260" y="63" as="geometry" />
+        </mxCell>
+        <mxCell id="ent_doc" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«entity»&lt;br&gt;&lt;b&gt;Document&lt;/b&gt;" vertex="1">
+          <mxGeometry height="213" width="260" x="450" y="890" as="geometry" />
+        </mxCell>
+        <mxCell id="ent_doc_attrs" parent="ent_doc" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- id: UUID&lt;br&gt;- workspaceId: UUID&lt;br&gt;- storageKey: String&lt;br&gt;- originalName: String&lt;br&gt;- byteSize: long&lt;br&gt;- sha256: String&lt;br&gt;- status: DocumentStatus&lt;br&gt;- indexedChunkCount: Integer" vertex="1">
+          <mxGeometry height="130" width="260" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="ent_doc_meth" parent="ent_doc" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ markProcessed(chunks)&lt;br&gt;+ markFailed(reason)" vertex="1">
+          <mxGeometry height="45" width="260" y="168" as="geometry" />
+        </mxCell>
+        <mxCell id="s_producer" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«service»&lt;br&gt;&lt;b&gt;DocumentIngestionProducer&lt;/b&gt;" vertex="1">
+          <mxGeometry height="143" width="250" x="80" y="350" as="geometry" />
+        </mxCell>
+        <mxCell id="s_producer_attrs" parent="s_producer" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- rabbitTemplate: RabbitTemplate&lt;br&gt;- exchangeName: String&lt;br&gt;- routingKey: String" vertex="1">
+          <mxGeometry height="60" width="250" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="s_producer_meth" parent="s_producer" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ sendIngestionTask(task: IngestionTaskPayload)" vertex="1">
+          <mxGeometry height="45" width="250" y="98" as="geometry" />
+        </mxCell>
+        <mxCell id="s_consumer" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«component»&lt;br&gt;&lt;b&gt;IngestionResultConsumer&lt;/b&gt;" vertex="1">
+          <mxGeometry height="128" width="250" x="80" y="630" as="geometry" />
+        </mxCell>
+        <mxCell id="s_consumer_attrs" parent="s_consumer" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- documentService: DocumentService&lt;br&gt;- broadcaster: WorkChatBroadcaster" vertex="1">
+          <mxGeometry height="45" width="250" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="s_consumer_meth" parent="s_consumer" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ onMessage(payload: IngestionResultPayload)" vertex="1">
+          <mxGeometry height="45" width="250" y="83" as="geometry" />
+        </mxCell>
+        <mxCell id="i_storage_port" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«interface»&lt;br&gt;&lt;b&gt;StoragePort&lt;/b&gt;" vertex="1">
+          <mxGeometry height="113" width="250" x="840" y="350" as="geometry" />
+        </mxCell>
+        <mxCell id="i_storage_port_attrs" parent="i_storage_port" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="&amp;nbsp;" vertex="1">
+          <mxGeometry height="25" width="250" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="i_storage_port_meth" parent="i_storage_port" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ store(file: MultipartFile): String&lt;br&gt;+ retrieve(storageKey: String): InputStream" vertex="1">
+          <mxGeometry height="50" width="250" y="63" as="geometry" />
+        </mxCell>
+        <mxCell id="impl_local_storage" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«service»&lt;br&gt;&lt;b&gt;LocalStoragePort&lt;/b&gt;" vertex="1">
+          <mxGeometry height="118" width="240" x="1170" y="240" as="geometry" />
+        </mxCell>
+        <mxCell id="impl_local_storage_attrs" parent="impl_local_storage" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- baseDirectory: Path" vertex="1">
+          <mxGeometry height="35" width="240" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="impl_local_storage_meth" parent="impl_local_storage" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ store(file): String&lt;br&gt;+ retrieve(key): InputStream" vertex="1">
+          <mxGeometry height="45" width="240" y="73" as="geometry" />
+        </mxCell>
+        <mxCell id="impl_supabase_storage" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«service»&lt;br&gt;&lt;b&gt;SupabaseStoragePort&lt;/b&gt;" vertex="1">
+          <mxGeometry height="128" width="240" x="1170" y="450" as="geometry" />
+        </mxCell>
+        <mxCell id="impl_supabase_storage_attrs" parent="impl_supabase_storage" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- s3Client: S3Client&lt;br&gt;- bucketName: String" vertex="1">
+          <mxGeometry height="45" width="240" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="impl_supabase_storage_meth" parent="impl_supabase_storage" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ store(file): String&lt;br&gt;+ retrieve(key): InputStream" vertex="1">
+          <mxGeometry height="45" width="240" y="83" as="geometry" />
+        </mxCell>
+        <mxCell id="enum_doc_stat" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«enumeration»&lt;br&gt;&lt;b&gt;DocumentStatus&lt;/b&gt;" vertex="1">
+          <mxGeometry height="148" width="220" x="840" y="920" as="geometry" />
+        </mxCell>
+        <mxCell id="enum_doc_stat_attrs" parent="enum_doc_stat" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="PENDING_INGESTION&lt;br&gt;PROCESSING&lt;br&gt;PROCESSED&lt;br&gt;FAILED&lt;br&gt;DELETING" vertex="1">
+          <mxGeometry height="90" width="220" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="enum_doc_stat_meth" parent="enum_doc_stat" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="&amp;nbsp;" vertex="1">
+          <mxGeometry height="20" width="220" y="128" as="geometry" />
+        </mxCell>
+        <mxCell id="r3_ctrl_resp" edge="1" parent="1" source="c_doc_ctrl" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;endFill=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="dto_doc_resp" value="returns">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r3_ctrl_svc" edge="1" parent="1" source="c_doc_ctrl" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="s_doc_svc" value="delegates">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r3_svc_prod" edge="1" parent="1" source="s_doc_svc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="s_producer" value="dispatches queue">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r3_consumer_svc" edge="1" parent="1" source="s_consumer" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.2;entryY=1;entryDx=0;entryDy=0;" target="s_doc_svc" value="updates status">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="390" y="695" />
+              <mxPoint x="390" y="560" />
+              <mxPoint x="502" y="560" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="r3_svc_repo" edge="1" parent="1" source="s_doc_svc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="repo_doc" value="persists">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r3_repo_ent" edge="1" parent="1" source="repo_doc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="ent_doc" value="manages">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r3_doc_stat" edge="1" parent="1" source="ent_doc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="enum_doc_stat" value="has status">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r3_svc_storage" edge="1" parent="1" source="s_doc_svc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="i_storage_port" value="stores raw file">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r3_storage_local" edge="1" parent="1" source="impl_local_storage" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=block;endFill=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.3;entryDx=0;entryDy=0;" target="i_storage_port" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1130" y="310" />
+              <mxPoint x="1130" y="385" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="r3_storage_supa" edge="1" parent="1" source="impl_supabase_storage" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=block;endFill=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.7;entryDx=0;entryDy=0;" target="i_storage_port" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1130" y="520" />
+              <mxPoint x="1130" y="425" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="diag_community" name="04 - Thiet ke Lop Mang xa hoi (Community)">
+    <mxGraphModel dx="2020" dy="1227" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1500" pageHeight="1250" background="#ffffff" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="f4_frame" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;width=480;height=30;fontColor=#000000;strokeColor=#000000;strokeWidth=2;fillColor=none;align=left;verticalAlign=top;spacingLeft=10;spacingTop=5;fontSize=12;fontStyle=1;" value="&lt;b&gt;cd&lt;/b&gt; [UniChat - Thiết kế Chi tiết Phân hệ Mạng xã hội &amp; Tương tác Cộng đồng]" vertex="1">
+          <mxGeometry height="1180" width="1440" x="20" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="dto_disc_resp" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«dto»&lt;br&gt;&lt;b&gt;DiscussionResponse&lt;/b&gt;" vertex="1">
+          <mxGeometry height="178" width="240" x="60" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="dto_disc_resp_attrs" parent="dto_disc_resp" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- id: UUID&lt;br&gt;- title: String&lt;br&gt;- authorName: String&lt;br&gt;- replyCount: int&lt;br&gt;- voteScore: int&lt;br&gt;- pinned: boolean&lt;br&gt;- createdAt: Instant" vertex="1">
+          <mxGeometry height="115" width="240" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="dto_disc_resp_meth" parent="dto_disc_resp" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="&amp;nbsp;" vertex="1">
+          <mxGeometry height="25" width="240" y="153" as="geometry" />
+        </mxCell>
+        <mxCell id="c_disc_ctrl" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«rest-controller»&lt;br&gt;&lt;b&gt;DiscussionController&lt;/b&gt;" vertex="1">
+          <mxGeometry height="128" width="250" x="380" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="c_disc_ctrl_attrs" parent="c_disc_ctrl" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- discussionService: DiscussionService" vertex="1">
+          <mxGeometry height="35" width="250" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="c_disc_ctrl_meth" parent="c_disc_ctrl" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ createDiscussion(req)&lt;br&gt;+ getDiscussion(id)&lt;br&gt;+ createReply(req)" vertex="1">
+          <mxGeometry height="55" width="250" y="73" as="geometry" />
+        </mxCell>
+        <mxCell id="s_disc_svc" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«service»&lt;br&gt;&lt;b&gt;DiscussionService&lt;/b&gt;" vertex="1">
+          <mxGeometry height="158" width="260" x="380" y="340" as="geometry" />
+        </mxCell>
+        <mxCell id="s_disc_svc_attrs" parent="s_disc_svc" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- discRepo: DiscussionRepository&lt;br&gt;- replyRepo: DiscussionReplyRepository&lt;br&gt;- broadcaster: WorkChatBroadcaster" vertex="1">
+          <mxGeometry height="65" width="260" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="s_disc_svc_meth" parent="s_disc_svc" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ postDiscussion(req): Discussion&lt;br&gt;+ addReply(req): DiscussionReply&lt;br&gt;+ listDiscussions(wsId): List" vertex="1">
+          <mxGeometry height="55" width="260" y="103" as="geometry" />
+        </mxCell>
+        <mxCell id="repo_disc" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«repository»&lt;br&gt;&lt;b&gt;DiscussionRepository&lt;/b&gt;" vertex="1">
+          <mxGeometry height="108" width="230" x="220" y="640" as="geometry" />
+        </mxCell>
+        <mxCell id="repo_disc_attrs" parent="repo_disc" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="&amp;nbsp;" vertex="1">
+          <mxGeometry height="25" width="230" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="repo_disc_meth" parent="repo_disc" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ save(d): Discussion&lt;br&gt;+ findByWorkspaceId(wsId): List" vertex="1">
+          <mxGeometry height="45" width="230" y="63" as="geometry" />
+        </mxCell>
+        <mxCell id="repo_reply" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«repository»&lt;br&gt;&lt;b&gt;DiscussionReplyRepository&lt;/b&gt;" vertex="1">
+          <mxGeometry height="108" width="240" x="490" y="640" as="geometry" />
+        </mxCell>
+        <mxCell id="repo_reply_attrs" parent="repo_reply" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="&amp;nbsp;" vertex="1">
+          <mxGeometry height="25" width="240" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="repo_reply_meth" parent="repo_reply" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ save(r): DiscussionReply&lt;br&gt;+ findByDiscussionId(dId): List" vertex="1">
+          <mxGeometry height="45" width="240" y="63" as="geometry" />
+        </mxCell>
+        <mxCell id="ent_disc" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«entity»&lt;br&gt;&lt;b&gt;Discussion&lt;/b&gt;" vertex="1">
+          <mxGeometry height="213" width="230" x="220" y="890" as="geometry" />
+        </mxCell>
+        <mxCell id="ent_disc_attrs" parent="ent_disc" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- id: UUID&lt;br&gt;- workspaceId: UUID&lt;br&gt;- authorId: UUID&lt;br&gt;- title: String&lt;br&gt;- body: String&lt;br&gt;- replyCount: int&lt;br&gt;- voteScore: int&lt;br&gt;- pinned: boolean" vertex="1">
+          <mxGeometry height="130" width="230" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="ent_disc_meth" parent="ent_disc" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ addReply(r)&lt;br&gt;+ togglePin()" vertex="1">
+          <mxGeometry height="45" width="230" y="168" as="geometry" />
+        </mxCell>
+        <mxCell id="ent_reply" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«entity»&lt;br&gt;&lt;b&gt;DiscussionReply&lt;/b&gt;" vertex="1">
+          <mxGeometry height="188" width="240" x="490" y="890" as="geometry" />
+        </mxCell>
+        <mxCell id="ent_reply_attrs" parent="ent_reply" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- id: UUID&lt;br&gt;- discussionId: UUID&lt;br&gt;- authorId: UUID&lt;br&gt;- body: String&lt;br&gt;- isAiAnswer: boolean&lt;br&gt;- voteScore: int" vertex="1">
+          <mxGeometry height="105" width="240" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="ent_reply_meth" parent="ent_reply" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ upvote()&lt;br&gt;+ downvote()" vertex="1">
+          <mxGeometry height="45" width="240" y="143" as="geometry" />
+        </mxCell>
+        <mxCell id="ws_broadcaster" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«component»&lt;br&gt;&lt;b&gt;WorkChatBroadcaster&lt;/b&gt;" vertex="1">
+          <mxGeometry height="123" width="250" x="800" y="350" as="geometry" />
+        </mxCell>
+        <mxCell id="ws_broadcaster_attrs" parent="ws_broadcaster" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- messagingTemplate: SimpMessagingTemplate" vertex="1">
+          <mxGeometry height="35" width="250" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="ws_broadcaster_meth" parent="ws_broadcaster" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ broadcastToWorkspace(wsId, event)&lt;br&gt;+ notifyAuthor(authorId, event)" vertex="1">
+          <mxGeometry height="50" width="250" y="73" as="geometry" />
+        </mxCell>
+        <mxCell id="c_react_ctrl" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«rest-controller»&lt;br&gt;&lt;b&gt;ReactionController&lt;/b&gt;" vertex="1">
+          <mxGeometry height="118" width="240" x="1120" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="c_react_ctrl_attrs" parent="c_react_ctrl" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- reactionService: ReactionService" vertex="1">
+          <mxGeometry height="35" width="240" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="c_react_ctrl_meth" parent="c_react_ctrl" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ toggleReaction(req): ReactionResponse" vertex="1">
+          <mxGeometry height="45" width="240" y="73" as="geometry" />
+        </mxCell>
+        <mxCell id="s_react_svc" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«service»&lt;br&gt;&lt;b&gt;ReactionService&lt;/b&gt;" vertex="1">
+          <mxGeometry height="158" width="260" x="1120" y="340" as="geometry" />
+        </mxCell>
+        <mxCell id="s_react_svc_attrs" parent="s_react_svc" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- reactionRepo: ReactionRepository&lt;br&gt;- discRepo: DiscussionRepository&lt;br&gt;- broadcaster: WorkChatBroadcaster" vertex="1">
+          <mxGeometry height="65" width="260" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="s_react_svc_meth" parent="s_react_svc" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ addReaction(req): Reaction&lt;br&gt;+ removeReaction(id)&lt;br&gt;+ getReactions(targetId): List" vertex="1">
+          <mxGeometry height="55" width="260" y="103" as="geometry" />
+        </mxCell>
+        <mxCell id="repo_react" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«repository»&lt;br&gt;&lt;b&gt;ReactionRepository&lt;/b&gt;" vertex="1">
+          <mxGeometry height="108" width="240" x="1120" y="640" as="geometry" />
+        </mxCell>
+        <mxCell id="repo_react_attrs" parent="repo_react" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="&amp;nbsp;" vertex="1">
+          <mxGeometry height="25" width="240" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="repo_react_meth" parent="repo_react" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ save(r): Reaction&lt;br&gt;+ findByTarget(targetType, targetId): List" vertex="1">
+          <mxGeometry height="45" width="240" y="63" as="geometry" />
+        </mxCell>
+        <mxCell id="ent_react" parent="1" style="shape=swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=38;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#70C5F0;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" value="«entity»&lt;br&gt;&lt;b&gt;Reaction&lt;/b&gt;" vertex="1">
+          <mxGeometry height="158" width="230" x="1120" y="890" as="geometry" />
+        </mxCell>
+        <mxCell id="ent_react_attrs" parent="ent_react" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="- id: UUID&lt;br&gt;- userId: UUID&lt;br&gt;- targetType: String&lt;br&gt;- targetId: UUID&lt;br&gt;- reactionType: String" vertex="1">
+          <mxGeometry height="90" width="230" y="38" as="geometry" />
+        </mxCell>
+        <mxCell id="ent_react_meth" parent="ent_react" style="text;strokeColor=#000000;strokeWidth=1;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=6;spacingRight=6;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=9.5;fontColor=#000000;" value="+ getEmoji(): String" vertex="1">
+          <mxGeometry height="30" width="230" y="128" as="geometry" />
+        </mxCell>
+        <mxCell id="r4_disc_ctrl_dto" edge="1" parent="1" source="c_disc_ctrl" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=open;endFill=0;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="dto_disc_resp" value="returns">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r4_disc_ctrl_svc" edge="1" parent="1" source="c_disc_ctrl" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="s_disc_svc" value="delegates">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r4_disc_svc_ws" edge="1" parent="1" source="s_disc_svc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="ws_broadcaster" value="broadcasts">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r4_disc_svc_repo" edge="1" parent="1" source="s_disc_svc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="repo_disc" value="persists">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="445" y="580" />
+              <mxPoint x="335" y="580" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="r4_disc_svc_reply" edge="1" parent="1" source="s_disc_svc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0.75;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="repo_reply" value="persists">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="575" y="580" />
+              <mxPoint x="610" y="580" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="r4_repo_disc_ent" edge="1" parent="1" source="repo_disc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="ent_disc" value="manages">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r4_repo_reply_ent" edge="1" parent="1" source="repo_reply" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="ent_reply" value="manages">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r4_react_ctrl_svc" edge="1" parent="1" source="c_react_ctrl" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="s_react_svc" value="delegates">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r4_react_svc_ws" edge="1" parent="1" source="s_react_svc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="ws_broadcaster" value="notifies author">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r4_react_svc_repo" edge="1" parent="1" source="s_react_svc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="repo_react" value="persists">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r4_repo_react_ent" edge="1" parent="1" source="repo_react" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;strokeColor=#000000;strokeWidth=1.5;fontSize=10;fontColor=#000000;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="ent_react" value="manages">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
