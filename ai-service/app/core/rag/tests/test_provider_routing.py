@@ -33,6 +33,21 @@ def test_should_route_chat_through_two_gemini_keys_then_hive(
     assert route[-1].model == HIVE_MODEL
 
 
+def test_should_route_chat_through_two_hive_fallback_keys_when_configured(
+    fallback_route: None, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("HIVE_API_KEY_2", "hive-secondary-fixture")
+
+    route = build_provider_route("CHAT")
+
+    assert [(target.provider, target.key_id, target.role) for target in route] == [
+        ("gemini", "gemini-primary", "PRIMARY"),
+        ("gemini", "gemini-secondary", "PRIMARY"),
+        ("hive", "hive-primary", "FALLBACK"),
+        ("hive", "hive-secondary", "FALLBACK"),
+    ]
+
+
 def test_should_keep_query_planner_on_one_primary_gemini_target(
     fallback_route: None,
 ) -> None:

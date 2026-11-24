@@ -72,7 +72,7 @@ def _stream_completion(
 ) -> HiveCompletion:
     deadline = time.monotonic() + timeout
     limits = httpx.Timeout(
-        min(timeout, 5), read=min(timeout, config.hive_read_idle_timeout_seconds)
+        min(timeout, 10), read=min(timeout, config.hive_read_idle_timeout_seconds)
     )
     check_cancelled(cancelled)
     with httpx.Client(timeout=limits, follow_redirects=False) as client:

@@ -124,7 +124,7 @@ def _automatic_targets(purpose: Purpose, model: str | None) -> tuple[ProviderTar
 def _fallback_targets(primary: str) -> list[ProviderTarget]:
     fallback = fallback_provider()
     if fallback:
-        return _provider_targets(fallback, configured_model(fallback), "FALLBACK", 1)
+        return _provider_targets(fallback, configured_model(fallback), "FALLBACK", 2)
     if primary == "gemini" and os.getenv("ENABLE_OLLAMA_FALLBACK", "false").lower() == "true":
         return [ProviderTarget("ollama", os.getenv("OLLAMA_MODEL", "llama3"), None, "LEGACY")]
     return []

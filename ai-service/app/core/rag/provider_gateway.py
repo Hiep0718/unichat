@@ -165,9 +165,16 @@ def _run_attempt(
 
 def _attempt_checkpoint(policy: GenerationPolicy, purpose: Purpose,
                         target: ProviderTarget, attempt_id: str) -> float:
-    if target.provider == "hive" and purpose == "CHAT":
-        limit = ProviderSettings().hive_chat_attempt_timeout_seconds
-        return policy.checkpoint(purpose, attempt_id, limit)
+    if purpose == "CHAT":
+        settings = ProviderSettings()
+        if target.provider == "hive":
+            return policy.checkpoint(
+                purpose, attempt_id, settings.hive_chat_attempt_timeout_seconds
+            )
+        if target.provider == "gemini":
+            return policy.checkpoint(
+                purpose, attempt_id, settings.gemini_chat_attempt_timeout_seconds
+            )
     return policy.checkpoint(purpose, attempt_id)
 
 
