@@ -4694,3 +4694,152 @@ xoá test của component đã chết). Vẫn phải chạy `--maxWorkers=2` vì
   2. Introduce `useChatAutoScroll` (`use-chat-auto-scroll.ts`) owned by `ChatPage` (`messagesRef` passed in to comply with React 19 `react-hooks/refs`): scrolls `.chat-page__messages-body` directly via `scrollTop = scrollHeight` (keeping full `180px` clearance), unpins immediately on upward wheel/scroll while AI is thinking/streaming, re-pins when returning within `96px` of bottom or sending a new prompt, and adjusts `scrollTop` by height delta when prepending older messages (`loadOlder`).
 - **Verification:** `tsc --noEmit` 0 errors, `eslint --max-warnings 0` 0 warnings/errors, `vitest run src/features/chat` `15/15` files / `89/89` tests passed (including 3 new `useChatAutoScroll` tests), `npm run build` (`tsc -b && vite build`) succeeded.
 - **Boundaries:** No commit, push, or deployment executed without explicit human approval.
+## 2026-11-07 — AWS EC2 Production Stack Deployment with origin/main Auto-Deploy & Safe Rollback
+
+- Decision: Provision EC2 instance `i-03f1f509f8bbfae42` (`c7i-flex.large`, Amazon Linux 2023, `ap-southeast-2a`) with the containerized UniChat Web/Core/AI stack (`docker-compose.yml`, excluding `mobile`) tracking `origin/main` via an automated `systemd` boot + 2-minute polling deployment engine (`/home/ec2-user/unichat-deploy/bin/deploy-main.sh`) with commit-tagged image isolation and automatic rollback to `last_good_commit` on build or healthcheck failure.
+- Rationale:
+  1. `c7i-flex.large` provides 3.7 GiB RAM and a 20 GB root volume; adding a persistent 3 GiB `/swapfile` (`vm.swappiness=20`) prevents OOM termination during sequential image builds and PyTorch CPU embedding loads while preserving > 11 GB free disk space via automated pruning (retaining active + 1 previous commit image tag).
+  2. Building candidate images sequentially with `IMAGE_TAG=<commit-sha>` while the existing healthy containers remain up guarantees zero-downtime builds; if `docker compose config`, `docker compose build`, `docker compose up`, or post-cutover health probes (`/healthz`, `/actuator/health`, container health status) fail, the script records `last_failed_commit` (preventing infinite rebuild loops) and immediately reverts workspace + `IMAGE_TAG` to `last_good_commit`.
+  3. Because the EC2 instance currently uses an auto-assigned Public IPv4 rather than an Elastic IP, `deploy-main.sh` queries EC2 IMDSv2 on boot/poll and automatically synchronizes `FRONTEND_ORIGIN` and `CORS_ALLOWED_ORIGINS` in `/home/ec2-user/unichat/.env` whenever the instance restarts with a new public IP.
+- Scope: Remote EC2 host configuration, systemd units (`unichat-boot.service`, `unichat-autodeploy.service`, `unichat-autodeploy.timer`), RS256 `.service-keys`, gitignored `.local-archive/unichat-app.pem` copy, and this log entry; no tracked repository source files or database schemas were modified.
+- Verification: Initial deployment of `origin/main` (`3028253`) built cleanly and passed all container healthchecks (`ai-service`, `core-api`, `frontend`), external HTTP probes (`http://52.64.17.25/` -> `200 OK`, `/healthz` -> `200 ok`), and a live simulated broken-TypeScript commit rollback drill.
+
+## 2026-11-07 — Fix Plain-HTTP Browser Crash (`crypto.randomUUID` SecureContext) on EC2 IP Origin
+
+- Decision: Add `randomUuid()` and `installRandomUuidFallback()` (`frontend/src/lib/random-uuid.ts`) backed by `crypto.getRandomValues(new Uint8Array(16))` (RFC 4122 v4 CSPRNG) when `crypto.randomUUID` is unavailable on plain HTTP origins (`http://<EC2-IP>`, ADR-020 demo mode), replace direct `crypto.randomUUID()` calls across auth/chat/workspace/Mermaid modules, and guard `cookieRequest` against setting a `null` CSRF header when `UNICHAT_SECURITY_PROFILE=local`.
+- Root cause:
+  1. Per W3C Web Crypto specification, `crypto.randomUUID` is restricted to `[SecureContext]` (`https://` or `http://localhost`). On `http://52.64.17.25`, `crypto.randomUUID` is `undefined`.
+  2. Clicking Login (`loginCookieSession` -> `advanceBrowserEpoch`) and restoring sessions (`refreshAccessToken` -> `advanceBrowserEpoch`) threw `TypeError: crypto.randomUUID is not a function` in the browser before `POST /api/v1/auth/login` was ever transmitted to Core API.
+- Changes (`origin/main`):
+  1. `frontend/src/lib/random-uuid.ts` + `random-uuid.test.ts`: CSPRNG UUID v4 generator and startup polyfill.
+  2. `frontend/src/main.tsx`, `browser-session-epoch.ts`, `chat-api.ts`, `use-chat-session.ts`, `workspace-api.ts`, `mermaid-diagram.tsx`: Wired `installRandomUuidFallback()` and `randomUuid()`.
+  3. `frontend/src/lib/cookie-session.ts` + `cookie-session.test.ts`: Guarded `if (token.token)` when reading `/api/v1/auth/csrf` and added non-secure-context unit test coverage.
+
+## 2026-11-07 — Visual Paradigm UML diagram set
+
+- Decision: Reuse the reviewed UniChat Draw.io sources for the business use case, Adaptive RAG activity flow, system architecture, and as-built ERD; create focused chat-retrieval sequence and domain/service class diagrams as supporting import assets, then place all six diagrams into the open Visual Paradigm project.
+- Rationale: The reviewed sources already match the implemented product extensions and preserve Vietnamese labels. Reusing them prevents architectural drift, while the two missing UML views are derived from the approved API/data-model contracts and current service boundaries.
+- Scope: Diagram authoring assets and the user-requested Visual Paradigm project only; no application code, dependency, database, Git, or deployment changes.
+
+## 2026-11-07 - Generate system-wide master UML class diagram suite with 5 sheets
+
+- Decision: Model the complete multi-sheet UML Class Diagram suite in `docs/thesis/05-so-do-drawio/unichat-class-diagram.drawio` featuring a primary System-Wide Master Class Diagram as the first tab (`00 - Tong the Toan he thong`) alongside 4 focused subsystem sheets.
+- Architecture & Scope:
+  1. Sheet 0: `00 - Tong the Toan he thong`: Master diagram displaying the entire system's class architecture on a single canvas (2500x1450) divided into 4 visually color-coded architectural packages:
+     - Package 1 (Identity & Workspace Hub): `User`, `WorkspaceMember`, `Workspace`.
+     - Package 2 (Document Ingestion Saga): `DocumentController`, `DocumentService`, `StoragePort`, `Document` entity, `DocumentIngestionProducer`, `IngestionResultConsumer`.
+     - Package 3 (Adaptive RAG & LLM): `ChatController`, `Conversation`, `Message`, `CitationHistory`, `ChatOperationService`, `ChatAiGateway`, `ChatHttpAiGateway`.
+     - Package 4 (Community Collaboration & Real-time): `Notification`, `Discussion`, `DiscussionReply`, `Reaction`, `DiscussionController`, `DiscussionService`, `WorkChatBroadcaster`.
+     - Inter-package relationships: Orthogonal connections mapping workspace ownership, document referencing, conversation hosting, and real-time STOMP event dispatch with zero line crossings.
+  2. Sheet 1: `01 - So do lop Thuc the (Domain Model)`: Core JPA Domain entities with attributes, visibility, types, and UML relationships (Composition, Aggregation, Association, Multiplicities).
+  3. Sheet 2: `02 - Thiet ke Lop Chat & Adaptive RAG`: Layered architecture for chat and AI RAG.
+  4. Sheet 3: `03 - Thiet ke Lop Document Ingestion`: Layered architecture for document ingestion saga.
+  5. Sheet 4: `04 - Thiet ke Lop Mang xa hoi (Community)`: Layered architecture for discussions and reactions.
+- Verification: Validated 5-sheet XML structure in Draw.io. File updated at `docs/thesis/05-so-do-drawio/unichat-class-diagram.drawio`.
+
+## 2026-11-07 - Generate standardized BCE UML sequence diagram suite with 4 sheets
+
+- Decision: Model the complete multi-sheet Sequence diagram suite in `docs/thesis/05-so-do-drawio/unichat-sequence-chat-rag.drawio` and `docs/thesis/05-so-do-drawio/unichat-sequence-flows.drawio` strictly following the standard BCE (Boundary-Control-Entity / Jacobson Robustness) convention used in graduation thesis reports.
+- Architecture & Scope:
+  1. Sheet 1: `01 - Chat voi AI (Don gian)`: Simplified BCE overview (User, GD_KhungChat, Ctr_ChatOperation, e_CSDL_Core, Ctr_AdaptiveRAG, e_VectorChroma, e_GoogleGemini) for high-level thesis presentation.
+  2. Sheet 2: `01 - Chat voi AI (Chi tiet)`: Detailed engineering sequence featuring REST/SSE endpoints, JWT verification, heartbeat retention, Question Planning facets, ChromaDB cosine similarity, Evidence Gate evaluation, and inline Citation Validation.
+  3. Sheet 3: `02 - Upload & Xu ly tai lieu`: Complete asynchronous document ingestion saga matching actual project code: `DocumentController` -> `StoragePort` (raw file save) -> `DocumentRepository` (status `PENDING_INGESTION`) -> `DocumentIngestionProducer` -> `RabbitMQ` (`unichat.document.ingestion`) -> Python Ingestion Worker (text extraction, 3-level hybrid chunking, E5 embeddings, ChromaDB insertion) -> `IngestionResultConsumer` (status `PROCESSED`) -> WebSocket notification to user.
+  4. Sheet 4: `03 - Mang xa hoi & Tuong tac`: Community social networking sequence matching `DiscussionController`, `ReactionController`, and `WorkChatBroadcaster`: Discussion creation and feed publication, user reaction/reply handling, DB count increments, and real-time STOMP/WebSocket notification delivery to the author's active session.
+  5. Formatting & Geometry: All lifelines lock `width=50` and `size=50` to guarantee 1:1 circular aspect ratio, non-overlapping labels via `whiteSpace=nowrap` and `spacingTop=50`, and activation bars capturing execution durations.
+- Verification: Validated multi-sheet XML structure in Draw.io. Both `unichat-sequence-chat-rag.drawio` and `unichat-sequence-flows.drawio` updated cleanly.
+
+## 2026-11-07 — Zero-Crossing Planar UML Class Diagrams for Thesis Defense
+
+- Diagnosis: Review of system and subsystem UML Class diagrams in Draw.io revealed overlapping and intersecting relationship lines across multiple diagram sheets (Domain Model, Chat & Adaptive RAG, Ingestion Saga, and Community). In high-standard academic thesis presentations, crossing lines impair visual readability, create ambiguity in entity relationships, and violate clean planar UML layout practices.
+- Decision:
+  1. Restructure all 5 sheets in `docs/thesis/05-so-do-drawio/unichat-class-diagram.drawio` to follow strict orthogonal, zero-crossing planar graph topologies.
+  2. For Sheet 0 (`00 - Tong the Toan he thong`): Establish `Workspace` as the central radiating hub connecting North to User/Membership, West to Community, South to Adaptive RAG, and East to Ingestion Saga, with explicit edge waypoints.
+  3. For Sheet 1 (`01 - So do lop Thuc the (Domain Model)`): Route entity relationships radially around `Workspace` with perimeter-buffered corridors for User-to-Reaction.
+  4. For Sheet 2 (`02 - Thiet ke Lop Chat & Adaptive RAG`): Organize an inverted tree structure with Controller & DTOs at Layer 1, Operation Service & Repo at Layer 2, Operation Runner at Layer 3, and cleanly segregated branches for Persistence (left) and AI Gateway (right).
+  5. For Sheet 3 (`03 - Thiet ke Lop Document Ingestion`): Arrange Controller -> Service -> Repo -> Entity along the center column, RabbitMQ Ingestion Queue on the left, Storage Port and Adapters on the right, and DocumentStatus enum on the bottom-right.
+  6. For Sheet 4 (`04 - Thiet ke Lop Mang xa hoi (Community)`): Split into two parallel vertical tracks (Discussions/Replies on the left, Reactions on the right) with `WorkChatBroadcaster` in the center corridor.
+  7. Maintain strict UML class box styling: `#70C5F0` header fill, `#000000` 1.5px border, white compartments, exact stereotypes (`<<entity>>`, `<<rest-controller>>`, `<<service>>`, `<<repository>>`, `<<interface>>`, `<<dto>>`), and standard cardinality.
+- Verification: Developed automated geometric segment intersection and box penetration verifier. Mathematical testing confirmed **0 line crossings** and **0 box penetrations** across all 5 sheets (total 69 classes, 67 relationships). Validated XML structure loads seamlessly in Draw.io.
+
+## 2026-11-07 — Supabase Production Database ERD Generation (46 Tables, 6 Sheets)
+
+- Diagnosis: The existing ERD snapshot (`unichat-erd.drawio` from 24/10/2026) only contained 41 tables and was outdated compared to the active database state on Supabase. Furthermore, students require a complete, publication-grade ERD matching the live PostgreSQL schema on Supabase for the graduation thesis defense.
+- Decision:
+  1. Connect directly to the live Supabase production database via PostgREST OpenAPI schema extraction using project credentials in `.env` (`SUPABASE_STORAGE_URL` and `SUPABASE_SERVICE_KEY`).
+  2. Inspect and extract metadata for all 46 active database tables, identifying all Primary Keys (`<pk/>`), Foreign Keys (`<fk table='...' column='...'/>`), exact data types, and required constraints.
+  3. Rebuild `docs/thesis/05-so-do-drawio/unichat-erd.drawio` and `docs/specifications/diagrams/unichat-erd.drawio` as a multi-sheet Draw.io diagram containing:
+     - Sheet 0: `00 - Tong the Toan bo 46 Bang (Live Supabase)` (Master system ERD containing all 46 tables categorized into 5 color-coded domain packages with orthogonal cross-domain and intra-domain relationships).
+     - Sheet 1: `01 - Identity, Workspace & RBAC` (9 tables).
+     - Sheet 2: `02 - Knowledge & Ingestion Saga` (6 tables).
+     - Sheet 3: `03 - Adaptive RAG & Conversation Engine` (8 tables).
+     - Sheet 4: `04 - Community & WorkChat` (12 tables).
+     - Sheet 5: `05 - Security, Audit & Evaluations` (11 tables).
+  4. Format all table entities with `#70C5F0` headers, black borders, Courier monospace font, bold badges for `[PK]`, `[FK]`, `[PF]`, and standard Crow's foot cardinality notation (`startArrow=ERmandOne;endArrow=ERmany`).
+- Verification: Validated schema extraction script `scripts/dump_supabase_erd.py` and ERD generator `scripts/generate_complete_supabase_erd.py`. Confirmed XML structure parses without errors, has 0 double-escaping flaws, and represents all 46 production tables and 74 foreign key relationships.
+
+## 2026-11-09 — Upgrade Scientific Paper Figures (`UniChatPaper`) to SSRC/IEEE Publication Standard
+
+- Decision: Replace all 4 mock/placeholder figures (`architecture_overview.png`, `sequence_chat.png`, `rag_pipeline.png`, `chat_ui.png`) in `docs/thesis/08-tai-lieu-tham-khao-viet-bao/UniChatPaper/` with 3x Retina (300+ DPI) publication-grade figures matching FIT-IUH SSRC (`IEEEtran`) standards, and synchronize figure captions and numbered callout explanations `(1)–(4)` in `main.tex` and `docs/thesis/unichat-scientific-paper.tex`.
+- Rationale:
+  1. The previous `architecture_overview.png`, `sequence_chat.png`, and `rag_pipeline.png` were preliminary 6-box wireframes missing key architectural components (`RabbitMQ`, `Redis`, `WebSocket`, `RBAC D_allowed`, `6-Intent Taxonomy`, `Mathematical Evidence Gate`, `Citation Validator`, UML activation bars) and contained a reversed arrow (`Retrieve + Generate -> Upload`).
+  2. The previous `chat_ui.png` had a ~25% blank white margin, was captured in a `"Đang suy nghĩ..."` loading state with overlapping suggestion chips, and lacked both bottom citation pills and the right-hand `Citation Drawer`.
+  3. Rendering SVG/HTML layouts via headless Playwright Chromium at `deviceScaleFactor: 3` guarantees razor-sharp Vietnamese typography, mathematical notation ($S_{\text{evidence}} = 0.50 s_{\text{top}} + 0.30 s_{\text{mean3}} + 0.20 s_{\text{cov}}$), formal UML 2.5 sequence semantics (`sd`, `alt`, activation bars), and an authentic full-bleed UniChat interface with SSRC-style numbered callout badges `(1)–(4)`.
+- Scope: `docs/thesis/08-tai-lieu-tham-khao-viet-bao/UniChatPaper/{architecture_overview.png,sequence_chat.png,rag_pipeline.png,chat_ui.png,main.tex}` and `docs/thesis/unichat-scientific-paper.tex`.
+
+## 2026-11-19 — Complete & Synchronize Graduation Thesis Report (`.docx`) with All 19 `05-so-do-drawio` Diagrams & Advisor Peer-Review Standards
+
+- Decision: Synchronize both `docs/thesis/06-bao-cao-do-an-tot-nghiep/bao-cao-do-an-tot-nghiep-unichat-new.docx` and `docs/thesis/06-bao-cao-do-an-tot-nghiep/bao-cao-do-an-tot-nghiep-unichat.docx` with the verified SSRC-II'2026 IEEE scientific paper (`docs/thesis/08-tai-lieu-tham-khao-viet-bao/UniChatPaper/main.tex`), embedding all 19 official Draw.io tabs from `docs/thesis/05-so-do-drawio/` alongside high-resolution paper figures (25 total embedded figures and 19 numbered tables), while preserving 100% of the existing professional Word layout/styles.
+- Rationale:
+  1. The previous thesis report still contained legacy contradictions flagged in the advisor's review: fabricated reference `[1] H. Zhao et al.`, wrong venue for `L. Huang et al.`, unverified `30–40%` claim, mixed `Java 17` vs `OpenJDK 21 LTS`, `PostgreSQL 16 (41 bảng)` vs `PostgreSQL 15 (46 bảng, 74 khóa ngoại)`, `text-embedding-004` vs `intfloat/multilingual-e5-base (768 chiều)`, wrong course names in Chapter 6 (*Cấu trúc dữ liệu, Kiến trúc phần mềm, Mạng máy tính* instead of *OOP, MongoDB cơ bản, Quản lý dự án CNTT*), wrong load test duration (`60 s / 20.000 requests` instead of `15,38 s / 4.990 requests = 324,45 req/s`), wrong mathematical explanation of the Evidence Gate ($s_{\text{cov}}$ falsely called *"Key Term Coverage"*), and unverified Ablation/Cost sections.
+  2. Furthermore, `Hình 1.1` and `Hình 4.7` previously used archived `.drawio` exports with overlapping arrows, while 7 tabs from `docs/thesis/05-so-do-drawio/` (`class_01_domain_model`, `erd_01`..`erd_05`, and UML Robustness/ECB `sequence_01_chat_overview`) had not yet been embedded in the report.
+- Changes:
+  1. `docs/thesis/05-so-do-drawio/{unichat-activity-flows.drawio,unichat-class-diagram.drawio,unichat-sequence-chat-rag.drawio,unichat-sequence-flows.drawio}`: Added white label backgrounds (`labelBackgroundColor=#ffffff`) on UML lifelines to prevent dashed lines from striking through participant labels, fixed the `manages` edge overlap on `DiscussionService`, and neutralized refusal box text.
+  2. `docs/thesis/06-bao-cao-do-an-tot-nghiep/{bao-cao-do-an-tot-nghiep-unichat-new.docx,bao-cao-do-an-tot-nghiep-unichat.docx}`: Embedded all 25 figures (`Hình 1.1`, `Hình 3.1`, `Hình 4.1`–`Hình 4.20`, `Hình 5.1`–`Hình 5.2`, `Hình 6.1`) and 19 tables (`Bảng 1.1`–`Bảng 6.6`), updated all 7 chapters, TOC, Lists of Figures/Tables, 21 verified IEEE references, and Appendices A–B.
+- Verification: Verified via Microsoft Word COM automation (`OPEN_OK: Paragraphs=1453, Tables=21, Shapes=25`) with zero XML repair warnings and passed automated consistency audit (`0` occurrences of any contradictory/forbidden terms).
+
+## 2026-11-19 — Chỉnh sửa toàn diện bài báo khoa học SSRC-II'2026 theo nhận xét phản biện
+
+- Bối cảnh: Bài báo `docs/thesis/08-tai-lieu-tham-khao-viet-bao/UniChatPaper/main.tex` nhận được phản biện chi tiết cho hội nghị SSRC-II'2026 (FIT-IUH), yêu cầu sửa 8 hạng mục ưu tiên về tên bài, tài liệu tham khảo, tính chặt chẽ toán học của Evidence Gate, mâu thuẫn số liệu giữa hình/bảng/văn bản, định nghĩa công thức chỉ số thực nghiệm, luồng stream JSON tạm thời đi kèm hậu kiểm trích dẫn và chuẩn hóa văn phong khoa học.
+- Quyết định:
+  1. Đổi tên bài báo thành: `UniChat: Nền tảng thảo luận học tập tích hợp trợ lý AI trả lời có trích dẫn từ tài liệu môn học`; chuẩn hóa tiêu đề mục một ngôn ngữ (tiếng Việt) viết hoa chữ cái đầu câu; sửa nhãn `Abstract—` và `TÀI LIỆU THAM KHẢO` bằng `\AtBeginDocument`.
+  2. Rà soát và chuẩn hóa danh mục 21 tài liệu tham khảo đúng thứ tự xuất hiện `[1]`..`[21]`: xóa hoàn toàn TLTK bịa `zhao2024collaborative` cùng con số 30–40%; sửa bài tổng quan của Huang et al. sang `ACM Trans. Inf. Syst., vol. 43, no. 2, Art. no. 42, pp. 1–55, Mar. 2025, doi: 10.1145/3703155`; bổ sung Adaptive-RAG (Jeong et al., NAACL 2024, pp. 7029–7043), 2 nghiên cứu RAG tiếng Việt, Multilingual-E5, RAGAS và RFC 9457; thêm ngày truy cập cho tất cả tài liệu web.
+  3. Cấu trúc lại Mục II thành `Công trình liên quan` kèm Bảng I đối sánh; gộp phần mô tả công nghệ 4 tầng vào Mục III.A.
+  4. Viết lại Mục IV.C (Evidence Gate) khớp với mã nguồn thực tế (`retrieval_engine.py`, `lexical_retrieval.py`, `evidence_gate.py`): trình bày đúng phép cắt ngưỡng tương đồng $s^{\text{dense}} = \max(0, 1 - d_{\cos}) \in [0, 1]$, phân tích tường minh bất đẳng thức $S_{\text{evidence}} \ge 0{,}80\cdot\textit{Floor} + 0{,}20 > \textit{Gate}$ trên nhánh vector thuần túy và vai trò chặn khi hợp nhất RRF với ứng viên từ vựng ($s^{\text{lex}} \ge 0{,}30$), kèm 2 ví dụ số đi hết pipeline.
+  5. Vẽ lại cả 4 hình kỹ thuật (`architecture_overview.png`, `sequence_chat.png`, `rag_pipeline.png`, `rag_evaluation_charts.png`): thống nhất PostgreSQL 15 (46 bảng, 74 khóa ngoại), OpenJDK 21 LTS, mô hình nhúng `intfloat/multilingual-e5-base` (768 chiều), tăng cỡ chữ sơ đồ tuần tự Hình 2 và thể hiện rõ luồng `SSE event: token (provisional = true)` kèm cơ chế `SSE event: reset` khi hậu kiểm `Citation Validator` thất bại.
+  6. Bổ sung công thức toán học cho toàn bộ chỉ số đánh giá (khớp `benchmark-scorer.ts`), thống nhất thông lượng HTTP API thực tế $324{,}45\text{~req/s}$ ($4.990 / 15{,}38\text{~s}$), giải thích giai đoạn ramp-up 1 s của WebSocket ($2.400$ sự kiện) và độ trễ toàn trình Playwright $0{,}28\text{~s}$ của `OUT_OF_SCOPE`; báo cáo kết quả tách riêng trên 39 câu `DEVELOPMENT` và 81 câu `HOLDOUT`; bổ sung Bảng IX (phân vị P50/P95 theo ý định), Bảng X (ma trận nhầm lẫn $6 \times 6$), phân tích 3 nhóm nguyên nhân của 12 ca từ chối quá mức; bỏ Bảng chi phí vận hành (Bảng IX cũ); mở rộng Mục V.H (6 hạn chế), thêm mục khai báo sử dụng AI & link GitHub, và bỏ cảm ơn đồng tác giả trong mục Lời cảm ơn.
+- Kiểm chứng: Script kiểm tra tự động xác nhận 21/21 trích dẫn đúng thứ tự IEEE, Abstract tiếng Anh 193 từ (trong ngưỡng 150–200 từ), 0 từ phóng đại trong danh sách cấm, 0 đơn vị thiếu khoảng trắng; kèm hồ sơ đối chiếu `PHAN_HOI_PHAN_BIEN_VA_DOI_CHIEU_SO_LIEU.md`.
+
+## 2026-11-19T11:05:00+07:00 — Kiểm tra bản PDF biên dịch `UniChat_Paper (1).pdf` và hoàn thiện trình bày LaTeX
+- **Bối cảnh:** Người dùng biên dịch `main.tex` trên Overleaf ra `UniChat_Paper (1).pdf` (15 trang) và yêu cầu kiểm tra lại toàn diện.
+- **Phát hiện và khắc phục:**
+  1. **Khôi phục `chat_ui.png` (Hình 5):** Chạy lại `capture_real_frontend.cjs` để xuất giao diện thật của ứng dụng (`984,205` bytes, có công tắc *Chỉ tài liệu / Mở rộng* và ngăn *Studio / Trích dẫn (3)*) thay thế cho ảnh mockup cũ bị `generate_paper_figures.cjs` ghi đè trước đó; đồng thời gỡ tác vụ xuất `chat_ui.png` khỏi `generate_paper_figures.cjs`.
+  2. **Ngắt dòng tiêu đề (`\title`):** Chuyển dấu ngắt dòng `\\` ra trước cụm `trợ lý AI` để tiêu đề hiển thị cân đối trên 2 dòng, khắc phục lỗi chữ `AI` bị rớt lẻ một mình ở dòng thứ 2 trên trang 1.
+  3. **Sửa lỗi ligature dấu backtick ở trang 7:** Đổi `\texttt{```mermaid}` (bị LaTeX biến thành dấu ngoặc kép mở `“‘mermaid`) thành `khối mã biểu đồ \texttt{mermaid}`.
+  4. **Sửa tràn lề phải ở Công thức (1), Công thức (11) và tiêu đề cột `MongoDB` ở Bảng VI:** Dùng môi trường `aligned` tách 2 dòng cho Công thức (1) (trang 3) và Công thức (11) (trang 10); tinh chỉnh độ rộng cột Bảng VI để chữ `MongoDB` không chạm vạch kẻ dọc.
+  5. **Tối ưu mật độ khối float (`\dbltopfraction = 0.90`, `\arraystretch = 1.10`, giảm nhẹ tỷ lệ `figure*`):** Giúp LaTeX xếp gọn các hình/bảng hai cột, giảm số trang dư thừa khi biên dịch.
+
+## 2026-11-19T11:31:00+07:00 — Cập nhật Hình 2 (`sequence_chat.png`) theo chuẩn ký hiệu UML ECB (Actor / Boundary / Control / Entity)
+- **Bối cảnh:** Người dùng yêu cầu Hình 2 (`sequence_chat.png`) phải sử dụng đúng hệ thống header UML chuẩn (Actor, Boundary `|-O`, Control có mũi tên trên đỉnh hình tròn, Entity `O_` có gạch chân) và tên định danh như trong tệp `unichat-sequence-flows.drawio` (`NguoiDung`, `GD_KhungChat`, `Ctr_ChatOperation`, `e_CSDL_Core`, `Ctr_AdaptiveRAG`, `e_VectorChroma`, `e_GoogleGemini`), đồng thời giữ màu sắc phân tầng rõ ràng và cỡ chữ lớn.
+- **Quyết định:** Cập nhật `generate_paper_figures.cjs` và kết xuất lại `docs/thesis/08-tai-lieu-tham-khao-viet-bao/UniChatPaper/sequence_chat.png` ở độ phân giải 3x Retina với đủ 7 lifeline chuẩn UML ECB.
+
+## 2026-11-21 — SSRC-II'2026 Paper v3 (Round-2 Advisor Review Remediation)
+- **Context:** Advisor ThS. Trần Thế Trung issued Round-2 review (`Nhận xét bản v2 – UniChat`) with 3 mandatory fixes (Section 2), 8 recommended fixes (Section 3), and 7 polish items (Section 4), requiring explicit notes for any unfixed item with rationale, strict evidence-backed tone (no sweeping `"100%"`/`"hoàn hảo"`), on deadline day 2026-11-21.
+- **Forensic Audit Decisions:**
+  1. Verified from `benchmark-results.json`, `git show 67138b8`, Playwright `trace.zip`, and `test-finished-1.png` that the 240 E2E runs executed on **2026-09-27** using primary **`gemini-3.5-flash` ($T=0.3$)** with automatic fallback to `gemini-3.5-flash-lite`, while **The Hive** (`https://api-cdn.thehive.ai/api/v3`, `deepseek-ai/deepseek-v4.1-flash-1017`, $T=0.2$) was added on 2026-10-21. Clarified `chat_ui.png` caption honestly (captured on earlier build showing `gemini-2.5-flash`) without altering the screenshot.
+  2. Replaced raw 120-question baseline improvement claims (`+33.3%`, `+5.9%`, `+17.5%`) with a clean **paired comparison on $n=110$ valid non-JWT-expired queries** (`STRICT` vs `EXPANDED` A/B on the same codebase) with **exact two-sided McNemar test** (`Acc_dec`: `75.5%` vs `90.9%`, $b=3, c=20, p=0.00049$; `Acc_int`: `88.2%` vs `88.2%`, $p=1.000$), plus **offline intent/routing ablation** on all 120 questions via `intent_detector.py` and 78 persisted traces in `retrieval_traces.jsonl`. Did not execute a live E2E re-run today because `gemini-3.5-flash` now redirects to `gemini-3.6-flash` (breaking snapshot parity) and deadline is today.
+  3. Audited corpus-label misalignment across all 120 questions: documented `BM-QLDA-RSN-005` (*Evidence Gate*) as a dataset-labeling error, explained `DEFINITION` `95.8% -> 87.5%` as a `chat-helper.ts` refusal-regex blind spot on `BM-OOP-DEF-007/008`, reported dual metrics (`108/120`, `108/119`, and `80/81 = 98.8%` on the corpus-verified paired subset), acknowledged the dual-scale (`cosine` vs `lexical`) Evidence Gate limitation in Example 2 (`S=0.696`), and executed a genuine **30-sample stratified manual faithfulness audit** (`24/30 = 80.0%` directly grounded, `5/30 = 16.7%` external expansion with loosely related citations, `1/30` truncated DOM capture).
+  4. Fixed all 4 reference errors (`[4]` pages `7036--7050`, removed student arXiv `[7]` in favor of Cormack et al. SIGIR 2009, corrected `[10]` `arXiv:2403.01616` description, cited `[19]` Chroma docs and added `[21]` Malkov & Yashunin IEEE TPAMI 2020 for HNSW), grounded Moodle/Piazza/NotebookLM claims with Nov. 21, 2026 citations, added Wilson 95% CIs, renamed load testing to authentication load testing (`/api/auth/login`), unified infrastructure names across text/tables/figures, and re-rendered 4 figures at 300+ DPI.
+
+## 2026-11-21 — Paper v3.1 Final Consistency Polish (Advisor 3-Point Review)
+- **Trigger:** Advisor (ThS. Trần Thế Trung) returned 3 final surgical corrections on the compiled 16-page v3 PDF: (1) harmonize `STRICT` normalized metrics across Abstract, Table IX, Table X, Figure 6, and Conclusion (`73.6% (81/110)`, McNemar `b=1, c=20, p=2.1e-5`, `Prec_ref=29.3% (12/41)`, `F1_ref=0.453`, `DEFINITION=87.5% (21/24)`); (2) disclose in both English Abstract and Vietnamese Tóm tắt that the `EXPANDED` gain over `STRICT` largely arises from 20/29 in-scope queries lacking direct slide coverage answered via background knowledge, paired with the 24/30 (80.0%) manual slide-grounding audit; (3) assign distinct names to the two 81-item sets (`\mathcal{D}_{\text{holdout}}` vs `\mathcal{D}_{\text{evid}}`, which overlap on 52 items) and explicitly state that `STRICT` 81/81 on `\mathcal{D}_{\text{evid}}` is a selection consequence rather than an independent measurement.
+- **Files updated:** `docs/thesis/08-tai-lieu-tham-khao-viet-bao/UniChatPaper/main.tex`, `docs/thesis/unichat-scientific-paper.tex`, `docs/thesis/08-tai-lieu-tham-khao-viet-bao/UniChatPaper/rag_evaluation_charts.png`.
+
+## 2026-11-22 — Sync `docs/thesis-diagrams-and-paper` with `origin/main` and Split Incremental PR Commits
+
+- **Context:** Local workspace was still on merged branch `feat/plan-v2-auth-chat-admin-security` (`b10680c`, PR #27), 92+ commits behind `origin/main` (`bd92c33`), with thesis diagrams, scientific paper, thesis report, helper scripts, and an obsolete local plain-HTTP `random-id.ts` frontend draft.
+- **Decisions (user-approved):**
+  1. Fast-forward local `main` to `origin/main` (`bd92c33`) and create clean branch `docs/thesis-diagrams-and-paper` directly off `origin/main`.
+  2. Discard the 8 obsolete local `frontend/` draft changes (`random-id.ts`, `random-id.test.ts`, and 6 callers) because `origin/main` already ships the tested `random-uuid.ts` solution with polyfill and recursion guard (PR #29, PR #31).
+  3. Remove the stale `.worktrees/fix-insecure-uuid` worktree (safely unlinking its Windows `node_modules` junction first) and add `.worktrees/` and `*.drawio.bkp` to `.gitignore`.
+  4. Exclude sensitive/reference/backup local artifacts from Git (`LinkLaTex.txt` containing Overleaf share token, 5 external reference PDFs, `main.before-review-2026-11-19.tex`, and the older `bao-cao-do-an-tot-nghiep-unichat.docx` snapshot).
+  5. Split tracked changes into logical Conventional Commits (`chore(git)`, `docs(diagrams)`, `chore(scripts)`, `docs(paper)`, `docs(thesis)`, `docs(pipeline)`), pausing for explicit human approval before push and PR creation.

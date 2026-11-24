@@ -1,0 +1,4220 @@
+{
+  "tables": {
+    "evaluation_cases": [
+      {
+        "name": "id",
+        "type": "UUID",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "dataset_version",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "split",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "intent",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "question",
+        "type": "TEXT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "workspace_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "workspaces",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "expected_document_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "expected_locator",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "expected_answer_notes",
+        "type": "TEXT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "evidence_label",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "topic_group",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      }
+    ],
+    "workspace_categories": [
+      {
+        "name": "code",
+        "type": "VARCHAR",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "display_name",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "icon",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "sort_order",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      }
+    ],
+    "workspace_summaries": [
+      {
+        "name": "id",
+        "type": "UUID",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "operation_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "workspace_summary_jobs",
+          "target_column": "operation_id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "workspace_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "workspaces",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "created_by",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "users",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "source_fingerprint",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "config_hash",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "overview",
+        "type": "TEXT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "overview_chunk_ids",
+        "type": "JSONB",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "cross_document_insights",
+        "type": "JSONB",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "document_count",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "processed_chunk_count",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      }
+    ],
+    "users": [
+      {
+        "name": "id",
+        "type": "UUID",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "email",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "password_hash",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "system_role",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "status",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "failed_login_count",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "locked_until",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "updated_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "avatar_storage_key",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "avatar_color",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "display_name",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "security_version",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "version",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      }
+    ],
+    "studio_notes": [
+      {
+        "name": "id",
+        "type": "UUID",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "conversation_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "conversations",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "workspace_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "workspaces",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "user_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "users",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "note_type",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "title",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "content",
+        "type": "TEXT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "metadata",
+        "type": "TEXT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "updated_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "source_message_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "messages",
+          "target_column": "id"
+        },
+        "is_required": false
+      },
+      {
+        "name": "source_fingerprint",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      }
+    ],
+    "workspace_topics": [
+      {
+        "name": "workspace_id",
+        "type": "UUID",
+        "is_pk": true,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "workspaces",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "topic",
+        "type": "VARCHAR",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      }
+    ],
+    "calls": [
+      {
+        "name": "id",
+        "type": "UUID",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "conversation_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "direct_conversations",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "caller_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "users",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "callee_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "users",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "media",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "status",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "started_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "answered_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "ended_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "end_reason",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      }
+    ],
+    "notifications": [
+      {
+        "name": "id",
+        "type": "UUID",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "user_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "users",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "type",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "workspace_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "workspaces",
+          "target_column": "id"
+        },
+        "is_required": false
+      },
+      {
+        "name": "payload",
+        "type": "JSONB",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "is_read",
+        "type": "BOOLEAN",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      }
+    ],
+    "direct_conversations": [
+      {
+        "name": "id",
+        "type": "UUID",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "participant_low",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "users",
+          "target_column": "id"
+        },
+        "is_required": false
+      },
+      {
+        "name": "participant_high",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "users",
+          "target_column": "id"
+        },
+        "is_required": false
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "last_message_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "kind",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "title",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "created_by",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "users",
+          "target_column": "id"
+        },
+        "is_required": false
+      },
+      {
+        "name": "avatar_storage_key",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      }
+    ],
+    "conversation_participants": [
+      {
+        "name": "conversation_id",
+        "type": "UUID",
+        "is_pk": true,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "direct_conversations",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "user_id",
+        "type": "UUID",
+        "is_pk": true,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "users",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "role",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "joined_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "last_read_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      }
+    ],
+    "workspace_invites": [
+      {
+        "name": "id",
+        "type": "UUID",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "workspace_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "workspaces",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "token_hash",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "role",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "created_by_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "expires_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "max_uses",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "used_count",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "revoked_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      }
+    ],
+    "retrieval_traces": [
+      {
+        "name": "id",
+        "type": "UUID",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "message_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "messages",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "request_id",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "strategy_version",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "rule_id",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "intent",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "confidence",
+        "type": "NUMERIC",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "evidence_score",
+        "type": "NUMERIC",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "decision",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "provider",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "latency_ms",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "prompt_tokens",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "config_hash",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      }
+    ],
+    "documents": [
+      {
+        "name": "id",
+        "type": "UUID",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "workspace_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "workspaces",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "storage_key",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "original_name",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "media_type",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "byte_size",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "sha256",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "status",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "ingestion_version",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "page_or_block_count",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "version",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "updated_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "contributor_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "users",
+          "target_column": "id"
+        },
+        "is_required": false
+      },
+      {
+        "name": "uploaded_by",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "users",
+          "target_column": "id"
+        },
+        "is_required": false
+      },
+      {
+        "name": "approved_by",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "users",
+          "target_column": "id"
+        },
+        "is_required": false
+      },
+      {
+        "name": "approved_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "rejection_reason",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "contribution_summary",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "contribution_reason",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "indexed_chunk_count",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "indexed_character_count",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "ingestion_completed_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      }
+    ],
+    "workspace_members": [
+      {
+        "name": "workspace_id",
+        "type": "UUID",
+        "is_pk": true,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "workspaces",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "user_id",
+        "type": "UUID",
+        "is_pk": true,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "users",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "role",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "status",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "invited_by_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "users",
+          "target_column": "id"
+        },
+        "is_required": false
+      }
+    ],
+    "document_reviews": [
+      {
+        "name": "id",
+        "type": "UUID",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "document_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "documents",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "reviewer_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "users",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "reviewer_type",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "decision",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "reason",
+        "type": "TEXT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "reviewed_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      }
+    ],
+    "workspaces": [
+      {
+        "name": "id",
+        "type": "UUID",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "owner_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "users",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "name",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "description",
+        "type": "TEXT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "visibility",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "cloud_allowed",
+        "type": "BOOLEAN",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "permission_version",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "version",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "updated_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "status",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "category",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "join_policy",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "contribution_policy",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "question_count",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "cover_storage_key",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      }
+    ],
+    "chat_operations": [
+      {
+        "name": "id",
+        "type": "UUID",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "actor_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "users",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "operation_name",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "idempotency_key",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "binding_hash",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "workspace_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "workspaces",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "original_conversation_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "conversation_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "conversations",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "user_message_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "messages",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "result_message_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "messages",
+          "target_column": "id"
+        },
+        "is_required": false
+      },
+      {
+        "name": "question",
+        "type": "TEXT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "expanded",
+        "type": "BOOLEAN",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "session_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "security_version",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "request_id",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "state",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "source_fingerprint",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "source_snapshot",
+        "type": "JSONB",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "error_code",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "deadline_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "lease_until",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "expires_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "terminal_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "first_token_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "task_type",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      }
+    ],
+    "conversations": [
+      {
+        "name": "id",
+        "type": "UUID",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "workspace_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "workspaces",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "user_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "users",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "title",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "status",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "updated_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "summary",
+        "type": "TEXT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "summary_version",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "next_sequence",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "summary_fingerprint",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      }
+    ],
+    "refresh_tokens": [
+      {
+        "name": "id",
+        "type": "UUID",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "user_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "users",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "family_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "refresh_families",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "token_hash",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "expires_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "used_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "revoked_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "replaced_by_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "refresh_tokens",
+          "target_column": "id"
+        },
+        "is_required": false
+      }
+    ],
+    "ai_generation_control": [
+      {
+        "name": "id",
+        "type": "INT",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "state",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "version",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "updated_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "updated_by",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "users",
+          "target_column": "id"
+        },
+        "is_required": false
+      }
+    ],
+    "reactions": [
+      {
+        "name": "id",
+        "type": "UUID",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "user_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "users",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "target_type",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "target_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "reaction_type",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      }
+    ],
+    "password_reset_otps": [
+      {
+        "name": "email",
+        "type": "VARCHAR",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "otp_code",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "expires_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "challenge_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "otp_hash",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "attempts",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "consumed_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "purpose",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      }
+    ],
+    "service_nonces": [
+      {
+        "name": "identity",
+        "type": "VARCHAR",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "nonce",
+        "type": "UUID",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "expires_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      }
+    ],
+    "discussions": [
+      {
+        "name": "id",
+        "type": "UUID",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "workspace_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "workspaces",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "author_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "users",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "title",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "body",
+        "type": "TEXT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "label",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "pinned",
+        "type": "BOOLEAN",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "status",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "view_count",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "reply_count",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "updated_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "vote_score",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "tags",
+        "type": "JSONB",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "accepted_reply_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "discussion_replies",
+          "target_column": "id"
+        },
+        "is_required": false
+      },
+      {
+        "name": "edited_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "background_key",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      }
+    ],
+    "audit_events": [
+      {
+        "name": "id",
+        "type": "UUID",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "occurred_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "request_id",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "actor_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "action",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "target_type",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "target_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "workspace_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "outcome",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "metadata",
+        "type": "JSONB",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      }
+    ],
+    "retrieval_trace_items": [
+      {
+        "name": "id",
+        "type": "UUID",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "trace_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "retrieval_traces",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "document_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "documents",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "chunk_id",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "rank",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "similarity",
+        "type": "NUMERIC",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "source_group",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "locator_value",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "content_hash",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      }
+    ],
+    "security_rate_windows": [
+      {
+        "name": "subject_hash",
+        "type": "VARCHAR",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "action",
+        "type": "VARCHAR",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "window_start",
+        "type": "INT",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "request_count",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      }
+    ],
+    "bookmarks": [
+      {
+        "name": "id",
+        "type": "UUID",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "user_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "users",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "discussion_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "discussions",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      }
+    ],
+    "security_telemetry_coverage": [
+      {
+        "name": "stream",
+        "type": "VARCHAR",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "collected_from",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      }
+    ],
+    "messages": [
+      {
+        "name": "id",
+        "type": "UUID",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "conversation_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "conversations",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "role",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "content",
+        "type": "TEXT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "intent",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "refusal_code",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "provider_model",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "prompt_version",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "sequence_no",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "source_fingerprint",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "canonical_result",
+        "type": "JSONB",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "workspace_summary_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "workspace_summaries",
+          "target_column": "id"
+        },
+        "is_required": false
+      }
+    ],
+    "evaluation_results": [
+      {
+        "name": "id",
+        "type": "UUID",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "run_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "evaluation_runs",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "case_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "evaluation_cases",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "predicted_intent",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "decision",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "source_hit",
+        "type": "BOOLEAN",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "reciprocal_rank",
+        "type": "NUMERIC",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "citation_correct",
+        "type": "BOOLEAN",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "locator_correct",
+        "type": "BOOLEAN",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "claim_support",
+        "type": "NUMERIC",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "answer_score",
+        "type": "NUMERIC",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "latency_ms",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "prompt_tokens",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "notes",
+        "type": "TEXT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      }
+    ],
+    "direct_messages": [
+      {
+        "name": "id",
+        "type": "UUID",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "conversation_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "direct_conversations",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "sender_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "users",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "body",
+        "type": "TEXT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      }
+    ],
+    "workspace_summary_documents": [
+      {
+        "name": "operation_id",
+        "type": "UUID",
+        "is_pk": true,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "workspace_summary_jobs",
+          "target_column": "operation_id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "document_id",
+        "type": "UUID",
+        "is_pk": true,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "documents",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "ingestion_version",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "content_hash",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "expected_chunk_count",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "processed_chunk_count",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "summary_json",
+        "type": "JSONB",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "checkpoint_hash",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "status",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "updated_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      }
+    ],
+    "chat_source_dependencies": [
+      {
+        "name": "message_id",
+        "type": "UUID",
+        "is_pk": true,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "messages",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "document_id",
+        "type": "UUID",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "ingestion_version",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "document_hash",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      }
+    ],
+    "post_attachments": [
+      {
+        "name": "id",
+        "type": "UUID",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "discussion_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "discussions",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "kind",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "storage_key",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "original_name",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "media_type",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "byte_size",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "document_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "documents",
+          "target_column": "id"
+        },
+        "is_required": false
+      },
+      {
+        "name": "uploaded_by",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "users",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "ai_summary",
+        "type": "TEXT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "summary_state",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      }
+    ],
+    "citation_history": [
+      {
+        "name": "id",
+        "type": "UUID",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "message_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "messages",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "document_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "documents",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "chunk_id",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "file_name",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "locator_type",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "locator_value",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "excerpt",
+        "type": "TEXT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "content_hash",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "ordinal",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "redacted_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "ingestion_version",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "citation_id",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "score",
+        "type": "DOUBLE PRECISION",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      }
+    ],
+    "discussion_replies": [
+      {
+        "name": "id",
+        "type": "UUID",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "discussion_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "discussions",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "author_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "users",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "body",
+        "type": "TEXT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "parent_reply_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "discussion_replies",
+          "target_column": "id"
+        },
+        "is_required": false
+      },
+      {
+        "name": "is_ai_answer",
+        "type": "BOOLEAN",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "retrieval_trace_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "vote_score",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "citations",
+        "type": "JSONB",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      }
+    ],
+    "workspace_summary_jobs": [
+      {
+        "name": "operation_id",
+        "type": "UUID",
+        "is_pk": true,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "chat_operations",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "workspace_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "workspaces",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "source_fingerprint",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "config_hash",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "stage",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "documents_total",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "documents_completed",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "chunks_total",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "chunks_processed",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "provider_calls_completed",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "delivery_attempts",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "lease_until",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "updated_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      }
+    ],
+    "chat_attachments": [
+      {
+        "name": "id",
+        "type": "UUID",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "message_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "direct_messages",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "kind",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "storage_key",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "original_name",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "media_type",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "byte_size",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      }
+    ],
+    "refresh_families": [
+      {
+        "name": "id",
+        "type": "UUID",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "user_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "users",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "expires_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "revoked_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      }
+    ],
+    "evaluation_runs": [
+      {
+        "name": "id",
+        "type": "UUID",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "dataset_version",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "corpus_snapshot",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "branch",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "provider_model",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "embedding_revision",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "strategy_version",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "prompt_version",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "config_hash",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "status",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "started_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "finished_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      }
+    ],
+    "rate_limit_buckets": [
+      {
+        "name": "subject_key",
+        "type": "VARCHAR",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "action_key",
+        "type": "VARCHAR",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "window_start",
+        "type": "TIMESTAMPTZ",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "request_count",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "expires_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      }
+    ],
+    "post_reads": [
+      {
+        "name": "discussion_id",
+        "type": "UUID",
+        "is_pk": true,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "discussions",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "user_id",
+        "type": "UUID",
+        "is_pk": true,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "users",
+          "target_column": "id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "read_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      }
+    ],
+    "workspace_summary_outbox": [
+      {
+        "name": "id",
+        "type": "UUID",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "operation_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": true,
+        "fk_target": {
+          "target_table": "workspace_summary_jobs",
+          "target_column": "operation_id"
+        },
+        "is_required": true
+      },
+      {
+        "name": "request_id",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "task_type",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "source_fingerprint",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "config_hash",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "created_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "published_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "attempts",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      }
+    ],
+    "provider_attempts": [
+      {
+        "name": "id",
+        "type": "UUID",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "operation_id",
+        "type": "UUID",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "purpose",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "provider",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "key_id",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "model",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "started_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "ended_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "outcome",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "latency_ms",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "input_tokens",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "output_tokens",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      },
+      {
+        "name": "error_code",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": false
+      }
+    ],
+    "idempotency_records": [
+      {
+        "name": "actor_id",
+        "type": "VARCHAR",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "route_key",
+        "type": "VARCHAR",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "idempotency_key",
+        "type": "VARCHAR",
+        "is_pk": true,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "request_hash",
+        "type": "VARCHAR",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "response_status",
+        "type": "INT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "response_body",
+        "type": "TEXT",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      },
+      {
+        "name": "expires_at",
+        "type": "TIMESTAMPTZ",
+        "is_pk": false,
+        "is_fk": false,
+        "fk_target": null,
+        "is_required": true
+      }
+    ]
+  },
+  "foreign_keys": [
+    {
+      "source_table": "evaluation_cases",
+      "source_column": "workspace_id",
+      "target_table": "workspaces",
+      "target_column": "id"
+    },
+    {
+      "source_table": "workspace_summaries",
+      "source_column": "operation_id",
+      "target_table": "workspace_summary_jobs",
+      "target_column": "operation_id"
+    },
+    {
+      "source_table": "workspace_summaries",
+      "source_column": "workspace_id",
+      "target_table": "workspaces",
+      "target_column": "id"
+    },
+    {
+      "source_table": "workspace_summaries",
+      "source_column": "created_by",
+      "target_table": "users",
+      "target_column": "id"
+    },
+    {
+      "source_table": "studio_notes",
+      "source_column": "conversation_id",
+      "target_table": "conversations",
+      "target_column": "id"
+    },
+    {
+      "source_table": "studio_notes",
+      "source_column": "workspace_id",
+      "target_table": "workspaces",
+      "target_column": "id"
+    },
+    {
+      "source_table": "studio_notes",
+      "source_column": "user_id",
+      "target_table": "users",
+      "target_column": "id"
+    },
+    {
+      "source_table": "studio_notes",
+      "source_column": "source_message_id",
+      "target_table": "messages",
+      "target_column": "id"
+    },
+    {
+      "source_table": "workspace_topics",
+      "source_column": "workspace_id",
+      "target_table": "workspaces",
+      "target_column": "id"
+    },
+    {
+      "source_table": "calls",
+      "source_column": "conversation_id",
+      "target_table": "direct_conversations",
+      "target_column": "id"
+    },
+    {
+      "source_table": "calls",
+      "source_column": "caller_id",
+      "target_table": "users",
+      "target_column": "id"
+    },
+    {
+      "source_table": "calls",
+      "source_column": "callee_id",
+      "target_table": "users",
+      "target_column": "id"
+    },
+    {
+      "source_table": "notifications",
+      "source_column": "user_id",
+      "target_table": "users",
+      "target_column": "id"
+    },
+    {
+      "source_table": "notifications",
+      "source_column": "workspace_id",
+      "target_table": "workspaces",
+      "target_column": "id"
+    },
+    {
+      "source_table": "direct_conversations",
+      "source_column": "participant_low",
+      "target_table": "users",
+      "target_column": "id"
+    },
+    {
+      "source_table": "direct_conversations",
+      "source_column": "participant_high",
+      "target_table": "users",
+      "target_column": "id"
+    },
+    {
+      "source_table": "direct_conversations",
+      "source_column": "created_by",
+      "target_table": "users",
+      "target_column": "id"
+    },
+    {
+      "source_table": "conversation_participants",
+      "source_column": "conversation_id",
+      "target_table": "direct_conversations",
+      "target_column": "id"
+    },
+    {
+      "source_table": "conversation_participants",
+      "source_column": "user_id",
+      "target_table": "users",
+      "target_column": "id"
+    },
+    {
+      "source_table": "workspace_invites",
+      "source_column": "workspace_id",
+      "target_table": "workspaces",
+      "target_column": "id"
+    },
+    {
+      "source_table": "retrieval_traces",
+      "source_column": "message_id",
+      "target_table": "messages",
+      "target_column": "id"
+    },
+    {
+      "source_table": "documents",
+      "source_column": "workspace_id",
+      "target_table": "workspaces",
+      "target_column": "id"
+    },
+    {
+      "source_table": "documents",
+      "source_column": "contributor_id",
+      "target_table": "users",
+      "target_column": "id"
+    },
+    {
+      "source_table": "documents",
+      "source_column": "uploaded_by",
+      "target_table": "users",
+      "target_column": "id"
+    },
+    {
+      "source_table": "documents",
+      "source_column": "approved_by",
+      "target_table": "users",
+      "target_column": "id"
+    },
+    {
+      "source_table": "workspace_members",
+      "source_column": "workspace_id",
+      "target_table": "workspaces",
+      "target_column": "id"
+    },
+    {
+      "source_table": "workspace_members",
+      "source_column": "user_id",
+      "target_table": "users",
+      "target_column": "id"
+    },
+    {
+      "source_table": "workspace_members",
+      "source_column": "invited_by_id",
+      "target_table": "users",
+      "target_column": "id"
+    },
+    {
+      "source_table": "document_reviews",
+      "source_column": "document_id",
+      "target_table": "documents",
+      "target_column": "id"
+    },
+    {
+      "source_table": "document_reviews",
+      "source_column": "reviewer_id",
+      "target_table": "users",
+      "target_column": "id"
+    },
+    {
+      "source_table": "workspaces",
+      "source_column": "owner_id",
+      "target_table": "users",
+      "target_column": "id"
+    },
+    {
+      "source_table": "chat_operations",
+      "source_column": "actor_id",
+      "target_table": "users",
+      "target_column": "id"
+    },
+    {
+      "source_table": "chat_operations",
+      "source_column": "workspace_id",
+      "target_table": "workspaces",
+      "target_column": "id"
+    },
+    {
+      "source_table": "chat_operations",
+      "source_column": "conversation_id",
+      "target_table": "conversations",
+      "target_column": "id"
+    },
+    {
+      "source_table": "chat_operations",
+      "source_column": "user_message_id",
+      "target_table": "messages",
+      "target_column": "id"
+    },
+    {
+      "source_table": "chat_operations",
+      "source_column": "result_message_id",
+      "target_table": "messages",
+      "target_column": "id"
+    },
+    {
+      "source_table": "conversations",
+      "source_column": "workspace_id",
+      "target_table": "workspaces",
+      "target_column": "id"
+    },
+    {
+      "source_table": "conversations",
+      "source_column": "user_id",
+      "target_table": "users",
+      "target_column": "id"
+    },
+    {
+      "source_table": "refresh_tokens",
+      "source_column": "user_id",
+      "target_table": "users",
+      "target_column": "id"
+    },
+    {
+      "source_table": "refresh_tokens",
+      "source_column": "family_id",
+      "target_table": "refresh_families",
+      "target_column": "id"
+    },
+    {
+      "source_table": "refresh_tokens",
+      "source_column": "replaced_by_id",
+      "target_table": "refresh_tokens",
+      "target_column": "id"
+    },
+    {
+      "source_table": "ai_generation_control",
+      "source_column": "updated_by",
+      "target_table": "users",
+      "target_column": "id"
+    },
+    {
+      "source_table": "reactions",
+      "source_column": "user_id",
+      "target_table": "users",
+      "target_column": "id"
+    },
+    {
+      "source_table": "discussions",
+      "source_column": "workspace_id",
+      "target_table": "workspaces",
+      "target_column": "id"
+    },
+    {
+      "source_table": "discussions",
+      "source_column": "author_id",
+      "target_table": "users",
+      "target_column": "id"
+    },
+    {
+      "source_table": "discussions",
+      "source_column": "accepted_reply_id",
+      "target_table": "discussion_replies",
+      "target_column": "id"
+    },
+    {
+      "source_table": "retrieval_trace_items",
+      "source_column": "trace_id",
+      "target_table": "retrieval_traces",
+      "target_column": "id"
+    },
+    {
+      "source_table": "retrieval_trace_items",
+      "source_column": "document_id",
+      "target_table": "documents",
+      "target_column": "id"
+    },
+    {
+      "source_table": "bookmarks",
+      "source_column": "user_id",
+      "target_table": "users",
+      "target_column": "id"
+    },
+    {
+      "source_table": "bookmarks",
+      "source_column": "discussion_id",
+      "target_table": "discussions",
+      "target_column": "id"
+    },
+    {
+      "source_table": "messages",
+      "source_column": "conversation_id",
+      "target_table": "conversations",
+      "target_column": "id"
+    },
+    {
+      "source_table": "messages",
+      "source_column": "workspace_summary_id",
+      "target_table": "workspace_summaries",
+      "target_column": "id"
+    },
+    {
+      "source_table": "evaluation_results",
+      "source_column": "run_id",
+      "target_table": "evaluation_runs",
+      "target_column": "id"
+    },
+    {
+      "source_table": "evaluation_results",
+      "source_column": "case_id",
+      "target_table": "evaluation_cases",
+      "target_column": "id"
+    },
+    {
+      "source_table": "direct_messages",
+      "source_column": "conversation_id",
+      "target_table": "direct_conversations",
+      "target_column": "id"
+    },
+    {
+      "source_table": "direct_messages",
+      "source_column": "sender_id",
+      "target_table": "users",
+      "target_column": "id"
+    },
+    {
+      "source_table": "workspace_summary_documents",
+      "source_column": "operation_id",
+      "target_table": "workspace_summary_jobs",
+      "target_column": "operation_id"
+    },
+    {
+      "source_table": "workspace_summary_documents",
+      "source_column": "document_id",
+      "target_table": "documents",
+      "target_column": "id"
+    },
+    {
+      "source_table": "chat_source_dependencies",
+      "source_column": "message_id",
+      "target_table": "messages",
+      "target_column": "id"
+    },
+    {
+      "source_table": "post_attachments",
+      "source_column": "discussion_id",
+      "target_table": "discussions",
+      "target_column": "id"
+    },
+    {
+      "source_table": "post_attachments",
+      "source_column": "document_id",
+      "target_table": "documents",
+      "target_column": "id"
+    },
+    {
+      "source_table": "post_attachments",
+      "source_column": "uploaded_by",
+      "target_table": "users",
+      "target_column": "id"
+    },
+    {
+      "source_table": "citation_history",
+      "source_column": "message_id",
+      "target_table": "messages",
+      "target_column": "id"
+    },
+    {
+      "source_table": "citation_history",
+      "source_column": "document_id",
+      "target_table": "documents",
+      "target_column": "id"
+    },
+    {
+      "source_table": "discussion_replies",
+      "source_column": "discussion_id",
+      "target_table": "discussions",
+      "target_column": "id"
+    },
+    {
+      "source_table": "discussion_replies",
+      "source_column": "author_id",
+      "target_table": "users",
+      "target_column": "id"
+    },
+    {
+      "source_table": "discussion_replies",
+      "source_column": "parent_reply_id",
+      "target_table": "discussion_replies",
+      "target_column": "id"
+    },
+    {
+      "source_table": "workspace_summary_jobs",
+      "source_column": "operation_id",
+      "target_table": "chat_operations",
+      "target_column": "id"
+    },
+    {
+      "source_table": "workspace_summary_jobs",
+      "source_column": "workspace_id",
+      "target_table": "workspaces",
+      "target_column": "id"
+    },
+    {
+      "source_table": "chat_attachments",
+      "source_column": "message_id",
+      "target_table": "direct_messages",
+      "target_column": "id"
+    },
+    {
+      "source_table": "refresh_families",
+      "source_column": "user_id",
+      "target_table": "users",
+      "target_column": "id"
+    },
+    {
+      "source_table": "post_reads",
+      "source_column": "discussion_id",
+      "target_table": "discussions",
+      "target_column": "id"
+    },
+    {
+      "source_table": "post_reads",
+      "source_column": "user_id",
+      "target_table": "users",
+      "target_column": "id"
+    },
+    {
+      "source_table": "workspace_summary_outbox",
+      "source_column": "operation_id",
+      "target_table": "workspace_summary_jobs",
+      "target_column": "operation_id"
+    }
+  ]
+}
