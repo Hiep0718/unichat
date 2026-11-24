@@ -1,50 +1,50 @@
 /**
- * Left navigation rail, the same inside a group as outside one.
+ * Desktop left navigation rail (68px resting, 248px elevated overlay on hover/focus).
  *
- * It carries the global destinations (Feed, Groups, Messages, Account) and the
- * groups you belong to. Opening a group marks it in that list and shows its
- * assistant beneath it; the group's own content — posts, files, members,
- * about — belongs to the tab bar on the group page. A separate in-group
- * sidebar used to replace all of this, so entering a group cut off the feed,
- * messages and every other group until one pressed "Đổi nhóm".
+ * Layout hierarchy:
+ *  1. Fixed brand header
+ *  2. Fixed global primary destinations (Feed, AI Assistant, All Groups, Messages, Account, Admin)
+ *  3. Independent scrollable zone: active group context (inside a workspace) + joined groups
+ *  4. Fixed footer utilities (Theme, Notifications, User profile & Logout)
  */
-
 import { useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import { authApi } from '../features/auth/api/auth-api';
 import { useAuth } from '../features/auth/auth-context';
-import { EntityAvatar } from './entity-avatar';
-import { Icon } from './icon';
 import { NotificationBell } from '../features/community/notification-bell';
-import { ThemeToggle } from './theme-toggle';
-import { withActiveGroup } from './side-nav-group-list';
-import { SideNavGroups } from './side-nav-groups';
 import { useOptionalWorkspace } from '../features/workspaces/workspace-context';
 import { useWorkspaces } from '../features/workspaces/workspace-hooks';
 import logoWhite from '../assets/logo-white.png';
+import { EntityAvatar } from './entity-avatar';
+import { Icon } from './icon';
+import {
+  isAuthoritativeAdmin,
+  isNavPathActive,
+  otherJoinedGroups,
+  withActiveGroup,
+} from './side-nav-group-list';
+import { SideNavGroups } from './side-nav-groups';
+import { SideNavWorkspaceContext } from './side-nav-workspace-context';
+import { ThemeToggle } from './theme-toggle';
 import './side-nav-bar.css';
 
-interface NavItem {
+interface PrimaryNavConfig {
   readonly icon: string;
   readonly label: string;
   readonly href: string;
-  readonly isActive: boolean;
+  readonly exact?: boolean;
+  readonly variant?: 'ai';
 }
 
-const GLOBAL_NAV_CONFIG = [
+const PRIMARY_NAV_CONFIG: readonly PrimaryNavConfig[] = [
   { icon: 'dynamic_feed', label: 'Bảng tin', href: '/feed' },
-  { icon: 'workspaces', label: 'Tất cả nhóm', href: '/workspaces' },
+  { icon: 'auto_awesome', label: 'Trợ lý AI', href: '/chat', exact: true, variant: 'ai' },
+  { icon: 'workspaces', label: 'Workspace', href: '/workspaces', exact: true },
   { icon: 'forum', label: 'Tin nhắn', href: '/work-chat' },
-  { icon: 'person', label: 'Tài khoản', href: '/account' },
-] as const;
+];
 
-/**
- * Renders the responsive fixed sidebar navigation with contextual workspace switching.
- *
- * The rail rests at icon width and expands over the content on hover, so there
- * is no collapse button: nothing to find, and no remembered state to drift.
- */
+/** Renders the fixed desktop overlay sidebar navigation. */
 export function SideNavBar() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -54,29 +54,29 @@ export function SideNavBar() {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
 
   const workspaceCtx = useOptionalWorkspace();
+  const activeWorkspace = workspaceId ? workspaceCtx?.workspace ?? null : null;
+  const isAdmin = isAuthoritativeAdmin(user);
 
-  const isAdmin =
-    user?.systemRole === 'ADMIN' ||
-    user?.email?.toLowerCase().includes('taolahiep') ||
-    user?.displayName?.toLowerCase().includes('taolahiep') ||
-    user?.email?.toLowerCase().includes('admin');
-  const openGroup = workspaceId && workspaceCtx?.workspace
-    ? { id: workspaceId, name: workspaceCtx.workspace.name }
+  const openMemberGroup = activeWorkspace && workspaceCtx?.isMember
+    ? { id: activeWorkspace.id, name: activeWorkspace.name }
     : null;
-  const groups = withActiveGroup(groupPage?.content ?? [], openGroup);
-
-  const globalNavItems: readonly NavItem[] = GLOBAL_NAV_CONFIG.map((item) => ({
-    icon: item.icon,
-    label: item.label,
-    href: item.href,
-    isActive: location.pathname === item.href,
-  }));
+  const joinedGroups = withActiveGroup(
+    groupPage?.content ?? [],
+    openMemberGroup,
+    Boolean(workspaceCtx?.isMember),
+  );
+  const quickSwitchGroups = activeWorkspace
+    ? otherJoinedGroups(joinedGroups, activeWorkspace.id)
+    : joinedGroups;
+  const quickSwitchTotal = activeWorkspace && workspaceCtx?.isMember && groupPage?.totalElements !== undefined
+    ? Math.max(0, groupPage.totalElements - 1)
+    : groupPage?.totalElements;
 
   const handleLogout = async () => {
     try {
       await authApi.logout();
     } catch {
-      // Ignore network errors to guarantee client-side logout
+      // Ignore network errors so client session always clears cleanly.
     } finally {
       clearToken();
       navigate('/login');
@@ -84,17 +84,14 @@ export function SideNavBar() {
   };
 
   return (
-    // Rests as an icon rail and opens on hover or keyboard focus (CSS). The
-    // notification panel pins it open so moving onto the panel keeps it there.
     <nav
       className={`side-nav${notificationsOpen ? ' side-nav--expanded' : ''}`}
       aria-label="Thanh điều hướng chính"
     >
-      {/* Header Zone */}
       <div className="side-nav__header">
         <Link to="/feed" className="side-nav__brand-link" title="UniChat AI Platform">
           <div className="side-nav__avatar">
-            <img src={logoWhite} alt="UniChat Logo" width="22" height="22" style={{ objectFit: 'contain' }} />
+            <img src={logoWhite} alt="UniChat Logo" width="22" height="22" className="side-nav__logo-img" />
           </div>
           <div className="side-nav__brand-info">
             <p className="side-nav__title">UniChat</p>
@@ -103,58 +100,83 @@ export function SideNavBar() {
         </Link>
       </div>
 
-      {/* Items Zone */}
-      <div className="side-nav__items">
-        {globalNavItems.map((item) => (
-          <Link
-            key={item.href}
-            to={item.href}
-            className={`side-nav__item ${item.isActive ? 'side-nav__item--active' : ''}`}
-            title={item.label}
-          >
-            <Icon name={item.icon} size={20} rounded />
-            <span className="side-nav__label">{item.label}</span>
-          </Link>
-        ))}
+      <div className="side-nav__primary" aria-label="Điều hướng toàn cục">
+        {PRIMARY_NAV_CONFIG.map((item) => {
+          const active = isNavPathActive(location.pathname, item.href, item.exact);
+          return (
+            <Link
+              key={item.href}
+              to={item.href}
+              className={`side-nav__item${item.variant === 'ai' ? ' side-nav__item--ai' : ''}${active ? ' side-nav__item--active' : ''}`}
+              title={item.label}
+              aria-current={active ? 'page' : undefined}
+            >
+              <span className="side-nav__icon-wrap">
+                <Icon name={item.icon} size={20} rounded />
+              </span>
+              <span className="side-nav__label">{item.label}</span>
+            </Link>
+          );
+        })}
 
         {isAdmin && (
           <Link
             to="/admin/ai-studio"
-            className={`side-nav__item side-nav__item--admin ${location.pathname.startsWith('/admin') ? 'side-nav__item--active' : ''}`}
+            className={`side-nav__item side-nav__item--admin${isNavPathActive(location.pathname, '/admin') ? ' side-nav__item--active' : ''}`}
             title="Quản trị viên"
             data-testid="admin-nav-item"
           >
-            <Icon name="admin_panel_settings" size={20} rounded />
+            <span className="side-nav__icon-wrap">
+              <Icon name="admin_panel_settings" size={20} rounded />
+            </span>
             <span className="side-nav__label">Quản trị viên</span>
           </Link>
         )}
-
-        <SideNavGroups groups={groups} activeGroupId={workspaceId} />
       </div>
 
-      {/* Footer Zone */}
+      <div className="side-nav__divider" aria-hidden="true" />
+
+      <div className="side-nav__scroll">
+        {activeWorkspace && workspaceCtx && (
+          <SideNavWorkspaceContext
+            workspace={activeWorkspace}
+            role={workspaceCtx.role}
+            isMember={workspaceCtx.isMember}
+            canEdit={workspaceCtx.canEdit}
+          />
+        )}
+        <SideNavGroups
+          groups={quickSwitchGroups}
+          totalCount={quickSwitchTotal}
+          sectionTitle={activeWorkspace ? 'Chuyển Workspace' : 'Workspace của bạn'}
+          activeGroupId={activeWorkspace ? undefined : workspaceId}
+        />
+      </div>
+
       <div className="side-nav__footer">
         <ThemeToggle />
         <NotificationBell onOpenChange={setNotificationsOpen} />
-        <div className="side-nav__user">
-          <EntityAvatar
-            name={user?.displayName || user?.email || '?'}
-            {...(user?.id ? { userId: user.id } : {})}
-            shape="circle"
-            size={32}
-          />
-          <div className="side-nav__user-text">
-            {/* Dự phòng bằng phần đầu email chứ không phải chữ "Tài khoản":
-                mục điều hướng ngay trên đã mang đúng chữ đó, và hai thứ cùng tên
-                trong một thanh bên thì không ai biết đâu là đâu. */}
-            <p className="side-nav__user-name">
-              {user?.displayName || user?.email?.split('@')[0] || '—'}
-            </p>
-            {/* Email chứ không phải vai trò: SessionUser chỉ có systemRole
-                USER/ADMIN, không có khái niệm sinh viên như mockup vẽ, và email
-                còn hữu ích khi một người dùng nhiều tài khoản. */}
-            <p className="side-nav__user-sub" title={user?.email}>{user?.email}</p>
-          </div>
+        <div className={`side-nav__user${isNavPathActive(location.pathname, '/account') ? ' side-nav__user--active' : ''}`}>
+          <Link
+            to="/account"
+            className="side-nav__user-link"
+            title="Tài khoản"
+            aria-label={`Tài khoản — ${user?.displayName || user?.email?.split('@')[0] || 'Cá nhân'}`}
+            aria-current={isNavPathActive(location.pathname, '/account') ? 'page' : undefined}
+          >
+            <EntityAvatar
+              name={user?.displayName || user?.email || '?'}
+              {...(user?.id ? { userId: user.id } : {})}
+              shape="circle"
+              size={32}
+            />
+            <div className="side-nav__user-text">
+              <p className="side-nav__user-name">
+                {user?.displayName || user?.email?.split('@')[0] || '—'}
+              </p>
+              <p className="side-nav__user-sub" title={user?.email}>{user?.email}</p>
+            </div>
+          </Link>
           <button
             type="button"
             className="side-nav__user-out"

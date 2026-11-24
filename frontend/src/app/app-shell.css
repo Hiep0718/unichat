@@ -16,35 +16,20 @@
   max-height: 100vh;
   overflow-y: auto;
   margin-left: 0;
-  transition: margin-left var(--rail-motion);
+  padding-bottom: 64px;
 
   /* The room for the scrollbar is held whether or not one is needed. Pages
      inside here are centred on a max-width, so a tab tall enough to scroll
      narrowed this box by the scrollbar's width and moved everything sideways
-     by half of it — then moved it back on a tab that fits. Switching tabs
-     looked like the layout twitching, and it was. */
+     by half of it — then moved it back on a tab that fits. */
   scrollbar-gutter: stable;
 }
 
 @media (min-width: 768px) {
+  /* Content always reserves only the 68px resting rail; expanding the sidebar
+     overlays cleanly with elevation shadow so the page never shifts or reflows. */
   .app-shell__main {
     margin-left: var(--rail-width);
-  }
-
-  /* Khi thanh bên nở, nội dung trượt sang cùng nhịp và cùng độ trễ với nó,
-     nên không phần nào của trang bị che. Nhờ vậy cột lịch sử của Trợ lý AI
-     cũng chỉ dịch sang chứ không bị đè, và không cần ngoại lệ riêng cho nó. */
-  .app-shell:has(.side-nav:hover, .side-nav--expanded, .side-nav :focus-visible) .app-shell__main {
-    margin-left: var(--sidebar-width);
-  }
-
-  .app-shell:has(.side-nav:hover) .app-shell__main {
-    transition-delay: var(--rail-open-delay);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .app-shell__main {
-    transition: none;
+    padding-bottom: 0;
   }
 }

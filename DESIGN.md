@@ -106,7 +106,7 @@ rounded:
 spacing:
   container-max: 1440px
   rail-width: 68px
-  sidebar-width: 224px
+  sidebar-width: 260px
   gutter: 24px
   margin-mobile: 16px
   stack-sm: 8px
@@ -127,7 +127,7 @@ Nguồn sự thật là `frontend/src/styles/index.css`. Các mục phía dướ
 - **Chữ:** IBM Plex Sans cho giao diện, Source Serif 4 chỉ cho lời chào và minh họa trang đăng nhập. Tiêu đề trang dùng `--font-page-title` (24px, đậm 700).
 - **Đầu trang cấp một** (Bảng tin, Tin nhắn, Tài khoản): dùng `PageHeader` (`components/page-header.tsx`) với tiêu đề, một câu mô tả và nút hành động bên phải (`page-header__button`, thêm `--secondary` cho nút phụ). Nội dung đặt trong khung `--page-max`, căn giữa và bám mép trái của khung.
 - **Icon:** chỉ Material Symbols (`<Icon>`), không dùng emoji làm icon.
-- **Thuật ngữ:** gọi là "nhóm", không dùng "Workspace" hay "Knowledge Space" trong chữ hiển thị.
+- **Thuật ngữ:** gọi không gian tri thức/môn học là **"Workspace"** (khớp với định vị AI RAG Workspace, báo cáo và tài liệu kỹ thuật), giữ chữ **"nhóm chat"** riêng cho cuộc trò chuyện nhiều người trong mục Tin nhắn (`/work-chat`) để không lẫn khái niệm.
 - **Trang lỗi:** dùng `ErrorState` (`features/errors/error-state.tsx`).
 
 **Mobile (`mobile/src/design/tokens.ts`):** `palette` là bản chép tay của lớp màu gốc ở trên, giữ tên biến dạng camelCase (`--muc-nhat` là `palette.mucNhat`); mọi bảng màu khác của mobile trỏ vào nó, và `__tests__/design/palette-sync.test.ts` báo lỗi khi hai bên lệch nhau. Nút dùng `button.*` (tương ứng `--btn-*`), thẻ nổi bật dùng `noiBat.*`, tiêu đề dải đầu dùng `typography.pageTitle`, tên font lấy từ `fonts`. Mobile chưa có chế độ tối và vẫn dùng Inter.
@@ -158,7 +158,7 @@ This design system utilizes **Inter** exclusively to ensure maximum legibility a
 
 ## Layout & Spacing
 The layout follows a **Fixed-Fluid Hybrid** model.
-- **Desktop (1440px):** Features a fixed left icon rail (68px) that expands to 224px with labels on hover or keyboard focus; the main content slides aside in step with it, so nothing is covered. There is no collapse button. The main content is a fluid area for RAG analysis. Tables and chat interfaces utilize a 12-column grid.
+- **Desktop (1440px):** Features a fixed left icon rail (68px) that expands to 260px as an elevated overlay on hover or keyboard focus without shifting or reflowing main content. Global primary links stay pinned above an independent scrollable workspace/group area. The main content is a fluid area for RAG analysis. Tables and chat interfaces utilize a 12-column grid.
 - **Mobile (390px):** The sidebar collapses into a bottom navigation bar or a hamburger menu. Content transitions to a single-column stack with 16px side margins.
 - **Rhythm:** An 8px base grid governs all padding and margins to maintain strict alignment in data-heavy views.
 

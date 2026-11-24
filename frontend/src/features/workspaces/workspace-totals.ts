@@ -30,7 +30,7 @@ export function summariseWorkspaces(
   );
 
   return [
-    { key: 'workspaces', label: 'Nhóm', value: workspaces.length },
+    { key: 'workspaces', label: 'Workspace', value: workspaces.length },
     { key: 'documents', label: 'Tài liệu', value: totals.documents },
     { key: 'members', label: 'Thành viên', value: totals.members },
   ];

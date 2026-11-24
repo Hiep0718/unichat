@@ -79,7 +79,7 @@ export function WorkspaceForm({ open, onClose }: WorkspaceFormProps) {
       >
         <div className="modal-dialog__header">
           <h2 id={`${formId}-title`} className="modal-dialog__title">
-            Tạo nhóm mới
+            Tạo Workspace mới
           </h2>
           <button
             className="modal-dialog__close"
@@ -94,7 +94,7 @@ export function WorkspaceForm({ open, onClose }: WorkspaceFormProps) {
         <form onSubmit={handleSubmit} className="workspace-form">
           <div className="workspace-form__field">
             <label htmlFor={`${formId}-name`} className="workspace-form__label">
-              Tên nhóm <span className="workspace-form__required">*</span>
+              Tên Workspace <span className="workspace-form__required">*</span>
             </label>
             <input
               id={`${formId}-name`}
@@ -118,7 +118,7 @@ export function WorkspaceForm({ open, onClose }: WorkspaceFormProps) {
               className="workspace-form__textarea"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Mô tả ngắn gọn về nhóm này..."
+              placeholder="Mô tả ngắn gọn về Workspace này..."
               maxLength={1000}
               rows={3}
             />
@@ -178,7 +178,7 @@ export function WorkspaceForm({ open, onClose }: WorkspaceFormProps) {
               type="submit"
               disabled={mutation.isPending}
             >
-              {mutation.isPending ? 'Đang tạo...' : 'Tạo nhóm'}
+              {mutation.isPending ? 'Đang tạo...' : 'Tạo Workspace'}
             </button>
           </div>
         </form>

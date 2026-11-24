@@ -17,7 +17,7 @@ const VISIBILITY = {
 } as const;
 
 const FALLBACK_DESCRIPTION =
-  'Nơi lưu trữ giáo trình, tài liệu học tập và hỏi đáp có trích dẫn nguồn cho cả nhóm.';
+  'Nơi lưu trữ giáo trình, tài liệu học tập và hỏi đáp có trích dẫn nguồn cho Workspace.';
 
 interface HeroProps {
   readonly workspace: WorkspaceDetails;
@@ -39,7 +39,9 @@ function OverviewHero({ workspace, canEdit }: HeroProps) {
               <Icon name={visibility.icon} size={14} />
               {visibility.label}
             </span>
-            <span className="ws-overview-badge">{ROLE_LABELS[workspace.role]}</span>
+            <span className="ws-overview-badge">
+              {workspace.role ? ROLE_LABELS[workspace.role] : 'Chưa tham gia'}
+            </span>
           </div>
           <p className="ws-overview-hero__desc">{workspace.description || FALLBACK_DESCRIPTION}</p>
         </div>
@@ -47,7 +49,7 @@ function OverviewHero({ workspace, canEdit }: HeroProps) {
       {canEdit && (
         <Link to={`/workspaces/${workspace.id}/settings`} className="ws-overview-hero__settings-btn">
           <Icon name="settings" size={18} />
-          Cài đặt nhóm
+          Cài đặt Workspace
         </Link>
       )}
     </header>
@@ -116,14 +118,14 @@ function hubsFor(workspaceId: string, canEdit: boolean): readonly Hub[] {
     {
       to: `/workspaces/${workspaceId}/chat`, icon: 'forum', primary: true,
       title: 'Hỏi đáp với trợ lý AI', action: 'Bắt đầu hỏi',
-      description: 'Đặt câu hỏi và nhận câu trả lời kèm trích dẫn từ chính tài liệu của nhóm.',
+      description: 'Đặt câu hỏi và nhận câu trả lời kèm trích dẫn từ chính tài liệu của Workspace.',
     },
     {
       to: `/workspaces/${workspaceId}/documents`, icon: 'upload_file',
       title: 'Quản lý tài liệu', action: 'Mở kho tài liệu',
       description: canEdit
         ? 'Tải lên giáo trình PDF, DOCX, TXT để trợ lý có thêm nguồn trích dẫn.'
-        : 'Xem các tài liệu của nhóm mà trợ lý đang dùng làm nguồn.',
+        : 'Xem các tài liệu của Workspace mà trợ lý đang dùng làm nguồn.',
     },
     {
       to: `/workspaces/${workspaceId}/conversations`, icon: 'history',
@@ -138,8 +140,8 @@ function SecurityNotes({ isOwner }: { readonly isOwner: boolean }) {
     <>Chỉ tài liệu <strong>đã xử lý xong</strong> mới được trợ lý dùng làm nguồn trả lời.</>,
     <>Quyền đọc tài liệu được <strong>Core API</strong> kiểm tra trước khi câu hỏi tới dịch vụ AI.</>,
     isOwner
-      ? <>Bạn là <strong>chủ sở hữu</strong> nhóm: bạn quản lý thành viên và cấu hình quyền.</>
-      : <>Bạn tham gia nhóm với tư cách <strong>thành viên</strong>.</>,
+      ? <>Bạn là <strong>chủ sở hữu</strong> Workspace: bạn quản lý thành viên và cấu hình quyền.</>
+      : <>Bạn tham gia Workspace với tư cách <strong>thành viên</strong>.</>,
   ];
   return (
     <section className="ws-overview-security-card">

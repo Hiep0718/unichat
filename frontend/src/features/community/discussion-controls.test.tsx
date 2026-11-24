@@ -49,6 +49,7 @@ beforeEach(() => {
   vi.spyOn(workspaceContext, 'useWorkspace').mockReturnValue({
     workspace: null,
     role: 'OWNER',
+    isMember: true,
     isOwner: true,
     canEdit: true,
     canContribute: true,

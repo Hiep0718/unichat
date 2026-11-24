@@ -142,7 +142,7 @@ describe('LoadingFlow', () => {
 
     expect(screen.getByRole('status')).toBe(indicator);
     expect(indicator.querySelector('img')).toBe(emblem);
-    expect(screen.getByText('Đang tải thông tin nhóm...')).toBeInTheDocument();
+    expect(screen.getByText('Đang tải thông tin Workspace...')).toBeInTheDocument();
     expect(fetchWorkspace).toHaveBeenCalledWith('demo');
 
     await act(async () => {
@@ -176,8 +176,8 @@ describe('LoadingFlow', () => {
     await waitFor(() => {
       expect(screen.queryByRole('status')).not.toBeInTheDocument();
     });
-    expect(screen.getByRole('heading', { name: 'Không thể tải thông tin nhóm' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Quay lại danh sách nhóm' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Không thể tải thông tin Workspace' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Quay lại danh sách Workspace' })).toBeInTheDocument();
   });
 
   it('should release the loading screen and redirect after session restoration fails', () => {

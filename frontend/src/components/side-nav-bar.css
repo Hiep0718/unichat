@@ -1,4 +1,4 @@
-/* Side Navigation Bar — Hover Expandable / Collapsible Sidebar */
+/* Side Navigation Bar — Fixed 68px Icon Rail with Elevated Overlay Expansion */
 
 .side-nav {
   display: none;
@@ -8,56 +8,72 @@
   width: var(--rail-width);
   height: 100vh;
   flex-direction: column;
-  padding: 16px 12px;
-  gap: 12px;
-  /* Thanh bên là một mảng màu đặc, không phải một vùng giấy sẫm hơn.
-     Lúc nghỉ chỉ rộng 68px và hiện biểu tượng; rê chuột vào thì nở ra
-     (xem "Nở ra khi rê chuột" cuối tệp). */
+  padding: 10px 10px;
+  gap: 6px;
   background: var(--ray-nen);
   color: var(--ray-muc);
+  border-right: 1px solid rgb(255 255 255 / 8%);
   overflow: hidden;
-  z-index: 100;
+  z-index: 120;
   white-space: nowrap;
-  transition: width var(--rail-motion), background 0.2s ease;
+  transition: width var(--rail-motion), box-shadow var(--rail-motion), background 0.2s ease;
 }
 
-/* Ghim mở trong lúc bảng thông báo đang mở, để rời chuột sang bảng đó
-   không làm thanh bên thu lại dưới tay người đọc. */
+.side-nav:hover,
+.side-nav:has(:focus-visible),
 .side-nav--expanded {
   width: var(--sidebar-width);
+  box-shadow: 12px 0 36px rgb(7 12 28 / 32%), 1px 0 0 rgb(255 255 255 / 10%);
 }
+
+.side-nav:hover {
+  transition-delay: var(--rail-open-delay);
+}
+
+/* ---------- 1. Brand Header (Fixed) ---------- */
 
 .side-nav__header {
   display: flex;
   align-items: center;
-  padding: 6px 4px;
-  margin-bottom: 8px;
+  flex-shrink: 0;
+  padding: 2px 6px 4px;
 }
 
 .side-nav__brand-link {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 11px;
   text-decoration: none;
   color: inherit;
   width: 100%;
+  min-width: 0;
 }
 
 .side-nav__avatar {
-  width: 40px;
-  height: 40px;
-  min-width: 40px;
-  border-radius: 13px;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  flex-shrink: 0;
+  border-radius: 11px;
   background: var(--ray-nhan);
   color: var(--ray-nen);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  transition: transform var(--transition-fast);
+}
+
+.side-nav__logo-img {
+  object-fit: contain;
 }
 
 .side-nav__brand-link:hover .side-nav__avatar {
   transform: translateY(-1px);
+}
+
+.side-nav__brand-info {
+  min-width: 0;
+  overflow: hidden;
 }
 
 .side-nav__title {
@@ -76,47 +92,87 @@
   margin: 0;
 }
 
-/* Nav Items */
-.side-nav__items {
+/* ---------- 2. Global Primary Nav (Always Pinned, Never Scrolls) ---------- */
+
+.side-nav__primary {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.side-nav__divider {
+  height: 1px;
+  flex-shrink: 0;
+  margin: 2px 10px;
+  background: rgb(255 255 255 / 10%);
+}
+
+/* ---------- 3. Independent Scroll Area (Active Workspace + Joined Groups) ---------- */
+
+.side-nav__scroll {
   display: flex;
   flex-direction: column;
   gap: 6px;
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
 }
 
-/* Section label ("Nhóm"). Hidden while the rail is collapsed, where a divider
-   carries the grouping instead. */
-.side-nav__section {
-  margin: 14px 0 2px;
-  font: var(--font-label-sm);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--ray-muc-nhat);
+/* Firefox fallback: avoids overriding custom arrowless ::-webkit-scrollbar in Chromium 121+. */
+@supports not selector(::-webkit-scrollbar) {
+  .side-nav__scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(255 255 255 / 22%) transparent;
+  }
 }
 
-/* Quy tắc thu nhãn mục thành một vạch 1px với font-size: 0 đã bỏ.
-   Nó dành cho lúc thanh bên đang thu; thanh bên giờ luôn mở nên điều kiện
-   :not(:hover) đúng mãi mãi, và "NHÓM CỦA BẠN" biến mất hoàn toàn. */
+.side-nav__scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.side-nav__scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.side-nav__scroll::-webkit-scrollbar-thumb {
+  background: rgb(255 255 255 / 22%);
+  border-radius: var(--radius-full);
+}
+
+.side-nav__scroll::-webkit-scrollbar-thumb:hover {
+  background: rgb(255 255 255 / 38%);
+}
+
+/* Hide scrollbars completely in resting 68px icon rail so icons stay centered. */
+.side-nav:not(:hover, :has(:focus-visible), .side-nav--expanded) .side-nav__scroll {
+  scrollbar-width: none;
+}
+
+.side-nav:not(:hover, :has(:focus-visible), .side-nav--expanded) .side-nav__scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* ---------- Shared Nav Item (Strict No-Shrink + Dead-Center 34px Rail Axis) ---------- */
 
 .side-nav__item {
-  /* Anchors the pending-approval dot while the nav is collapsed. */
   position: relative;
   display: flex;
   align-items: center;
-  gap: 13px;
-  height: 44px;
+  gap: 12px;
+  height: 34px;
+  flex-shrink: 0;
   padding: 0 12px;
   border-radius: var(--radius-full);
   color: var(--ray-muc-nhat);
   font: var(--font-body-md);
-  font-size: 14.5px;
+  font-size: 13.5px;
   font-weight: 500;
   text-decoration: none;
   transition: background var(--transition-fast), color var(--transition-fast);
   overflow: hidden;
+  min-width: 0;
 }
 
 button.side-nav__item,
@@ -127,22 +183,27 @@ button.side-nav__item,
   cursor: pointer;
   text-align: left;
   font-family: inherit;
-  font-size: 14.5px;
+  font-size: 13.5px;
   line-height: inherit;
+}
+
+button.side-nav__item:disabled {
+  opacity: 0.6;
+  cursor: wait;
 }
 
 .side-nav__icon-wrap {
   position: relative;
-  min-width: 20px;
-  width: 20px;
-  height: 20px;
+  flex-shrink: 0;
+  width: 24px;
+  min-width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .side-nav__item .material-symbols-outlined {
-  min-width: 20px;
   font-size: 20px;
   display: flex;
   align-items: center;
@@ -150,8 +211,11 @@ button.side-nav__item,
 }
 
 .side-nav__label {
-  /* Hiện thẳng. Trước đây nhãn chữ bị ẩn và chỉ lộ ra khi rê chuột vào
-     thanh bên; thanh bên giờ luôn mở nên không còn gì để lộ ra. */
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .side-nav__item:hover:not(.side-nav__item--active) {
@@ -159,163 +223,136 @@ button.side-nav__item,
   color: var(--ray-muc);
 }
 
-.side-nav__item--danger:hover {
-  background: rgb(240 119 107 / 14%);
-  color: #f0776b;
-}
-
 .side-nav__item--admin {
   color: var(--ray-muc);
   font-weight: 600;
 }
 
-.side-nav__item--admin:hover:not(.side-nav__item--active) {
-  background: var(--ray-noi);
-  color: var(--ray-muc);
-}
-
-.side-nav__item--active {
-  /* Trước đây là một linear-gradient ba điểm dừng cùng một màu — tàn tích
-     của lượt làm trầm bộ màu, vẽ ra một dải không có dải — kèm một vầng sáng
-     indigo, mà indigo thì nằm trong danh sách cấm. Mục đang mở là một mảng
-     mực phẳng. */
-  background: var(--nhan);
-  color: var(--nhan-muc);
-  font-weight: 600;
-}
-
-/* AI Assistant Navigation Highlight */
 .side-nav__item--ai {
   color: var(--ray-muc);
   font-weight: 600;
 }
 
 .side-nav__item--ai .material-symbols-outlined {
-  color: var(--ray-muc);
-  transition: transform var(--transition-fast);
-}
-
-.side-nav__item--ai:hover:not(.side-nav__item--active) {
-  background: var(--ray-noi);
-  color: var(--ray-muc);
+  color: var(--ray-nhan);
+  transition: transform var(--transition-fast), color var(--transition-fast);
 }
 
 .side-nav__item--ai:hover .material-symbols-outlined {
-  transform: scale(1.15) rotate(12deg);
+  transform: scale(1.1);
 }
 
-.side-nav__item--ai.side-nav__item--active {
+.side-nav__item--active {
   background: var(--nhan);
   color: var(--nhan-muc);
+  font-weight: 600;
 }
 
 .side-nav__item--ai.side-nav__item--active .material-symbols-outlined {
-  color: var(--ray-nen);
+  color: var(--nhan-muc);
 }
 
-/* Group row with quick AI chat action */
-.side-nav__group-row {
-  position: relative;
-  display: flex;
-  align-items: center;
-  width: 100%;
+.side-nav__item--sub {
+  height: 32px;
+  font-size: 13px;
 }
 
-.side-nav__group-row .side-nav__item {
-  width: 100%;
-  padding-right: 36px;
+.side-nav__item--join {
+  color: var(--ray-nhan);
+  font-weight: 600;
 }
 
-.side-nav__quick-chat {
-  position: absolute;
-  right: 8px;
-  width: 26px;
-  height: 26px;
-  border-radius: var(--radius-full);
-  border: none;
-  background: transparent;
+.side-nav__item--more {
   color: var(--ray-muc-nhat);
+  font-size: 13px;
+}
+
+/* ---------- Active Workspace Context Block ---------- */
+
+.side-nav__ws-section,
+.side-nav__groups-section {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  opacity: 0;
-  transform: scale(0.85);
-  transition: opacity 0.18s ease, transform 0.18s ease, background 0.18s ease, color 0.18s ease;
-  z-index: 2;
+  flex-direction: column;
+  gap: 3px;
+  flex-shrink: 0;
 }
 
-.side-nav__group-row:hover .side-nav__quick-chat,
-.side-nav__group-row--active .side-nav__quick-chat {
-  opacity: 0.85;
-  transform: scale(1);
+.side-nav__ws-section {
+  padding: 4px 0 6px;
+  border-radius: var(--radius-lg);
+  transition: background var(--transition-fast), box-shadow var(--transition-fast);
 }
 
-.side-nav__quick-chat:hover {
-  opacity: 1 !important;
-  background: rgba(2, 132, 199, 0.16);
+.side-nav:is(:hover, :has(:focus-visible), .side-nav--expanded) .side-nav__ws-section {
+  background: rgb(255 255 255 / 4%);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 8%);
+}
+
+.side-nav__ws-head {
+  height: 42px;
   color: var(--ray-muc);
-  transform: scale(1.15) !important;
+  font-weight: 600;
 }
 
-.side-nav__group-row--active .side-nav__quick-chat {
-  color: var(--ray-nen);
+.side-nav__ws-meta {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  line-height: 1.25;
 }
 
-.side-nav__group-row--active .side-nav__quick-chat:hover {
-  background: rgba(255, 255, 255, 0.28);
-  color: var(--ray-nen);
+.side-nav__ws-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13.5px;
+  font-weight: 600;
 }
 
-.side-nav__item--active .group-mark {
+.side-nav__ws-role {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ray-muc-nhat);
 }
 
-/* The open group's assistant, one step below the group. The icon stays in
-   the rail's column like every other icon; the smaller row and the lighter
-   mark say it belongs to the group above rather than standing beside it. */
-.side-nav__group {
+.side-nav__ws-head.side-nav__item--active .side-nav__ws-role {
+  color: var(--nhan-muc);
+  opacity: 0.85;
+}
+
+.side-nav__ws-nav {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
-.side-nav__item--sub {
-  height: 38px;
-  font-size: 13.5px;
-}
-
-.side-nav__item--sub.side-nav__item--current {
-  background: var(--ray-noi);
-  color: var(--ray-nhan);
-}
-
-.side-nav__footer {
-  margin-top: auto;
-  padding-top: 12px;
-  border-top: 1px solid rgb(255 255 255 / 10%);
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-@media (min-width: 768px) {
-  .side-nav {
-    display: flex;
-  }
-}
-
-/* ---------- Tiêu đề mục nhóm, kèm nút tạo ---------- */
+/* ---------- Section Titles (Collapse to Subtle Hairline in 68px Rail) ---------- */
 
 .side-nav__section-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding-inline: 10px;
+  flex-shrink: 0;
+  padding: 6px 12px 2px;
+  min-height: 24px;
+  transition: min-height var(--transition-fast), padding var(--transition-fast), margin var(--transition-fast);
 }
 
-.side-nav__section-row .side-nav__section {
-  padding-inline: 0;
+.side-nav__section {
+  margin: 0;
+  font: var(--font-label-sm);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ray-muc-nhat);
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .side-nav__section-add {
@@ -340,16 +377,46 @@ button.side-nav__item,
   outline-offset: 2px;
 }
 
-/* ---------- Hàng người dùng ở chân ---------- */
+/* ---------- 4. Footer Zone (Always Pinned) ---------- */
+
+.side-nav__footer {
+  margin-top: auto;
+  padding-top: 6px;
+  border-top: 1px solid rgb(255 255 255 / 10%);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex-shrink: 0;
+}
 
 .side-nav__user {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px;
-  margin-top: 4px;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 6px 8px;
+  margin-top: 2px;
   border-radius: var(--radius-lg);
   background: var(--ray-noi);
+  transition: background var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.side-nav__user:hover {
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 14%);
+}
+
+.side-nav__user--active {
+  box-shadow: inset 0 0 0 1.5px var(--ray-nhan);
+}
+
+.side-nav__user-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  text-decoration: none;
+  color: inherit;
 }
 
 .side-nav__user-text {
@@ -360,8 +427,6 @@ button.side-nav__item,
 .side-nav__user-name,
 .side-nav__user-sub {
   margin: 0;
-  /* Cả hai dòng đều cắt bớt thay vì xuống dòng: một email dài sẽ đẩy
-     nút đăng xuất ra khỏi thanh bên. */
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -369,6 +434,7 @@ button.side-nav__item,
 
 .side-nav__user-name {
   font: var(--font-label-md);
+  font-size: 13.5px;
   font-weight: 600;
   color: var(--ray-muc);
 }
@@ -394,7 +460,7 @@ button.side-nav__item,
 
 .side-nav__user-out:hover {
   background: rgb(240 119 107 / 16%);
-  color: #f0776b;
+  color: var(--color-error);
 }
 
 .side-nav__user-out:focus-visible {
@@ -402,51 +468,18 @@ button.side-nav__item,
   outline-offset: 2px;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .side-nav__section-add,
-  .side-nav__user-out {
-    transition: none;
-  }
-}
+/* ---------- Resting 68px Collapsed Label Hiding (Must Stay Behind :not(:hover)) ---------- */
 
-/* ---------- Nở ra khi rê chuột ---------- */
-
-/* Lúc nghỉ thanh bên rộng 68px và chỉ hiện biểu tượng; rê chuột vào thì nở
-   ra 224px. Nội dung trượt sang theo cùng nhịp (app-shell.css) chứ không bị
-   thanh bên đè lên: bản đè từng che mất phần đầu của nhiều trang. Không còn
-   nút thu gọn.
-
-   Biểu tượng đứng yên ở cả hai trạng thái: đệm 12px của thanh bên cộng đệm
-   12px của mục đặt tâm biểu tượng 20px ở đúng 34px, giữa ô 68px. Chỉ có
-   chữ hiện ra, nên mắt không phải dò lại vị trí.
-
-   Nở ra sau 120ms chứ không ngay: chuột lướt qua mép trái trên đường tới
-   nội dung không làm bung thanh bên và xô cả trang. Thu lại thì tức thì.
-
-   Bàn phím mở bằng :focus-visible chứ không phải :focus-within: bấm chuột
-   vào một mục cũng để lại tiêu điểm trên mục đó, và với :focus-within thanh
-   bên sẽ cứ mở mãi sau khi chuột đã rời đi. */
-.side-nav:hover,
-.side-nav:has(:focus-visible),
-.side-nav--expanded {
-  width: var(--sidebar-width);
-}
-
-.side-nav:hover {
-  transition-delay: var(--rail-open-delay);
-}
-
-/* Phần chỉ có nghĩa khi đã nở: ẩn bằng opacity để lúc mở thì hiện dần,
-   kèm visibility để nút đăng xuất và nút tạo nhóm không bấm được khi vô hình. */
 .side-nav :is(
   .side-nav__label,
   .side-nav__brand-info,
   .side-nav__section,
   .side-nav__section-add,
+  .side-nav__ws-meta,
   .side-nav__user-text,
   .side-nav__user-out
 ) {
-  transition: opacity 0.18s ease, visibility 0.18s;
+  transition: opacity 0.16s ease, visibility 0.16s;
 }
 
 .side-nav:not(:hover, :has(:focus-visible), .side-nav--expanded) :is(
@@ -454,6 +487,7 @@ button.side-nav__item,
   .side-nav__brand-info,
   .side-nav__section,
   .side-nav__section-add,
+  .side-nav__ws-meta,
   .side-nav__user-text,
   .side-nav__user-out
 ) {
@@ -461,20 +495,39 @@ button.side-nav__item,
   visibility: hidden;
 }
 
+.side-nav:not(:hover, :has(:focus-visible), .side-nav--expanded) .side-nav__section-row {
+  min-height: 0;
+  height: 1px;
+  padding: 0;
+  margin: 4px 10px;
+  background: rgb(255 255 255 / 10%);
+  overflow: hidden;
+}
+
 .side-nav:hover :is(
   .side-nav__label,
   .side-nav__brand-info,
   .side-nav__section,
   .side-nav__section-add,
+  .side-nav__ws-meta,
   .side-nav__user-text,
   .side-nav__user-out
 ) {
   transition-delay: var(--rail-open-delay);
 }
 
+@media (min-width: 768px) {
+  .side-nav {
+    display: flex;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .side-nav,
-  .side-nav:hover {
+  .side-nav:hover,
+  .side-nav__section-row,
+  .side-nav__section-add,
+  .side-nav__user-out {
     transition: none;
   }
 }

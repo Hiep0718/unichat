@@ -12,7 +12,7 @@ import { Link, NavLink, Outlet, useNavigate, useParams } from 'react-router-dom'
 import { Icon } from '../../components/icon';
 import { GroupMark } from './components/group-mark';
 import { useWorkspace } from './workspace-context';
-import { useWorkspace as useWorkspaceQuery } from './workspace-hooks';
+import { useJoinWorkspace, useWorkspace as useWorkspaceQuery } from './workspace-hooks';
 import { CoverBanner } from './components/cover-banner';
 import { GroupTabSkeleton } from './components/group-tab-skeleton';
 import { PendingApprovalBadge } from '../documents/components/pending-approval-badge';
@@ -41,8 +41,9 @@ const TABS: readonly {
 
 export function GroupPage() {
   const { workspaceId = '' } = useParams<{ workspaceId: string }>();
-  const { workspace, canEdit, isOwner } = useWorkspace();
+  const { workspace, isMember, canEdit, isOwner } = useWorkspace();
   const { data: details } = useWorkspaceQuery(workspaceId);
+  const joinMutation = useJoinWorkspace();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -72,7 +73,7 @@ export function GroupPage() {
                 <Link
                   to={`/workspaces/${workspaceId}/settings?tab=access`}
                   className="group-page__visibility-link"
-                  title="Đổi chế độ hiển thị của nhóm"
+                  title="Đổi chế độ hiển thị của Workspace"
                 >
                   <Icon name={visibilityOption(workspace.visibility).icon} size={15} />
                   {visibilityOption(workspace.visibility).groupLabel}
@@ -96,14 +97,26 @@ export function GroupPage() {
         </div>
 
         <div className="group-page__actions">
-          <button
-            type="button"
-            className="group-page__assistant"
-            onClick={() => navigate(`/workspaces/${workspaceId}/chat`)}
-          >
-            <Icon name="auto_awesome" size={18} />
-            Trợ lý AI
-          </button>
+          {isMember ? (
+            <button
+              type="button"
+              className="group-page__assistant"
+              onClick={() => navigate(`/workspaces/${workspaceId}/chat`)}
+            >
+              <Icon name="auto_awesome" size={18} />
+              Trợ lý AI
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="group-page__assistant"
+              disabled={joinMutation.isPending}
+              onClick={() => joinMutation.mutate(workspaceId)}
+            >
+              <Icon name="group_add" size={18} />
+              {joinMutation.isPending ? 'Đang tham gia...' : 'Tham gia Workspace'}
+            </button>
+          )}
 
           <div className="group-page__menu-wrap">
             <button
@@ -131,7 +144,7 @@ export function GroupPage() {
           the head of this row and navigate away to a full-screen page,
           dropping the tab bar it appeared to belong to; it is the button in
           the header instead, where leaving is what a button is for. */}
-      <nav className="group-page__tabs" aria-label="Mục của nhóm">
+      <nav className="group-page__tabs" aria-label="Mục của Workspace">
         {TABS.map((tab) => (
           <NavLink
             key={tab.path}
@@ -197,7 +210,7 @@ function GroupMenu({ workspaceId, canEdit, onClose }: GroupMenuProps) {
             </button>
             <button type="button" role="menuitem" onClick={() => go('settings')}>
               <Icon name="settings" size={17} />
-              Cài đặt nhóm
+              Cài đặt Workspace
             </button>
           </>
         )}

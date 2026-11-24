@@ -75,7 +75,7 @@ export function WelcomeBanner({ workspaces = [] }: WelcomeBannerProps) {
         </h1>
 
         <p className="welcome-banner__subtitle">
-          Quản lý và khám phá các không gian tri thức của bạn — hoặc hỏi UniChat
+          Quản lý và khám phá các Workspace của bạn — hoặc hỏi UniChat
           bất cứ điều gì trong tài liệu đã có.
         </p>
 

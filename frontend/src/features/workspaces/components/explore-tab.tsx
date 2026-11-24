@@ -67,10 +67,10 @@ export function ExploreTab() {
       <div className="explore-tab__header">
         <h3 className="explore-tab__title">
           <Icon name="travel_explore" size={20} />
-          Khám phá không gian tri thức
+          Khám phá Workspace
         </h3>
         <p className="workspace-empty__desc" style={{ textAlign: 'left', margin: 0, maxWidth: '100%' }}>
-          Tìm kiếm và tham gia các không gian tri thức công khai từ cộng đồng UniChat.
+          Tìm kiếm và tham gia các Workspace công khai từ cộng đồng UniChat.
         </p>
       </div>
 
@@ -80,7 +80,7 @@ export function ExploreTab() {
           <input
             className="workspace-search__input"
             type="text"
-            placeholder="Tìm kiếm không gian công khai..."
+            placeholder="Tìm kiếm Workspace công khai..."
             value={searchInput}
             onChange={handleSearchChange}
           />
@@ -164,8 +164,8 @@ export function ExploreTab() {
             <h3 className="workspace-empty__title">Không có kết quả</h3>
             <p className="workspace-empty__desc">
               {topic
-                ? 'Chưa có nhóm công khai nào thuộc chủ đề này.'
-                : 'Không tìm thấy nhóm công khai nào phù hợp.'}
+                ? 'Chưa có Workspace công khai nào thuộc chủ đề này.'
+                : 'Không tìm thấy Workspace công khai nào phù hợp.'}
             </p>
             {topic && (
               <button

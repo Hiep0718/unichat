@@ -282,8 +282,8 @@
      không bị che.
      Bài học cũ vẫn giữ: không có lúc nào thanh bên rộng mà chữ lại ẩn. */
   --rail-width: 68px;
-  --sidebar-width: 224px;
-  --rail-motion: 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  --sidebar-width: 260px;
+  --rail-motion: 0.24s cubic-bezier(0.4, 0, 0.2, 1);
   --rail-open-delay: 120ms;
   --gutter: 16px;
   --margin-mobile: 16px;
