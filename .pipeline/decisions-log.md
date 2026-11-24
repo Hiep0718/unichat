@@ -4854,3 +4854,12 @@ xoá test của component đã chết). Vẫn phải chạy `--maxWorkers=2` vì
   4. **Frontend Error Clarity:** Added Vietnamese user-facing messages in `frontend/src/features/chat/chat-failures.ts` for `PROVIDER_TRUNCATED_RESPONSE`, `PROVIDER_EMPTY_RESPONSE`, `PROVIDER_NETWORK_ERROR`, and `OUTPUT_LIMIT_EXCEEDED`.
 - **Verification:** `ai-service` `pytest app/core/rag/tests app/tests -q` passed `437/437`, `mypy` `0` issues; `frontend` `tsc --noEmit` `0` errors, `eslint --max-warnings 0` clean, `vitest run src/features/chat/chat-failures.test.ts` `15/15` passed.
 - **Boundaries:** User explicitly authorized commit, push, PR creation, and EC2 `.env` sync; raw credentials redacted from all logs and docs.
+
+## 2026-11-24 — Sync EC2 `HIVE_MAX_TOKENS=8192` & Promote `https://unichat.id.vn` on GitHub and README
+
+- **Context:** After PR #35 (`edfe565`) auto-deployed cleanly to EC2, the user requested updating EC2's `HIVE_MAX_TOKENS` and refreshing `README.md` plus GitHub repository settings to showcase the live production product at `https://unichat.id.vn`.
+- **Decisions:**
+  1. **EC2 Production Env:** Updated `/home/ec2-user/unichat/.env` (`HIVE_MAX_TOKENS=8192`, `GEMINI_THINKING_LEVEL=LOW`), recreated `unichat-ai-service-1` (`healthy`, `https://unichat.id.vn/` `200 OK`).
+  2. **GitHub Repository Metadata:** Updated `Hiep0718/unichat` via `gh repo edit` to set Homepage URL to `https://unichat.id.vn` (replacing legacy Vercel preview URL), refreshed description, and added 12 searchable repository topics (`ai-knowledge-platform`, `adaptive-rag`, `rag`, `higher-education`, `react`, `typescript`, `spring-boot`, `fastapi`, `chromadb`, `gemini`, `postgresql`, `rabbitmq`).
+  3. **Product Promotion & Sharing (`docs/promote-unichat-production`):** Redesigned `README.md` with prominent `https://unichat.id.vn` badges, live production callout, feature showcase table, and up-to-date production/Gemini/Hive architecture; added OpenGraph/Twitter Card/canonical metadata (`https://unichat.id.vn/`) to `frontend/index.html`; added `.github/pull_request_template.md`.
+- **Boundaries:** Stopped before `git commit`, `git push`, and PR creation awaiting explicit human approval.

@@ -1,106 +1,115 @@
-# UniChat
+<div align="center">
 
-UniChat là nền tảng tri thức AI cho giáo dục đại học. Phạm vi P0 triển khai Adaptive Knowledge Retrieval & Reasoning cho tài liệu PDF, DOCX và TXT trong Workspace có phân quyền.
+# UniChat — Nền tảng Tri thức AI cho Giáo dục Đại học
 
-**Cách chạy chuẩn của project trên Windows: mở PowerShell, vào `D:\codex-workspace\unichat` và chạy `.\dev.ps1`.** Xem [Phát triển local](#phát-triển-local) để biết dashboard và các service.
+**Adaptive Knowledge Retrieval & Reasoning Workspace cho tài liệu học tập PDF, DOCX và TXT**
 
-## Trạng thái
+[![Live Production](https://img.shields.io/badge/Live%20App-unichat.id.vn-045CDF?style=for-the-badge&logo=googlechrome&logoColor=white)](https://unichat.id.vn)
+[![HTTPS](https://img.shields.io/badge/HTTPS-Let's%20Encrypt-2E7D32?style=for-the-badge&logo=letsencrypt&logoColor=white)](https://unichat.id.vn)
+[![Frontend](https://img.shields.io/badge/React%2019-TypeScript-0284C7?style=for-the-badge&logo=react&logoColor=white)](#kiến-trúc)
+[![Backend](https://img.shields.io/badge/Spring%20Boot-Java%2021-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](#kiến-trúc)
+[![AI Service](https://img.shields.io/badge/FastAPI-Adaptive%20RAG-009688?style=for-the-badge&logo=fastapi&logoColor=white)](#kiến-trúc)
 
-**Canonical status: `READY`.** Dự án đang trong giai đoạn phát triển tích cực (Active Development). Core API, Frontend và Database đã hoạt động cơ bản.
+**[Trải nghiệm trực tiếp tại https://unichat.id.vn](https://unichat.id.vn)** · [Tài liệu đặc tả](docs/specifications/architecture-decision.md) · [Hướng dẫn triển khai EC2](docs/deployment/ec2-deployment-guide.md) · [Nhật ký thay đổi](CHANGELOG.md)
 
-Core API đã có health endpoint, request ID an toàn, typed application errors, global RFC 7807 error boundary và structured JSON logging foundation. AI Service và RabbitMQ đã được thiết lập để xử lý tác vụ bất đồng bộ.
+</div>
 
-Không commit, push, thay đổi GitHub, merge hoặc deploy nếu chưa có phê duyệt riêng.
+---
 
-## Kiến trúc
+> [!TIP]
+> **Sản phẩm đang chạy trực tuyến (HTTPS Production):** [**https://unichat.id.vn**](https://unichat.id.vn)  
+> Bạn có thể đăng ký tài khoản, tạo Workspace môn học, tải giáo trình/slide (PDF, DOCX, TXT) và hỏi đáp cùng Trợ lý AI kèm trích dẫn nguồn xác thực ngay trên trình duyệt.
 
-- `frontend`: React SPA; chỉ gọi Core API.
-- `core-api`: Spring Boot; sở hữu authentication, authorization, nghiệp vụ, PostgreSQL và file-storage port.
-- `ai-service`: FastAPI private; sở hữu extraction, Adaptive Retrieval, ChromaDB, embedding và generation.
-- `infra`: Docker Compose và cấu hình hạ tầng local.
-- `docs/specifications`: specification và sơ đồ bền vững dùng làm nguồn chuẩn.
-- `docs/thesis`: bảy nhóm tài liệu luận văn, giữ nguyên tên nhóm.
-- `docs/security`: tài liệu security debt hiện hành.
-- `.pipeline`: checkpoint AI SDLC cục bộ, giữ nguyên trạng và không đưa vào Git.
-- `.local-archive`: backup, archive, output trung gian và tệp AI tạm; chỉ lưu cục bộ và không đưa vào Git.
+## Tính năng nổi bật
 
-Chỉ frontend và Core API được expose. AI Service, PostgreSQL, ChromaDB, RabbitMQ và Ollama nằm trên private network.
+| Phân hệ | Khả năng chính |
+|---|---|
+| **Adaptive RAG & Trích dẫn nguồn** | Tự phân loại ý định câu hỏi, truy xuất lai kết hợp vector (`intfloat/multilingual-e5-base`) và lexical trên **ChromaDB**, kiểm tra ngưỡng bằng chứng (Evidence Gate), và gắn trích dẫn nhấp mở thẳng đúng trang/slide trong **Citation Drawer**. |
+| **Hai chế độ tri thức minh bạch** | **Chỉ tài liệu** (`STRICT` — từ chối an toàn khi thiếu căn cứ) và **Mở rộng** (`EXPANDED` — tách riêng rõ phần đã xác thực từ tài liệu và phần kiến thức nền mở rộng). |
+| **Workspace phân quyền & Lịch sử** | Phân quyền `OWNER` / `EDITOR` / `VIEWER` do Core API kiểm soát tuyệt đối; hỗ trợ tóm tắt toàn bộ kho tài liệu, **Knowledge Studio**, bong bóng mở nhanh lịch sử hội thoại theo Workspace, và chế độ Sáng/Tối. |
+| **Cộng đồng Hỏi-Đáp & `@AI`** | Bảng tin theo Workspace, bình luận phân cấp, chấp nhận câu trả lời hay nhất, tóm tắt tệp đính kèm theo yêu cầu, và nhắc `@AI` để trợ lý tham gia giải đáp từ kho tài liệu được cấp quyền. |
+| **Work Chat & Gọi thoại WebRTC** | Nhắn tin trực tiếp 1:1 và nhóm theo thời gian thực qua WebSocket STOMP, đính kèm tệp và gọi thoại 1:1 qua WebRTC (STUN/TURN). |
+| **Admin AI Studio & Đa nền tảng** | Giám sát chỉ số sử dụng/lỗi/độ trễ theo từng provider & model, kiểm thử key có kiểm soát, cổng điều tiết `OPEN`/`DRAINING`/`VERIFYING`, cùng ứng dụng di động **Expo / React Native** (`mobile/`). |
 
-Retrieval giữ nguyên câu hỏi gốc để sinh câu trả lời; câu hỏi nối tiếp có tham chiếu rõ có thể dùng thêm một truy vấn ngữ cảnh giới hạn từ lịch sử đã xác thực nguồn. Mọi truy vấn tiếp tục bị giới hạn bởi danh sách tài liệu Core API cấp quyền. Chunk văn bản giữ provenance theo locator và phiên bản thuật toán; OCR/hiểu sơ đồ local chưa được bật cho đến khi lựa chọn engine và ngân sách được phê duyệt.
+## Kiến trúc & Triển khai Production
 
-## Runtime mục tiêu
+Hệ thống tách bạch rõ trách nhiệm giữa tầng nghiệp vụ/phân quyền và tầng AI:
 
-- Node.js 24.18.0 LTS và npm đi kèm.
-- Java 21 LTS; Maven 3.9.16 qua wrapper.
-- Python 3.13.14.
-- Docker 29+ và Docker Compose 5+ (bao gồm RabbitMQ).
+- **`frontend`** — React 19 + TypeScript + Vite SPA; chỉ giao tiếp với Core API qua HTTPS cookie session + CSRF.
+- **`core-api`** — Spring Boot (Java 21); sở hữu xác thực (RS256 JWT 15 phút + refresh token xoay vòng), phân quyền Workspace/tài liệu, PostgreSQL, RabbitMQ producer và hợp đồng lỗi RFC 7807.
+- **`ai-service`** — FastAPI (Python 3.13, private network); sở hữu trích xuất văn bản, chunking theo phiên bản/provenance, embedding `multilingual-e5-base`, Adaptive Retrieval trên ChromaDB và generation pipeline.
+- **`mobile`** — Ứng dụng Expo / React Native đồng bộ hệ thống thiết kế và API với bản Web.
+- **`infra` & `docker-compose.yml`** — Đóng gói triển khai lên **AWS EC2** với **Caddy** tự động cấp chứng chỉ SSL Let's Encrypt cho `https://unichat.id.vn`, kết nối **Supabase** (PostgreSQL + Storage), **CloudAMQP** (RabbitMQ) và **Chroma Cloud**.
 
-Runtime portable nằm trong `.tools` và không được commit.
+> **Nguyên tắc bảo mật cốt lõi:** Chỉ `frontend` và `core-api` (qua reverse proxy HTTPS) được expose ra ngoài. `ai-service`, PostgreSQL, ChromaDB và RabbitMQ luôn nằm trên mạng riêng; Core API cấp danh sách `allowedDocumentIds` cho mọi truy vấn và kiểm tra lại quyền trước khi lưu hoặc trả kết quả.
 
-## Thiết lập
+### Cấu trúc thư mục
 
-1. Sao chép `.env.example` thành `.env` và điền secret local.
-2. Cài dependencies từ manifest và/hoặc lockfile tương ứng của từng ecosystem đã được review.
-3. Dùng `core-api/mvnw.cmd` trên Windows hoặc `core-api/mvnw` trên Unix.
-4. Bảo đảm `JAVA_HOME` trỏ đến JDK 21 trước khi chạy Core API.
-5. Không dùng secret mẫu ở môi trường thật.
+- `frontend/` — Ứng dụng Web React SPA.
+- `core-api/` — Core Backend Spring Boot.
+- `ai-service/` — Private AI / Adaptive RAG Service (FastAPI).
+- `mobile/` — Ứng dụng di động Expo.
+- `infra/` — Dockerfile và script hạ tầng triển khai.
+- `docs/specifications/` — Đặc tả kiến trúc, API contract, data model, Adaptive Retrieval và kế hoạch kiểm thử.
+- `docs/runbooks/` — Hướng dẫn vận hành generation route, cutover và rollback.
+- `docs/deployment/` — Hướng dẫn triển khai Docker Compose trên AWS EC2.
+- `docs/thesis/` — Tài liệu đồ án tốt nghiệp và bài báo khoa học.
+- `docs/security/` — Theo dõi security debt hiện hành.
 
-Test không được gọi network ngoài hệ thống.
+## Generation qua Gemini Primary & Hive Fallback
 
-## Generation qua Gemini với Hive dự phòng
-
-Cấu hình mẫu chọn Gemini làm primary với tối đa hai khóa, sau đó mới chuyển sang Hive qua `https://api-cdn.thehive.ai/api/v3` khi gặp timeout, 429, 5xx hoặc lỗi mạng đã phân loại. Lỗi xác thực, cấu hình, safety, evidence, schema/citation và cancellation không kích hoạt fallback. Secret chỉ đặt ở môi trường AI Service; không dùng lại khóa đã chia sẻ trong chat hoặc ảnh.
-
-Gemini phục vụ generation, compaction và query planning; Hive là fallback cuối cho generation/compaction. Embedding E5, Adaptive RAG, evidence gate và citation validator không đổi. Usage không được provider báo vẫn là chưa biết, không phải 0 token hoặc số dư tài khoản. Nút kiểm tra khóa chỉ gọi đúng provider/key/model được admin chọn và có thể dùng credit.
-
-Gate PostgreSQL quản lý `OPEN` / `DRAINING` / `VERIFYING`, cho phép ngừng nhận câu hỏi mới nhưng giữ polling, cancel và operation đang chạy. Migration V40 được chuẩn bị cho gate; **không khởi động lại Core hoặc áp dụng migration vào DB dùng chung trước phê duyệt**, vì Flyway chạy khi startup. Tài liệu cutover/rollback tại [Hive generation runbook](docs/runbooks/hive-generation.md); việc có mã hỗ trợ không xác nhận môi trường live đã chuyển provider.
-
-Loading toàn màn hình dùng chung một giao diện xuyên suốt xác minh phiên, tải trang và tải thông tin Workspace. Thông báo cập nhật theo bước đang xử lý; màn hình chỉ đóng khi các bước chờ đã hoàn tất.
-
-Trang chat AI hiển thị tin nhắn người dùng và trợ lý, các bước xử lý, trích dẫn và hành động với cùng hệ thống giao diện. Kiểm thử thành phần và trình duyệt xác nhận style được áp dụng cho câu trả lời từ chối và các nút hành động.
+- **Định tuyến tự động (`CHAT` / `COMPACTION` / `WORKSPACE_SUMMARY`):** Gemini primary (tối đa 2 khóa, `gemini-3.5-flash`) → Hive fallback (tối đa 2 khóa qua `https://api-cdn.thehive.ai/api/v3`, `deepseek-ai/deepseek-v4.1-flash-1017`).
+- **Tối ưu độ trễ & giới hạn đầu ra:** Áp dụng `ThinkingConfig` riêng cho dòng `gemini-3.*` (`MINIMAL` cho `QUERY_PLAN`/`KEY_PROBE`, `GEMINI_THINKING_LEVEL=LOW` cho `CHAT`), `GEMINI_CHAT_ATTEMPT_TIMEOUT_SECONDS=40`, `HIVE_READ_IDLE_TIMEOUT_SECONDS=20` và `HIVE_MAX_TOKENS=8192`.
+- **Failover có kiểm soát:** Chỉ tự chuyển target khi gặp lỗi tạm thời (timeout, `429`, `5xx`, lỗi mạng). Lỗi xác thực, cấu hình, safety, evidence, citation/schema và cancellation không kích hoạt fallback.
+- **Điều tiết vận hành:** Cổng `OPEN` / `DRAINING` / `VERIFYING` lưu trên PostgreSQL cho phép rút tải an toàn không làm đứt các phiên đang chạy. Chi tiết cutover/rollback xem tại [Hive generation runbook](docs/runbooks/hive-generation.md).
 
 ## Phát triển local
 
-**Entry point chuẩn để chạy project là tool PowerShell `dev.ps1` tại thư mục gốc** (yêu cầu Windows Terminal). Thực hiện lần lượt trong PowerShell:
+### Runtime mục tiêu
+
+- **Node.js** 24.18.0 LTS + npm
+- **Java** 21 LTS (Maven 3.9.16 qua wrapper `core-api/mvnw.cmd` hoặc `./core-api/mvnw`)
+- **Python** 3.13.14
+- **Docker** 29+ & Docker Compose 5+
+
+### Thiết lập nhanh
+
+1. Sao chép `.env.example` thành `.env` và điền thông tin môi trường local (không dùng secret mẫu ở môi trường thật).
+2. Cài dependencies theo từng phân hệ (`npm ci` trong `frontend/` / `mobile/`, tạo `.venv` trong `ai-service/`).
+3. Đảm bảo `JAVA_HOME` trỏ tới JDK 21 trước khi chạy Core API.
+
+### Khởi chạy toàn bộ stack trên Windows
+
+Entry point chuẩn trên Windows (yêu cầu Windows Terminal) là `dev.ps1` ở thư mục gốc:
 
 ```powershell
 cd D:\codex-workspace\unichat
 .\dev.ps1
 ```
 
-Sau khi chạy, dùng dashboard của tool để theo dõi, dừng hoặc khởi động lại từng service. Các lệnh Maven/npm ở mục **Kiểm tra** phục vụ kiểm tra riêng từng thành phần; khi chạy toàn bộ project, dùng quy trình PowerShell trên.
-
-Script tự kiểm tra prerequisites và port, mở từng service trong tab Windows Terminal riêng có màu phân biệt, và hiển thị dashboard giám sát real-time.
+Script tự kiểm tra prerequisites/port, mở từng service trong tab Windows Terminal riêng kèm dashboard theo dõi và khởi động lại nhanh từng dịch vụ:
 
 | Service | Port | Tab |
 |---|---|---|
-| ChromaDB | 8000 | 🟣 Tím |
-| AI Service | 8001 | 🔵 Xanh dương |
-| Core API | 8082 | 🟢 Xanh lá |
-| Frontend | 5173 | 🟡 Vàng |
-| Mobile (Expo) | 8081 / 8085 | 🟠 Cam |
+| ChromaDB | `8000` | 🟣 Tím |
+| AI Service | `8001` | 🔵 Xanh dương |
+| Core API | `8082` | 🟢 Xanh lá |
+| Frontend | `5173` | 🟡 Vàng |
+| Mobile (Expo) | `8081` / `8085` | 🟠 Cam |
 
-Trong development, mobile dùng host mà Expo cung cấp để gọi Core API trên cổng 8082. Điện thoại thật và máy chạy Core cần cùng mạng LAN; nếu không, đặt `EXPO_PUBLIC_API_URL` thành địa chỉ Core có thể truy cập từ điện thoại rồi khởi động lại Expo. Android Emulator và iOS Simulator có địa chỉ host riêng; không dùng `localhost` cho điện thoại thật.
-
-PostgreSQL, Document Storage và RabbitMQ sử dụng cloud (Supabase / CloudAMQP), không cần chạy local.
-
-Nếu Core API dừng vì thiếu `direct_messages.read_at`, kiểm tra schema và lịch sử Flyway trước khi khởi động lại. Migration V46 khôi phục cột nullable sau V45 mà không đặt mặc định, backfill hoặc thay đổi dữ liệu đã có; V38 và các migration cũ vẫn giữ nguyên. Với DB dùng chung, cần phê duyệt migration trước khi chạy Core vì Flyway tự áp dụng migration khi khởi động; không sửa lịch sử cũ hoặc tắt Hibernate schema validation để bỏ qua lỗi.
+PostgreSQL, Document Storage và RabbitMQ sử dụng dịch vụ cloud (Supabase / CloudAMQP). Khi chạy Mobile trên điện thoại thật khác host, đặt `EXPO_PUBLIC_API_URL` trỏ về địa chỉ LAN của Core API rồi khởi động lại Expo.
 
 ## Kiểm tra
 
-- Frontend: `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`.
-- Core API: `core-api/mvnw.cmd verify` trên Windows hoặc `./core-api/mvnw verify` trên Unix.
-- AI Service: Ruff, mypy, pytest và coverage từ virtual environment.
-- E2E: `npm run e2e` sau khi Playwright Chromium đã được cài.
+Mọi test tự động đều mock phụ thuộc ngoài và không gọi mạng bên ngoài:
 
-## Tài liệu dự án
+- **Frontend:** `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`
+- **Core API:** `core-api/mvnw.cmd verify` (Windows) hoặc `./core-api/mvnw verify` (Unix)
+- **AI Service:** `pytest app/core/rag/tests app/tests`, `mypy`, `ruff` từ `.venv`
+- **E2E:** `npm run e2e` (Playwright Chromium)
 
-Nguồn chuẩn nằm trong `docs/specifications/architecture-decision.md`, `docs/specifications/file-plan.md`, `docs/specifications/api-contracts.md`, `docs/specifications/data-model.md`, `docs/specifications/adaptive-retrieval-spec.md` và `docs/specifications/test-plan.md`.
+## Tài liệu chuẩn & Đóng góp
 
-API error contract và ví dụ nằm trong `docs/api/examples.md`.
-
-Tài liệu luận văn nằm trong `docs/thesis`; security debt cần theo dõi nằm trong `docs/security/deferred-security-remediation.md`.
-
-## Quy tắc đóng góp
-
-Đọc `AGENTS.md` và `CONTRIBUTING.md` trước khi thay đổi. Dùng Conventional Commits và cross-review, đồng thời luôn xin phê duyệt trước commit, push, GitHub mutation, merge hoặc deploy. Dự án được cấp phép theo `LICENSE`.
+- Nguồn chuẩn: [architecture-decision.md](docs/specifications/architecture-decision.md), [file-plan.md](docs/specifications/file-plan.md), [api-contracts.md](docs/specifications/api-contracts.md), [data-model.md](docs/specifications/data-model.md), [adaptive-retrieval-spec.md](docs/specifications/adaptive-retrieval-spec.md), [test-plan.md](docs/specifications/test-plan.md).
+- Ví dụ hợp đồng API & lỗi RFC 7807: [docs/api/examples.md](docs/api/examples.md).
+- Đọc [AGENTS.md](AGENTS.md) và [CONTRIBUTING.md](CONTRIBUTING.md) trước khi đóng góp. Dùng Conventional Commits, cross-review và luôn có phê duyệt rõ ràng trước khi commit, push, thay đổi cấu hình GitHub, merge hoặc deploy. Dự án được phát hành theo [LICENSE](LICENSE).
