@@ -51,11 +51,22 @@
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 12px;
-  padding: 16px 18px;
+  padding: 14px 16px;
   color: var(--color-on-error-container);
   background: var(--color-error-container);
-  border-radius: var(--radius-xl);
+  border: 1px solid color-mix(in srgb, var(--hong) 24%, transparent);
+  border-radius: 4px 16px 16px 16px;
   box-shadow: var(--shadow-sm);
+}
+
+.chat-session-status--inline {
+  width: min(100%, 42rem);
+  margin: 0;
+}
+
+.chat-session-status__body p {
+  margin: 0;
+  line-height: 1.5;
 }
 
 .chat-session-status__icon {

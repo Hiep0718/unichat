@@ -2,6 +2,11 @@
   align-items: flex-start;
 }
 
+.chat-msg__header {
+  flex-wrap: wrap;
+  gap: 4px 8px;
+}
+
 .chat-msg__model {
   color: var(--nhan);
   background: var(--nhan-nhat);
@@ -15,13 +20,79 @@
 }
 
 .chat-msg__content-zone .chat-msg__bubble,
-.chat-msg__content-zone .chat-thoughts,
+.chat-msg__content-zone .chat-thoughts__panel,
 .chat-msg__content-zone .citation-panel {
   max-width: 100%;
 }
 
-.chat-msg__content-zone .chat-thoughts {
-  width: 100%;
+/* ── Inline unobtrusive pipeline progress trigger & subtle drawer ── */
+.chat-thoughts__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--muc-nhat);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.chat-thoughts__trigger:hover,
+.chat-thoughts__trigger--open {
+  background: var(--be-mat);
+  border-color: var(--vien);
+  color: var(--muc);
+}
+
+.chat-thoughts__trigger--live {
+  color: var(--nhan);
+}
+
+.chat-thoughts__trigger .chat-thoughts__toggle-icon {
+  font-size: 15px;
+  color: inherit;
+  transition: transform 0.18s ease;
+}
+
+.chat-thoughts__trigger--open .chat-thoughts__toggle-icon {
+  transform: rotate(180deg);
+}
+
+.chat-thoughts__trigger:focus-visible {
+  outline: 2px solid var(--nhan);
+  outline-offset: 2px;
+}
+
+.chat-thoughts__panel {
+  width: min(100%, 34rem);
+  margin: 0 0 6px;
+  padding: 10px 14px;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-left: 2px solid var(--vien);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  background: var(--be-mat);
+}
+
+.chat-thoughts__panel .chat-thoughts__step::before {
+  top: 20px;
+  bottom: -10px;
+  left: 9px;
+}
+
+.chat-thoughts__panel .chat-thoughts__step-node {
+  width: 20px;
+  height: 20px;
+  font-size: 11px;
+  border-width: 1.5px;
 }
 
 .chat-msg__warning {

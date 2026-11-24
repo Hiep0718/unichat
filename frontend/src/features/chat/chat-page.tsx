@@ -6,7 +6,9 @@ import { ChatMessageItem } from './components/chat-message-item';
 import { ChatInputForm } from './components/chat-input-form';
 import { ChatStudioPanels } from './components/chat-studio-panels';
 import { ChatPolicyNotice } from './components/chat-policy-notice';
-import { ChatSessionStatus } from './components/chat-session-status';
+import { ChatInlineError, ChatSessionStatus } from './components/chat-session-status';
+import { ChatHistoryPopover } from './components/chat-history-popover';
+import { useChatAutoScroll } from './use-chat-auto-scroll';
 import { useChatSession } from './use-chat-session';
 import { useChatNotes } from './use-chat-notes';
 import { readCurrentCitation } from './read-citation';
@@ -53,7 +55,7 @@ function ChatSessionPage({ workspaceId = '', conversationId: initialId }: ChatPa
   const [studio, setStudio] = useState(false);
   const [citationError, setCitationError] = useState<string | null>(null);
   const [draft, setDraft] = useState<{ title: string; body: string } | null>(null);
-  const end = useRef<HTMLDivElement>(null);
+  const messagesRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const lifecycle = { active: true };
     if (!workspaceId) return;
@@ -70,7 +72,12 @@ function ChatSessionPage({ workspaceId = '', conversationId: initialId }: ChatPa
     });
     return () => { lifecycle.active = false; };
   }, [workspaceId]);
-  useEffect(() => { end.current?.scrollIntoView?.({ block: 'end' }); }, [chat.messages]);
+  const activeError = chat.error ?? notes.error ?? citationError;
+  const scroll = useChatAutoScroll(messagesRef, {
+    messages: chat.messages,
+    activeError,
+    initialLoading: chat.initialLoading,
+  });
   const selectCitation = async (citation: CitationItem) => {
     setSelected(null); setCitationError(null);
     const generation = getSessionSnapshot().generation;
@@ -82,10 +89,24 @@ function ChatSessionPage({ workspaceId = '', conversationId: initialId }: ChatPa
   };
   const policyBlocked = workspace.workspace?.cloudAllowed === false;
   const readySources = singlePageCorpus ? documents.filter((item) => item.status === 'PROCESSED').length : undefined;
-  const send = (question: string, expanded = false) => { if (workspaceId && !policyBlocked) void chat.send(question, expanded); };
+  const send = (question: string, expanded = false) => {
+    if (!workspaceId || policyBlocked) return;
+    scroll.pinToBottom();
+    void chat.send(question, expanded);
+  };
+  const startNewChat = () => {
+    chat.reset();
+    setSelected(null);
+    if (workspaceId && initialId) navigate(`/workspaces/${workspaceId}/chat`, { replace: true });
+  };
+  const openConversation = (conversationId: string) => {
+    if (!workspaceId || conversationId === chat.conversationId) return;
+    setSelected(null);
+    navigate(`/workspaces/${workspaceId}/chat?conversationId=${encodeURIComponent(conversationId)}`);
+  };
   return <div className={`chat-layout ${studio ? 'chat-layout--studio-open' : ''}`}>
     <div className="chat-page"><ChatHeader workspaceId={workspaceId} workspaceName={workspace?.workspace?.name}
-      conversationTitle={chat.title} messageCount={chat.messages.length} onNewChat={() => { chat.reset(); setSelected(null); }}
+      conversationTitle={chat.title} messageCount={chat.messages.length} onNewChat={startNewChat}
       onToggleStudio={() => setStudio((value) => !value)} isStudioOpen={studio} hasDrawerOpen={Boolean(selected)} />
       <div className="chat-page__main-content"><div className="chat-page__chat-area">
         {policyBlocked && (
@@ -93,16 +114,25 @@ function ChatSessionPage({ workspaceId = '', conversationId: initialId }: ChatPa
             <ChatPolicyNotice workspaceId={workspaceId} isOwner={workspace.isOwner} />
           </div>
         )}
-        <div className="chat-page__messages-body">
+        <div
+          ref={messagesRef}
+          className="chat-page__messages-body"
+          onScroll={scroll.handleScroll}
+          onWheel={scroll.handleWheel}
+        >
           <ChatSessionStatus initialLoading={chat.initialLoading} hasOlder={chat.older}
-            error={chat.error ?? notes.error ?? citationError} canRetry={chat.canRetry}
+            error={null} canRetry={false}
             onLoadOlder={() => void chat.loadOlder()} onRetry={() => void chat.retry()} />
           {!chat.initialLoading && !chat.messages.length && <ChatWelcome workspaceName={workspace?.workspace?.name} documents={documents} onSelectPrompt={send} />}
           {chat.messages.map((message) => <ChatMessageItem key={message.id} message={message} workspaceId={workspaceId} onSelectCitation={selectCitation}
             onSaveNote={(title, content, sourceId) => void notes.save(title, content, sourceId)}
             onAskCommunity={(answer) => setDraft(communityDraft(answer, chat.messages))} />)}
-          <div ref={end} />
-        </div><ChatInputForm onSend={send} workspaceName={workspace?.workspace?.name}
+          {activeError && <ChatInlineError error={activeError} canRetry={chat.canRetry} onRetry={() => void chat.retry()} />}
+        </div>
+        {workspaceId && <ChatHistoryPopover workspaceId={workspaceId} workspaceName={workspace?.workspace?.name}
+          activeConversationId={chat.conversationId} onSelectConversation={openConversation}
+          onNewChat={startNewChat} onDeletedActive={startNewChat} />}
+        <ChatInputForm onSend={send} workspaceName={workspace?.workspace?.name}
           readySourceCount={readySources} totalSourceCount={documentTotal}
           loading={chat.loading} disabled={policyBlocked} onCancel={() => void chat.cancel()} />
       </div>{studio && <ChatStudioPanels workspaceId={workspaceId} workspaceName={workspace?.workspace?.name}

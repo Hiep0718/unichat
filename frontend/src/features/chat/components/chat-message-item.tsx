@@ -24,26 +24,51 @@ interface MessageProps {
   readonly onAskCommunity?: ((message: MessageItem) => void) | undefined;
 }
 
-/** Uses public pipeline steps only and never invents reasoning or verification progress. */
-function PipelineSteps({ message }: { readonly message: MessageItem }) {
-  if (!message.thoughts?.length) return null;
-  return <details className="chat-thoughts">
-    <summary className="chat-thoughts__header">
-      <span className="chat-thoughts__header-left">
-        <span className="chat-thoughts__header-title"><Icon name="account_tree" size={16} />Tiến trình xử lý</span>
-        <span className="chat-thoughts__status-badge">{message.thoughts.length} bước</span>
-      </span>
-      <Icon name="expand_more" size={18} className="chat-thoughts__toggle-icon" />
-    </summary>
-    <ol className="chat-thoughts__body">{message.thoughts.map((step) =>
-      <li className="chat-thoughts__step" key={`${step.stepKey}-${step.stepIndex}`}>
-        <span className="chat-thoughts__step-node" aria-hidden="true">{step.stepIndex}</span>
-        <span className="chat-thoughts__step-content">
-          <strong className="chat-thoughts__step-title">{step.title}</strong>
-          <span className="chat-thoughts__step-detail">{step.detail}</span>
-        </span>
-      </li>)}</ol>
-  </details>;
+/** Compact inline trigger in the UniChat AI header row; keeps progress unobtrusive. */
+function PipelineTrigger({
+  count,
+  open,
+  streaming,
+  controlsId,
+  onToggle,
+}: {
+  readonly count: number;
+  readonly open: boolean;
+  readonly streaming: boolean;
+  readonly controlsId: string;
+  readonly onToggle: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      className={`chat-thoughts__trigger${open ? ' chat-thoughts__trigger--open' : ''}${streaming ? ' chat-thoughts__trigger--live' : ''}`}
+      aria-expanded={open}
+      aria-controls={controlsId}
+      onClick={onToggle}
+      title="Xem chi tiết tiến trình xử lý"
+    >
+      <Icon name="account_tree" size={14} />
+      <span>Tiến trình · {count} bước</span>
+      <Icon name="expand_more" size={15} className="chat-thoughts__toggle-icon" />
+    </button>
+  );
+}
+
+/** Lightweight collapsible step list shown only when the user expands the inline trigger. */
+function PipelineStepList({ id, steps }: { readonly id: string; readonly steps: readonly SseThoughtPayload[] }) {
+  return (
+    <ol id={id} className="chat-thoughts__panel">
+      {steps.map((step) => (
+        <li className="chat-thoughts__step" key={`${step.stepKey}-${step.stepIndex}`}>
+          <span className="chat-thoughts__step-node" aria-hidden="true">{step.stepIndex}</span>
+          <span className="chat-thoughts__step-content">
+            <strong className="chat-thoughts__step-title">{step.title}</strong>
+            <span className="chat-thoughts__step-detail">{step.detail}</span>
+          </span>
+        </li>
+      ))}
+    </ol>
+  );
 }
 
 /** Keeps every external expansion visibly separated from document-supported sections. */
@@ -94,9 +119,15 @@ function MessageActions({ message, onSaveNote, onAskCommunity }: Pick<MessagePro
 
 /** Displays provisional labels, canonical sources and actions only for readable final answers. */
 export function ChatMessageItem({ message, workspaceId, onSelectCitation, onSaveNote, onAskCommunity }: MessageProps) {
+  const [stepsOpen, setStepsOpen] = useState(false);
   const isThinking = message.role === 'ASSISTANT' && message.isStreaming && !message.content && !message.response;
   const isEmptyAssistantFailure = message.role === 'ASSISTANT' && !message.isStreaming && !message.content && !message.response;
   if (isEmptyAssistantFailure) return null;
+
+  const thoughts = message.thoughts ?? [];
+  const thoughtsId = `chat-thoughts-${message.id}`;
+  const latestStep = thoughts.length > 0 ? thoughts[thoughts.length - 1] : undefined;
+  const thinkingLabel = latestStep?.title ? `${latestStep.title}…` : 'UniChat AI đang suy nghĩ…';
 
   return <article className={`chat-msg chat-msg--${message.role.toLowerCase()}`} data-msg-id={message.id}>
     <div className="chat-msg__avatar" aria-hidden="true">{message.role === 'USER'
@@ -105,8 +136,19 @@ export function ChatMessageItem({ message, workspaceId, onSelectCitation, onSave
       <header className="chat-msg__header"><strong className="chat-msg__author">{message.role === 'USER' ? 'Bạn' : 'UniChat AI'}</strong>
         {message.role === 'ASSISTANT' && !message.redacted && !message.response?.redacted && message.response?.providerModel
           && <span className="chat-msg__model">{message.response.providerModel}</span>}
+        {message.role === 'ASSISTANT' && thoughts.length > 0 && (
+          <PipelineTrigger
+            count={thoughts.length}
+            open={stepsOpen}
+            streaming={Boolean(message.isStreaming)}
+            controlsId={thoughtsId}
+            onToggle={() => setStepsOpen((open) => !open)}
+          />
+        )}
         {message.timestamp && <span className="chat-msg__time">{message.timestamp}</span>}</header>
-      <PipelineSteps message={message} />
+      {message.role === 'ASSISTANT' && stepsOpen && thoughts.length > 0 && (
+        <PipelineStepList id={thoughtsId} steps={thoughts} />
+      )}
       {message.role === 'ASSISTANT' && !message.redacted && !message.response?.redacted
         && message.response?.warningMessage && (
           <p className="chat-msg__warning" role="note">{message.response.warningMessage}</p>
@@ -118,7 +160,7 @@ export function ChatMessageItem({ message, workspaceId, onSelectCitation, onSave
             <span className="dot" />
             <span className="dot" />
           </div>
-          <span className="chat-msg__thinking-text">UniChat AI đang suy nghĩ…</span>
+          <span className="chat-msg__thinking-text">{thinkingLabel}</span>
         </div>
       ) : (
         <div className="chat-msg__bubble">

@@ -18,14 +18,21 @@ const refusalMessage: MessageItem = {
 };
 
 describe('ChatMessageItem', () => {
-  it('should connect the refusal, thought steps and actions to the chat styles', () => {
+  it('should place the compact progress trigger inline in the UniChat AI header and expand steps on click', () => {
     const onAskCommunity = vi.fn();
     const { container } = render(<ChatMessageItem message={refusalMessage} onAskCommunity={onAskCommunity} />);
 
     expect(container.querySelector('.chat-msg__ai-avatar-img')).toBeInTheDocument();
     expect(container.querySelector('.chat-msg__content-zone')).toBeInTheDocument();
+    const header = container.querySelector('.chat-msg__header');
+    const trigger = screen.getByRole('button', { name: /Tiến trình · 1 bước/ });
     expect(screen.getByText('UniChat AI')).toHaveClass('chat-msg__author');
-    expect(screen.getByText('Tiến trình xử lý').closest('summary')).toHaveClass('chat-thoughts__header');
+    expect(header).toContainElement(trigger);
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    expect(container.querySelector('.chat-thoughts__panel')).not.toBeInTheDocument();
+
+    fireEvent.click(trigger);
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
     expect(container.querySelector('.chat-thoughts__step')).toBeInTheDocument();
     expect(container.querySelector('.chat-thoughts__step-node')).toHaveTextContent('1');
     expect(screen.getByRole('button', { name: 'Sao chép câu trả lời' })).toHaveClass('chat-msg__action-btn');
@@ -97,13 +104,24 @@ describe('ChatMessageItem', () => {
     expect(screen.queryByRole('button', { name: 'Sao chép câu trả lời' })).not.toBeInTheDocument();
   });
 
-  it('should render the animated thinking bubble when the assistant is streaming without content', () => {
+  it('should render the animated thinking bubble with the latest step title when streaming', () => {
     const message: MessageItem = { id: 'assistant-pending', role: 'ASSISTANT', content: '', isStreaming: true };
-    const { container } = render(<ChatMessageItem message={message} />);
+    const { container, rerender } = render(<ChatMessageItem message={message} />);
 
     expect(container.querySelector('.chat-msg__bubble--thinking')).toBeInTheDocument();
     expect(container.querySelector('.chat-msg__thinking-dots')).toBeInTheDocument();
     expect(screen.getByText('UniChat AI đang suy nghĩ…')).toBeInTheDocument();
+
+    rerender(
+      <ChatMessageItem
+        message={{
+          ...message,
+          thoughts: [{ stepIndex: 1, stepKey: 'retrieve', title: 'Đang tra cứu tài liệu', detail: '7 nguồn' }],
+        }}
+      />,
+    );
+    expect(screen.getByText('Đang tra cứu tài liệu…')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Tiến trình · 1 bước/ })).toHaveClass('chat-thoughts__trigger--live');
   });
 
   it('should not render a ghost bubble after an assistant request fails', () => {
