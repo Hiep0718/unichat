@@ -217,12 +217,20 @@
   align-items: center;
   gap: 8px;
   padding: 11px 18px;
+  border: none;
   border-radius: var(--btn-radius);
   background: var(--ws-accent-gradient);
   color: var(--ws-accent-ink, var(--nen));
+  font-family: inherit;
   font-size: 0.875rem;
   font-weight: 700;
   text-decoration: none;
+  cursor: pointer;
+}
+
+.group-about__cta:disabled {
+  opacity: 0.7;
+  cursor: wait;
 }
 
 .group-about__cta:hover {

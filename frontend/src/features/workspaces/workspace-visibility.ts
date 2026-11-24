@@ -29,21 +29,21 @@ export const VISIBILITY_OPTIONS: readonly VisibilityOption[] = [
     icon: 'lock',
     label: 'Riêng tư',
     description: 'Chỉ mình bạn truy cập. Không thể thêm thành viên.',
-    groupLabel: 'Nhóm riêng tư',
+    groupLabel: 'Workspace riêng tư',
   },
   {
     value: 'SHARED',
     icon: 'group_add',
     label: 'Được chia sẻ',
     description: 'Bạn mời thành viên bằng email. Không hiện ở trang Khám phá.',
-    groupLabel: 'Nhóm được chia sẻ',
+    groupLabel: 'Workspace được chia sẻ',
   },
   {
     value: 'PUBLIC',
     icon: 'public',
     label: 'Công khai',
     description: 'Hiện ở trang Khám phá, ai cũng có thể tự tham gia.',
-    groupLabel: 'Nhóm công khai',
+    groupLabel: 'Workspace công khai',
   },
 ];
 

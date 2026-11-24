@@ -71,6 +71,7 @@ beforeEach(() => {
       version: 0,
     },
     role: 'OWNER',
+    isMember: true,
     isOwner: true,
     canEdit: true,
     canContribute: true,

@@ -58,6 +58,7 @@ function givenWorkspace(description: string, isOwner = true) {
   vi.spyOn(workspaceContext, 'useWorkspace').mockReturnValue({
     workspace,
     role: workspace.role,
+    isMember: true,
     isOwner,
     canEdit: isOwner,
     canContribute: true,
@@ -91,7 +92,7 @@ describe('GroupAboutTab description', () => {
     renderTab();
 
     // Assert
-    expect(screen.getByText(/Viết vài dòng để người mới biết nhóm học gì/)).toBeTruthy();
+    expect(screen.getByText(/Viết vài dòng để người mới biết Workspace học về chủ đề gì/)).toBeTruthy();
     expect(screen.getByRole('link', { name: /Thêm mô tả/ })).toBeTruthy();
   });
 
@@ -157,7 +158,7 @@ describe('GroupAboutTab facts', () => {
 
     // Assert
     expect(container.textContent).not.toContain('RAG');
-    expect(screen.getByText('Trợ lý AI của nhóm')).toBeTruthy();
+    expect(screen.getByText('Trợ lý AI của Workspace')).toBeTruthy();
   });
 
   it('should keep the way into the assistant', () => {

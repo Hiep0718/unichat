@@ -5,6 +5,7 @@
 import { useMemo } from 'react';
 import { Outlet } from 'react-router-dom';
 
+import { MobileNavBar } from '../components/mobile-nav-bar';
 import { SideNavBar } from '../components/side-nav-bar';
 import { CoverAssignmentProvider } from '../features/workspaces/cover-assignment';
 import { useWorkspaces } from '../features/workspaces/workspace-hooks';
@@ -34,6 +35,7 @@ export function AppShell() {
         <main className="app-shell__main">
           <Outlet />
         </main>
+        <MobileNavBar />
       </div>
     </CoverAssignmentProvider>
   );

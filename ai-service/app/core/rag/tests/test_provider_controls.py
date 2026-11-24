@@ -9,6 +9,8 @@ import pytest
 from app.core.rag.generation_policy import GenerationPolicy, GenerationPolicyError, Purpose
 from app.core.rag.key_registry import ProviderKey
 from app.core.rag.provider_contracts import ProviderFailure, ProviderResult
+from app.core.rag.provider_gateway import _attempt_checkpoint
+from app.core.rag.provider_routing import ProviderTarget
 from app.core.service_security import ServiceSecurityError
 from app.services.provider_probes import probe_key
 from app.tests.test_llm_provider_fallback import fake_policy
@@ -92,6 +94,20 @@ def test_should_allow_hive_chat_more_time_without_exceeding_core_deadline() -> N
         timeout = context.checkpoint("CHAT", "attempt-id", 75)
 
     assert 30 < timeout <= 50
+
+
+def test_should_pass_gemini_chat_attempt_timeout_at_checkpoint(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("GEMINI_CHAT_ATTEMPT_TIMEOUT_SECONDS", "60")
+    policy = fake_policy()
+    target = ProviderTarget("gemini", "gemini-3.5-flash", None, "PRIMARY")
+
+    _attempt_checkpoint(policy, "CHAT", target, "attempt-1")
+    _attempt_checkpoint(policy, "QUERY_PLAN", target, "attempt-2")
+
+    assert policy.checkpoint.call_args_list[0].args == ("CHAT", "attempt-1", 60.0)
+    assert policy.checkpoint.call_args_list[1].args == ("QUERY_PLAN", "attempt-2")
 
 
 def test_should_reject_query_plan_without_operation_before_core_call() -> None:

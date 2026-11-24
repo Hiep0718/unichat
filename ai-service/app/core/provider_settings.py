@@ -33,13 +33,14 @@ class ProviderSettings(BaseSettings):
     gemini_api_key_secondary: str = Field(default="", repr=False)
     gemini_api_keys: str = Field(default="", repr=False)
     gemini_model: str = Field(default="gemini-3.5-flash", pattern=r"^gemini-[a-zA-Z0-9._-]+$")
+    gemini_chat_attempt_timeout_seconds: float = Field(default=60, ge=30, le=90)
     hive_max_tokens: int = Field(default=4096, ge=1, le=4096)
     hive_temperature: float = Field(default=0.2, ge=0, le=2)
     hive_top_p: float = Field(default=0.9, ge=0, le=1)
     hive_reasoning_effort: Literal["none", "low", "high", "max"] = "low"
     hive_chat_attempt_timeout_seconds: float = Field(default=75, ge=30, le=90)
     hive_read_idle_timeout_seconds: float = Field(
-        default=5, gt=0, le=5,
+        default=20, gt=0, le=30,
         validation_alias=AliasChoices(
             "HIVE_READ_IDLE_TIMEOUT_SECONDS", "HIVE_READ_TIMEOUT_SECONDS"
         ),

@@ -16,7 +16,7 @@ export interface WorkspaceDetails {
   readonly visibility: WorkspaceVisibility;
   /** What the group is about; empty for groups that predate topics. */
   readonly topics: readonly string[];
-  readonly role: WorkspaceRole;
+  readonly role: WorkspaceRole | null;
   readonly ownerId?: string;
   readonly cloudAllowed: boolean;
   readonly version: number;
@@ -24,7 +24,9 @@ export interface WorkspaceDetails {
 
 interface WorkspaceContextState {
   readonly workspace: WorkspaceDetails | null;
-  readonly role: WorkspaceRole;
+  readonly role: WorkspaceRole | null;
+  /** True only when the current user holds an active membership in this group. */
+  readonly isMember: boolean;
   readonly isOwner: boolean;
   /** May manage workspace content directly: OWNER and EDITOR. */
   readonly canEdit: boolean;
@@ -45,16 +47,16 @@ interface WorkspaceProviderProps {
 /** Provides the current workspace query snapshot and derived UI permissions. */
 export function WorkspaceProvider({ workspace, children }: WorkspaceProviderProps) {
   const value = useMemo<WorkspaceContextState>(() => {
-    const role = workspace.role || 'VIEWER';
+    const role = workspace.role ?? null;
+    const isMember = role !== null;
     const isOwner = role === 'OWNER';
     const canEdit = role === 'OWNER' || role === 'EDITOR';
-    // Non-members reach this provider with no role at all; only actual members
-    // may contribute, otherwise the upload would fail server-side.
-    const canContribute = Boolean(workspace.role);
+    const canContribute = isMember;
 
     return {
       workspace,
       role,
+      isMember,
       isOwner,
       canEdit,
       canContribute,

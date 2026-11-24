@@ -87,7 +87,8 @@ def test_should_accept_only_approved_hive_endpoints(endpoint: str) -> None:
     {"hive_base_url": "https://api.thehive.ai/api/v3#fragment"},
     {"hive_base_url": "https://evil.invalid/api/v3"}, {"hive_model": "unsupported"},
     {"hive_reasoning_effort": "medium"}, {"hive_max_tokens": 4097},
-    {"hive_temperature": 3}, {"hive_top_p": -1}, {"HIVE_READ_IDLE_TIMEOUT_SECONDS": 6},
+    {"hive_temperature": 3}, {"hive_top_p": -1}, {"HIVE_READ_IDLE_TIMEOUT_SECONDS": 31},
+    {"gemini_chat_attempt_timeout_seconds": 29}, {"gemini_chat_attempt_timeout_seconds": 91},
     {"llm_provider": "hive"}, {"llm_provider": "unknown"},
 ])
 def test_should_reject_invalid_configuration_without_revealing_credentials(
@@ -144,5 +145,20 @@ def test_should_resolve_stable_provider_owned_deduplicated_keys(
 def test_should_prioritize_canonical_idle_timeout_alias(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("HIVE_READ_TIMEOUT_SECONDS", "3")
     assert ProviderSettings().hive_read_idle_timeout_seconds == 3
-    monkeypatch.setenv("HIVE_READ_IDLE_TIMEOUT_SECONDS", "2")
-    assert ProviderSettings().hive_read_idle_timeout_seconds == 2
+    monkeypatch.setenv("HIVE_READ_IDLE_TIMEOUT_SECONDS", "25")
+    assert ProviderSettings().hive_read_idle_timeout_seconds == 25
+
+
+def test_should_default_chat_attempt_and_hive_idle_timeouts(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("HIVE_READ_IDLE_TIMEOUT_SECONDS", raising=False)
+    monkeypatch.delenv("HIVE_READ_TIMEOUT_SECONDS", raising=False)
+    monkeypatch.delenv("HIVE_CHAT_ATTEMPT_TIMEOUT_SECONDS", raising=False)
+    monkeypatch.delenv("GEMINI_CHAT_ATTEMPT_TIMEOUT_SECONDS", raising=False)
+
+    configuration = ProviderSettings(_env_file=None)
+
+    assert configuration.hive_read_idle_timeout_seconds == 20
+    assert configuration.hive_chat_attempt_timeout_seconds == 75
+    assert configuration.gemini_chat_attempt_timeout_seconds == 60

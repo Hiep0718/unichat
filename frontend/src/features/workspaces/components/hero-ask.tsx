@@ -46,13 +46,13 @@ export function HeroAsk({ workspaces }: HeroAskProps) {
         className="hero-ask__input"
         value={question}
         onChange={(event) => setQuestion(event.target.value)}
-        placeholder="Hỏi UniChat về tài liệu trong nhóm của bạn..."
+        placeholder="Hỏi UniChat về tài liệu trong Workspace của bạn..."
         aria-label="Câu hỏi"
       />
 
       <SelectMenu
         className="hero-ask__select"
-        label="Nhóm để hỏi"
+        label="Workspace để hỏi"
         value={chosen}
         options={workspaces.map((ws) => ({ value: ws.id, label: ws.name }))}
         onChange={setTarget}

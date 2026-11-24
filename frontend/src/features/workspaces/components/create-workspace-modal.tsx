@@ -59,7 +59,7 @@ export function CreateWorkspaceModal({ isOpen, onClose, onSuccess }: CreateWorks
       onSuccess(created);
       onClose();
     } catch (err: unknown) {
-      setApiError(err instanceof Error ? err.message : 'Không thể tạo nhóm');
+      setApiError(err instanceof Error ? err.message : 'Không thể tạo Workspace');
     } finally {
       setSubmitting(false);
     }
@@ -69,7 +69,7 @@ export function CreateWorkspaceModal({ isOpen, onClose, onSuccess }: CreateWorks
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h3 className="modal-title">Tạo nhóm mới</h3>
+          <h3 className="modal-title">Tạo Workspace mới</h3>
           <button className="modal-close-btn" type="button" onClick={onClose}>
             &times;
           </button>
@@ -81,21 +81,21 @@ export function CreateWorkspaceModal({ isOpen, onClose, onSuccess }: CreateWorks
 
             <div className="form-group">
               <label className="form-label" htmlFor="name">
-                Tên nhóm <span className="form-required" aria-hidden="true">*</span>
+                Tên Workspace <span className="form-required" aria-hidden="true">*</span>
               </label>
               <input
                 id="name"
                 className="form-input"
                 type="text"
-                placeholder="Nhập tên nhóm (ví dụ: Nghiên cứu sinh AI 2026)"
-                {...register('name', { required: 'Tên nhóm là bắt buộc' })}
+                placeholder="Nhập tên Workspace (ví dụ: Nghiên cứu sinh AI 2026)"
+                {...register('name', { required: 'Tên Workspace là bắt buộc' })}
               />
               {errors.name && <p className="form-error">{errors.name.message}</p>}
             </div>
 
             <div className="form-group">
               <label className="form-label" htmlFor="description">
-                Mô tả nhóm
+                Mô tả Workspace
               </label>
               <textarea
                 id="description"

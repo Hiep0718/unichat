@@ -48,6 +48,8 @@ def test_should_always_stream_raw_identity_and_close_resources(
     monkeypatch: pytest.MonkeyPatch, purpose: Purpose, schema: dict[str, Any] | None,
 ) -> None:
     monkeypatch.setenv("HIVE_API_KEY", KEY.secret)
+    monkeypatch.delenv("HIVE_READ_IDLE_TIMEOUT_SECONDS", raising=False)
+    monkeypatch.delenv("HIVE_READ_TIMEOUT_SECONDS", raising=False)
     client, response, context = transport([wire()[:19], wire()[19:]])
     policy, events = fake_policy(), []
     with patch("app.core.rag.hive_provider.httpx.Client", return_value=client) as factory:
@@ -72,7 +74,8 @@ def test_should_always_stream_raw_identity_and_close_resources(
     assert "max_tokens" not in body
     assert body["reasoning_effort"] == ("none" if purpose == "KEY_PROBE" else "low")
     assert ("response_format" in body) is (schema is not None)
-    assert factory.call_args.kwargs["timeout"].read == 5
+    assert factory.call_args.kwargs["timeout"].connect == 10
+    assert factory.call_args.kwargs["timeout"].read == 20
     assert events == [{"delta": "Tiếng Việt"}]
     assert context.__exit__.called and client.__exit__.called
 

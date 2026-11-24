@@ -3,7 +3,8 @@
  * Shows welcome banner, quick stats, recent workspaces, and full workspace grid.
  */
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import { Icon } from '../../components/icon';
 import { SelectMenu } from '../../components/select-menu';
@@ -45,6 +46,7 @@ const RECENT_COUNT = 3;
  */
 function WorkspaceListPage() {
   const { data, isLoading, error, refetch } = useWorkspaces();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [activeTab, setActiveTab] = useState<'MY_WORKSPACES' | 'EXPLORE'>('MY_WORKSPACES');
   const [searchQuery, setSearchQuery] = useState('');
@@ -52,6 +54,15 @@ function WorkspaceListPage() {
   const [sortBy, setSortBy] = useState<SortOption>('UPDATED_DESC');
   const [viewMode, setViewMode] = useState<ViewMode>('GRID');
   const [isFormOpen, setIsFormOpen] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get('new') === '1') {
+      setIsFormOpen(true);
+      const next = new URLSearchParams(searchParams);
+      next.delete('new');
+      setSearchParams(next, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   const handleSearchChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -99,7 +110,7 @@ function WorkspaceListPage() {
             onClick={() => setActiveTab('MY_WORKSPACES')}
           >
             <Icon name="folder" size={18} rounded />
-            Nhóm của tôi
+            Workspace của tôi
           </button>
           <button
             className={`dashboard-tab ${activeTab === 'EXPLORE' ? 'dashboard-tab--active' : ''}`}
@@ -164,7 +175,7 @@ function RecentSection({ workspaces }: RecentSectionProps) {
           <Icon name="bolt" size={20} />
           Truy cập nhanh
         </h3>
-        <p className="recent-section__sub">Các nhóm bạn mở gần đây</p>
+        <p className="recent-section__sub">Các Workspace bạn mở gần đây</p>
       </div>
       <div className="recent-section__grid">
         {workspaces.map((ws, i) => (
@@ -229,7 +240,7 @@ function AllWorkspacesSection({
       <div className="all-workspaces-section__header">
         <h3 className="all-workspaces-section__title">
           <Icon name="folder" size={20} />
-          Tất cả nhóm
+          Tất cả Workspace
           <span className="all-workspaces-section__count">{filteredWorkspaces.length}</span>
         </h3>
         <button
@@ -238,7 +249,7 @@ function AllWorkspacesSection({
           onClick={onCreateClick}
         >
           <Icon name="add" size={18} />
-          Tạo nhóm
+          Tạo Workspace
         </button>
       </div>
 
@@ -248,7 +259,7 @@ function AllWorkspacesSection({
           <input
             className="workspace-search__input"
             type="text"
-            placeholder="Tìm kiếm workspace..."
+            placeholder="Tìm kiếm Workspace..."
             value={searchQuery}
             onChange={onSearchChange}
           />
@@ -272,7 +283,7 @@ function AllWorkspacesSection({
             <SelectMenu
               className="workspace-sort"
               icon="sort"
-              label="Sắp xếp nhóm"
+              label="Sắp xếp Workspace"
               value={sortBy}
               options={SORT_OPTIONS}
               onChange={onSortChange}
@@ -346,7 +357,7 @@ function AllWorkspacesSection({
               <span className="workspace-new-tile__plus">
                 <Icon name="add" size={22} rounded />
               </span>
-              Tạo nhóm mới
+              Tạo Workspace mới
             </button>
           </div>
         )}
@@ -365,7 +376,7 @@ function ErrorState({ onRetry }: ErrorStateProps) {
       <Icon name="error" size={48} />
       <h3 className="workspace-empty__title">Không thể tải dữ liệu</h3>
       <p className="workspace-empty__desc">
-        Đã xảy ra lỗi khi tải danh sách workspace. Vui lòng thử lại.
+        Đã xảy ra lỗi khi tải danh sách Workspace. Vui lòng thử lại.
       </p>
       <button className="workspace-empty__action" type="button" onClick={onRetry}>
         Thử lại
@@ -384,17 +395,17 @@ function EmptyState({ hasFilters, onCreateClick }: EmptyStateProps) {
     <div className="workspace-empty">
       <Icon name="folder_open" size={48} />
       <h3 className="workspace-empty__title">
-        {hasFilters ? 'Không tìm thấy nhóm' : 'Chưa có nhóm nào'}
+        {hasFilters ? 'Không tìm thấy Workspace' : 'Chưa có Workspace nào'}
       </h3>
       <p className="workspace-empty__desc">
         {hasFilters
           ? 'Thử thay đổi từ khóa hoặc bộ lọc.'
-          : 'Tạo workspace đầu tiên để bắt đầu tổ chức tài liệu của bạn.'}
+          : 'Tạo Workspace đầu tiên để bắt đầu tổ chức tài liệu của bạn.'}
       </p>
       {!hasFilters && (
         <button className="workspace-empty__action" type="button" onClick={onCreateClick}>
           <Icon name="add" size={18} />
-          Tạo nhóm
+          Tạo Workspace
         </button>
       )}
     </div>

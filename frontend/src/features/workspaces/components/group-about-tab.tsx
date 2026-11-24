@@ -11,7 +11,7 @@ import { Link, useParams } from 'react-router-dom';
 
 import { Icon } from '../../../components/icon';
 import { useWorkspace } from '../workspace-context';
-import { useWorkspace as useWorkspaceQuery } from '../workspace-hooks';
+import { useJoinWorkspace, useWorkspace as useWorkspaceQuery } from '../workspace-hooks';
 import { visibilityOption } from '../workspace-visibility';
 import { TopicChips } from './topic-chips';
 
@@ -52,8 +52,9 @@ function PaperMotif() {
 
 export function GroupAboutTab() {
   const { workspaceId = '' } = useParams<{ workspaceId: string }>();
-  const { workspace, role, isOwner } = useWorkspace();
+  const { workspace, role, isMember, isOwner } = useWorkspace();
   const { data: details } = useWorkspaceQuery(workspaceId);
+  const joinMutation = useJoinWorkspace();
 
   if (!workspace) return null;
 
@@ -81,7 +82,7 @@ export function GroupAboutTab() {
           <p className="group-about__description">
             {hasDescription
               ? workspace.description.trim()
-              : 'Nhóm này chưa có mô tả. Viết vài dòng để người mới biết nhóm học gì.'}
+              : 'Workspace này chưa có mô tả. Viết vài dòng để người mới biết Workspace học về chủ đề gì.'}
           </p>
           <TopicChips topics={details?.topics ?? []} />
         </section>
@@ -91,11 +92,11 @@ export function GroupAboutTab() {
           <header className="group-about__card-head">
             <h2 className="group-about__heading">
               <Icon name="auto_awesome" size={17} />
-              Trợ lý AI của nhóm
+              Trợ lý AI của Workspace
             </h2>
           </header>
           <p className="group-about__description">
-            Trả lời dựa trên các tệp trong tab <strong>Tệp</strong> của nhóm, kèm trích
+            Trả lời dựa trên các tệp trong tab <strong>Tệp</strong> của Workspace, kèm trích
             dẫn tới đúng tài liệu. Tệp được duyệt sẽ trở thành nguồn mà trợ lý có thể
             trích dẫn.
           </p>
@@ -109,10 +110,22 @@ export function GroupAboutTab() {
               Thiếu căn cứ trong tài liệu thì trợ lý từ chối thay vì đoán
             </li>
           </ul>
-          <Link to={`/workspaces/${workspaceId}/chat`} className="group-about__cta">
-            <Icon name="auto_awesome" size={18} />
-            Bắt đầu hỏi Trợ lý AI
-          </Link>
+          {isMember ? (
+            <Link to={`/workspaces/${workspaceId}/chat`} className="group-about__cta">
+              <Icon name="auto_awesome" size={18} />
+              Bắt đầu hỏi Trợ lý AI
+            </Link>
+          ) : (
+            <button
+              type="button"
+              className="group-about__cta"
+              disabled={joinMutation.isPending}
+              onClick={() => joinMutation.mutate(workspaceId)}
+            >
+              <Icon name="group_add" size={18} />
+              {joinMutation.isPending ? 'Đang tham gia...' : 'Tham gia Workspace để hỏi Trợ lý AI'}
+            </button>
+          )}
         </section>
 
         <div className="group-about__pair">
@@ -144,7 +157,9 @@ export function GroupAboutTab() {
             <div className="group-about__fact">
               <dt>Vai trò của bạn</dt>
               <dd>
-                <span className="group-about__role">{ROLE_LABEL[role] ?? role}</span>
+                <span className="group-about__role">
+                  {role ? (ROLE_LABEL[role] ?? role) : 'Chưa tham gia'}
+                </span>
               </dd>
             </div>
             <div className="group-about__fact">
