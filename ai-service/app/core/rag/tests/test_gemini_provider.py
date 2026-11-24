@@ -1,7 +1,7 @@
-from typing import Any
 """Offline Gemini adapter contracts for provider-specific output budgets."""
 
 from types import SimpleNamespace
+from typing import Any
 from unittest.mock import Mock, patch
 
 import pytest

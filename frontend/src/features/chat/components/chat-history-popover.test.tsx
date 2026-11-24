@@ -75,9 +75,14 @@ describe('chat-history-helpers', () => {
   });
 
   it('should format compact timestamps for today, yesterday and older dates', () => {
-    expect(formatConversationTime('2026-11-24T14:20:00+07:00', NOW)).toMatch(/14:20/);
-    expect(formatConversationTime('2026-11-23T09:10:00+07:00', NOW)).toMatch(/^Hôm qua · /);
-    expect(formatConversationTime('2026-11-01T08:00:00+07:00', NOW)).toMatch(/01\/11/);
+    const todayIso = '2026-11-24T14:20:00+07:00';
+    const expectedTodayTime = new Date(todayIso).toLocaleTimeString('vi-VN', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    expect(formatConversationTime(todayIso, NOW)).toBe(expectedTodayTime);
+    expect(formatConversationTime('2026-11-23T09:10:00+07:00', NOW)).toMatch(/^Hôm qua · \d{2}:\d{2}$/);
+    expect(formatConversationTime('2026-11-01T08:00:00+07:00', NOW)).toBe('01/11');
   });
 });
 
