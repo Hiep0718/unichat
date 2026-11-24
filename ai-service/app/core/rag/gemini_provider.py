@@ -8,6 +8,7 @@ import httpx
 from google import genai
 from google.genai import types
 
+from app.core.provider_settings import ProviderSettings
 from app.core.rag.generation_policy import (
     QUERY_PLAN_MAX_OUTPUT_TOKENS,
     GenerationPolicy,
@@ -36,7 +37,7 @@ def _gemini(
     cancelled: Cancellation | None = None,
 ) -> ProviderResult:
     check_cancelled(cancelled)
-    configuration = _gemini_configuration(purpose, schema)
+    configuration = _gemini_configuration(purpose, schema, model)
     with genai.Client(
         api_key=key.secret, http_options=types.HttpOptions(timeout=int(timeout * 1000))
     ) as client:
@@ -49,14 +50,27 @@ def _gemini(
 
 
 def _gemini_configuration(
-    purpose: Purpose, schema: dict[str, Any] | None
+    purpose: Purpose, schema: dict[str, Any] | None, model: str = ""
 ) -> types.GenerateContentConfig:
     max_tokens = QUERY_PLAN_MAX_OUTPUT_TOKENS if purpose == "QUERY_PLAN" else 8192
     configuration = types.GenerateContentConfig(temperature=0.2, max_output_tokens=max_tokens)
+    thinking = _gemini_thinking_config(model, purpose)
+    if thinking is not None:
+        configuration.thinking_config = thinking
     if schema is not None:
         configuration.response_mime_type = "application/json"
         configuration.response_json_schema = _provider_schema(schema)
     return configuration
+
+
+def _gemini_thinking_config(model: str, purpose: Purpose) -> types.ThinkingConfig | None:
+    """Bound Gemini 3+ hidden reasoning so structured JSON calls do not 504 before first token."""
+    if not model.lower().startswith("gemini-3"):
+        return None
+    if purpose in {"QUERY_PLAN", "KEY_PROBE"}:
+        return types.ThinkingConfig(thinking_level=types.ThinkingLevel.MINIMAL)
+    level = ProviderSettings().gemini_thinking_level
+    return types.ThinkingConfig(thinking_level=types.ThinkingLevel[level])
 
 
 def _provider_schema(value: Any) -> Any:

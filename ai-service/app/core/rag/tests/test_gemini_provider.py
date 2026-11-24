@@ -4,7 +4,10 @@ from typing import Any
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
-from app.core.rag.gemini_provider import _gemini, _provider_schema
+import pytest
+from google.genai import types
+
+from app.core.rag.gemini_provider import _gemini, _gemini_configuration, _provider_schema
 from app.core.rag.key_registry import ProviderKey
 from app.tests.test_llm_provider_fallback import fake_policy
 
@@ -37,3 +40,19 @@ def test_should_reduce_provider_schema_complexity_without_mutating_application_s
     assert simplified == {"properties": {"maxItems": {"type": "array",
                           "items": {"type": "string"}}}, "required": ["maxItems"]}
     assert original["properties"]["maxItems"]["maxItems"] == 100
+
+
+def test_should_bound_gemini_3_thinking_level_by_purpose(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("GEMINI_THINKING_LEVEL", raising=False)
+
+    plan_cfg = _gemini_configuration("QUERY_PLAN", {}, "gemini-3.5-flash")
+    chat_cfg = _gemini_configuration("CHAT", {}, "gemini-3.5-flash")
+    legacy_cfg = _gemini_configuration("CHAT", {}, "gemini-2.5-flash")
+
+    assert plan_cfg.thinking_config == types.ThinkingConfig(
+        thinking_level=types.ThinkingLevel.MINIMAL
+    )
+    assert chat_cfg.thinking_config == types.ThinkingConfig(
+        thinking_level=types.ThinkingLevel.LOW
+    )
+    assert legacy_cfg.thinking_config is None
