@@ -4641,3 +4641,56 @@ xoá test của component đã chết). Vẫn phải chạy `--maxWorkers=2` vì
   2. `.pipeline/decisions-log.md`: hai bên cùng thêm mục vào cuối tệp; giữ cả hai.
   3. `cookie-session.ts` (đăng nhập khởi tạo phiên ở `anonymous`) tự merge được.
 - Kiểm chứng sau merge: `tsc -b` 0 lỗi, `eslint . --max-warnings 0` sạch, Vitest 91 tệp, 637 test qua (gồm test chống đệ quy của `main`); backend `./mvnw -o test` 609/609 qua.
+
+
+## 2026-11-24 — Redesign Web Sidebar Navigation, Overlay Expansion, Mobile Drawer & Fix Role/Membership Flaws
+
+- **Context:** Live production audit on `https://unichat.id.vn` revealed severe sidebar UI defects (primary nav links squished to ~8px due to missing `flex-shrink: 0`; 17px native Windows scrollbar breaking the 68px icon rail and overlapping expanded pills), UX regressions (primary nav scrolling out of view with long group lists; hover-expand shifting `.app-shell__main` by 156px; no navigation below 768px; fragmented workspace context), and two business/authorization flaws (`isAdmin` substring checks on email/displayName in `SideNavBar`; `WorkspaceShell` coercing non-member `userRole === null` to `'VIEWER'`, injecting unjoined public workspaces into "Nhóm của bạn" and linking non-members to `ChatAccessService`-blocked AI chat).
+- **Decisions (user-approved design options A1 + A2):**
+  1. Switch desktop `SideNavBar` to a 68px icon rail expanding to a 248px elevated overlay (`box-shadow`) on hover/focus without shifting `.app-shell__main` margin.
+  2. Split `.side-nav` into 4 fixed/scrollable tiers: fixed Brand Header, pinned Global Primary Nav (adding direct `Trợ lý AI` shortcut `/chat`, fixing prefix active matching for `/feed/posts/*`), independent `.side-nav__scroll` (hidden scrollbar in 68px rail, slim translucent 4px scrollbar when expanded), and fixed Footer.
+  3. Inside a workspace, render `<SideNavWorkspaceContext>` (`Bài viết`, `Tệp tài liệu`, `Thành viên`, member-only `Trợ lý AI`, editor/owner-only `Cài đặt nhóm`, or 1-click `Tham gia nhóm` for non-member public previews) followed by `<SideNavGroups>` as `"Chuyển nhóm nhanh"` with `"Xem tất cả (N)"` overflow when `totalElements > loaded.length`.
+  4. Enforce authoritative role checks: `isAuthoritativeAdmin()` requires `systemRole === 'ADMIN' && status === 'ACTIVE'`; `WorkspaceShell` preserves `userRole: WorkspaceRole | null` and `WorkspaceContext` exposes `isMember: boolean` so `GroupPage`, `GroupAboutTab`, `WorkspaceOverviewPage`, and `SideNavBar` accurately handle unjoined public previews.
+  5. Add `<MobileNavBar>` (fixed bottom dock + slide-over drawer reusing `SideNavWorkspaceContext` and `SideNavGroups`) for viewports `< 768px`.
+  6. Per user decision, standardize Navbar and primary Workspace screens (`WorkspaceListPage`, `GroupPage`, `GroupAboutTab`, `WorkspaceOverviewPage`, `WorkspaceShell`, `WorkspaceForm`, `CreateWorkspaceModal`, `ExploreTab`, `WelcomeBanner`, `HeroAsk`) to `Workspace` terminology to match product positioning and separate knowledge workspaces from Work Chat groups; also wire `/workspaces?new=1` in `WorkspaceListPage` so the sidebar `+` shortcut opens the creation modal directly.
+  7. Refine AI Chat progress & error UX: move `PipelineSteps` from a full-width accordion block into an inline ghost trigger (`Tiến trình · N bước`) on the `UniChat AI` header row (expanding a lightweight left-bordered step panel only on demand, and surfacing live step titles inside the thinking bubble), and relocate recoverable chat errors (`ChatInlineError`) from the top of `.chat-page__messages-body` to the bottom assistant reply slot directly beneath the failed question with automatic scroll-into-view.
+- **EC2 Production Note:** Deployed HTTPS for `https://unichat.id.vn` via Caddy (Let's Encrypt) + `UNICHAT_SECURITY_PROFILE=production` and patched `/home/ec2-user/unichat-deploy/bin/deploy-main.sh`'s `sync_public_ip()` guard so the 2-minute `unichat-autodeploy.timer` no longer overwrites custom HTTPS origins back to raw EC2 IP.
+
+## 2026-11-24 — Fix Intermittent `PROVIDER_TIMEOUT` in AI Service Generation Gateway
+
+- **Context:** Local testing on multi-document RAG workspaces showed intermittent `PROVIDER_TIMEOUT` ("Dịch vụ AI phản hồi quá chậm. Vui lòng thử lại.") regardless of `STRICT` (`Chỉ tài liệu`) vs `EXPANDED` (`Mở rộng`) mode.
+- **Root cause:**
+  1. `ProviderSettings.hive_read_idle_timeout_seconds` was hard-capped at `5s` (`default=5, le=5`), and `hive_provider.py` passed `httpx.Timeout(min(timeout, 5), read=min(timeout, config.hive_read_idle_timeout_seconds))`. With DeepSeek (`deepseek-ai/deepseek-v4.1-flash-1017`, `reasoning_effort=low`) + structured JSON output on multi-document prompts, TTFT or mid-stream pauses exceeding `5s` immediately raised `httpx.ReadTimeout` → `PROVIDER_TIMEOUT`.
+  2. `_attempt_checkpoint()` in `provider_gateway.py` only passed an extended `CHAT` attempt limit for `hive` (`75s`), leaving primary `gemini` capped at the generic `30s` checkpoint timeout.
+  3. `_fallback_targets()` in `provider_routing.py` limited fallback providers to `1` key, leaving `HIVE_API_KEY_2` unused when `hive-primary` hit transient failures.
+- **Decisions:**
+  1. `provider_settings.py`: Raise `hive_read_idle_timeout_seconds` to `default=20, gt=0, le=30` and add `gemini_chat_attempt_timeout_seconds` (`default=60, ge=30, le=90`).
+  2. `hive_provider.py`: Raise HTTPX base connect/write/pool timeout cap from `min(timeout, 5)` to `min(timeout, 10)` while preserving `read=min(timeout, config.hive_read_idle_timeout_seconds)` and overall attempt deadline enforcement.
+  3. `provider_gateway.py`: Pass `gemini_chat_attempt_timeout_seconds` from `_attempt_checkpoint()` for `CHAT` on `gemini` (still strictly bounded by Core API's remaining operation deadline).
+  4. `provider_routing.py`: Increase `_fallback_targets()` key limit from `1` to `2` so both `HIVE_API_KEY` and `HIVE_API_KEY_2` participate in bounded fallback failover.
+  5. Sync defaults in `docker-compose.yml`, `.env.example`, and local `.env` / `ai-service/.env` (`HIVE_READ_IDLE_TIMEOUT_SECONDS=20`).
+- **Verification:** `ai-service` `pytest app/core/rag/tests app/tests -q` passed `435/435`; `mypy` passed with `0` issues across all 8 modified source and test files.
+- **Boundaries:** No commit, push, or EC2 deployment executed without explicit human approval.
+
+## 2026-11-24 — Floating Top-Left Workspace Chat History Bubble & Compact Modal
+
+- **Context:** Users chatting in `/workspaces/:workspaceId/chat` had no immediate in-screen control to browse, search, or reopen past conversations within the current workspace without navigating away to `/workspaces/:workspaceId/conversations`.
+- **Decisions:**
+  1. Added `ChatHistoryPopover` (`chat-history-popover.tsx`, `chat-history-popover.css`, `chat-history-helpers.ts`): a `36px × 36px` floating frosted bubble positioned at `top: 14px; left: 28px` directly beneath the header's `←` Back button (automatically offset below `.chat-page__policy-banner` when cloud AI is disabled, and keeping `.chat-page__policy-banner + .chat-page__messages-body` DOM adjacency intact).
+  2. Expanded `.chat-page__messages-body` desktop left padding from `48px` to `76px` so the pinned bubble sits in its own quiet vertical column without ever obscuring message avatars or text while scrolling.
+  3. Clicking the bubble opens a compact `356px` anchored popover dialog listing current-workspace conversations (`GET /workspaces/{id}/conversations?page=0&size=20`, lazy-fetched on open) grouped into `Hôm nay`, `Hôm qua`, `7 ngày qua`, `Trước đó`, with 300 ms debounced Vietnamese accent-insensitive search, `Đang mở` badge on the active thread, inline two-step delete confirmation (no browser `confirm`/`alert`), `Xem thêm` pagination, Escape/outside-click dismissal, and a footer link to `/workspaces/{id}/conversations`.
+  4. Synced `ChatPage` URL handling (`openConversation` navigates to `?conversationId=...`; `startNewChat` resets state and strips `?conversationId` from the URL so reopening a previous thread always reloads cleanly).
+- **Verification:** `tsc --noEmit` 0 errors, `eslint --max-warnings 0` clean, `vitest run src/features/chat` `14/14` files / `86/86` tests passed (including 6 new popover/helper unit tests and 1 `ChatPage` navigation integration test), `npm run build` (`tsc -b && vite build`) succeeded.
+- **Boundaries:** No commit, push, or deployment executed without explicit human approval.
+
+## 2026-11-24 — Shorten History Modal Above Composer Fade & Fix Sticky Chat Auto-Scroll
+
+- **Context:** User screenshot showed the bottom of `.chat-history-modal` fading underneath `.chat-input-container`'s `z-index: 30` gradient, and reported chat snapping/auto-scrolling back toward their question while AI was thinking/streaming.
+- **Root causes:**
+  1. `.chat-history-launcher` had `z-index: 25` (< `.chat-input-container`'s `z-index: 30`) and `max-height: min(520px, calc(100vh - 156px))`, extending behind the bottom composer's opaque-to-transparent gradient.
+  2. `ChatPage` ran `end.current?.scrollIntoView?.({ block: 'end' })` unconditionally on every `[chat.messages, activeError]` mutation — which (a) yanked the viewport back down on every `onThought`/`onToken` update whenever the user scrolled up to read earlier messages, and (b) stopped before `.chat-page__messages-body`'s `180px` bottom padding clearance, tucking the AI thinking bubble partially behind the floating composer.
+- **Decisions:**
+  1. Raise `.chat-history-launcher` to `z-index: 35`, reduce modal dimensions to `width: 344px; max-height: clamp(240px, calc(100vh - 304px), 380px)` with tighter vertical padding so the entire modal and footer always sit cleanly above the composer gradient.
+  2. Introduce `useChatAutoScroll` (`use-chat-auto-scroll.ts`) owned by `ChatPage` (`messagesRef` passed in to comply with React 19 `react-hooks/refs`): scrolls `.chat-page__messages-body` directly via `scrollTop = scrollHeight` (keeping full `180px` clearance), unpins immediately on upward wheel/scroll while AI is thinking/streaming, re-pins when returning within `96px` of bottom or sending a new prompt, and adjusts `scrollTop` by height delta when prepending older messages (`loadOlder`).
+- **Verification:** `tsc --noEmit` 0 errors, `eslint --max-warnings 0` 0 warnings/errors, `vitest run src/features/chat` `15/15` files / `89/89` tests passed (including 3 new `useChatAutoScroll` tests), `npm run build` (`tsc -b && vite build`) succeeded.
+- **Boundaries:** No commit, push, or deployment executed without explicit human approval.
