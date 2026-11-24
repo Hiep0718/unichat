@@ -48,6 +48,7 @@ def test_should_always_stream_raw_identity_and_close_resources(
     monkeypatch: pytest.MonkeyPatch, purpose: Purpose, schema: dict[str, Any] | None,
 ) -> None:
     monkeypatch.setenv("HIVE_API_KEY", KEY.secret)
+    monkeypatch.delenv("HIVE_MAX_TOKENS", raising=False)
     monkeypatch.delenv("HIVE_READ_IDLE_TIMEOUT_SECONDS", raising=False)
     monkeypatch.delenv("HIVE_READ_TIMEOUT_SECONDS", raising=False)
     client, response, context = transport([wire()[:19], wire()[19:]])
@@ -68,7 +69,7 @@ def test_should_always_stream_raw_identity_and_close_resources(
     assert body["model"] == MODEL
     assert body["stream"] is True and "stream_options" not in body
     expected_tokens = (
-        128 if purpose == "KEY_PROBE" else 512 if purpose == "QUERY_PLAN" else 4096
+        128 if purpose == "KEY_PROBE" else 512 if purpose == "QUERY_PLAN" else 8192
     )
     assert body["max_completion_tokens"] == expected_tokens
     assert "max_tokens" not in body

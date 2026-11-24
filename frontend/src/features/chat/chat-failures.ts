@@ -3,6 +3,10 @@ import { ApiError } from '../../lib/api-error';
 const MESSAGES: Readonly<Record<string, string>> = {
   AI_MAINTENANCE: 'Dịch vụ AI đang bảo trì. Vui lòng thử lại sau ít phút.',
   PROVIDER_TIMEOUT: 'Dịch vụ AI phản hồi quá chậm. Vui lòng thử lại.',
+  PROVIDER_NETWORK_ERROR: 'Kết nối tới nhà cung cấp AI bị gián đoạn. Vui lòng thử lại.',
+  PROVIDER_TRUNCATED_RESPONSE: 'Câu trả lời bị cắt ngắn do vượt giới hạn độ dài của mô hình AI. Vui lòng thử lại hoặc chia nhỏ câu hỏi.',
+  PROVIDER_EMPTY_RESPONSE: 'Mô hình AI chưa tạo được nội dung phản hồi. Vui lòng thử lại.',
+  OUTPUT_LIMIT_EXCEEDED: 'Câu trả lời vượt quá giới hạn kích thước cho phép. Vui lòng thu gọn phạm vi câu hỏi.',
   PROVIDER_HTTP_400: 'Yêu cầu gửi tới nhà cung cấp AI không tương thích. Vui lòng kiểm tra cấu hình model.',
   PROVIDER_HTTP_408: 'Dịch vụ AI phản hồi quá chậm. Vui lòng thử lại.',
   PROVIDER_HTTP_429: 'Dịch vụ AI đang quá tải. Vui lòng thử lại sau ít phút.',

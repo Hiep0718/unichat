@@ -20,6 +20,8 @@ describe('ChatFailures', () => {
   it.each([
     ['PROVIDER_HTTP_400', 'Yêu cầu gửi tới nhà cung cấp AI không tương thích. Vui lòng kiểm tra cấu hình model.'],
     ['PROVIDER_HTTP_405', 'Tài khoản Hive không đủ credit hoặc đang tạm dừng. Vui lòng kiểm tra Organization Credit.'],
+    ['PROVIDER_TRUNCATED_RESPONSE', 'Câu trả lời bị cắt ngắn do vượt giới hạn độ dài của mô hình AI. Vui lòng thử lại hoặc chia nhỏ câu hỏi.'],
+    ['PROVIDER_NETWORK_ERROR', 'Kết nối tới nhà cung cấp AI bị gián đoạn. Vui lòng thử lại.'],
   ])('should explain actionable Hive failure %s without exposing the upstream body', (code, message) => {
     expect(friendlyChatError({ code }).message).toBe(message);
   });
