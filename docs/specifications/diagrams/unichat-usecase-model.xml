@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xmi:XMI xmi:version="2.1" xmlns:uml="http://schema.omg.org/spec/UML/2.0" xmlns:xmi="http://schema.omg.org/spec/XMI/2.1">
+	<uml:Model name="UniChat_UseCase_Model_v2" xmi:id="model_unichat_v2">
+		<!-- 4 Actors -->
+		<ownedMember isAbstract="false" isLeaf="false" name="Khách / chưa đăng nhập" visibility="public" xmi:id="act_guest" xmi:type="uml:Actor"/>
+		<ownedMember isAbstract="false" isLeaf="false" name="Người dùng (USER)" visibility="public" xmi:id="act_user" xmi:type="uml:Actor"/>
+		<ownedMember isAbstract="false" isLeaf="false" name="Chủ sở hữu / Biên tập viên Workspace" visibility="public" xmi:id="act_owner" xmi:type="uml:Actor"/>
+		<ownedMember isAbstract="false" isLeaf="false" name="Quản trị viên hệ thống (ADMIN)" visibility="public" xmi:id="act_admin" xmi:type="uml:Actor"/>
+
+		<!-- System Boundary -->
+		<ownedMember isAbstract="false" isLeaf="false" name="Ứng dụng UniChat" xmi:id="pkg_unichat_app" xmi:type="uml:Package">
+			<!-- Nhóm 1: Tài khoản & Workspace -->
+			<ownedMember isAbstract="false" isLeaf="false" name="Đăng ký / đăng nhập và quản lý phiên" xmi:id="uc_auth" xmi:type="uml:UseCase"/>
+			<ownedMember isAbstract="false" isLeaf="false" name="Tạo / tham gia Workspace" xmi:id="uc_workspace" xmi:type="uml:UseCase"/>
+			<ownedMember isAbstract="false" isLeaf="false" name="Quản lý thành viên và vai trò" xmi:id="uc_members" xmi:type="uml:UseCase"/>
+			<ownedMember isAbstract="false" isLeaf="false" name="Quản lý tài liệu trong Workspace" xmi:id="uc_documents" xmi:type="uml:UseCase"/>
+
+			<!-- Nhóm 2: AI & Lịch sử -->
+			<ownedMember isAbstract="false" isLeaf="false" name="Đặt câu hỏi và khai thác tài liệu (RAG Chat)" xmi:id="uc_ask" xmi:type="uml:UseCase"/>
+			<ownedMember isAbstract="false" isLeaf="false" name="Xem lịch sử hội thoại" xmi:id="uc_history" xmi:type="uml:UseCase"/>
+
+			<!-- Nhóm 3: Mạng xã hội học tập (Community) & Work Chat -->
+			<ownedMember isAbstract="false" isLeaf="false" name="Đăng bài viết trên bảng tin cộng đồng" xmi:id="uc_post" xmi:type="uml:UseCase"/>
+			<ownedMember isAbstract="false" isLeaf="false" name="Bình luận / trả lời bài viết" xmi:id="uc_reply" xmi:type="uml:UseCase"/>
+			<ownedMember isAbstract="false" isLeaf="false" name="Bày tỏ cảm xúc / lưu bài viết" xmi:id="uc_reaction" xmi:type="uml:UseCase"/>
+			<ownedMember isAbstract="false" isLeaf="false" name="Theo dõi thông báo" xmi:id="uc_notifications" xmi:type="uml:UseCase"/>
+			<ownedMember isAbstract="false" isLeaf="false" name="Nhắn tin trực tiếp với thành viên (Work Chat)" xmi:id="uc_direct" xmi:type="uml:UseCase"/>
+			<ownedMember isAbstract="false" isLeaf="false" name="Tìm kiếm bài viết và tài liệu" xmi:id="uc_search" xmi:type="uml:UseCase"/>
+
+			<!-- Nhóm 4: Quản trị & Kiểm duyệt -->
+			<ownedMember isAbstract="false" isLeaf="false" name="Kiểm duyệt nội dung Workspace / cộng đồng" xmi:id="uc_moderation" xmi:type="uml:UseCase"/>
+			<ownedMember isAbstract="false" isLeaf="false" name="Quản lý người dùng và Workspace" xmi:id="uc_admin" xmi:type="uml:UseCase"/>
+			<ownedMember isAbstract="false" isLeaf="false" name="Xem báo cáo và đánh giá hệ thống" xmi:id="uc_reports" xmi:type="uml:UseCase"/>
+		</ownedMember>
+
+		<!-- Associations: Khách -->
+		<ownedMember isAbstract="false" isDerived="false" isLeaf="false" name="" xmi:id="asc_g_auth" xmi:type="uml:Association">
+			<memberEnd xmi:idref="end_ga1"/><ownedEnd association="asc_g_auth" isNavigable="true" name="" type="act_guest" xmi:id="end_ga1" xmi:type="uml:Property"/>
+			<memberEnd xmi:idref="end_ga2"/><ownedEnd association="asc_g_auth" isNavigable="true" name="" type="uc_auth" xmi:id="end_ga2" xmi:type="uml:Property"/>
+		</ownedMember>
+
+		<!-- Associations: Người dùng (USER) -->
+		<ownedMember isAbstract="false" isDerived="false" isLeaf="false" name="" xmi:id="asc_u_auth" xmi:type="uml:Association">
+			<memberEnd xmi:idref="end_ua1"/><ownedEnd association="asc_u_auth" isNavigable="true" name="" type="act_user" xmi:id="end_ua1" xmi:type="uml:Property"/>
+			<memberEnd xmi:idref="end_ua2"/><ownedEnd association="asc_u_auth" isNavigable="true" name="" type="uc_auth" xmi:id="end_ua2" xmi:type="uml:Property"/>
+		</ownedMember>
+		<ownedMember isAbstract="false" isDerived="false" isLeaf="false" name="" xmi:id="asc_u_ws" xmi:type="uml:Association">
+			<memberEnd xmi:idref="end_uws1"/><ownedEnd association="asc_u_ws" isNavigable="true" name="" type="act_user" xmi:id="end_uws1" xmi:type="uml:Property"/>
+			<memberEnd xmi:idref="end_uws2"/><ownedEnd association="asc_u_ws" isNavigable="true" name="" type="uc_workspace" xmi:id="end_uws2" xmi:type="uml:Property"/>
+		</ownedMember>
+		<ownedMember isAbstract="false" isDerived="false" isLeaf="false" name="" xmi:id="asc_u_ask" xmi:type="uml:Association">
+			<memberEnd xmi:idref="end_uask1"/><ownedEnd association="asc_u_ask" isNavigable="true" name="" type="act_user" xmi:id="end_uask1" xmi:type="uml:Property"/>
+			<memberEnd xmi:idref="end_uask2"/><ownedEnd association="asc_u_ask" isNavigable="true" name="" type="uc_ask" xmi:id="end_uask2" xmi:type="uml:Property"/>
+		</ownedMember>
+		<ownedMember isAbstract="false" isDerived="false" isLeaf="false" name="" xmi:id="asc_u_his" xmi:type="uml:Association">
+			<memberEnd xmi:idref="end_uh1"/><ownedEnd association="asc_u_his" isNavigable="true" name="" type="act_user" xmi:id="end_uh1" xmi:type="uml:Property"/>
+			<memberEnd xmi:idref="end_uh2"/><ownedEnd association="asc_u_his" isNavigable="true" name="" type="uc_history" xmi:id="end_uh2" xmi:type="uml:Property"/>
+		</ownedMember>
+		<ownedMember isAbstract="false" isDerived="false" isLeaf="false" name="" xmi:id="asc_u_post" xmi:type="uml:Association">
+			<memberEnd xmi:idref="end_upost1"/><ownedEnd association="asc_u_post" isNavigable="true" name="" type="act_user" xmi:id="end_upost1" xmi:type="uml:Property"/>
+			<memberEnd xmi:idref="end_upost2"/><ownedEnd association="asc_u_post" isNavigable="true" name="" type="uc_post" xmi:id="end_upost2" xmi:type="uml:Property"/>
+		</ownedMember>
+		<ownedMember isAbstract="false" isDerived="false" isLeaf="false" name="" xmi:id="asc_u_reply" xmi:type="uml:Association">
+			<memberEnd xmi:idref="end_urep1"/><ownedEnd association="asc_u_reply" isNavigable="true" name="" type="act_user" xmi:id="end_urep1" xmi:type="uml:Property"/>
+			<memberEnd xmi:idref="end_urep2"/><ownedEnd association="asc_u_reply" isNavigable="true" name="" type="uc_reply" xmi:id="end_urep2" xmi:type="uml:Property"/>
+		</ownedMember>
+		<ownedMember isAbstract="false" isDerived="false" isLeaf="false" name="" xmi:id="asc_u_react" xmi:type="uml:Association">
+			<memberEnd xmi:idref="end_ureact1"/><ownedEnd association="asc_u_react" isNavigable="true" name="" type="act_user" xmi:id="end_ureact1" xmi:type="uml:Property"/>
+			<memberEnd xmi:idref="end_ureact2"/><ownedEnd association="asc_u_react" isNavigable="true" name="" type="uc_reaction" xmi:id="end_ureact2" xmi:type="uml:Property"/>
+		</ownedMember>
+		<ownedMember isAbstract="false" isDerived="false" isLeaf="false" name="" xmi:id="asc_u_notif" xmi:type="uml:Association">
+			<memberEnd xmi:idref="end_unot1"/><ownedEnd association="asc_u_notif" isNavigable="true" name="" type="act_user" xmi:id="end_unot1" xmi:type="uml:Property"/>
+			<memberEnd xmi:idref="end_unot2"/><ownedEnd association="asc_u_notif" isNavigable="true" name="" type="uc_notifications" xmi:id="end_unot2" xmi:type="uml:Property"/>
+		</ownedMember>
+		<ownedMember isAbstract="false" isDerived="false" isLeaf="false" name="" xmi:id="asc_u_dir" xmi:type="uml:Association">
+			<memberEnd xmi:idref="end_udir1"/><ownedEnd association="asc_u_dir" isNavigable="true" name="" type="act_user" xmi:id="end_udir1" xmi:type="uml:Property"/>
+			<memberEnd xmi:idref="end_udir2"/><ownedEnd association="asc_u_dir" isNavigable="true" name="" type="uc_direct" xmi:id="end_udir2" xmi:type="uml:Property"/>
+		</ownedMember>
+		<ownedMember isAbstract="false" isDerived="false" isLeaf="false" name="" xmi:id="asc_u_srch" xmi:type="uml:Association">
+			<memberEnd xmi:idref="end_usrch1"/><ownedEnd association="asc_u_srch" isNavigable="true" name="" type="act_user" xmi:id="end_usrch1" xmi:type="uml:Property"/>
+			<memberEnd xmi:idref="end_usrch2"/><ownedEnd association="asc_u_srch" isNavigable="true" name="" type="uc_search" xmi:id="end_usrch2" xmi:type="uml:Property"/>
+		</ownedMember>
+
+		<!-- Associations: Chủ sở hữu / Biên tập viên (Owner / Editor) -->
+		<ownedMember isAbstract="false" isDerived="false" isLeaf="false" name="" xmi:id="asc_o_mem" xmi:type="uml:Association">
+			<memberEnd xmi:idref="end_omem1"/><ownedEnd association="asc_o_mem" isNavigable="true" name="" type="act_owner" xmi:id="end_omem1" xmi:type="uml:Property"/>
+			<memberEnd xmi:idref="end_omem2"/><ownedEnd association="asc_o_mem" isNavigable="true" name="" type="uc_members" xmi:id="end_omem2" xmi:type="uml:Property"/>
+		</ownedMember>
+		<ownedMember isAbstract="false" isDerived="false" isLeaf="false" name="" xmi:id="asc_o_doc" xmi:type="uml:Association">
+			<memberEnd xmi:idref="end_odoc1"/><ownedEnd association="asc_o_doc" isNavigable="true" name="" type="act_owner" xmi:id="end_odoc1" xmi:type="uml:Property"/>
+			<memberEnd xmi:idref="end_odoc2"/><ownedEnd association="asc_o_doc" isNavigable="true" name="" type="uc_documents" xmi:id="end_odoc2" xmi:type="uml:Property"/>
+		</ownedMember>
+		<ownedMember isAbstract="false" isDerived="false" isLeaf="false" name="" xmi:id="asc_o_mod" xmi:type="uml:Association">
+			<memberEnd xmi:idref="end_omod1"/><ownedEnd association="asc_o_mod" isNavigable="true" name="" type="act_owner" xmi:id="end_omod1" xmi:type="uml:Property"/>
+			<memberEnd xmi:idref="end_omod2"/><ownedEnd association="asc_o_mod" isNavigable="true" name="" type="uc_moderation" xmi:id="end_omod2" xmi:type="uml:Property"/>
+		</ownedMember>
+
+		<!-- Associations: Admin -->
+		<ownedMember isAbstract="false" isDerived="false" isLeaf="false" name="" xmi:id="asc_a_adm" xmi:type="uml:Association">
+			<memberEnd xmi:idref="end_aadm1"/><ownedEnd association="asc_a_adm" isNavigable="true" name="" type="act_admin" xmi:id="end_aadm1" xmi:type="uml:Property"/>
+			<memberEnd xmi:idref="end_aadm2"/><ownedEnd association="asc_a_adm" isNavigable="true" name="" type="uc_admin" xmi:id="end_aadm2" xmi:type="uml:Property"/>
+		</ownedMember>
+		<ownedMember isAbstract="false" isDerived="false" isLeaf="false" name="" xmi:id="asc_a_rep" xmi:type="uml:Association">
+			<memberEnd xmi:idref="end_arep1"/><ownedEnd association="asc_a_rep" isNavigable="true" name="" type="act_admin" xmi:id="end_arep1" xmi:type="uml:Property"/>
+			<memberEnd xmi:idref="end_arep2"/><ownedEnd association="asc_a_rep" isNavigable="true" name="" type="uc_reports" xmi:id="end_arep2" xmi:type="uml:Property"/>
+		</ownedMember>
+		<ownedMember isAbstract="false" isDerived="false" isLeaf="false" name="" xmi:id="asc_a_mod" xmi:type="uml:Association">
+			<memberEnd xmi:idref="end_amod1"/><ownedEnd association="asc_a_mod" isNavigable="true" name="" type="act_admin" xmi:id="end_amod1" xmi:type="uml:Property"/>
+			<memberEnd xmi:idref="end_amod2"/><ownedEnd association="asc_a_mod" isNavigable="true" name="" type="uc_moderation" xmi:id="end_amod2" xmi:type="uml:Property"/>
+		</ownedMember>
+	</uml:Model>
+</xmi:XMI>
